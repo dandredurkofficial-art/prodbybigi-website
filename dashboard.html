@@ -1,39 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Producer Dashboard</title>
-  <link rel="stylesheet" href="dashboard.css" />
-</head>
 <body>
+<div class="layout">
 
-<header>
-  <h1>🎵 Producer Dashboard</h1>
-  <button onclick="logout()">Logout</button>
-</header>
+  <aside class="sidebar">
+    <h2>PRODBY</h2>
+    <a onclick="loadSection('overview')">Overview</a>
+    <a onclick="loadSection('tracks')">Tracks</a>
+    <a onclick="loadSection('soundkits')">Sound Kits</a>
+    <a onclick="loadSection('services')">Services</a>
+    <a onclick="loadSection('analytics')">Analytics</a>
+    <a onclick="loadSection('sales')">Sales</a>
+    <a onclick="loadSection('finance')">Finance</a>
+    <a onclick="loadSection('discounts')">Producer Discounts</a>
+    <a onclick="loadSection('contracts')">Contracts</a>
+    <a onclick="loadSection('settings')">Account Settings</a>
+    <a class="logout" onclick="logout()">Logout</a>
+  </aside>
 
-<section class="upload-card">
-  <h2>Upload Beat</h2>
+  <main id="content"></main>
 
-  <input type="text" id="title" placeholder="Beat Title" />
-  <input type="number" id="price" placeholder="Price (0 = Free)" />
-  <input type="file" id="audio" accept="audio/*" />
+</div>
 
-  <button onclick="uploadBeat()">Upload Beat</button>
-</section>
-
-<section class="beats-list">
-  <h2>Your Beats</h2>
-  <div id="beats"></div>
-</section>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
-<script src="firebase.js"></script>
 <script src="dashboard.js"></script>
-
 </body>
-</html>
