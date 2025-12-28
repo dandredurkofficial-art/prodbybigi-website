@@ -100,6 +100,14 @@
         <div class="card">
           <h3>Upload Beat</h3>
           <input id="beatTitle" placeholder="Beat title" />
+          <input id="beatArtist" placeholder="Artist fits (e.g. Drake, Lil Baby)" />
+          <input id="beatBpm" type="number" placeholder="BPM" />
+          <input id="beatGenre" placeholder="Genre" />
+          <input id="beatMood" placeholder="Mood (Dark, Happy, Aggressive)" />
+          <input id="beatTags" placeholder="Tags (comma separated)" />
+          <label>Cover Image</label>
+          <input id="beatCover" type="file" accept="image/*" />
+          <label>Beat File (MP3/WAV)</label>
           <input id="beatFile" type="file" accept=".mp3,.wav" />
           <button id="uploadBtn">Upload Beat</button>
           <p id="uploadMsg"></p>
@@ -136,11 +144,17 @@
 
   async function uploadBeat() {
     const title = document.getElementById('beatTitle').value;
+    const artist = document.getElementById('beatArtist').value;
+    const bpm = document.getElementById('beatBpm').value;
+    const genre = document.getElementById('beatGenre').value;
+    const mood = document.getElementById('beatMood').value;
+    const tags = document.getElementById('beatTags').value.split(',').map(t => t.trim());
     const file = document.getElementById('beatFile').files[0];
+    const cover = document.getElementById('beatCover').files[0];
     const msg = document.getElementById('uploadMsg');
 
-    if (!title || !file) {
-      msg.innerText = 'Title and file required';
+    if (!title || !file || !cover) {
+      msg.innerText = 'Title, beat file, and cover image are required';
       return;
     }
 
@@ -153,23 +167,43 @@
       return;
     }
 
-    msg.innerText = 'Uploading...';
+    try {
+      msg.innerText = 'Uploading beat file...';
 
-    const storageRef = ref(storage, `beats/${currentUser.uid}/${Date.now()}-${file.name}`);
-    await uploadBytes(storageRef, file);
-    const url = await getDownloadURL(storageRef);
+      const beatRef = ref(storage, `beats/${currentUser.uid}/${Date.now()}-${file.name}`);
+      await uploadBytes(beatRef, file);
+      const beatUrl = await getDownloadURL(beatRef);
 
-    await addDoc(collection(db, 'beats'), {
-      uid: currentUser.uid,
-      title,
-      fileUrl: url,
-      createdAt: new Date()
-    });
+      msg.innerText = 'Uploading cover...';
 
-    await updateDoc(userRef, { uploads: user.uploads + 1 });
+      const coverRef = ref(storage, `covers/${currentUser.uid}/${Date.now()}-${cover.name}`);
+      await uploadBytes(coverRef, cover);
+      const coverUrl = await getDownloadURL(coverRef);
 
-    msg.innerText = 'Upload successful 🎶';
-    loadBeats();
+      await addDoc(collection(db, 'beats'), {
+        uid: currentUser.uid,
+        title,
+        artistFit: artist,
+        bpm: Number(bpm),
+        genre,
+        mood,
+        tags,
+        fileUrl: beatUrl,
+        coverUrl,
+        plays: 0,
+        createdAt: new Date()
+      });
+
+      await updateDoc(userRef, { uploads: user.uploads + 1 });
+
+      msg.innerText = 'Upload successful 🎶';
+      loadBeats();
+
+    } catch (err) {
+      console.error(err);
+      msg.innerText = 'Upload failed. Check console.';
+    }
+  }
   }
 
   async function loadBeats() {
