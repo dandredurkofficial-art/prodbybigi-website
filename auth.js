@@ -1,27 +1,19 @@
-// LOGIN
+// auth.js
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword } 
+  from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+document.getElementById("loginBtn").addEventListener("click", login);
+
 function login() {
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
 
-  firebase.auth().signInWithEmailAndPassword(email, password)
+  signInWithEmailAndPassword(auth, email, password)
     .then(() => {
-      window.location.href = "index.html";
+      window.location.href = "dashboard.html";
     })
-    .catch(error => {
-      alert(error.message);
-    });
-}
-
-// REGISTER
-function register() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  firebase.auth().createUserWithEmailAndPassword(email, password)
-    .then(() => {
-      window.location.href = "index.html";
-    })
-    .catch(error => {
+    .catch((error) => {
       alert(error.message);
     });
 }
