@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Producer Dashboard | ProdByBigi</title>
+  <title>Dashboard | ProdByBigi</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
@@ -29,7 +29,6 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
       border-right: 1px solid #222;
     }
 
@@ -37,6 +36,7 @@
       font-size: 20px;
       font-weight: 700;
       color: #6cf;
+      margin-bottom: 30px;
     }
 
     .nav a {
@@ -46,6 +46,8 @@
       color: #bbb;
       text-decoration: none;
       font-size: 14px;
+      cursor: pointer;
+      margin-bottom: 6px;
       transition: 0.2s;
     }
 
@@ -69,7 +71,6 @@
       flex-direction: column;
     }
 
-    /* Top Bar */
     .topbar {
       height: 70px;
       background: #111;
@@ -87,7 +88,6 @@
       background: #222;
     }
 
-    /* Content */
     .content {
       padding: 30px;
       overflow-y: auto;
@@ -113,33 +113,22 @@
     }
 
     .card p {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
     }
 
-    /* Tables */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
+    button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: #6cf;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
     }
 
-    th, td {
-      padding: 14px;
-      border-bottom: 1px solid #222;
-      font-size: 14px;
-      text-align: left;
-    }
-
-    th {
-      color: #aaa;
-    }
-
-    /* Mobile */
     @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
+      .sidebar { display: none; }
     }
   </style>
 </head>
@@ -148,67 +137,115 @@
   <aside class="sidebar">
     <div class="logo">ProdByBigi</div>
     <nav class="nav">
-      <a href="#">Dashboard</a>
-      <a href="#">Tracks</a>
-      <a href="#">Sound Kits</a>
-      <a href="#">Services</a>
-      <a href="#">Collections</a>
-      <a href="#">Sales</a>
-      <a href="#">Analytics</a>
-      <a href="#">Finance</a>
-      <a href="#">Contracts</a>
-      <a href="#">Discounts</a>
-      <a href="#">Settings</a>
-      <a class="pro" href="#">Upgrade to Pro</a>
+      <a onclick="loadPage('home')">Dashboard</a>
+      <a onclick="loadPage('tracks')">Tracks</a>
+      <a onclick="loadPage('soundkits')">Sound Kits</a>
+      <a onclick="loadPage('services')">Services</a>
+      <a onclick="loadPage('collections')">Collections</a>
+      <a onclick="loadPage('sales')">Sales</a>
+      <a onclick="loadPage('analytics')">Analytics</a>
+      <a onclick="loadPage('finance')">Finance</a>
+      <a onclick="loadPage('contracts')">Contracts</a>
+      <a onclick="loadPage('discounts')">Discounts</a>
+      <a onclick="loadPage('settings')">Settings</a>
+      <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
     </nav>
   </aside>
 
   <div class="main">
     <header class="topbar">
-      <h2>Dashboard</h2>
-      <span class="plan">Free Plan · 3 / 10 Uploads</span>
+      <h2 id="pageTitle">Dashboard</h2>
+      <span class="plan">Free Plan · 0 / 10 Uploads</span>
     </header>
 
-    <div class="content">
-      <div class="grid">
-        <div class="card">
-          <h3>Total Sales</h3>
-          <p>$0.00</p>
-        </div>
-        <div class="card">
-          <h3>Total Uploads</h3>
-          <p>3</p>
-        </div>
-        <div class="card">
-          <h3>Monthly Views</h3>
-          <p>0</p>
-        </div>
-        <div class="card">
-          <h3>Balance</h3>
-          <p>$0.00</p>
-        </div>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>Track</th>
-            <th>Plays</th>
-            <th>Sales</th>
-            <th>Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>No tracks uploaded</td>
-            <td>—</td>
-            <td>—</td>
-            <td>—</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <div class="content" id="content"></div>
   </div>
+
+  <script>
+    const content = document.getElementById('content');
+    const pageTitle = document.getElementById('pageTitle');
+
+    function loadPage(page) {
+      switch (page) {
+        case 'home':
+          pageTitle.innerText = 'Dashboard';
+          content.innerHTML = `
+            <div class="grid">
+              <div class="card"><h3>Total Sales</h3><p>$0.00</p></div>
+              <div class="card"><h3>Total Uploads</h3><p>0 / 10</p></div>
+              <div class="card"><h3>Views</h3><p>0</p></div>
+              <div class="card"><h3>Balance</h3><p>$0.00</p></div>
+            </div>
+          `;
+          break;
+
+        case 'tracks':
+          pageTitle.innerText = 'Tracks';
+          content.innerHTML = `
+            <h3>Your Beats</h3>
+            <p>Free plan allows up to 10 uploads.</p>
+            <button>Upload Beat</button>
+          `;
+          break;
+
+        case 'soundkits':
+          pageTitle.innerText = 'Sound Kits';
+          content.innerHTML = '<p>Sound kits section coming soon.</p>';
+          break;
+
+        case 'services':
+          pageTitle.innerText = 'Services';
+          content.innerHTML = '<p>Offer mixing, mastering, custom beats.</p>';
+          break;
+
+        case 'collections':
+          pageTitle.innerText = 'Collections';
+          content.innerHTML = '<p>Organize your beats into collections.</p>';
+          break;
+
+        case 'sales':
+          pageTitle.innerText = 'Sales';
+          content.innerHTML = '<p>Your recent sales will appear here.</p>';
+          break;
+
+        case 'analytics':
+          pageTitle.innerText = 'Analytics';
+          content.innerHTML = '<p>Views, plays, and sales analytics.</p>';
+          break;
+
+        case 'finance':
+          pageTitle.innerText = 'Finance';
+          content.innerHTML = '<p>Balance and payout history.</p>';
+          break;
+
+        case 'contracts':
+          pageTitle.innerText = 'Contracts';
+          content.innerHTML = '<p>Manage license contracts.</p>';
+          break;
+
+        case 'discounts':
+          pageTitle.innerText = 'Producer Discounts';
+          content.innerHTML = '<p>Create discount codes.</p>';
+          break;
+
+        case 'settings':
+          pageTitle.innerText = 'Account Settings';
+          content.innerHTML = '<p>Update your account settings.</p>';
+          break;
+
+        case 'upgrade':
+          pageTitle.innerText = 'Upgrade to Pro';
+          content.innerHTML = `
+            <h3>Go Pro</h3>
+            <p>Unlimited uploads, analytics, discounts, contracts.</p>
+            <button>Upgrade Now</button>
+          `;
+          break;
+      }
+    }
+
+    loadPage('home');
+  </script>
 
 </body>
 </html>
