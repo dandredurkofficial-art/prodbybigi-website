@@ -73,3 +73,28 @@ button {
   font-size: 16px;
   cursor: pointer;
 }
+
+.tag {
+  display: inline-block;
+  margin: 8px 0;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.free {
+  background: #2563eb;
+}
+
+.paid {
+  background: #22c55e;
+}
+
+.buy-btn {
+  background: #22c55e;
+}
+
+.free-btn {
+  background: #2563eb;
+}
+
