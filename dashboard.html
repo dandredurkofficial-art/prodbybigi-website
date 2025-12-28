@@ -38,20 +38,20 @@
 <aside class="sidebar" id="sidebar">
   <div class="logo">ProdByBigi</div>
   <nav class="nav">
-    <a data-page="home">Dashboard</a>
-    <a data-page="tracks">Tracks</a>
-    <a data-page="analytics">Analytics</a>
-    <a data-page="finance">Finance</a>
-    <a data-page="settings">Settings</a>
-    <a class="pro" data-page="upgrade">Upgrade to Pro</a>
+    <a onclick="loadPage('home')">Dashboard</a>
+    <a onclick="loadPage('tracks')">Tracks</a>
+    <a onclick="loadPage('analytics')">Analytics</a>
+    <a onclick="loadPage('finance')">Finance</a>
+    <a onclick="loadPage('settings')">Settings</a>
+    <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
   </nav>
 </aside>
 
 <div class="main">
   <header class="topbar">
-    <button class="hamburger" id="hamburger">☰</button>
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
     <h2 id="pageTitle">Dashboard</h2>
-    <button id="logoutBtn">Logout</button>
+    <button onclick="logout()">Logout</button>
   </header>
 
   <div class="content" id="content"></div>
@@ -72,44 +72,15 @@
 
   let currentUser = null;
 
-  function toggleSidebar() {
-    sidebar.classList.toggle('open');
-  }
+  // 🔓 EXPOSE FUNCTIONS GLOBALLY (FIXES UNCLICKABLE UI)
+  window.toggleSidebar = () => sidebar.classList.toggle('open');
 
-  document.getElementById('hamburger').addEventListener('click', toggleSidebar);
-
-  document.querySelectorAll('.nav a').forEach(link => {
-    link.addEventListener('click', () => loadPage(link.dataset.page));
-  });
-
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
+  window.logout = async () => {
     await signOut(auth);
     window.location.href = 'login.html';
-  });
+  };
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = 'login.html';
-      return;
-    }
-
-    currentUser = user;
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
-
-    if (!snap.exists()) {
-      await setDoc(userRef, {
-        email: user.email,
-        plan: 'free',
-        uploads: 0,
-        createdAt: new Date()
-      });
-    }
-
-    loadPage('home');
-  });
-
-  async function loadPage(page) {
+  window.loadPage = async (page) => {
     sidebar.classList.remove('open');
 
     if (page === 'home') {
@@ -132,7 +103,7 @@
           <input id="beatCover" type="file" accept="image/*" />
           <label>Beat File</label>
           <input id="beatFile" type="file" accept=".mp3,.wav" />
-          <button id="uploadBtn">Upload Beat</button>
+          <button onclick="uploadBeat()">Upload Beat</button>
           <p id="uploadMsg"></p>
         </div>
         <div class="card">
@@ -140,8 +111,6 @@
           <div id="beatList">Loading...</div>
         </div>
       `;
-
-      document.getElementById('uploadBtn').addEventListener('click', uploadBeat);
       loadBeats();
     }
 
@@ -164,9 +133,9 @@
       pageTitle.innerText = 'Upgrade to Pro';
       content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads</p></div>`;
     }
-  }
+  };
 
-  async function uploadBeat() {
+  window.uploadBeat = async () => {
     const title = document.getElementById('beatTitle').value;
     const artist = document.getElementById('beatArtist').value;
     const bpm = document.getElementById('beatBpm').value;
@@ -225,9 +194,9 @@
       console.error(err);
       msg.innerText = 'Upload failed. Check console.';
     }
-  }
+  };
 
-  async function loadBeats() {
+  window.loadBeats = async () => {
     const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
     const snapshot = await getDocs(q);
     const beatList = document.getElementById('beatList');
@@ -240,21 +209,41 @@
         <div class="card">
           <p>🎧 <strong>${beat.title}</strong></p>
           <p>▶ Plays: ${beat.plays || 0}</p>
-          <button data-url="${beat.fileUrl}" data-id="${docSnap.id}">Play</button>
+          <button onclick="playBeat('${docSnap.id}', '${beat.fileUrl}')">Play</button>
         </div>
       `;
     });
+  };
 
-    beatList.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const audio = new Audio(btn.dataset.url);
-        audio.play();
-        const beatRef = doc(db, 'beats', btn.dataset.id);
-        const snap = await getDoc(beatRef);
-        await updateDoc(beatRef, { plays: (snap.data().plays || 0) + 1 });
+  window.playBeat = async (beatId, url) => {
+    const audio = new Audio(url);
+    audio.play();
+    const beatRef = doc(db, 'beats', beatId);
+    const snap = await getDoc(beatRef);
+    await updateDoc(beatRef, { plays: (snap.data().plays || 0) + 1 });
+  };
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    currentUser = user;
+    const userRef = doc(db, 'users', user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        email: user.email,
+        plan: 'free',
+        uploads: 0,
+        createdAt: new Date()
       });
-    });
-  }
+    }
+
+    loadPage('home');
+  });
 </script>
 
 </body>
