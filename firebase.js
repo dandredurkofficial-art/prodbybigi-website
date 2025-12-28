@@ -1,16 +1,14 @@
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+// firebase.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-    authDomain: "prodbybigi.firebaseapp.com",
-    projectId: "prodbybigi",
-    storageBucket: "prodbybigi.firebasestorage.app",
-    messagingSenderId: "1040553526206",
-    appId: "1:1040553526206:web:38216a9f75eabfe556efef",
-    measurementId: "G-7HR862H9L7"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi"
+};
 
-  firebase.initializeApp(firebaseConfig);
-</script>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+export { auth };
