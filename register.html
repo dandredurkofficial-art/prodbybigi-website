@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create Account | ProdByBigi</title>
+  <title>Register | ProdByBigi</title>
 
   <link rel="stylesheet" href="login.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
@@ -13,12 +13,11 @@
   <div class="login-wrapper">
     <div class="login-card">
       <h1>Create Account</h1>
-      <p>Join as a producer or buyer</p>
 
       <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
 
-      <button onclick="register()">Create Account</button>
+      <button id="registerBtn">Register</button>
 
       <span class="login-link">
         Already have an account?
@@ -27,7 +26,7 @@
     </div>
   </div>
 
-  <script src="firebase.js"></script>
-  <script src="auth.js"></script>
+  <!-- ✅ MODULE SCRIPT -->
+  <script type="module" src="auth.js"></script>
 </body>
 </html>
