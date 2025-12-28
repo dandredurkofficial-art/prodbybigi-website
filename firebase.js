@@ -6,6 +6,10 @@
     apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
     authDomain: "prodbybigi.firebaseapp.com",
     projectId: "prodbybigi",
+    storageBucket: "prodbybigi.firebasestorage.app",
+    messagingSenderId: "1040553526206",
+    appId: "1:1040553526206:web:38216a9f75eabfe556efef",
+    measurementId: "G-7HR862H9L7"
   };
 
   firebase.initializeApp(firebaseConfig);
