@@ -38,20 +38,20 @@
 <aside class="sidebar" id="sidebar">
   <div class="logo">ProdByBigi</div>
   <nav class="nav">
-    <a onclick="loadPage('home')">Dashboard</a>
-    <a onclick="loadPage('tracks')">Tracks</a>
-    <a onclick="loadPage('analytics')">Analytics</a>
-    <a onclick="loadPage('finance')">Finance</a>
-    <a onclick="loadPage('settings')">Settings</a>
-    <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
+    <a data-page="home">Dashboard</a>
+    <a data-page="tracks">Tracks</a>
+    <a data-page="analytics">Analytics</a>
+    <a data-page="finance">Finance</a>
+    <a data-page="settings">Settings</a>
+    <a class="pro" data-page="upgrade">Upgrade to Pro</a>
   </nav>
 </aside>
 
 <div class="main">
   <header class="topbar">
-    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <button class="hamburger" id="hamburger">☰</button>
     <h2 id="pageTitle">Dashboard</h2>
-    <button onclick="logout()">Logout</button>
+    <button id="logoutBtn">Logout</button>
   </header>
 
   <div class="content" id="content"></div>
@@ -70,23 +70,46 @@
   const pageTitle = document.getElementById('pageTitle');
   const sidebar = document.getElementById('sidebar');
 
-  let currentUser;
+  let currentUser = null;
+
+  function toggleSidebar() {
+    sidebar.classList.toggle('open');
+  }
+
+  document.getElementById('hamburger').addEventListener('click', toggleSidebar);
+
+  document.querySelectorAll('.nav a').forEach(link => {
+    link.addEventListener('click', () => loadPage(link.dataset.page));
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  });
 
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = 'login.html';
-    } else {
-      currentUser = user;
-      const userRef = doc(db, 'users', user.uid);
-      const snap = await getDoc(userRef);
-      if (!snap.exists()) {
-        await setDoc(userRef, { email:user.email, plan:'free', uploads:0, createdAt:new Date() });
-      }
-      loadPage('home');
+      return;
     }
+
+    currentUser = user;
+    const userRef = doc(db, 'users', user.uid);
+    const snap = await getDoc(userRef);
+
+    if (!snap.exists()) {
+      await setDoc(userRef, {
+        email: user.email,
+        plan: 'free',
+        uploads: 0,
+        createdAt: new Date()
+      });
+    }
+
+    loadPage('home');
   });
 
-  window.loadPage = async (page) => {
+  async function loadPage(page) {
     sidebar.classList.remove('open');
 
     if (page === 'home') {
@@ -103,11 +126,11 @@
           <input id="beatArtist" placeholder="Artist fits (e.g. Drake, Lil Baby)" />
           <input id="beatBpm" type="number" placeholder="BPM" />
           <input id="beatGenre" placeholder="Genre" />
-          <input id="beatMood" placeholder="Mood (Dark, Happy, Aggressive)" />
+          <input id="beatMood" placeholder="Mood" />
           <input id="beatTags" placeholder="Tags (comma separated)" />
           <label>Cover Image</label>
           <input id="beatCover" type="file" accept="image/*" />
-          <label>Beat File (MP3/WAV)</label>
+          <label>Beat File</label>
           <input id="beatFile" type="file" accept=".mp3,.wav" />
           <button id="uploadBtn">Upload Beat</button>
           <p id="uploadMsg"></p>
@@ -117,7 +140,8 @@
           <div id="beatList">Loading...</div>
         </div>
       `;
-      document.getElementById('uploadBtn').onclick = uploadBeat;
+
+      document.getElementById('uploadBtn').addEventListener('click', uploadBeat);
       loadBeats();
     }
 
@@ -140,7 +164,7 @@
       pageTitle.innerText = 'Upgrade to Pro';
       content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads</p></div>`;
     }
-  };
+  }
 
   async function uploadBeat() {
     const title = document.getElementById('beatTitle').value;
@@ -148,7 +172,7 @@
     const bpm = document.getElementById('beatBpm').value;
     const genre = document.getElementById('beatGenre').value;
     const mood = document.getElementById('beatMood').value;
-    const tags = document.getElementById('beatTags').value.split(',').map(t => t.trim());
+    const tags = document.getElementById('beatTags').value.split(',').map(t => t.trim()).filter(Boolean);
     const file = document.getElementById('beatFile').files[0];
     const cover = document.getElementById('beatCover').files[0];
     const msg = document.getElementById('uploadMsg');
@@ -169,13 +193,11 @@
 
     try {
       msg.innerText = 'Uploading beat file...';
-
       const beatRef = ref(storage, `beats/${currentUser.uid}/${Date.now()}-${file.name}`);
       await uploadBytes(beatRef, file);
       const beatUrl = await getDownloadURL(beatRef);
 
       msg.innerText = 'Uploading cover...';
-
       const coverRef = ref(storage, `covers/${currentUser.uid}/${Date.now()}-${cover.name}`);
       await uploadBytes(coverRef, cover);
       const coverUrl = await getDownloadURL(coverRef);
@@ -204,7 +226,6 @@
       msg.innerText = 'Upload failed. Check console.';
     }
   }
-  }
 
   async function loadBeats() {
     const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
@@ -212,50 +233,28 @@
     const beatList = document.getElementById('beatList');
 
     beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
+
     snapshot.forEach(docSnap => {
       const beat = docSnap.data();
       beatList.innerHTML += `
         <div class="card">
           <p>🎧 <strong>${beat.title}</strong></p>
           <p>▶ Plays: ${beat.plays || 0}</p>
-          <button onclick="playBeat('${docSnap.id}', '${beat.fileUrl}')">Play</button>
+          <button data-url="${beat.fileUrl}" data-id="${docSnap.id}">Play</button>
         </div>
       `;
     });
-  }() {
-    const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
-    const snapshot = await getDocs(q);
-    const beatList = document.getElementById('beatList');
 
-    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
-    snapshot.forEach(doc => {
-      beatList.innerHTML += `<p>🎧 ${doc.data().title}</p>`;
+    beatList.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const audio = new Audio(btn.dataset.url);
+        audio.play();
+        const beatRef = doc(db, 'beats', btn.dataset.id);
+        const snap = await getDoc(beatRef);
+        await updateDoc(beatRef, { plays: (snap.data().plays || 0) + 1 });
+      });
     });
   }
-
-  window.toggleSidebar = () => sidebar.classList.toggle('open');
-
-  // ▶ PLAY BEAT + TRACK ANALYTICS
-  window.playBeat = async (beatId, url) => {
-    const audio = new Audio(url);
-    audio.play();
-
-    const beatRef = doc(db, 'beats', beatId);
-    const snap = await getDoc(beatRef);
-    const currentPlays = snap.data().plays || 0;
-
-    await updateDoc(beatRef, {
-      plays: currentPlays + 1
-    });
-  };
-
-  window.logout = async () => {
-    await signOut(auth);
-    window.location.href = 'login.html';
-  }; = async () => {
-    await signOut(auth);
-    window.location.href = 'login.html';
-  };
 </script>
 
 </body>
