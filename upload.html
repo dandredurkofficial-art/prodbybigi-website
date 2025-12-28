@@ -1,0 +1,28 @@
+<input id="title" placeholder="Beat name">
+<input id="price" placeholder="Price (0 = Free)">
+<input type="file" id="audio">
+<button onclick="uploadBeat()">Upload</button>
+
+<script type="module">
+import { auth, db, storage } from "./firebase.js";
+import { collection, addDoc } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+window.uploadBeat = async () => {
+  const file = audio.files[0];
+  const storageRef = ref(storage, `beats/${file.name}`);
+  await uploadBytes(storageRef, file);
+  const url = await getDownloadURL(storageRef);
+
+  await addDoc(collection(db, "beats"), {
+    title: title.value,
+    price: price.value,
+    audio: url,
+    producer: auth.currentUser.uid
+  });
+
+  alert("Beat uploaded!");
+};
+</script>
