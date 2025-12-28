@@ -1,0 +1,19 @@
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<button onclick="register()">Create Account</button>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { createUserWithEmailAndPassword } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+window.register = () => {
+  createUserWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).then(() => {
+    window.location.href = "dashboard.html";
+  });
+};
+</script>
