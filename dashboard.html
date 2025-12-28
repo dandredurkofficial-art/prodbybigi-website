@@ -178,6 +178,22 @@
     const beatList = document.getElementById('beatList');
 
     beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
+    snapshot.forEach(docSnap => {
+      const beat = docSnap.data();
+      beatList.innerHTML += `
+        <div class="card">
+          <p>🎧 <strong>${beat.title}</strong></p>
+          <p>▶ Plays: ${beat.plays || 0}</p>
+          <button onclick="playBeat('${docSnap.id}', '${beat.fileUrl}')">Play</button>
+        </div>
+      `;
+    });
+  }() {
+    const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
+    const snapshot = await getDocs(q);
+    const beatList = document.getElementById('beatList');
+
+    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
     snapshot.forEach(doc => {
       beatList.innerHTML += `<p>🎧 ${doc.data().title}</p>`;
     });
@@ -185,7 +201,24 @@
 
   window.toggleSidebar = () => sidebar.classList.toggle('open');
 
+  // ▶ PLAY BEAT + TRACK ANALYTICS
+  window.playBeat = async (beatId, url) => {
+    const audio = new Audio(url);
+    audio.play();
+
+    const beatRef = doc(db, 'beats', beatId);
+    const snap = await getDoc(beatRef);
+    const currentPlays = snap.data().plays || 0;
+
+    await updateDoc(beatRef, {
+      plays: currentPlays + 1
+    });
+  };
+
   window.logout = async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  }; = async () => {
     await signOut(auth);
     window.location.href = 'login.html';
   };
