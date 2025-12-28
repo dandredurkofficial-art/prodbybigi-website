@@ -8,12 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
     body {
       background: #0d0d0d;
@@ -48,13 +43,9 @@
       font-size: 14px;
       cursor: pointer;
       margin-bottom: 6px;
-      transition: 0.2s;
     }
 
-    .nav a:hover {
-      background: #1b1b1b;
-      color: #fff;
-    }
+    .nav a:hover { background: #1b1b1b; color: #fff; }
 
     .nav .pro {
       margin-top: auto;
@@ -65,11 +56,7 @@
     }
 
     /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
+    .main { flex: 1; display: flex; flex-direction: column; }
 
     .topbar {
       height: 70px;
@@ -78,7 +65,18 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 30px;
+      padding: 0 20px;
+    }
+
+    .top-left { display: flex; align-items: center; gap: 12px; }
+
+    .hamburger {
+      display: none;
+      font-size: 22px;
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
     }
 
     .plan {
@@ -88,10 +86,7 @@
       background: #222;
     }
 
-    .content {
-      padding: 30px;
-      overflow-y: auto;
-    }
+    .content { padding: 30px; overflow-y: auto; }
 
     .grid {
       display: grid;
@@ -106,16 +101,8 @@
       border: 1px solid #222;
     }
 
-    .card h3 {
-      font-size: 14px;
-      color: #aaa;
-      margin-bottom: 8px;
-    }
-
-    .card p {
-      font-size: 26px;
-      font-weight: 700;
-    }
+    .card h3 { font-size: 14px; color: #aaa; margin-bottom: 8px; }
+    .card p { font-size: 26px; font-weight: 700; }
 
     button {
       padding: 10px 16px;
@@ -127,39 +114,51 @@
       margin-top: 10px;
     }
 
+    /* Mobile */
     @media (max-width: 768px) {
-      .sidebar { display: none; }
+      .hamburger { display: block; }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: -260px;
+        height: 100%;
+        z-index: 1000;
+        transition: left 0.3s ease;
+      }
+
+      .sidebar.open { left: 0; }
     }
   </style>
 </head>
 <body>
 
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="logo">ProdByBigi</div>
     <nav class="nav">
-      <a onclick="loadPage('home')">Dashboard</a>
-      <a onclick="loadPage('tracks')">Tracks</a>
-      <a onclick="loadPage('soundkits')">Sound Kits</a>
-      <a onclick="loadPage('services')">Services</a>
-      <a onclick="loadPage('collections')">Collections</a>
-      <a onclick="loadPage('sales')">Sales</a>
-      <a onclick="loadPage('analytics')">Analytics</a>
-      <a onclick="loadPage('finance')">Finance</a>
-      <a onclick="loadPage('contracts')">Contracts</a>
-      <a onclick="loadPage('discounts')">Discounts</a>
-      <a onclick="loadPage('settings')">Settings</a>
-      <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
+      <a onclick="loadPage('home'); closeSidebar()">Dashboard</a>
+      <a onclick="loadPage('tracks'); closeSidebar()">Tracks</a>
+      <a onclick="loadPage('soundkits'); closeSidebar()">Sound Kits</a>
+      <a onclick="loadPage('services'); closeSidebar()">Services</a>
+      <a onclick="loadPage('collections'); closeSidebar()">Collections</a>
+      <a onclick="loadPage('sales'); closeSidebar()">Sales</a>
+      <a onclick="loadPage('analytics'); closeSidebar()">Analytics</a>
+      <a onclick="loadPage('finance'); closeSidebar()">Finance</a>
+      <a onclick="loadPage('contracts'); closeSidebar()">Contracts</a>
+      <a onclick="loadPage('discounts'); closeSidebar()">Discounts</a>
+      <a onclick="loadPage('settings'); closeSidebar()">Settings</a>
+      <a class="pro" onclick="loadPage('upgrade'); closeSidebar()">Upgrade to Pro</a>
     </nav>
   </aside>
 
   <div class="main">
     <header class="topbar">
-  <div style="display:flex;align-items:center;gap:12px;">
-    <button class="hamburger" onclick="toggleSidebar()">☰</button>
-    <h2 id="pageTitle">Dashboard</h2>
-  </div>
-  <span class="plan">Free Plan · 0 / 10 Uploads</span>
-</header>
+      <div class="top-left">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <span class="plan">Free Plan · 0 / 10 Uploads</span>
+    </header>
 
     <div class="content" id="content"></div>
   </div>
@@ -167,6 +166,15 @@
   <script>
     const content = document.getElementById('content');
     const pageTitle = document.getElementById('pageTitle');
+    const sidebar = document.getElementById('sidebar');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('open');
+    }
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+    }
 
     function loadPage(page) {
       switch (page) {
@@ -181,69 +189,17 @@
             </div>
           `;
           break;
-
-        case 'tracks':
-          pageTitle.innerText = 'Tracks';
-          content.innerHTML = `
-            <h3>Your Beats</h3>
-            <p>Free plan allows up to 10 uploads.</p>
-            <button>Upload Beat</button>
-          `;
-          break;
-
-        case 'soundkits':
-          pageTitle.innerText = 'Sound Kits';
-          content.innerHTML = '<p>Sound kits section coming soon.</p>';
-          break;
-
-        case 'services':
-          pageTitle.innerText = 'Services';
-          content.innerHTML = '<p>Offer mixing, mastering, custom beats.</p>';
-          break;
-
-        case 'collections':
-          pageTitle.innerText = 'Collections';
-          content.innerHTML = '<p>Organize your beats into collections.</p>';
-          break;
-
-        case 'sales':
-          pageTitle.innerText = 'Sales';
-          content.innerHTML = '<p>Your recent sales will appear here.</p>';
-          break;
-
-        case 'analytics':
-          pageTitle.innerText = 'Analytics';
-          content.innerHTML = '<p>Views, plays, and sales analytics.</p>';
-          break;
-
-        case 'finance':
-          pageTitle.innerText = 'Finance';
-          content.innerHTML = '<p>Balance and payout history.</p>';
-          break;
-
-        case 'contracts':
-          pageTitle.innerText = 'Contracts';
-          content.innerHTML = '<p>Manage license contracts.</p>';
-          break;
-
-        case 'discounts':
-          pageTitle.innerText = 'Producer Discounts';
-          content.innerHTML = '<p>Create discount codes.</p>';
-          break;
-
-        case 'settings':
-          pageTitle.innerText = 'Account Settings';
-          content.innerHTML = '<p>Update your account settings.</p>';
-          break;
-
-        case 'upgrade':
-          pageTitle.innerText = 'Upgrade to Pro';
-          content.innerHTML = `
-            <h3>Go Pro</h3>
-            <p>Unlimited uploads, analytics, discounts, contracts.</p>
-            <button>Upgrade Now</button>
-          `;
-          break;
+        case 'tracks': pageTitle.innerText = 'Tracks'; content.innerHTML = '<p>Upload and manage your beats.</p><button>Upload Beat</button>'; break;
+        case 'soundkits': pageTitle.innerText = 'Sound Kits'; content.innerHTML = '<p>Manage sound kits.</p>'; break;
+        case 'services': pageTitle.innerText = 'Services'; content.innerHTML = '<p>Offer producer services.</p>'; break;
+        case 'collections': pageTitle.innerText = 'Collections'; content.innerHTML = '<p>Create beat collections.</p>'; break;
+        case 'sales': pageTitle.innerText = 'Sales'; content.innerHTML = '<p>View your sales.</p>'; break;
+        case 'analytics': pageTitle.innerText = 'Analytics'; content.innerHTML = '<p>Analytics and stats.</p>'; break;
+        case 'finance': pageTitle.innerText = 'Finance'; content.innerHTML = '<p>Balance and payouts.</p>'; break;
+        case 'contracts': pageTitle.innerText = 'Contracts'; content.innerHTML = '<p>License contracts.</p>'; break;
+        case 'discounts': pageTitle.innerText = 'Discounts'; content.innerHTML = '<p>Create discount codes.</p>'; break;
+        case 'settings': pageTitle.innerText = 'Settings'; content.innerHTML = '<p>Account settings.</p>'; break;
+        case 'upgrade': pageTitle.innerText = 'Upgrade to Pro'; content.innerHTML = '<p>Unlimited uploads and features.</p><button>Upgrade Now</button>'; break;
       }
     }
 
