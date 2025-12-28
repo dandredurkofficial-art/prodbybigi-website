@@ -9,125 +9,27 @@
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background:#0d0d0d; color:#fff; display:flex; height:100vh; }
 
-    body {
-      background: #0d0d0d;
-      color: #fff;
-      height: 100vh;
-      display: flex;
-    }
-
-    /* Sidebar */
     .sidebar {
-      width: 260px;
-      background: #111;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #222;
+      width:260px; background:#111; padding:24px; display:flex; flex-direction:column; border-right:1px solid #222;
     }
+    .logo { font-size:20px; font-weight:700; color:#6cf; margin-bottom:30px; }
+    .nav a { display:block; padding:12px; color:#bbb; text-decoration:none; border-radius:8px; cursor:pointer; }
+    .nav a:hover { background:#1b1b1b; color:#fff; }
+    .nav .pro { margin-top:auto; background:linear-gradient(135deg,#6cf,#9f6cff); color:#000; font-weight:600; text-align:center; }
 
-    .logo {
-      font-size: 20px;
-      font-weight: 700;
-      color: #6cf;
-      margin-bottom: 30px;
-    }
+    .main { flex:1; display:flex; flex-direction:column; }
+    .topbar { height:70px; background:#111; border-bottom:1px solid #222; display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
+    .hamburger { display:none; background:none; border:none; color:#fff; font-size:22px; cursor:pointer; }
+    .content { padding:30px; overflow-y:auto; }
 
-    .nav a {
-      display: block;
-      padding: 12px 14px;
-      border-radius: 8px;
-      color: #bbb;
-      text-decoration: none;
-      font-size: 14px;
-      cursor: pointer;
-      margin-bottom: 6px;
-    }
+    .card { background:#141414; border:1px solid #222; border-radius:14px; padding:20px; margin-bottom:20px; }
 
-    .nav a:hover { background: #1b1b1b; color: #fff; }
-
-    .nav .pro {
-      margin-top: auto;
-      background: linear-gradient(135deg, #6cf, #9f6cff);
-      color: #000;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    /* Main */
-    .main { flex: 1; display: flex; flex-direction: column; }
-
-    .topbar {
-      height: 70px;
-      background: #111;
-      border-bottom: 1px solid #222;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-    }
-
-    .top-left { display: flex; align-items: center; gap: 12px; }
-
-    .hamburger {
-      display: none;
-      font-size: 22px;
-      background: none;
-      border: none;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .plan {
-      font-size: 13px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      background: #222;
-    }
-
-    .content { padding: 30px; overflow-y: auto; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: #141414;
-      border-radius: 14px;
-      padding: 20px;
-      border: 1px solid #222;
-    }
-
-    .card h3 { font-size: 14px; color: #aaa; margin-bottom: 8px; }
-    .card p { font-size: 26px; font-weight: 700; }
-
-    button {
-      padding: 10px 16px;
-      border-radius: 8px;
-      border: none;
-      background: #6cf;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    /* Mobile */
-    @media (max-width: 768px) {
-      .hamburger { display: block; }
-
-      .sidebar {
-        position: fixed;
-        top: 0;
-        left: -260px;
-        height: 100%;
-        z-index: 1000;
-        transition: left 0.3s ease;
-      }
-
-      .sidebar.open { left: 0; }
+    @media (max-width:768px){
+      .hamburger{display:block;}
+      .sidebar{position:fixed; left:-260px; top:0; height:100%; transition:0.3s; z-index:1000;}
+      .sidebar.open{left:0;}
     }
   </style>
 </head>
@@ -136,75 +38,119 @@
   <aside class="sidebar" id="sidebar">
     <div class="logo">ProdByBigi</div>
     <nav class="nav">
-      <a onclick="loadPage('home'); closeSidebar()">Dashboard</a>
-      <a onclick="loadPage('tracks'); closeSidebar()">Tracks</a>
-      <a onclick="loadPage('soundkits'); closeSidebar()">Sound Kits</a>
-      <a onclick="loadPage('services'); closeSidebar()">Services</a>
-      <a onclick="loadPage('collections'); closeSidebar()">Collections</a>
-      <a onclick="loadPage('sales'); closeSidebar()">Sales</a>
-      <a onclick="loadPage('analytics'); closeSidebar()">Analytics</a>
-      <a onclick="loadPage('finance'); closeSidebar()">Finance</a>
-      <a onclick="loadPage('contracts'); closeSidebar()">Contracts</a>
-      <a onclick="loadPage('discounts'); closeSidebar()">Discounts</a>
-      <a onclick="loadPage('settings'); closeSidebar()">Settings</a>
-      <a class="pro" onclick="loadPage('upgrade'); closeSidebar()">Upgrade to Pro</a>
+      <a onclick="loadPage('home')">Dashboard</a>
+      <a onclick="loadPage('tracks')">Tracks</a>
+      <a onclick="loadPage('analytics')">Analytics</a>
+      <a onclick="loadPage('finance')">Finance</a>
+      <a onclick="loadPage('settings')">Settings</a>
+      <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
     </nav>
   </aside>
 
   <div class="main">
     <header class="topbar">
-      <div class="top-left">
-        <button class="hamburger" onclick="toggleSidebar()">☰</button>
-        <h2 id="pageTitle">Dashboard</h2>
-      </div>
-      <span class="plan">Free Plan · 0 / 10 Uploads</span>
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <h2 id="pageTitle">Dashboard</h2>
+      <button onclick="logout()">Logout</button>
     </header>
 
     <div class="content" id="content"></div>
   </div>
 
-  <script>
-    const content = document.getElementById('content');
-    const pageTitle = document.getElementById('pageTitle');
-    const sidebar = document.getElementById('sidebar');
+<script type="module">
+  // 🔥 FIREBASE IMPORTS
+  import { auth } from './firebase.js';
+  import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
-    function toggleSidebar() {
-      sidebar.classList.toggle('open');
-    }
+  const db = getFirestore();
+  const content = document.getElementById('content');
+  const pageTitle = document.getElementById('pageTitle');
+  const sidebar = document.getElementById('sidebar');
 
-    function closeSidebar() {
-      sidebar.classList.remove('open');
-    }
+  let currentUser;
 
-    function loadPage(page) {
-      switch (page) {
-        case 'home':
-          pageTitle.innerText = 'Dashboard';
-          content.innerHTML = `
-            <div class="grid">
-              <div class="card"><h3>Total Sales</h3><p>$0.00</p></div>
-              <div class="card"><h3>Total Uploads</h3><p>0 / 10</p></div>
-              <div class="card"><h3>Views</h3><p>0</p></div>
-              <div class="card"><h3>Balance</h3><p>$0.00</p></div>
-            </div>
-          `;
-          break;
-        case 'tracks': pageTitle.innerText = 'Tracks'; content.innerHTML = '<p>Upload and manage your beats.</p><button>Upload Beat</button>'; break;
-        case 'soundkits': pageTitle.innerText = 'Sound Kits'; content.innerHTML = '<p>Manage sound kits.</p>'; break;
-        case 'services': pageTitle.innerText = 'Services'; content.innerHTML = '<p>Offer producer services.</p>'; break;
-        case 'collections': pageTitle.innerText = 'Collections'; content.innerHTML = '<p>Create beat collections.</p>'; break;
-        case 'sales': pageTitle.innerText = 'Sales'; content.innerHTML = '<p>View your sales.</p>'; break;
-        case 'analytics': pageTitle.innerText = 'Analytics'; content.innerHTML = '<p>Analytics and stats.</p>'; break;
-        case 'finance': pageTitle.innerText = 'Finance'; content.innerHTML = '<p>Balance and payouts.</p>'; break;
-        case 'contracts': pageTitle.innerText = 'Contracts'; content.innerHTML = '<p>License contracts.</p>'; break;
-        case 'discounts': pageTitle.innerText = 'Discounts'; content.innerHTML = '<p>Create discount codes.</p>'; break;
-        case 'settings': pageTitle.innerText = 'Settings'; content.innerHTML = '<p>Account settings.</p>'; break;
-        case 'upgrade': pageTitle.innerText = 'Upgrade to Pro'; content.innerHTML = '<p>Unlimited uploads and features.</p><button>Upgrade Now</button>'; break;
+  // 🔐 AUTH PROTECTION
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'login.html';
+    } else {
+      currentUser = user;
+
+      // Create user document if it doesn't exist
+      const userRef = doc(db, 'users', user.uid);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        await setDoc(userRef, {
+          email: user.email,
+          plan: 'free',
+          uploads: 0,
+          createdAt: new Date()
+        });
       }
+
+      loadPage('home');
+    }
+  });
+
+  // 🧭 NAVIGATION
+  window.loadPage = async function(page) {
+    sidebar.classList.remove('open');
+
+    if (page === 'home') {
+      pageTitle.innerText = 'Dashboard';
+      content.innerHTML = `<div class="card">Welcome back 🎶</div>`;
     }
 
-    loadPage('home');
-  </script>
+    if (page === 'tracks') {
+      pageTitle.innerText = 'Tracks';
+      content.innerHTML = `<div class="card"><h3>Your Beats</h3><div id="beatList">Loading...</div></div>`;
+      loadBeats();
+    }
+
+    if (page === 'analytics') {
+      pageTitle.innerText = 'Analytics';
+      content.innerHTML = `<div class="card">Analytics coming soon 📊</div>`;
+    }
+
+    if (page === 'finance') {
+      pageTitle.innerText = 'Finance';
+      content.innerHTML = `<div class="card">Finance & payouts coming soon 💰</div>`;
+    }
+
+    if (page === 'settings') {
+      pageTitle.innerText = 'Settings';
+      content.innerHTML = `<div class="card">Account settings coming soon ⚙️</div>`;
+    }
+
+    if (page === 'upgrade') {
+      pageTitle.innerText = 'Upgrade to Pro';
+      content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads & features</p></div>`;
+    }
+  }
+
+  // 🎵 LOAD USER BEATS FROM FIRESTORE
+  async function loadBeats() {
+    const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
+    const snapshot = await getDocs(q);
+
+    const beatList = document.getElementById('beatList');
+    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
+
+    snapshot.forEach(doc => {
+      beatList.innerHTML += `<p>🎧 ${doc.data().title}</p>`;
+    });
+  }
+
+  // ☰ UI
+  window.toggleSidebar = () => sidebar.classList.toggle('open');
+
+  // 🚪 LOGOUT
+  window.logout = async () => {
+    await signOut(auth);
+    window.location.href = 'login.html';
+  }
+</script>
 
 </body>
 </html>
