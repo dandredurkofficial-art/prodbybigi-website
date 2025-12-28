@@ -1,3 +1,39 @@
-<h2>Producer Dashboard</h2>
-<a href="upload.html">Upload Beat</a>
-<div id="myBeats"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Producer Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+<header>
+  <h1>🎵 Producer Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<section class="upload-card">
+  <h2>Upload Beat</h2>
+
+  <input type="text" id="title" placeholder="Beat Title" />
+  <input type="number" id="price" placeholder="Price (0 = Free)" />
+  <input type="file" id="audio" accept="audio/*" />
+
+  <button onclick="uploadBeat()">Upload Beat</button>
+</section>
+
+<section class="beats-list">
+  <h2>Your Beats</h2>
+  <div id="beats"></div>
+</section>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
+<script src="firebase.js"></script>
+<script src="dashboard.js"></script>
+
+</body>
+</html>
