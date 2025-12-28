@@ -1,1 +1,50 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0e0e0e;
+  color: white;
+}
 
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background: #111;
+  border-bottom: 1px solid #222;
+}
+
+button {
+  background: #ff0055;
+  border: none;
+  padding: 10px 15px;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.upload-card {
+  background: #161616;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 8px;
+}
+
+.upload-card input {
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  background: #222;
+  border: none;
+  color: white;
+}
+
+.beats-list {
+  margin: 20px;
+}
+
+.beat {
+  background: #1c1c1c;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
