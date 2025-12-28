@@ -1,24 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Producer Dashboard | ProdByBigi</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: #0d0d0d;
+      color: #fff;
+      height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      background: #111;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      border-right: 1px solid #222;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #6cf;
+    }
+
+    .nav a {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #bbb;
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .nav a:hover {
+      background: #1b1b1b;
+      color: #fff;
+    }
+
+    .nav .pro {
+      margin-top: auto;
+      background: linear-gradient(135deg, #6cf, #9f6cff);
+      color: #000;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* Main */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Bar */
+    .topbar {
+      height: 70px;
+      background: #111;
+      border-bottom: 1px solid #222;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+    }
+
+    .plan {
+      font-size: 13px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      background: #222;
+    }
+
+    /* Content */
+    .content {
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #141414;
+      border-radius: 14px;
+      padding: 20px;
+      border: 1px solid #222;
+    }
+
+    .card h3 {
+      font-size: 14px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 14px;
+      border-bottom: 1px solid #222;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    th {
+      color: #aaa;
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+    }
+  </style>
+</head>
 <body>
-<div class="layout">
 
   <aside class="sidebar">
-    <h2>PRODBY</h2>
-    <a onclick="loadSection('overview')">Overview</a>
-    <a onclick="loadSection('tracks')">Tracks</a>
-    <a onclick="loadSection('soundkits')">Sound Kits</a>
-    <a onclick="loadSection('services')">Services</a>
-    <a onclick="loadSection('analytics')">Analytics</a>
-    <a onclick="loadSection('sales')">Sales</a>
-    <a onclick="loadSection('finance')">Finance</a>
-    <a onclick="loadSection('discounts')">Producer Discounts</a>
-    <a onclick="loadSection('contracts')">Contracts</a>
-    <a onclick="loadSection('settings')">Account Settings</a>
-    <a class="logout" onclick="logout()">Logout</a>
+    <div class="logo">ProdByBigi</div>
+    <nav class="nav">
+      <a href="#">Dashboard</a>
+      <a href="#">Tracks</a>
+      <a href="#">Sound Kits</a>
+      <a href="#">Services</a>
+      <a href="#">Collections</a>
+      <a href="#">Sales</a>
+      <a href="#">Analytics</a>
+      <a href="#">Finance</a>
+      <a href="#">Contracts</a>
+      <a href="#">Discounts</a>
+      <a href="#">Settings</a>
+      <a class="pro" href="#">Upgrade to Pro</a>
+    </nav>
   </aside>
 
-  <main id="content"></main>
+  <div class="main">
+    <header class="topbar">
+      <h2>Dashboard</h2>
+      <span class="plan">Free Plan · 3 / 10 Uploads</span>
+    </header>
 
-</div>
+    <div class="content">
+      <div class="grid">
+        <div class="card">
+          <h3>Total Sales</h3>
+          <p>$0.00</p>
+        </div>
+        <div class="card">
+          <h3>Total Uploads</h3>
+          <p>3</p>
+        </div>
+        <div class="card">
+          <h3>Monthly Views</h3>
+          <p>0</p>
+        </div>
+        <div class="card">
+          <h3>Balance</h3>
+          <p>$0.00</p>
+        </div>
+      </div>
 
-<script src="dashboard.js"></script>
+      <table>
+        <thead>
+          <tr>
+            <th>Track</th>
+            <th>Plays</th>
+            <th>Sales</th>
+            <th>Revenue</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>No tracks uploaded</td>
+            <td>—</td>
+            <td>—</td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 </body>
+</html>
