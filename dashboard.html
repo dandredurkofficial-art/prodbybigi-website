@@ -8,12 +8,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
     body { background:#0d0d0d; color:#fff; display:flex; height:100vh; }
 
-    .sidebar {
-      width:260px; background:#111; padding:24px; display:flex; flex-direction:column; border-right:1px solid #222;
-    }
+    .sidebar { width:260px; background:#111; padding:24px; display:flex; flex-direction:column; border-right:1px solid #222; }
     .logo { font-size:20px; font-weight:700; color:#6cf; margin-bottom:30px; }
     .nav a { display:block; padding:12px; color:#bbb; text-decoration:none; border-radius:8px; cursor:pointer; }
     .nav a:hover { background:#1b1b1b; color:#fff; }
@@ -25,6 +23,8 @@
     .content { padding:30px; overflow-y:auto; }
 
     .card { background:#141414; border:1px solid #222; border-radius:14px; padding:20px; margin-bottom:20px; }
+    input, button { margin-top:10px; padding:10px; border-radius:8px; border:none; width:100%; }
+    button { background:#6cf; font-weight:600; cursor:pointer; }
 
     @media (max-width:768px){
       .hamburger{display:block;}
@@ -35,76 +35,81 @@
 </head>
 <body>
 
-  <aside class="sidebar" id="sidebar">
-    <div class="logo">ProdByBigi</div>
-    <nav class="nav">
-      <a onclick="loadPage('home')">Dashboard</a>
-      <a onclick="loadPage('tracks')">Tracks</a>
-      <a onclick="loadPage('analytics')">Analytics</a>
-      <a onclick="loadPage('finance')">Finance</a>
-      <a onclick="loadPage('settings')">Settings</a>
-      <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
-    </nav>
-  </aside>
+<aside class="sidebar" id="sidebar">
+  <div class="logo">ProdByBigi</div>
+  <nav class="nav">
+    <a onclick="loadPage('home')">Dashboard</a>
+    <a onclick="loadPage('tracks')">Tracks</a>
+    <a onclick="loadPage('analytics')">Analytics</a>
+    <a onclick="loadPage('finance')">Finance</a>
+    <a onclick="loadPage('settings')">Settings</a>
+    <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
+  </nav>
+</aside>
 
-  <div class="main">
-    <header class="topbar">
-      <button class="hamburger" onclick="toggleSidebar()">☰</button>
-      <h2 id="pageTitle">Dashboard</h2>
-      <button onclick="logout()">Logout</button>
-    </header>
+<div class="main">
+  <header class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <h2 id="pageTitle">Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+  </header>
 
-    <div class="content" id="content"></div>
-  </div>
+  <div class="content" id="content"></div>
+</div>
 
 <script type="module">
-  // 🔥 FIREBASE IMPORTS
   import { auth } from './firebase.js';
   import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-  import { getFirestore, doc, getDoc, setDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
   const db = getFirestore();
+  const storage = getStorage();
+
   const content = document.getElementById('content');
   const pageTitle = document.getElementById('pageTitle');
   const sidebar = document.getElementById('sidebar');
 
   let currentUser;
 
-  // 🔐 AUTH PROTECTION
   onAuthStateChanged(auth, async (user) => {
     if (!user) {
       window.location.href = 'login.html';
     } else {
       currentUser = user;
-
-      // Create user document if it doesn't exist
       const userRef = doc(db, 'users', user.uid);
       const snap = await getDoc(userRef);
       if (!snap.exists()) {
-        await setDoc(userRef, {
-          email: user.email,
-          plan: 'free',
-          uploads: 0,
-          createdAt: new Date()
-        });
+        await setDoc(userRef, { email:user.email, plan:'free', uploads:0, createdAt:new Date() });
       }
-
       loadPage('home');
     }
   });
 
-  // 🧭 NAVIGATION
-  window.loadPage = async function(page) {
+  window.loadPage = async (page) => {
     sidebar.classList.remove('open');
 
     if (page === 'home') {
       pageTitle.innerText = 'Dashboard';
-      content.innerHTML = `<div class="card">Welcome back 🎶</div>`;
+      content.innerHTML = `<div class="card">Welcome to your producer dashboard 🎶</div>`;
     }
 
     if (page === 'tracks') {
       pageTitle.innerText = 'Tracks';
-      content.innerHTML = `<div class="card"><h3>Your Beats</h3><div id="beatList">Loading...</div></div>`;
+      content.innerHTML = `
+        <div class="card">
+          <h3>Upload Beat</h3>
+          <input id="beatTitle" placeholder="Beat title" />
+          <input id="beatFile" type="file" accept=".mp3,.wav" />
+          <button id="uploadBtn">Upload Beat</button>
+          <p id="uploadMsg"></p>
+        </div>
+        <div class="card">
+          <h3>Your Beats</h3>
+          <div id="beatList">Loading...</div>
+        </div>
+      `;
+      document.getElementById('uploadBtn').onclick = uploadBeat;
       loadBeats();
     }
 
@@ -125,31 +130,65 @@
 
     if (page === 'upgrade') {
       pageTitle.innerText = 'Upgrade to Pro';
-      content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads & features</p></div>`;
+      content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads</p></div>`;
     }
+  };
+
+  async function uploadBeat() {
+    const title = document.getElementById('beatTitle').value;
+    const file = document.getElementById('beatFile').files[0];
+    const msg = document.getElementById('uploadMsg');
+
+    if (!title || !file) {
+      msg.innerText = 'Title and file required';
+      return;
+    }
+
+    const userRef = doc(db, 'users', currentUser.uid);
+    const userSnap = await getDoc(userRef);
+    const user = userSnap.data();
+
+    if (user.plan === 'free' && user.uploads >= 10) {
+      msg.innerText = 'Upload limit reached. Upgrade to Pro.';
+      return;
+    }
+
+    msg.innerText = 'Uploading...';
+
+    const storageRef = ref(storage, `beats/${currentUser.uid}/${Date.now()}-${file.name}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    await addDoc(collection(db, 'beats'), {
+      uid: currentUser.uid,
+      title,
+      fileUrl: url,
+      createdAt: new Date()
+    });
+
+    await updateDoc(userRef, { uploads: user.uploads + 1 });
+
+    msg.innerText = 'Upload successful 🎶';
+    loadBeats();
   }
 
-  // 🎵 LOAD USER BEATS FROM FIRESTORE
   async function loadBeats() {
     const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
     const snapshot = await getDocs(q);
-
     const beatList = document.getElementById('beatList');
-    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
 
+    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
     snapshot.forEach(doc => {
       beatList.innerHTML += `<p>🎧 ${doc.data().title}</p>`;
     });
   }
 
-  // ☰ UI
   window.toggleSidebar = () => sidebar.classList.toggle('open');
 
-  // 🚪 LOGOUT
   window.logout = async () => {
     await signOut(auth);
     window.location.href = 'login.html';
-  }
+  };
 </script>
 
 </body>
