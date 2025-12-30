@@ -173,7 +173,12 @@
 
     snap.forEach(d => {
       const b = d.data();
-      list.innerHTML += `<div class="card"><strong>${b.title}</strong><audio controls src="${b.fileUrl}"></audio></div>`;
+      list.innerHTML += `
+        <div class="card">
+          <img src="${b.coverUrl}" style="width:100%;border-radius:10px;margin-bottom:10px;" />
+          <strong>${b.title}</strong>
+          <audio controls src="${b.fileUrl}"></audio>
+        </div>`;
     });
   }
 
