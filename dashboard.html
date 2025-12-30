@@ -26,6 +26,8 @@
     input, button { margin-top:10px; padding:10px; border-radius:8px; border:none; width:100%; }
     button { background:#6cf; font-weight:600; cursor:pointer; }
 
+    audio { width:100%; margin-top:10px; }
+
     @media (max-width:768px){
       .hamburger{display:block;}
       .sidebar{position:fixed; left:-260px; top:0; height:100%; transition:0.3s; z-index:1000;}
@@ -41,7 +43,6 @@
     <a onclick="loadPage('home')">Dashboard</a>
     <a onclick="loadPage('tracks')">Tracks</a>
     <a onclick="loadPage('analytics')">Analytics</a>
-    <a onclick="loadPage('finance')">Finance</a>
     <a onclick="loadPage('settings')">Settings</a>
     <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
   </nav>
@@ -64,13 +65,16 @@
 
   const db = getFirestore();
 
+  // 🔥 Cloudinary config (FINAL)
+  const CLOUD_NAME = 'djd8vki8s';
+  const UPLOAD_PRESET = 'beats_unsigned';
+
   const content = document.getElementById('content');
   const pageTitle = document.getElementById('pageTitle');
   const sidebar = document.getElementById('sidebar');
 
   let currentUser = null;
 
-  // expose globally so inline HTML onclick works
   window.toggleSidebar = () => sidebar.classList.toggle('open');
 
   window.logout = async () => {
@@ -78,62 +82,108 @@
     window.location.href = 'login.html';
   };
 
+  async function uploadToCloudinary(file, folder) {
+    const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', UPLOAD_PRESET);
+    formData.append('folder', folder);
+
+    const res = await fetch(url, { method: 'POST', body: formData });
+    if (!res.ok) throw new Error('Cloudinary upload failed');
+    const data = await res.json();
+    return data.secure_url;
+  }
+
   window.loadPage = async (page) => {
     sidebar.classList.remove('open');
 
     if (page === 'home') {
       pageTitle.innerText = 'Dashboard';
-      content.innerHTML = `
-        <div class="card">
-          <h2>Welcome back 👋</h2>
-          <p>Manage your beats and analytics.</p>
-        </div>`;
+      content.innerHTML = `<div class="card"><h2>Welcome 👋</h2><p>Upload and manage your beats.</p></div>`;
     }
 
-    if (page === 'settings') {
-      pageTitle.innerText = 'Account Settings';
+    if (page === 'tracks') {
+      pageTitle.innerText = 'Tracks';
       content.innerHTML = `
         <div class="card">
-          <h3>Profile</h3>
-          <input id="setName" placeholder="Producer name" />
-          <input id="setEmail" disabled />
-          <button id="saveProfile">Save Profile</button>
-          <p id="profileMsg"></p>
-        </div>`;
-
-      const snap = await getDoc(doc(db, 'users', currentUser.uid));
-      const user = snap.data();
-
-      document.getElementById('setName').value = user.name || '';
-      document.getElementById('setEmail').value = currentUser.email;
-
-      document.getElementById('saveProfile').onclick = async () => {
-        await updateDoc(doc(db, 'users', currentUser.uid), {
-          name: document.getElementById('setName').value
-        });
-        document.getElementById('profileMsg').innerText = 'Profile saved ✅';
-      };
+          <h3>Upload Beat</h3>
+          <input id="beatTitle" placeholder="Beat title" />
+          <input id="beatBpm" type="number" placeholder="BPM" />
+          <input id="beatGenre" placeholder="Genre" />
+          <label>Cover</label>
+          <input id="beatCover" type="file" accept="image/*" />
+          <label>Beat File</label>
+          <input id="beatFile" type="file" accept=".mp3,.wav" />
+          <button onclick="uploadBeat()">Upload Beat</button>
+          <p id="uploadMsg"></p>
+        </div>
+        <div class="card"><h3>Your Beats</h3><div id="beatList">Loading...</div></div>
+      `;
+      loadBeats();
     }
 
     if (page === 'analytics') content.innerHTML = '<div class="card">Analytics coming soon 📊</div>';
-    if (page === 'finance') content.innerHTML = '<div class="card">Finance coming soon 💰</div>';
-    if (page === 'tracks') content.innerHTML = '<div class="card">Tracks coming next 🎶</div>';
-    if (page === 'upgrade') content.innerHTML = '<div class="card">Upgrade page coming soon 🚀</div>';
+    if (page === 'settings') content.innerHTML = '<div class="card">Settings coming soon ⚙️</div>';
+    if (page === 'upgrade') content.innerHTML = '<div class="card">Upgrade coming soon 🚀</div>';
   };
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      window.location.href = 'login.html';
+  window.uploadBeat = async () => {
+    const title = document.getElementById('beatTitle').value;
+    const bpm = document.getElementById('beatBpm').value;
+    const genre = document.getElementById('beatGenre').value;
+    const file = document.getElementById('beatFile').files[0];
+    const cover = document.getElementById('beatCover').files[0];
+    const msg = document.getElementById('uploadMsg');
+
+    if (!title || !file || !cover) {
+      msg.innerText = 'All fields required';
       return;
     }
 
+    try {
+      msg.innerText = 'Uploading...';
+      const fileUrl = await uploadToCloudinary(file, `beats/${currentUser.uid}`);
+      const coverUrl = await uploadToCloudinary(cover, `covers/${currentUser.uid}`);
+
+      await addDoc(collection(db, 'beats'), {
+        uid: currentUser.uid,
+        title,
+        bpm,
+        genre,
+        fileUrl,
+        coverUrl,
+        plays: 0,
+        createdAt: new Date()
+      });
+
+      msg.innerText = 'Upload successful 🎶';
+      loadBeats();
+    } catch (e) {
+      console.error(e);
+      msg.innerText = 'Upload failed';
+    }
+  };
+
+  async function loadBeats() {
+    const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
+    const snap = await getDocs(q);
+    const list = document.getElementById('beatList');
+    list.innerHTML = '';
+
+    snap.forEach(d => {
+      const b = d.data();
+      list.innerHTML += `<div class="card"><strong>${b.title}</strong><audio controls src="${b.fileUrl}"></audio></div>`;
+    });
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) return window.location.href = 'login.html';
     currentUser = user;
+
     const ref = doc(db, 'users', user.uid);
     const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      await setDoc(ref, { email: user.email, plan: 'free', uploads: 0 });
-    }
+    if (!snap.exists()) await setDoc(ref, { email: user.email, plan: 'free', uploads: 0 });
 
     loadPage('home');
   });
