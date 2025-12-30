@@ -1,1 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard | ProdByBigi</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box;font-family:Inter,sans-serif}
+body{margin:0;background:#0d0d0d;color:#fff;display:flex;height:100vh}
+
+/* Sidebar */
+.sidebar{width:260px;background:#111;padding:20px;border-right:1px solid #222}
+.logo{font-size:20px;font-weight:700;color:#6cf;margin-bottom:30px}
+.nav a{display:block;padding:10px;color:#bbb;text-decoration:none;border-radius:8px;margin-bottom:6px;cursor:pointer}
+.nav a:hover{background:#1b1b1b;color:#fff}
+.nav .pro{margin-top:20px;background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:600;text-align:center}
+
+/* Layout */
+.main{flex:1;display:flex;flex-direction:column}
+.topbar{height:60px;background:#111;border-bottom:1px solid #222;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.content{padding:24px;overflow-y:auto}
+
+/* UI */
+.card{background:#141414;border:1px solid #222;border-radius:14px;padding:20px;margin-bottom:20px}
+input{width:100%;padding:10px;margin-top:8px;border-radius:8px;border:none}
+button{padding:10px 16px;border-radius:8px;border:none;font-weight:600;cursor:pointer;background:#6cf;color:#000}
+button.small{padding:6px 12px;font-size:13px}
+button.full{width:100%}
+
+/* Beats */
+.beat{display:flex;gap:14px;align-items:center}
+.beat img{width:90px;height:90px;object-fit:cover;border-radius:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.grid .beat{flex-direction:column;align-items:flex-start}
+.grid img{width:100%;height:180px}
+audio{width:100%;margin-top:8px}
+
+/* Upgrade */
+ul{padding-left:18px}
+ul li{margin-bottom:6px;font-size:14px;color:#ccc}
+</style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+  <div class="logo">ProdByBigi</div>
+  <nav class="nav">
+    <a onclick="loadPage('home')">Dashboard</a>
+    <a onclick="loadPage('tracks')">Tracks</a>
+    <a onclick="loadPage('analytics')">Analytics</a>
+    <a onclick="loadPage('settings')">Account Settings</a>
+    <a class="pro" onclick="loadPage('upgrade')">Upgrade to Pro</a>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <h3 id="pageTitle">Dashboard</h3>
+    <button class="small" onclick="logout()">Logout</button>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+
+<script type="module">
+import { auth } from './firebase.js';
+import {
+  onAuthStateChanged,
+  signOut,
+  updateEmail,
+  updatePassword
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc,
+  collection, addDoc, getDocs, query, where, deleteDoc
+} from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
+const db = getFirestore();
+const CLOUD = 'djd8vki8s';
+const PRESET = 'beats_unsigned';
+
+let user=null;
+let grid=false;
+
+const content=document.getElementById('content');
+const pageTitle=document.getElementById('pageTitle');
+
+onAuthStateChanged(auth, async u=>{
+  if(!u) return location.href='login.html';
+  user=u;
+  const ref=doc(db,'users',u.uid);
+  if(!(await getDoc(ref)).exists()) await setDoc(ref,{email:u.email,plan:'free'});
+  loadPage('home');
+});
+
+window.logout=async()=>{await signOut(auth);location.href='login.html'}
+
+async function uploadCloud(file,folder){
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('upload_preset',PRESET);
+  fd.append('folder',folder);
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:'POST',body:fd});
+  return (await r.json()).secure_url;
+}
+
+/* Pages */
+window.loadPage=async page=>{
+  pageTitle.innerText=page.charAt(0).toUpperCase()+page.slice(1);
+
+  /* HOME */
+  if(page==='home'){
+    content.innerHTML=`<div class="card"><h2>Welcome 👋</h2><p>Manage your beats & earnings.</p></div>`;
+  }
+
+  /* TRACKS */
+  if(page==='tracks'){
+    content.innerHTML=`
+      <div class="card">
+        <h3>Upload Beat</h3>
+        <input id="t" placeholder="Title">
+        <input id="b" type="number" placeholder="BPM">
+        <input id="g" placeholder="Genre">
+        <input id="m" placeholder="Mood">
+        <input id="p" type="number" value="29.99">
+        <input id="c" type="file" accept="image/*">
+        <input id="f" type="file" accept=".mp3,.wav">
+        <button class="full" onclick="uploadBeat()">Upload Beat</button>
+        <p id="msg"></p>
+      </div>
+      <button class="small" onclick="toggleGrid()">Toggle Grid</button>
+      <div id="list"></div>`;
+    loadBeats();
+  }
+
+  /* ANALYTICS */
+  if(page==='analytics'){
+    const q=query(collection(db,'beats'),where('uid','==',user.uid));
+    const s=await getDocs(q);
+    let plays=0;
+    s.forEach(d=>plays+=d.data().plays||0);
+    content.innerHTML=`
+      <div class="card">
+        <h3>Analytics</h3>
+        <p>Total Beats: <b>${s.size}</b></p>
+        <p>Total Plays: <b>${plays}</b></p>
+      </div>`;
+  }
+
+  /* SETTINGS */
+  if(page==='settings'){
+    content.innerHTML=`
+      <div class="card">
+        <h3>Account Settings</h3>
+        <input id="name" placeholder="Producer name">
+        <input id="email" placeholder="Email">
+        <input id="pass" type="password" placeholder="New password">
+        <input id="avatar" type="file" accept="image/*">
+        <button onclick="saveSettings()">Save Changes</button>
+        <p id="smsg"></p>
+      </div>`;
+    document.getElementById('email').value=user.email;
+  }
+
+  /* UPGRADE */
+  if(page==='upgrade'){
+    content.innerHTML=`
+      <div class="card">
+        <h3>Starter — $15/year</h3>
+        <ul>
+          <li>0% commission</li>
+          <li>Unlimited MP3 & WAV uploads</li>
+          <li>Instant payments</li>
+          <li>Advanced analytics</li>
+          <li>4 custom licenses</li>
+          <li>1 contest submission</li>
+          <li>3 PROkits credits</li>
+        </ul>
+        <button onclick="subscribe('starter')">Subscribe</button>
+      </div>
+
+      <div class="card">
+        <h3>Growth — $60/year</h3>
+        <ul>
+          <li>Upload stems</li>
+          <li>Sell soundkits & services</li>
+          <li>Unlimited messages</li>
+          <li>Unlimited licenses</li>
+          <li>2 contest submissions</li>
+          <li>5 PROkits credits</li>
+          <li>$15 promote credits</li>
+        </ul>
+        <button onclick="subscribe('growth')">Subscribe</button>
+      </div>
+
+      <div class="card">
+        <h3>Professional — $159/year</h3>
+        <ul>
+          <li>Custom domain website</li>
+          <li>Merch & memberships</li>
+          <li>Blog posts</li>
+          <li>Email & SMS marketing</li>
+          <li>Embeddable beat stores</li>
+          <li>Custom licenses</li>
+          <li>Creator Rights Agency</li>
+          <li>10 PROkits credits</li>
+          <li>$35 promote credits</li>
+          <li>5% promote discount</li>
+        </ul>
+        <button onclick="subscribe('professional')">Subscribe</button>
+      </div>`;
+  }
+};
+
+/* Upload Beat */
+window.uploadBeat=async()=>{
+  try{
+    msg.innerText='Uploading...';
+    const cover=await uploadCloud(c.files[0],`covers/${user.uid}`);
+    const file=await uploadCloud(f.files[0],`beats/${user.uid}`);
+    await addDoc(collection(db,'beats'),{
+      uid:user.uid,title:t.value,bpm:b.value,genre:g.value,
+      mood:m.value,price:p.value,coverUrl:cover,fileUrl:file,plays:0
+    });
+    msg.innerText='Uploaded ✅';
+    loadBeats();
+  }catch{msg.innerText='Upload failed'}
+};
+
+/* Load Beats */
+async function loadBeats(){
+  const q=query(collection(db,'beats'),where('uid','==',user.uid));
+  const s=await getDocs(q);
+  const list=document.getElementById('list');
+  list.className=grid?'grid':'';
+  list.innerHTML='';
+  s.forEach(d=>{
+    const b=d.data();
+    list.innerHTML+=`
+      <div class="card beat">
+        <img src="${b.coverUrl}">
+        <div>
+          <b>${b.title}</b><br>
+          ${b.bpm} BPM · ${b.genre} · ${b.mood}<br>
+          $${b.price} · ▶ ${b.plays}
+          <audio controls src="${b.fileUrl}"></audio>
+        </div>
+        <button class="small" onclick="deleteBeat('${d.id}')">Delete</button>
+      </div>`;
+  });
+}
+
+window.deleteBeat=async id=>{
+  if(confirm('Delete beat?')){
+    await deleteDoc(doc(db,'beats',id));
+    loadBeats();
+  }
+};
+
+window.toggleGrid=()=>{grid=!grid;loadBeats()}
+
+/* SAVE SETTINGS — SAFE (NO UNDEFINED EVER) */
+window.saveSettings=async()=>{
+  try{
+    const updates={};
+
+    if(name.value) updates.name=name.value;
+
+    if(email.value!==user.email)
+      await updateEmail(user,email.value);
+
+    if(pass.value)
+      await updatePassword(user,pass.value);
+
+    if(avatar.files[0]){
+      const url=await uploadCloud(avatar.files[0],`avatars/${user.uid}`);
+      updates.photoURL=url;
+    }
+
+    if(Object.keys(updates).length>0)
+      await updateDoc(doc(db,'users',user.uid),updates);
+
+    smsg.innerText='Profile updated ✅';
+  }catch(e){
+    smsg.innerText=e.message;
+  }
+};
+
+window.subscribe=plan=>alert(`Stripe checkout for ${plan} coming next`);
+</script>
+
+</body>
+</html>
