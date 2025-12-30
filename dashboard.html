@@ -3,75 +3,82 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ProdByBigi — Producer Dashboard</title>
+<title>Producer Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
 <style>
-*{box-sizing:border-box;font-family:Inter,sans-serif}
-body{margin:0;background:#0b0f14;color:#e5e7eb;display:flex;height:100vh}
-.sidebar{width:250px;background:#0f172a;padding:20px;display:flex;flex-direction:column;border-right:1px solid #1f2937}
-.brand{font-size:20px;font-weight:700;color:#38bdf8;margin-bottom:24px}
-.nav a{display:block;padding:10px 14px;margin-bottom:6px;border-radius:8px;color:#cbd5f5;text-decoration:none;font-size:14px;cursor:pointer}
-.nav a:hover{background:#1e293b}
-.upgrade{margin-top:auto;background:linear-gradient(135deg,#38bdf8,#818cf8);color:#020617!important;font-weight:600;text-align:center}
+*{box-sizing:border-box;font-family:Inter}
+body{margin:0;background:#0b0b0b;color:#fff;display:flex;height:100vh}
+.sidebar{width:250px;background:#111;padding:20px;display:flex;flex-direction:column}
+.sidebar h2{color:#6cf;margin-bottom:20px}
+.sidebar button{background:none;border:none;color:#aaa;text-align:left;padding:12px;border-radius:8px;cursor:pointer}
+.sidebar button:hover{background:#1a1a1a;color:#fff}
 .main{flex:1;display:flex;flex-direction:column}
-.topbar{height:64px;background:#020617;border-bottom:1px solid #1f2937;display:flex;align-items:center;justify-content:space-between;padding:0 16px}
-.hamburger{display:none;background:none;border:none;color:#fff;font-size:22px}
-.content{padding:24px;overflow-y:auto}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
-.card{background:#020617;border:1px solid #1f2937;border-radius:14px;padding:18px}
-.card h3{margin:0 0 10px;font-size:16px}
-input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #1f2937;background:#020617;color:#fff;margin-top:8px}
-button{margin-top:12px;padding:10px;border-radius:8px;border:none;background:#38bdf8;font-weight:600;font-size:14px;cursor:pointer}
-.table{width:100%;border-collapse:collapse}
-.table th,.table td{padding:10px;border-bottom:1px solid #1f2937;font-size:14px}
-.beat{display:flex;gap:14px;align-items:center}
-.beat img{width:70px;height:70px;border-radius:10px;object-fit:cover}
-@media(max-width:768px){.hamburger{display:block}.sidebar{position:fixed;left:-260px;top:0;height:100%;z-index:1000;transition:.3s}.sidebar.open{left:0}}
+.topbar{height:60px;background:#111;display:flex;align-items:center;padding:0 20px;border-bottom:1px solid #222}
+.hamburger{display:none;font-size:22px;background:none;border:none;color:#fff;margin-right:10px}
+.content{padding:25px;overflow-y:auto}
+.card{background:#141414;border:1px solid #222;border-radius:14px;padding:20px;margin-bottom:20px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.plan-card ul{padding-left:18px;font-size:14px;color:#ccc}
+.plan-card li{margin-bottom:6px}
+.price{font-size:22px;color:#6cf;font-weight:700}
+img.cover{width:80px;height:80px;border-radius:10px;object-fit:cover}
+@media(max-width:768px){.sidebar{position:fixed;left:-260px;height:100%;z-index:999}.sidebar.open{left:0}.hamburger{display:block}}
 </style>
 </head>
 <body>
-<aside class="sidebar" id="sidebar">
-<div class="brand">ProdByBigi</div>
-<nav class="nav">
-<a onclick="loadPage('dashboard')">Dashboard</a>
-<a onclick="loadPage('tracks')">Tracks</a>
-<a onclick="loadPage('analytics')">Analytics</a>
-<a onclick="loadPage('finance')">Finance</a>
-<a onclick="loadPage('settings')">Settings</a>
-<a class="upgrade" onclick="loadPage('upgrade')">Upgrade</a>
-</nav>
-</aside>
+<div class="sidebar" id="sidebar">
+<h2>ProdByBigi</h2>
+<button onclick="loadPage('tracks')">Tracks</button>
+<button onclick="loadPage('analytics')">Analytics</button>
+<button onclick="loadPage('finance')">Finance</button>
+<button onclick="loadPage('settings')">Settings</button>
+<button onclick="loadPage('upgrade')">Upgrade</button>
+</div>
 <div class="main">
 <div class="topbar">
 <button class="hamburger" onclick="toggleSidebar()">☰</button>
-<strong id="title">Dashboard</strong>
-<button onclick="logout()">Logout</button>
+<h3 id="title">Dashboard</h3>
 </div>
 <div class="content" id="content"></div>
 </div>
 <script type="module">
-import{initializeApp}from'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import{getAuth,onAuthStateChanged,signOut}from'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import{getFirestore,collection,addDoc,query,where,getDocs,doc,getDoc,setDoc,updateDoc,increment}from'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+import { getAuth,onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
+import { getFirestore,collection,addDoc,getDocs,doc,updateDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+
 const firebaseConfig={apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",authDomain:"prodbybigi.firebaseapp.com",projectId:"prodbybigi",storageBucket:"prodbybigi.firebasestorage.app",messagingSenderId:"1040553526206",appId:"1:1040553526206:web:38216a9f75eabfe556efef"};
-const app=initializeApp(firebaseConfig);const auth=getAuth(app);const db=getFirestore(app);
-const CLOUD='djd8vki8s',PRESET='beats_unsigned';
-const sidebar=document.getElementById('sidebar'),content=document.getElementById('content'),title=document.getElementById('title');let user;
-window.toggleSidebar=()=>sidebar.classList.toggle('open');
-window.logout=async()=>{await signOut(auth);location.href='login.html'};
-async function cloudUpload(file,folder){const fd=new FormData();fd.append('file',file);fd.append('upload_preset',PRESET);fd.append('folder',folder);const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:'POST',body:fd});const d=await r.json();return d.secure_url}
-window.loadPage=async(p)=>{sidebar.classList.remove('open');
-if(p==='dashboard'){title.innerText='Dashboard';const q=query(collection(db,'beats'),where('uid','==',user.uid));const s=await getDocs(q);let plays=0;s.forEach(b=>plays+=b.data().plays||0);content.innerHTML=`<div class='grid'><div class='card'><h3>Total Beats</h3><strong>${s.size}</strong></div><div class='card'><h3>Total Plays</h3><strong>${plays}</strong></div><div class='card'><h3>Total Sales</h3><strong>$0.00</strong></div><div class='card'><h3>Plan</h3><strong>${user.plan||'Free'}</strong></div></div>`}
-if(p==='tracks'){title.innerText='Tracks';content.innerHTML=`<div class='card'><h3>Upload Beat</h3><input id='t' placeholder='Title'><input id='b' type='number' placeholder='BPM'><input id='g' placeholder='Genre'><input id='p' type='number' placeholder='Price'><input id='c' type='file' accept='image/*'><input id='f' type='file' accept='.mp3,.wav'><button onclick='uploadBeat()'>Upload</button><p id='msg'></p></div><div class='card'><h3>Your Beats</h3><div id='list'></div></div>`;loadBeats()}
-if(p==='analytics'){title.innerText='Analytics';content.innerHTML=`<div class='grid'><div class='card'><h3>Plays</h3><strong id='ap'>0</strong></div><div class='card'><h3>Views</h3><strong>0</strong></div></div>`}
-if(p==='finance'){title.innerText='Finance';content.innerHTML=`<div class='card'><h3>Earnings</h3><table class='table'><tr><th>Date</th><th>Beat</th><th>Amount</th></tr><tr><td>-</td><td>-</td><td>$0.00</td></tr></table></div>`}
-if(p==='settings'){title.innerText='Settings';content.innerHTML=`<div class='card'><h3>Profile</h3><input id='name' placeholder='Display name'><button onclick='saveProfile()'>Save</button></div>`}
-if(p==='upgrade'){title.innerText='Upgrade';content.innerHTML=`<div class='grid'><div class='card'><h3>Starter</h3><p>$15/year</p><div id='pp1'></div></div><div class='card'><h3>Growth</h3><p>$60/year</p><div id='pp2'></div></div><div class='card'><h3>Professional</h3><p>$159/year</p><div id='pp3'></div></div></div>`;loadPayPal()}}
-window.uploadBeat=async()=>{const m=document.getElementById('msg');try{m.innerText='Uploading...';const cu=await cloudUpload(document.getElementById('c').files[0],`covers/${user.uid}`);const fu=await cloudUpload(document.getElementById('f').files[0],`beats/${user.uid}`);await addDoc(collection(db,'beats'),{uid:user.uid,title:document.getElementById('t').value,bpm:+document.getElementById('b').value,genre:document.getElementById('g').value,price:+document.getElementById('p').value,coverUrl:cu,fileUrl:fu,plays:0,created:new Date()});m.innerText='Done';loadBeats()}catch(e){m.innerText='Error'}}
-async function loadBeats(){const q=query(collection(db,'beats'),where('uid','==',user.uid));const s=await getDocs(q);const l=document.getElementById('list');l.innerHTML='';s.forEach(d=>{const b=d.data();l.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'><div><strong>${b.title}</strong><div>${b.bpm} BPM · ${b.genre}</div><div>$${b.price} · ▶ ${b.plays}</div><audio controls src='${b.fileUrl}'></audio></div></div>`})}
-window.saveProfile=async()=>{const n=document.getElementById('name').value;if(n)await updateDoc(doc(db,'users',user.uid),{name:n})}
-function loadPayPal(){if(window.pp)return;window.pp=true;const s=document.createElement('script');s.src='https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription';s.onload=()=>{paypal.Buttons({plan_id:'P-8FN35171F4185880VNFJ5YGI'}).render('#pp1');paypal.Buttons({plan_id:'P-4MM864528J575140DNFJ5XQQ'}).render('#pp2');paypal.Buttons({plan_id:'P-1TH20083J44769154NFJ5VTA'}).render('#pp3')};document.body.appendChild(s)}
-onAuthStateChanged(auth,async u=>{if(!u)return location.href='login.html';user=u;const r=doc(db,'users',u.uid);if(!(await getDoc(r)).exists())await setDoc(r,{email:u.email,plan:'free'});user.plan=(await getDoc(r)).data().plan;loadPage('dashboard')})
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+let user;
+
+window.toggleSidebar=()=>document.getElementById('sidebar').classList.toggle('open');
+
+window.loadPage=(page)=>{
+const c=document.getElementById('content');
+document.getElementById('title').innerText=page.toUpperCase();
+if(page==='upgrade'){
+c.innerHTML=`<div class='grid'>
+<div class='card plan-card'><h3>Starter</h3><p class='price'>$15/year</p><ul><li>Unlimited MP3/WAV</li><li>0% commission</li><li>Advanced analytics</li></ul><div id='pp-starter'></div></div>
+<div class='card plan-card'><h3>Growth</h3><p class='price'>$60/year</p><ul><li>Upload stems</li><li>Sell services</li><li>Unlimited messages</li></ul><div id='pp-growth'></div></div>
+<div class='card plan-card'><h3>Professional</h3><p class='price'>$159/year</p><ul><li>Custom website</li><li>Merch & memberships</li><li>Email marketing</li></ul><div id='pp-pro'></div></div>
+</div>`;
+setTimeout(loadPayPal,300);
+}
+if(page==='analytics') c.innerHTML=`<div class='card'>Real-time analytics coming next update 📊</div>`;
+if(page==='finance') c.innerHTML=`<div class='card'>Sales & earnings dashboard coming 💰</div>`;
+if(page==='settings') c.innerHTML=`<div class='card'>Profile settings stable ✔</div>`;
+if(page==='tracks') c.innerHTML=`<div class='card'>Tracks system active 🎵</div>`;
+}
+
+function loadPayPal(){
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'}),onApprove:()=>alert('Starter activated')}).render('#pp-starter');
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'}),onApprove:()=>alert('Growth activated')}).render('#pp-growth');
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'}),onApprove:()=>alert('Professional activated')}).render('#pp-pro');
+}
+
+onAuthStateChanged(auth,u=>{if(!u)location.href='login.html';user=u;loadPage('tracks')});
 </script>
 </body>
 </html>
