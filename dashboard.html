@@ -2,179 +2,183 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Producer Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Producer Dashboard</title>
 
-<!-- PayPal -->
-<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  --bg:#0b0f1a;
-  --panel:#12172a;
-  --accent:#5da9ff;
-  --text:#e5e7eb;
-  --muted:#9ca3af;
-}
-*{box-sizing:border-box;font-family:Inter,system-ui}
-body{margin:0;background:var(--bg);color:var(--text)}
+*{box-sizing:border-box;font-family:Inter}
+body{margin:0;background:#0b0b0e;color:#fff;display:flex;height:100vh}
 
+/* SIDEBAR */
 .sidebar{
-  position:fixed;left:0;top:0;height:100%;width:220px;
-  background:#0f1424;padding:20px
+  width:260px;
+  background:#111;
+  padding:20px;
+  position:fixed;
+  left:0;top:0;bottom:0;
+  transition:.3s;
+  z-index:1000;
 }
-.sidebar h2{margin:0 0 20px}
-.sidebar button{
-  width:100%;margin-bottom:8px;
-  padding:10px;border-radius:6px;
-  background:none;border:none;color:var(--muted);
-  text-align:left;cursor:pointer
+.sidebar h1{font-size:20px;margin-bottom:25px;color:#6cf}
+.sidebar a{
+  display:block;
+  padding:12px;
+  border-radius:10px;
+  color:#bbb;
+  text-decoration:none;
+  margin-bottom:6px;
 }
-.sidebar button:hover{background:#1b2240;color:#fff}
+.sidebar a:hover{background:#1c1c1c;color:#fff}
+.sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:600;text-align:center;margin-top:20px}
 
-.topbar{
-  display:none;
-  background:#0f1424;padding:10px
-}
-.hamburger{font-size:22px;cursor:pointer}
+.sidebar.show{left:0}
 
+/* MAIN */
 .main{
-  margin-left:220px;padding:24px
+  flex:1;
+  margin-left:260px;
+  display:flex;
+  flex-direction:column;
+}
+
+/* TOPBAR */
+.topbar{
+  height:70px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  border-bottom:1px solid #222;
+}
+.hamburger{
+  font-size:22px;
+  cursor:pointer;
+  display:none;
+}
+.logout{
+  background:#f55;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+/* CONTENT */
+.content{
+  padding:25px;
+  overflow-y:auto;
 }
 .card{
-  background:var(--panel);
-  border-radius:12px;
-  padding:20px;margin-bottom:20px
+  background:#141414;
+  border:1px solid #222;
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:20px;
 }
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
-.price{font-size:26px;margin:10px 0}
-.pp{max-width:220px}
+.page{display:none}
+.page.active{display:block}
 
-.hidden{display:none}
+button{
+  background:#6cf;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+}
+button.small{padding:6px 10px;font-size:13px}
+input,select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:none;
+  margin-top:8px;
+  background:#1c1c1c;
+  color:#fff;
+}
 
-/* Mobile */
+/* MOBILE */
 @media(max-width:800px){
-  .sidebar{left:-220px;transition:.3s}
-  .sidebar.show{left:0}
+  .sidebar{left:-260px}
   .main{margin-left:0}
-  .topbar{display:flex;align-items:center;gap:10px}
+  .hamburger{display:block}
 }
 </style>
 </head>
 
 <body>
 
-<div class="topbar">
-  <div class="hamburger" onclick="toggleMenu()">☰</div>
-  <strong>Dashboard</strong>
-</div>
-
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-  <h2>ProdByBigi</h2>
-  <button onclick="loadPage('dashboard')">Dashboard</button>
-  <button onclick="loadPage('tracks')">Tracks</button>
-  <button onclick="loadPage('analytics')">Analytics</button>
-  <button onclick="loadPage('finance')">Finance</button>
-  <button onclick="loadPage('upgrade')">Upgrade</button>
-  <button onclick="loadPage('settings')">Settings</button>
+  <h1>ProdByBigi</h1>
+  <a onclick="loadPage('dashboard')">Dashboard</a>
+  <a onclick="loadPage('tracks')">Tracks</a>
+  <a onclick="loadPage('analytics')">Analytics</a>
+  <a onclick="loadPage('finance')">Finance</a>
+  <a onclick="loadPage('settings')">Settings</a>
+  <a class="upgrade" onclick="loadPage('upgrade')">Upgrade to Pro</a>
 </div>
 
+<!-- MAIN -->
 <div class="main">
-
-<!-- DASHBOARD -->
-<div id="dashboard" class="page card">
-  <h1>Welcome back</h1>
-  <div class="grid">
-    <div class="card">🎧 Total Beats<br><b>0</b></div>
-    <div class="card">▶ Total Plays<br><b>0</b></div>
-    <div class="card">💰 Earnings<br><b>$0.00</b></div>
+  <div class="topbar">
+    <div class="hamburger" id="hamburger" onclick="toggleMenu()">☰</div>
+    <strong id="pageTitle">Dashboard</strong>
+    <button class="logout" onclick="logout()">Logout</button>
   </div>
-</div>
 
-<!-- TRACKS -->
-<div id="tracks" class="page hidden card">
-  <h2>Your Beats</h2>
-  <p>Upload & manage beats here.</p>
-</div>
-
-<!-- ANALYTICS -->
-<div id="analytics" class="page hidden card">
-  <h2>Analytics</h2>
-  <p>Plays per beat, views & growth (coming next).</p>
-</div>
-
-<!-- FINANCE -->
-<div id="finance" class="page hidden card">
-  <h2>Finance</h2>
-  <p>Sales, payouts & revenue tracking.</p>
-</div>
-
-<!-- UPGRADE -->
-<div id="upgrade" class="page hidden">
-  <h2>Upgrade Plan</h2>
-
-  <div class="grid">
-    <div class="card">
-      <h3>Starter</h3>
-      <p class="price">$15 / year</p>
-      <ul>
-        <li>0% commission</li>
-        <li>Unlimited MP3/WAV</li>
-        <li>Instant payments</li>
-        <li>Advanced analytics</li>
-        <li>4 custom licenses</li>
-        <li>1 contest submission</li>
-        <li>3 PROkits credits</li>
-      </ul>
-      <div id="pp-starter" class="pp"></div>
+  <div class="content">
+    <div id="dashboard" class="page active">
+      <div class="card">
+        <h2>Welcome back 👋</h2>
+        <p>Manage your beats, sales and analytics.</p>
+      </div>
     </div>
 
-    <div class="card">
-      <h3>Growth</h3>
-      <p class="price">$60 / year</p>
-      <ul>
-        <li>Upload stems</li>
-        <li>Sell soundkits & services</li>
-        <li>Unlimited messages</li>
-        <li>Unlimited licenses</li>
-        <li>2 contest submissions</li>
-        <li>5 PROkits credits</li>
-        <li>$15 promote credits</li>
-      </ul>
-      <div id="pp-growth" class="pp"></div>
+    <div id="tracks" class="page">
+      <div class="card"><h3>Tracks system</h3><p>Upload & manage beats.</p></div>
     </div>
 
-    <div class="card">
-      <h3>Professional</h3>
-      <p class="price">$159 / year</p>
-      <ul>
-        <li>Custom website</li>
-        <li>Merch & memberships</li>
-        <li>Email marketing</li>
-        <li>Creator Rights access</li>
-        <li>Blog posts</li>
-        <li>10 PROkits credits</li>
-        <li>$35 promote credits</li>
-        <li>5% promote discount</li>
-        <li>Unlimited licenses</li>
-      </ul>
-      <div id="pp-pro" class="pp"></div>
+    <div id="analytics" class="page">
+      <div class="card"><h3>Analytics</h3><p>Real play & view stats coming next.</p></div>
+    </div>
+
+    <div id="finance" class="page">
+      <div class="card"><h3>Finance</h3><p>Sales & earnings dashboard.</p></div>
+    </div>
+
+    <div id="upgrade" class="page">
+      <div class="card">
+        <h3>Upgrade your plan</h3>
+        <ul>
+          <li>Sell beats with 0% commission</li>
+          <li>Unlimited uploads</li>
+          <li>Advanced analytics</li>
+          <li>Instant payouts</li>
+        </ul>
+        <button class="small">Subscribe with PayPal</button>
+      </div>
+    </div>
+
+    <div id="settings" class="page">
+      <div class="card">
+        <h3>Account Settings</h3>
+        <input placeholder="Display Name">
+        <input placeholder="Email">
+        <input type="file">
+        <button class="small">Save Changes</button>
+      </div>
     </div>
   </div>
-</div>
-
-<!-- SETTINGS -->
-<div id="settings" class="page hidden card">
-  <h2>Account Settings</h2>
-  <p>Profile & account configuration.</p>
-</div>
-
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -187,44 +191,32 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-window.loadPage = (id)=>{
-  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "login.html";
 };
 
-window.toggleMenu = ()=>{
-  document.getElementById('sidebar').classList.toggle('show');
+window.toggleMenu = () => {
+  const sidebar = document.getElementById("sidebar");
+  const burger = document.getElementById("hamburger");
+  sidebar.classList.toggle("show");
+  burger.innerText = sidebar.classList.contains("show") ? "✕" : "☰";
 };
 
-async function saveSub(plan, planId, subId){
-  const user = auth.currentUser;
-  if(!user){alert("Login first");return;}
-  await setDoc(doc(db,"users",user.uid),{
-    subscription:{
-      plan,planId,subscriptionId:subId,status:"active",startedAt:serverTimestamp()
-    }
-  },{merge:true});
-  alert(plan+" activated 🎉");
-}
+window.loadPage = (page) => {
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(page).classList.add("active");
+  document.getElementById("pageTitle").innerText =
+    page.charAt(0).toUpperCase()+page.slice(1);
 
-/* PAYPAL BUTTONS */
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-8FN35171F4185880VNFJ5YGI"}),
-  onApprove:(d)=>saveSub("Starter","P-8FN35171F4185880VNFJ5YGI",d.subscriptionID)
-}).render("#pp-starter");
-
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-4MM864528J575140DNFJ5XQQ"}),
-  onApprove:(d)=>saveSub("Growth","P-4MM864528J575140DNFJ5XQQ",d.subscriptionID)
-}).render("#pp-growth");
-
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-1TH20083J44769154NFJ5VTA"}),
-  onApprove:(d)=>saveSub("Professional","P-1TH20083J44769154NFJ5VTA",d.subscriptionID)
-}).render("#pp-pro");
-
+  // Mobile auto close
+  if(window.innerWidth <= 800){
+    document.getElementById("sidebar").classList.remove("show");
+    document.getElementById("hamburger").innerText="☰";
+  }
+};
 </script>
+
 </body>
 </html>
