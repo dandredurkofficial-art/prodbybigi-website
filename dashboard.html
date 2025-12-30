@@ -96,7 +96,13 @@ textarea{min-height:90px}
       <div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
     </div>
 
-    <div id="analytics" class="page"><div class="card"><h3>Analytics</h3><p>Real play & view stats powered by Firestore.</p></div></div>
+    <div id="analytics" class="page">
+  <div class="card">
+    <h3>Analytics Overview</h3>
+    <canvas id="playsChart" height="120"></canvas>
+    <p style="color:#9aa3c7;font-size:14px">Plays per beat (real data from Firestore)</p>
+  </div>
+</div></div>
 
     <div id="finance" class="page"><div class="card"><h3>Finance</h3><p>Sales, earnings & payouts overview.</p></div></div>
 
@@ -199,16 +205,43 @@ async function loadBeats(){
   const snap=await getDocs(q);
   beatList.innerHTML='';
   let totalPlays=0;
+  const labels=[]; const data=[];
+
   snap.forEach(d=>{
     const b=d.data();
     totalPlays+=b.plays||0;
-    beatList.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}'></audio></div></div>`;
+    labels.push(b.title);
+    data.push(b.plays||0);
+    beatList.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}' onplay="incrementPlay('${d.id}')"></audio></div></div>`;
+  });
+  statBeats.innerText=snap.size;
+  statPlays.innerText=totalPlays;
+  renderChart(labels,data);
+}
+
+window.incrementPlay = async (id)=>{
+  const ref=doc(db,'beats',id);
+  await updateDoc(ref,{plays:increment(1)});
+};'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}'></audio></div></div>`;
   });
   statBeats.innerText=snap.size;
   statPlays.innerText=totalPlays;
 }
-</script>
 
+import { doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+function renderChart(labels,data){
+  const ctx=document.getElementById('playsChart');
+  if(!ctx) return;
+  if(window.chart) window.chart.destroy();
+  window.chart=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Plays',data}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
+  });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'})}).render('#paypal-starter');
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'})}).render('#paypal-growth');
