@@ -72,8 +72,33 @@ if(page==='settings') c.innerHTML=`<div class='card'>Profile settings stable ✔
 if(page==='tracks') c.innerHTML=`<div class='card'>Tracks system active 🎵</div>`;
 }
 
+function savePlan(plan){
+  if(!user) return;
+  updateDoc(doc(db,'users',user.uid),{
+    plan: plan,
+    subscribedAt: new Date()
+  });
+}
+
 function loadPayPal(){
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'}),onApprove:()=>alert('Starter activated')}).render('#pp-starter');
+  paypal.Buttons({
+    style:{layout:'vertical',label:'subscribe'},
+    createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'}),
+    onApprove:()=>{savePlan('starter');alert('Starter plan activated');}
+  }).render('#pp-starter');
+
+  paypal.Buttons({
+    style:{layout:'vertical',label:'subscribe'},
+    createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'}),
+    onApprove:()=>{savePlan('growth');alert('Growth plan activated');}
+  }).render('#pp-growth');
+
+  paypal.Buttons({
+    style:{layout:'vertical',label:'subscribe'},
+    createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'}),
+    onApprove:()=>{savePlan('professional');alert('Professional plan activated');}
+  }).render('#pp-pro');
+}),onApprove:()=>alert('Starter activated')}).render('#pp-starter');
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'}),onApprove:()=>alert('Growth activated')}).render('#pp-growth');
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'}),onApprove:()=>alert('Professional activated')}).render('#pp-pro');
 }
