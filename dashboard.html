@@ -3,42 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard | ProdByBigi</title>
+  <title>ProdByBigi – Producer Dashboard</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     * { box-sizing: border-box; font-family: Inter, sans-serif; }
-    body { margin: 0; background: #0d0d0d; color: #fff; display: flex; height: 100vh; overflow: hidden; }
+    body { margin: 0; background: #0b0f14; color: #e5e7eb; display: flex; height: 100vh; }
 
     /* Sidebar */
     .sidebar {
-      width: 260px;
-      background: #111;
-      padding: 24px;
+      width: 250px;
+      background: #0f172a;
+      padding: 20px;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid #222;
+      border-right: 1px solid #1f2937;
     }
 
-    .logo { font-size: 20px; font-weight: 700; color: #6cf; margin-bottom: 30px; }
+    .brand {
+      font-size: 20px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 24px;
+    }
 
     .nav a {
-      padding: 12px;
+      display: block;
+      padding: 10px 14px;
       margin-bottom: 6px;
       border-radius: 8px;
-      color: #bbb;
+      color: #cbd5f5;
       text-decoration: none;
-      cursor: pointer;
       font-size: 14px;
+      cursor: pointer;
     }
 
-    .nav a:hover { background: #1b1b1b; color: #fff; }
+    .nav a:hover { background: #1e293b; }
 
-    .pro {
+    .upgrade {
       margin-top: auto;
-      background: linear-gradient(135deg,#6cf,#9f6cff);
-      color: #000 !important;
+      background: linear-gradient(135deg,#38bdf8,#818cf8);
+      color: #020617 !important;
       font-weight: 600;
       text-align: center;
     }
@@ -48,47 +54,74 @@
 
     .topbar {
       height: 64px;
+      background: #020617;
+      border-bottom: 1px solid #1f2937;
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      border-bottom: 1px solid #222;
-      background: #111;
     }
 
     .hamburger {
       display: none;
       background: none;
       border: none;
-      font-size: 24px;
       color: #fff;
+      font-size: 22px;
       cursor: pointer;
     }
 
-    .content { padding: 20px; overflow-y: auto; }
+    .content { padding: 24px; overflow-y: auto; }
+
+    /* Cards */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 16px; }
 
     .card {
-      background: #141414;
-      border: 1px solid #222;
+      background: #020617;
+      border: 1px solid #1f2937;
       border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 20px;
+      padding: 18px;
     }
 
-    input, select, button {
+    .card h3 { margin: 0 0 10px; font-size: 16px; }
+
+    input, select {
       width: 100%;
       padding: 10px;
       border-radius: 8px;
-      border: none;
-      margin-top: 10px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #fff;
+      margin-top: 8px;
     }
 
-    button { background: #6cf; font-weight: 600; cursor: pointer; }
+    button {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #38bdf8;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #1f2937;
+      font-size: 14px;
+      text-align: left;
+    }
 
     /* Mobile */
     @media (max-width: 768px) {
       .hamburger { display: block; }
-
       .sidebar {
         position: fixed;
         left: -260px;
@@ -97,7 +130,6 @@
         z-index: 1000;
         transition: left .3s ease;
       }
-
       .sidebar.open { left: 0; }
     }
   </style>
@@ -105,20 +137,21 @@
 <body>
 
 <aside class="sidebar" id="sidebar">
-  <div class="logo">ProdByBigi</div>
+  <div class="brand">ProdByBigi</div>
   <nav class="nav">
-    <a onclick="loadPage('home')">Dashboard</a>
+    <a onclick="loadPage('dashboard')">Dashboard</a>
     <a onclick="loadPage('tracks')">Tracks</a>
     <a onclick="loadPage('analytics')">Analytics</a>
+    <a onclick="loadPage('finance')">Finance</a>
     <a onclick="loadPage('settings')">Settings</a>
-    <a class="pro" onclick="loadPage('upgrade')">Upgrade</a>
+    <a class="upgrade" onclick="loadPage('upgrade')">Upgrade Plan</a>
   </nav>
 </aside>
 
 <div class="main">
   <div class="topbar">
     <button class="hamburger" onclick="toggleSidebar()">☰</button>
-    <strong id="title">Dashboard</strong>
+    <strong id="pageTitle">Dashboard</strong>
     <button onclick="logout()">Logout</button>
   </div>
 
@@ -128,7 +161,7 @@
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
   import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-  import { getFirestore, doc, setDoc, updateDoc, getDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+  import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -145,122 +178,80 @@
 
   const sidebar = document.getElementById('sidebar');
   const content = document.getElementById('content');
-  const title = document.getElementById('title');
-
-  let user = null;
+  const pageTitle = document.getElementById('pageTitle');
 
   window.toggleSidebar = () => sidebar.classList.toggle('open');
 
-  window.logout = async () => {
-    await signOut(auth);
-    location.href = 'login.html';
-  };
+  window.logout = async () => { await signOut(auth); location.href = 'login.html'; };
 
   window.loadPage = (page) => {
     sidebar.classList.remove('open');
 
-    if (page === 'home') {
-      title.innerText = 'Dashboard';
-      content.innerHTML = `<div class='card'><h2>Welcome 👋</h2><p>Manage your beats and subscriptions.</p></div>`;
+    if (page === 'dashboard') {
+      pageTitle.innerText = 'Dashboard';
+      content.innerHTML = `
+        <div class='grid'>
+          <div class='card'><h3>Total Beats</h3><strong>0</strong></div>
+          <div class='card'><h3>Total Plays</h3><strong>0</strong></div>
+          <div class='card'><h3>Total Sales</h3><strong>$0.00</strong></div>
+          <div class='card'><h3>Current Plan</h3><strong>Free</strong></div>
+        </div>`;
+    }
+
+    if (page === 'tracks') {
+      pageTitle.innerText = 'Tracks';
+      content.innerHTML = `<div class='card'><h3>Your Beats</h3><p>Upload & manage beats here.</p></div>`;
     }
 
     if (page === 'analytics') {
-      title.innerText = 'Analytics';
-      content.innerHTML = `<div class='card'>Analytics coming soon 📊</div>`;
+      pageTitle.innerText = 'Analytics';
+      content.innerHTML = `
+        <div class='grid'>
+          <div class='card'><h3>Plays</h3><strong>0</strong></div>
+          <div class='card'><h3>Views</h3><strong>0</strong></div>
+          <div class='card'><h3>Conversion</h3><strong>0%</strong></div>
+        </div>`;
+    }
+
+    if (page === 'finance') {
+      pageTitle.innerText = 'Finance';
+      content.innerHTML = `
+        <div class='card'>
+          <h3>Earnings</h3>
+          <table>
+            <thead><tr><th>Date</th><th>Product</th><th>Amount</th></tr></thead>
+            <tbody><tr><td>-</td><td>-</td><td>$0.00</td></tr></tbody>
+          </table>
+        </div>`;
     }
 
     if (page === 'settings') {
-      title.innerText = 'Settings';
+      pageTitle.innerText = 'Settings';
       content.innerHTML = `
         <div class='card'>
-          <h3>Profile</h3>
-          <input id='name' placeholder='Display name' />
-          <button onclick='saveProfile()'>Save</button>
+          <h3>Account Settings</h3>
+          <input placeholder='Display Name' />
+          <input placeholder='Email' disabled />
+          <button>Save Changes</button>
         </div>`;
     }
 
     if (page === 'upgrade') {
-      title.innerText = 'Upgrade Plan';
+      pageTitle.innerText = 'Upgrade Plan';
       content.innerHTML = `
-        <div class='card'>
-          <h3>Starter – $15/year</h3>
-          <ul>
-            <li>0% commission</li>
-            <li>Unlimited MP3/WAV</li>
-            <li>Instant payments</li>
-            <li>Advanced analytics</li>
-            <li>4 custom licenses</li>
-            <li>1 contest submission</li>
-            <li>3 PROkits credits</li>
-          </ul>
-          <div id='paypal-starter'></div>
-        </div>
-
-        <div class='card'>
-          <h3>Growth – $60/year</h3>
-          <ul>
-            <li>Upload stems</li>
-            <li>Sell soundkits & services</li>
-            <li>Unlimited messages</li>
-            <li>Unlimited licenses</li>
-            <li>2 contest submissions</li>
-            <li>5 PROkits credits</li>
-            <li>$15 promote credits</li>
-          </ul>
-          <div id='paypal-growth'></div>
-        </div>
-
-        <div class='card'>
-          <h3>Professional – $159/year</h3>
-          <ul>
-            <li>Custom website</li>
-            <li>Merch & memberships</li>
-            <li>Email marketing</li>
-            <li>Creator Rights access</li>
-            <li>Blog posts</li>
-            <li>10 PROkits credits</li>
-            <li>$35 promote credits</li>
-            <li>5% promote discount</li>
-            <li>Unlimited licenses</li>
-          </ul>
-          <div id='paypal-pro'></div>
+        <div class='grid'>
+          <div class='card'><h3>Starter</h3><p>$15 / year</p></div>
+          <div class='card'><h3>Growth</h3><p>$60 / year</p></div>
+          <div class='card'><h3>Professional</h3><p>$159 / year</p></div>
         </div>`;
-
-      loadPayPal();
     }
   };
 
-  window.saveProfile = async () => {
-    const name = document.getElementById('name').value;
-    if (!name) return;
-    await updateDoc(doc(db,'users',user.uid), { name });
-    alert('Saved');
-  };
-
-  function loadPayPal() {
-    if (window.paypalLoaded) return;
-    window.paypalLoaded = true;
-
-    const s = document.createElement('script');
-    s.src = 'https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription';
-    s.onload = renderButtons;
-    document.body.appendChild(s);
-  }
-
-  function renderButtons() {
-    paypal.Buttons({ plan_id: 'P-8FN35171F4185880VNFJ5YGI' }).render('#paypal-starter');
-    paypal.Buttons({ plan_id: 'P-4MM864528J575140DNFJ5XQQ' }).render('#paypal-growth');
-    paypal.Buttons({ plan_id: 'P-1TH20083J44769154NFJ5VTA' }).render('#paypal-pro');
-  }
-
   onAuthStateChanged(auth, async (u) => {
     if (!u) return location.href = 'login.html';
-    user = u;
-
     const ref = doc(db,'users',u.uid);
     if (!(await getDoc(ref)).exists()) await setDoc(ref,{ email:u.email, plan:'free' });
-
-    loadPage('home');
+    loadPage('dashboard');
   });
 </script>
 
