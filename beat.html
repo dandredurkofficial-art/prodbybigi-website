@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Buy Beat</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&currency=USD"></script>
+<style>
+body{background:#0b0d12;color:#fff;font-family:Inter;padding:40px}
+.card{max-width:480px;margin:auto;background:#121726;padding:24px;border-radius:18px}
+button{background:#6cf;border:none;padding:12px 18px;border-radius:12px;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2 id="title">Beat Name</h2>
+  <p id="price">$29.99</p>
+  <div id="paypal-button"></div>
+</div>
+
+<script>
+const beatId = new URLSearchParams(location.search).get('beat');
+const price = 29.99; // load dynamically later
+
+paypal.Buttons({
+  createOrder: (data, actions) => {
+    return actions.order.create({
+      purchase_units: [{
+        amount: { value: price }
+      }]
+    });
+  },
+  onApprove: async (data, actions) => {
+    const order = await actions.order.capture();
+
+    await fetch("https://YOUR_REGION-YOUR_PROJECT.cloudfunctions.net/verifyBeatSale", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderID: data.orderID,
+        beatId: beatId
+      })
+    });
+
+    alert("Payment successful!");
+  }
+}).render("#paypal-button");
+</script>
+
+</body>
+</html>
