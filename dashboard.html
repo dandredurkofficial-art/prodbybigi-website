@@ -61,10 +61,8 @@
   import { auth } from './firebase.js';
   import { onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
   import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-  import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js';
 
   const db = getFirestore();
-  const storage = getStorage();
 
   const content = document.getElementById('content');
   const pageTitle = document.getElementById('pageTitle');
@@ -72,7 +70,7 @@
 
   let currentUser = null;
 
-  // 🔓 EXPOSE FUNCTIONS GLOBALLY (FIXES UNCLICKABLE UI)
+  // expose globally so inline HTML onclick works
   window.toggleSidebar = () => sidebar.classList.toggle('open');
 
   window.logout = async () => {
@@ -85,142 +83,42 @@
 
     if (page === 'home') {
       pageTitle.innerText = 'Dashboard';
-      content.innerHTML = `<div class="card">Welcome to your producer dashboard 🎶</div>`;
-    }
-
-    if (page === 'tracks') {
-      pageTitle.innerText = 'Tracks';
       content.innerHTML = `
         <div class="card">
-          <h3>Upload Beat</h3>
-          <input id="beatTitle" placeholder="Beat title" />
-          <input id="beatArtist" placeholder="Artist fits (e.g. Drake, Lil Baby)" />
-          <input id="beatBpm" type="number" placeholder="BPM" />
-          <input id="beatGenre" placeholder="Genre" />
-          <input id="beatMood" placeholder="Mood" />
-          <input id="beatTags" placeholder="Tags (comma separated)" />
-          <label>Cover Image</label>
-          <input id="beatCover" type="file" accept="image/*" />
-          <label>Beat File</label>
-          <input id="beatFile" type="file" accept=".mp3,.wav" />
-          <button onclick="uploadBeat()">Upload Beat</button>
-          <p id="uploadMsg"></p>
-        </div>
-        <div class="card">
-          <h3>Your Beats</h3>
-          <div id="beatList">Loading...</div>
-        </div>
-      `;
-      loadBeats();
-    }
-
-    if (page === 'analytics') {
-      pageTitle.innerText = 'Analytics';
-      content.innerHTML = `<div class="card">Analytics coming soon 📊</div>`;
-    }
-
-    if (page === 'finance') {
-      pageTitle.innerText = 'Finance';
-      content.innerHTML = `<div class="card">Finance & payouts coming soon 💰</div>`;
+          <h2>Welcome back 👋</h2>
+          <p>Manage your beats and analytics.</p>
+        </div>`;
     }
 
     if (page === 'settings') {
-      pageTitle.innerText = 'Settings';
-      content.innerHTML = `<div class="card">Account settings coming soon ⚙️</div>`;
-    }
-
-    if (page === 'upgrade') {
-      pageTitle.innerText = 'Upgrade to Pro';
-      content.innerHTML = `<div class="card"><h3>Go Pro</h3><p>Unlimited uploads</p></div>`;
-    }
-  };
-
-  window.uploadBeat = async () => {
-    const title = document.getElementById('beatTitle').value;
-    const artist = document.getElementById('beatArtist').value;
-    const bpm = document.getElementById('beatBpm').value;
-    const genre = document.getElementById('beatGenre').value;
-    const mood = document.getElementById('beatMood').value;
-    const tags = document.getElementById('beatTags').value.split(',').map(t => t.trim()).filter(Boolean);
-    const file = document.getElementById('beatFile').files[0];
-    const cover = document.getElementById('beatCover').files[0];
-    const msg = document.getElementById('uploadMsg');
-
-    if (!title || !file || !cover) {
-      msg.innerText = 'Title, beat file, and cover image are required';
-      return;
-    }
-
-    const userRef = doc(db, 'users', currentUser.uid);
-    const userSnap = await getDoc(userRef);
-    const user = userSnap.data();
-
-    if (user.plan === 'free' && user.uploads >= 10) {
-      msg.innerText = 'Upload limit reached. Upgrade to Pro.';
-      return;
-    }
-
-    try {
-      msg.innerText = 'Uploading beat file...';
-      const beatRef = ref(storage, `beats/${currentUser.uid}/${Date.now()}-${file.name}`);
-      await uploadBytes(beatRef, file);
-      const beatUrl = await getDownloadURL(beatRef);
-
-      msg.innerText = 'Uploading cover...';
-      const coverRef = ref(storage, `covers/${currentUser.uid}/${Date.now()}-${cover.name}`);
-      await uploadBytes(coverRef, cover);
-      const coverUrl = await getDownloadURL(coverRef);
-
-      await addDoc(collection(db, 'beats'), {
-        uid: currentUser.uid,
-        title,
-        artistFit: artist,
-        bpm: Number(bpm),
-        genre,
-        mood,
-        tags,
-        fileUrl: beatUrl,
-        coverUrl,
-        plays: 0,
-        createdAt: new Date()
-      });
-
-      await updateDoc(userRef, { uploads: user.uploads + 1 });
-
-      msg.innerText = 'Upload successful 🎶';
-      loadBeats();
-
-    } catch (err) {
-      console.error(err);
-      msg.innerText = 'Upload failed. Check console.';
-    }
-  };
-
-  window.loadBeats = async () => {
-    const q = query(collection(db, 'beats'), where('uid', '==', currentUser.uid));
-    const snapshot = await getDocs(q);
-    const beatList = document.getElementById('beatList');
-
-    beatList.innerHTML = snapshot.empty ? 'No beats uploaded yet.' : '';
-
-    snapshot.forEach(docSnap => {
-      const beat = docSnap.data();
-      beatList.innerHTML += `
+      pageTitle.innerText = 'Account Settings';
+      content.innerHTML = `
         <div class="card">
-          <p>🎧 <strong>${beat.title}</strong></p>
-          <p>▶ Plays: ${beat.plays || 0}</p>
-          <button onclick="playBeat('${docSnap.id}', '${beat.fileUrl}')">Play</button>
-        </div>
-      `;
-    });
-  };
+          <h3>Profile</h3>
+          <input id="setName" placeholder="Producer name" />
+          <input id="setEmail" disabled />
+          <button id="saveProfile">Save Profile</button>
+          <p id="profileMsg"></p>
+        </div>`;
 
-  window.playBeat = async (beatId, url) => {
-    const audio = new Audio(url);
-    audio.play();
-    const beatRef = doc(db, 'beats', beatId);
-    const snap = await getDoc(beatRef);
-    await updateDoc(beatRef, { plays: (snap.data().plays || 0) + 1 });
+      const snap = await getDoc(doc(db, 'users', currentUser.uid));
+      const user = snap.data();
+
+      document.getElementById('setName').value = user.name || '';
+      document.getElementById('setEmail').value = currentUser.email;
+
+      document.getElementById('saveProfile').onclick = async () => {
+        await updateDoc(doc(db, 'users', currentUser.uid), {
+          name: document.getElementById('setName').value
+        });
+        document.getElementById('profileMsg').innerText = 'Profile saved ✅';
+      };
+    }
+
+    if (page === 'analytics') content.innerHTML = '<div class="card">Analytics coming soon 📊</div>';
+    if (page === 'finance') content.innerHTML = '<div class="card">Finance coming soon 💰</div>';
+    if (page === 'tracks') content.innerHTML = '<div class="card">Tracks coming next 🎶</div>';
+    if (page === 'upgrade') content.innerHTML = '<div class="card">Upgrade page coming soon 🚀</div>';
   };
 
   onAuthStateChanged(auth, async (user) => {
@@ -230,16 +128,11 @@
     }
 
     currentUser = user;
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      await setDoc(userRef, {
-        email: user.email,
-        plan: 'free',
-        uploads: 0,
-        createdAt: new Date()
-      });
+      await setDoc(ref, { email: user.email, plan: 'free', uploads: 0 });
     }
 
     loadPage('home');
