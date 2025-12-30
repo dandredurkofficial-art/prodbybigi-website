@@ -1,120 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Producer Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
 <script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
 
 <style>
 *{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0e14;color:#fff;display:flex;height:100vh}
-a{color:inherit;text-decoration:none}
+body{margin:0;background:#0b0d12;color:#fff;display:flex;height:100vh}
 
-/* SIDEBAR */
-.sidebar{
-  width:260px;
-  background:#0f131a;
-  padding:24px;
-  position:fixed;
-  left:0;top:0;bottom:0;
-  transition:.3s;
-  z-index:1000;
-}
-.sidebar h1{font-size:20px;margin-bottom:30px;color:#6cf}
-.sidebar a{
-  display:flex;
-  align-items:center;
-  padding:12px 14px;
-  border-radius:12px;
-  color:#bfc6d4;
-  margin-bottom:6px;
-}
-.sidebar a:hover{background:#1b2130;color:#fff}
-.sidebar .upgrade{
-  background:linear-gradient(135deg,#6cf,#9f6cff);
-  color:#000;
-  font-weight:700;
-  margin-top:20px;
-  justify-content:center;
-}
+.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230;transition:.3s;z-index:1000}
+.sidebar h1{font-size:20px;margin-bottom:28px;color:#6cf}
+.sidebar a{display:block;padding:12px 14px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;font-weight:500}
+.sidebar a:hover{background:#1b2133;color:#fff}
+.sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:700;text-align:center;margin-top:20px}
+.sidebar.show{left:0}
 
-/* MAIN */
 .main{flex:1;margin-left:260px;display:flex;flex-direction:column}
 
-/* TOPBAR */
-.topbar{
-  height:70px;
-  background:#0f131a;
-  border-bottom:1px solid #1c2333;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 24px;
-}
-.hamburger{display:none;font-size:22px;cursor:pointer}
-.logout{
-  background:#ff5f5f;
-  border:none;
-  padding:8px 14px;
-  border-radius:10px;
-  font-weight:600;
-  cursor:pointer;
-}
+.topbar{height:72px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.hamburger{font-size:22px;cursor:pointer;display:none}
+.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
 
-/* CONTENT */
-.content{padding:30px;overflow-y:auto}
+.content{padding:26px;overflow-y:auto}
+.card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
 .page{display:none}
 .page.active{display:block}
 
-.card{
-  background:#121826;
-  border:1px solid #1c2333;
-  border-radius:16px;
-  padding:22px;
-  margin-bottom:22px;
-}
+h2,h3{margin-top:0}
+button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000}
+button.secondary{background:#1b2133;color:#fff}
+button.small{padding:7px 12px;font-size:13px}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+input,textarea,select{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;margin-top:10px;background:#0f1219;color:#fff}
+textarea{min-height:90px}
 
-.stat{
-  background:#0f1524;
-  border-radius:14px;
-  padding:18px;
-  text-align:center;
-}
-.stat h2{margin:0;font-size:28px;color:#6cf}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.stat{background:#0f1219;border:1px solid #1d2230;border-radius:16px;padding:18px}
+.stat h4{margin:0;color:#6cf}
+.stat p{font-size:22px;font-weight:700;margin:6px 0 0}
 
-button{
-  background:#6cf;
-  border:none;
-  padding:10px 16px;
-  border-radius:12px;
-  font-weight:600;
-  cursor:pointer;
-}
-button.small{padding:6px 10px;font-size:13px}
+.beat{display:flex;gap:14px;align-items:center}
+.beat img{width:70px;height:70px;border-radius:12px;object-fit:cover}
 
-input,textarea{
-  width:100%;
-  background:#0f1524;
-  border:1px solid #1c2333;
-  border-radius:10px;
-  padding:10px;
-  color:#fff;
-  margin-top:8px;
-}
-
-/* MOBILE */
-@media(max-width:900px){
-  .sidebar{left:-260px}
-  .sidebar.show{left:0}
-  .main{margin-left:0}
-  .hamburger{display:block}
-}
+@media(max-width:900px){.sidebar{left:-260px}.main{margin-left:0}.hamburger{display:block}}
 </style>
 </head>
 
@@ -140,70 +72,65 @@ input,textarea{
 
   <div class="content">
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="page active">
-  <div class="grid">
-    <div class="stat"><h2 id="statBeats">0</h2><p>Beats Uploaded</p></div>
-    <div class="stat"><h2 id="statPlays">0</h2><p>Total Plays</p></div>
-    <div class="stat"><h2 id="statEarnings">$0</h2><p>Earnings</p></div>
-  </div>
-</div>
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="stat"><h4>Total Plays</h4><p id="statPlays">0</p></div>
+        <div class="stat"><h4>Total Sales</h4><p id="statSales">$0.00</p></div>
+        <div class="stat"><h4>Beats Uploaded</h4><p id="statBeats">0</p></div>
+      </div>
+    </div>
 
-<!-- TRACKS -->
-<div id="tracks" class="page">
-  <div class="card">
-    <h3>Upload Beat</h3>
-    <input id="beatTitle" placeholder="Beat title">
-    <input id="beatPrice" placeholder="Price ($)">
-    <input type="file" id="beatFile">
-    <button onclick="uploadBeat()">Upload Beat</button>
-    <p id="uploadMsg"></p>
-  </div>
-  <div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
-</div>
+    <div id="tracks" class="page">
+      <div class="card">
+        <h3>Upload Beat</h3>
+        <input id="beatTitle" placeholder="Beat title">
+        <input id="beatBpm" type="number" placeholder="BPM">
+        <input id="beatGenre" placeholder="Genre">
+        <input id="beatMood" placeholder="Mood">
+        <input id="beatPrice" type="number" placeholder="Price (USD)">
+        <input id="beatCover" type="file" accept="image/*">
+        <input id="beatFile" type="file" accept=".mp3,.wav">
+        <button onclick="uploadBeat()">Upload Beat</button>
+        <p id="uploadMsg"></p>
+      </div>
+      <div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
+    </div>
 
-<!-- ANALYTICS -->
-<div id="analytics" class="page">
-  <div class="card"><h3>Analytics</h3><p>Real data from Firestore (plays per beat)</p></div>
-</div>
+    <div id="analytics" class="page"><div class="card"><h3>Analytics</h3><p>Real play & view stats powered by Firestore.</p></div></div>
 
-<!-- FINANCE -->
-<div id="finance" class="page">
-  <div class="card"><h3>Finance</h3><p>Total earnings & subscriptions</p></div>
-</div>
+    <div id="finance" class="page"><div class="card"><h3>Finance</h3><p>Sales, earnings & payouts overview.</p></div></div>
 
-<!-- DISCOGRAPHY -->
-<div id="discography" class="page">
-  <div class="card">
-    <h3>Discography</h3>
-    <input placeholder="Spotify Track URL">
-    <button>Add Track</button>
-  </div>
-</div>
+    <div id="discography" class="page">
+      <div class="card">
+        <h3>Discography</h3>
+        <input placeholder="Spotify track URL">
+        <button class="small">Add Release</button>
+      </div>
+    </div>
 
-<!-- SETTINGS -->
-<div id="settings" class="page">
-  <div class="card">
-    <h3>Profile</h3>
-    <input id="displayName" placeholder="Display Name">
-    <input id="firstName" placeholder="First Name">
-    <input id="lastName" placeholder="Last Name">
-    <textarea id="bio" placeholder="Biography"></textarea>
-    <input id="location" placeholder="Location">
-    <input id="instagram" placeholder="Instagram URL">
-    <button onclick="saveProfile()">Save Profile</button>
-  </div>
-</div>
+    <div id="settings" class="page">
+      <div class="card">
+        <h3>Profile Settings</h3>
+        <input placeholder="Display Name">
+        <input placeholder="First Name">
+        <input placeholder="Last Name">
+        <input placeholder="Location">
+        <textarea placeholder="Biography"></textarea>
+        <input placeholder="Instagram URL">
+        <input placeholder="Twitter / X URL">
+        <input placeholder="YouTube URL">
+        <input type="file" accept="image/*">
+        <button class="small">Save Profile</button>
+      </div>
+    </div>
 
-<!-- UPGRADE -->
-<div id="upgrade" class="page">
-  <div class="card">
-    <h3>Upgrade Plan</h3>
-    <div id="paypalStarter"></div>
-    <div id="paypalGrowth"></div>
-    <div id="paypalPro"></div>
-  </div>
-</div>
+    <div id="upgrade" class="page">
+      <div class="grid">
+        <div class="card"><h3>Starter</h3><p>$15 / year</p><div id="paypal-starter"></div></div>
+        <div class="card"><h3>Growth</h3><p>$60 / year</p><div id="paypal-growth"></div></div>
+        <div class="card"><h3>Professional</h3><p>$159 / year</p><div id="paypal-pro"></div></div>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -211,7 +138,7 @@ input,textarea{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, updateDoc, addDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -226,59 +153,67 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let user=null;
+let currentUser=null;
 
-onAuthStateChanged(auth,u=>{
-  if(!u) location.href="login.html";
-  user=u;
-});
+onAuthStateChanged(auth,u=>{if(!u)location.href='login.html';currentUser=u;loadBeats();});
 
-window.logout=async()=>{await signOut(auth);location.href="login.html";}
+window.logout = async () => { await signOut(auth); location.href='login.html'; };
+window.toggleMenu = () => { const s=sidebar.classList.toggle('show'); hamburger.innerText=s?'✕':'☰'; };
+window.loadPage = (p)=>{ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); pageTitle.innerText=p.charAt(0).toUpperCase()+p.slice(1); if(innerWidth<900){sidebar.classList.remove('show');hamburger.innerText='☰';}};
 
-window.toggleMenu=()=>{
-  sidebar.classList.toggle("show");
-  hamburger.innerText=sidebar.classList.contains("show")?"✕":"☰";
-};
+// Cloudinary
+const CLOUD='djd8vki8s';
+const PRESET='beats_unsigned';
 
-window.loadPage=(p)=>{
-  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
-  document.getElementById(p).classList.add("active");
-  pageTitle.innerText=p.charAt(0).toUpperCase()+p.slice(1);
-  if(innerWidth<900){sidebar.classList.remove("show");hamburger.innerText="☰";}
-};
+async function uploadCloud(file,folder){
+  const f=new FormData();
+  f.append('file',file);
+  f.append('upload_preset',PRESET);
+  f.append('folder',folder);
+  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:'POST',body:f});
+  return (await r.json()).secure_url;
+}
 
-window.saveProfile=async()=>{
-  await updateDoc(doc(db,"users",user.uid),{
-    displayName:displayName.value||"",
-    firstName:firstName.value||"",
-    lastName:lastName.value||"",
-    bio:bio.value||"",
-    location:location.value||"",
-    instagram:instagram.value||""
+window.uploadBeat = async ()=>{
+  const title=beatTitle.value;
+  const bpm=beatBpm.value;
+  const genre=beatGenre.value;
+  const mood=beatMood.value;
+  const price=parseFloat(beatPrice.value||29.99);
+  const cover=beatCover.files[0];
+  const file=beatFile.files[0];
+  if(!title||!cover||!file){uploadMsg.innerText='All fields required';return;}
+  uploadMsg.innerText='Uploading...';
+  const coverUrl=await uploadCloud(cover,`covers/${currentUser.uid}`);
+  const fileUrl=await uploadCloud(file,`beats/${currentUser.uid}`);
+  await addDoc(collection(db,'beats'),{
+    uid:currentUser.uid,title,bpm,genre,mood,price,coverUrl,fileUrl,plays:0,createdAt:serverTimestamp()
   });
-  alert("Profile updated");
+  uploadMsg.innerText='Uploaded successfully';
+  loadBeats();
 };
 
-/* PAYPAL */
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-8FN35171F4185880VNFJ5YGI"}),
-  onApprove:(d)=>savePlan("starter",d.subscriptionID)
-}).render("#paypalStarter");
-
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-4MM864528J575140DNFJ5XQQ"}),
-  onApprove:(d)=>savePlan("growth",d.subscriptionID)
-}).render("#paypalGrowth");
-
-paypal.Buttons({
-  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-1TH20083J44769154NFJ5VTA"}),
-  onApprove:(d)=>savePlan("professional",d.subscriptionID)
-}).render("#paypalPro");
-
-async function savePlan(plan,sub){
-  await updateDoc(doc(db,"users",user.uid),{plan,subscriptionId:sub});
-  alert("Subscribed to "+plan);
+async function loadBeats(){
+  if(!currentUser)return;
+  const q=query(collection(db,'beats'),where('uid','==',currentUser.uid));
+  const snap=await getDocs(q);
+  beatList.innerHTML='';
+  let totalPlays=0;
+  snap.forEach(d=>{
+    const b=d.data();
+    totalPlays+=b.plays||0;
+    beatList.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}'></audio></div></div>`;
+  });
+  statBeats.innerText=snap.size;
+  statPlays.innerText=totalPlays;
 }
 </script>
+
+<script>
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'})}).render('#paypal-starter');
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'})}).render('#paypal-growth');
+paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'})}).render('#paypal-pro');
+</script>
+
 </body>
 </html>
