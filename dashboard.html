@@ -173,11 +173,31 @@
 
     snap.forEach(d => {
       const b = d.data();
+      const id = d.id;
+
       list.innerHTML += `
-        <div class="card">
-          <img src="${b.coverUrl}" style="width:100%;border-radius:10px;margin-bottom:10px;" />
-          <strong>${b.title}</strong>
-          <audio controls src="${b.fileUrl}"></audio>
+        <div class="card beat-card" style="display:flex;gap:14px;align-items:center;">
+          <img src="${b.coverUrl}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;" />
+          <div style="flex:1;">
+            <strong>${b.title}</strong>
+            <div style="font-size:13px;color:#aaa;margin:4px 0;">
+              ${b.bpm ? b.bpm + ' BPM' : ''} • ${b.genre || 'Unknown'} • ${b.mood || 'Mood'}
+            </div>
+            <div style="font-size:12px;color:#6cf;">💰 $${b.price || '29.99'} • ▶ ${b.plays || 0} plays</div>
+            <audio controls src="${b.fileUrl}" style="margin-top:6px;"></audio>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button onclick="editBeat('${id}')">Edit</button>
+            <button onclick="deleteBeat('${id}')" style="background:#f66;">Delete</button>
+          </div>
+        </div>`;
+    });
+  }" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0;" />
+          <div style="flex:1;">
+            <strong>${b.title}</strong><br/>
+            <span style="font-size:13px;color:#aaa;">${b.bpm ? b.bpm + ' BPM' : 'Tempo N/A'}</span>
+            <audio controls src="${b.fileUrl}" style="margin-top:6px;"></audio>
+          </div>
         </div>`;
     });
   }
