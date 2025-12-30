@@ -1,109 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Producer Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
+<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
+
 <style>
 *{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0b0e;color:#fff;display:flex;height:100vh}
+body{margin:0;background:#0b0e14;color:#fff;display:flex;height:100vh}
+a{color:inherit;text-decoration:none}
 
 /* SIDEBAR */
 .sidebar{
   width:260px;
-  background:#111;
-  padding:20px;
+  background:#0f131a;
+  padding:24px;
   position:fixed;
   left:0;top:0;bottom:0;
   transition:.3s;
   z-index:1000;
 }
-.sidebar h1{font-size:20px;margin-bottom:25px;color:#6cf}
+.sidebar h1{font-size:20px;margin-bottom:30px;color:#6cf}
 .sidebar a{
-  display:block;
-  padding:12px;
-  border-radius:10px;
-  color:#bbb;
-  text-decoration:none;
+  display:flex;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:12px;
+  color:#bfc6d4;
   margin-bottom:6px;
 }
-.sidebar a:hover{background:#1c1c1c;color:#fff}
-.sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:600;text-align:center;margin-top:20px}
-
-.sidebar.show{left:0}
+.sidebar a:hover{background:#1b2130;color:#fff}
+.sidebar .upgrade{
+  background:linear-gradient(135deg,#6cf,#9f6cff);
+  color:#000;
+  font-weight:700;
+  margin-top:20px;
+  justify-content:center;
+}
 
 /* MAIN */
-.main{
-  flex:1;
-  margin-left:260px;
-  display:flex;
-  flex-direction:column;
-}
+.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
 
 /* TOPBAR */
 .topbar{
   height:70px;
-  background:#111;
+  background:#0f131a;
+  border-bottom:1px solid #1c2333;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 20px;
-  border-bottom:1px solid #222;
+  padding:0 24px;
 }
-.hamburger{
-  font-size:22px;
-  cursor:pointer;
-  display:none;
-}
+.hamburger{display:none;font-size:22px;cursor:pointer}
 .logout{
-  background:#f55;
+  background:#ff5f5f;
   border:none;
   padding:8px 14px;
-  border-radius:8px;
-  cursor:pointer;
-  font-weight:600;
-}
-
-/* CONTENT */
-.content{
-  padding:25px;
-  overflow-y:auto;
-}
-.card{
-  background:#141414;
-  border:1px solid #222;
-  border-radius:14px;
-  padding:20px;
-  margin-bottom:20px;
-}
-.page{display:none}
-.page.active{display:block}
-
-button{
-  background:#6cf;
-  border:none;
-  padding:10px 14px;
   border-radius:10px;
   font-weight:600;
   cursor:pointer;
 }
-button.small{padding:6px 10px;font-size:13px}
-input,select{
-  width:100%;
-  padding:10px;
-  border-radius:8px;
+
+/* CONTENT */
+.content{padding:30px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+
+.card{
+  background:#121826;
+  border:1px solid #1c2333;
+  border-radius:16px;
+  padding:22px;
+  margin-bottom:22px;
+}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+
+.stat{
+  background:#0f1524;
+  border-radius:14px;
+  padding:18px;
+  text-align:center;
+}
+.stat h2{margin:0;font-size:28px;color:#6cf}
+
+button{
+  background:#6cf;
   border:none;
-  margin-top:8px;
-  background:#1c1c1c;
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:600;
+  cursor:pointer;
+}
+button.small{padding:6px 10px;font-size:13px}
+
+input,textarea{
+  width:100%;
+  background:#0f1524;
+  border:1px solid #1c2333;
+  border-radius:10px;
+  padding:10px;
   color:#fff;
+  margin-top:8px;
 }
 
 /* MOBILE */
-@media(max-width:800px){
+@media(max-width:900px){
   .sidebar{left:-260px}
+  .sidebar.show{left:0}
   .main{margin-left:0}
   .hamburger{display:block}
 }
@@ -112,18 +120,17 @@ input,select{
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
   <h1>ProdByBigi</h1>
   <a onclick="loadPage('dashboard')">Dashboard</a>
   <a onclick="loadPage('tracks')">Tracks</a>
   <a onclick="loadPage('analytics')">Analytics</a>
   <a onclick="loadPage('finance')">Finance</a>
+  <a onclick="loadPage('discography')">Discography</a>
   <a onclick="loadPage('settings')">Settings</a>
   <a class="upgrade" onclick="loadPage('upgrade')">Upgrade to Pro</a>
 </div>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="hamburger" id="hamburger" onclick="toggleMenu()">☰</div>
@@ -132,53 +139,79 @@ input,select{
   </div>
 
   <div class="content">
-    <div id="dashboard" class="page active">
-      <div class="card">
-        <h2>Welcome back 👋</h2>
-        <p>Manage your beats, sales and analytics.</p>
-      </div>
-    </div>
 
-    <div id="tracks" class="page">
-      <div class="card"><h3>Tracks system</h3><p>Upload & manage beats.</p></div>
-    </div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="page active">
+  <div class="grid">
+    <div class="stat"><h2 id="statBeats">0</h2><p>Beats Uploaded</p></div>
+    <div class="stat"><h2 id="statPlays">0</h2><p>Total Plays</p></div>
+    <div class="stat"><h2 id="statEarnings">$0</h2><p>Earnings</p></div>
+  </div>
+</div>
 
-    <div id="analytics" class="page">
-      <div class="card"><h3>Analytics</h3><p>Real play & view stats coming next.</p></div>
-    </div>
+<!-- TRACKS -->
+<div id="tracks" class="page">
+  <div class="card">
+    <h3>Upload Beat</h3>
+    <input id="beatTitle" placeholder="Beat title">
+    <input id="beatPrice" placeholder="Price ($)">
+    <input type="file" id="beatFile">
+    <button onclick="uploadBeat()">Upload Beat</button>
+    <p id="uploadMsg"></p>
+  </div>
+  <div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
+</div>
 
-    <div id="finance" class="page">
-      <div class="card"><h3>Finance</h3><p>Sales & earnings dashboard.</p></div>
-    </div>
+<!-- ANALYTICS -->
+<div id="analytics" class="page">
+  <div class="card"><h3>Analytics</h3><p>Real data from Firestore (plays per beat)</p></div>
+</div>
 
-    <div id="upgrade" class="page">
-      <div class="card">
-        <h3>Upgrade your plan</h3>
-        <ul>
-          <li>Sell beats with 0% commission</li>
-          <li>Unlimited uploads</li>
-          <li>Advanced analytics</li>
-          <li>Instant payouts</li>
-        </ul>
-        <button class="small">Subscribe with PayPal</button>
-      </div>
-    </div>
+<!-- FINANCE -->
+<div id="finance" class="page">
+  <div class="card"><h3>Finance</h3><p>Total earnings & subscriptions</p></div>
+</div>
 
-    <div id="settings" class="page">
-      <div class="card">
-        <h3>Account Settings</h3>
-        <input placeholder="Display Name">
-        <input placeholder="Email">
-        <input type="file">
-        <button class="small">Save Changes</button>
-      </div>
-    </div>
+<!-- DISCOGRAPHY -->
+<div id="discography" class="page">
+  <div class="card">
+    <h3>Discography</h3>
+    <input placeholder="Spotify Track URL">
+    <button>Add Track</button>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="page">
+  <div class="card">
+    <h3>Profile</h3>
+    <input id="displayName" placeholder="Display Name">
+    <input id="firstName" placeholder="First Name">
+    <input id="lastName" placeholder="Last Name">
+    <textarea id="bio" placeholder="Biography"></textarea>
+    <input id="location" placeholder="Location">
+    <input id="instagram" placeholder="Instagram URL">
+    <button onclick="saveProfile()">Save Profile</button>
+  </div>
+</div>
+
+<!-- UPGRADE -->
+<div id="upgrade" class="page">
+  <div class="card">
+    <h3>Upgrade Plan</h3>
+    <div id="paypalStarter"></div>
+    <div id="paypalGrowth"></div>
+    <div id="paypalPro"></div>
+  </div>
+</div>
+
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, updateDoc, addDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -191,32 +224,61 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "login.html";
-};
+let user=null;
 
-window.toggleMenu = () => {
-  const sidebar = document.getElementById("sidebar");
-  const burger = document.getElementById("hamburger");
+onAuthStateChanged(auth,u=>{
+  if(!u) location.href="login.html";
+  user=u;
+});
+
+window.logout=async()=>{await signOut(auth);location.href="login.html";}
+
+window.toggleMenu=()=>{
   sidebar.classList.toggle("show");
-  burger.innerText = sidebar.classList.contains("show") ? "✕" : "☰";
+  hamburger.innerText=sidebar.classList.contains("show")?"✕":"☰";
 };
 
-window.loadPage = (page) => {
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.getElementById(page).classList.add("active");
-  document.getElementById("pageTitle").innerText =
-    page.charAt(0).toUpperCase()+page.slice(1);
-
-  // Mobile auto close
-  if(window.innerWidth <= 800){
-    document.getElementById("sidebar").classList.remove("show");
-    document.getElementById("hamburger").innerText="☰";
-  }
+window.loadPage=(p)=>{
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  document.getElementById(p).classList.add("active");
+  pageTitle.innerText=p.charAt(0).toUpperCase()+p.slice(1);
+  if(innerWidth<900){sidebar.classList.remove("show");hamburger.innerText="☰";}
 };
+
+window.saveProfile=async()=>{
+  await updateDoc(doc(db,"users",user.uid),{
+    displayName:displayName.value||"",
+    firstName:firstName.value||"",
+    lastName:lastName.value||"",
+    bio:bio.value||"",
+    location:location.value||"",
+    instagram:instagram.value||""
+  });
+  alert("Profile updated");
+};
+
+/* PAYPAL */
+paypal.Buttons({
+  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-8FN35171F4185880VNFJ5YGI"}),
+  onApprove:(d)=>savePlan("starter",d.subscriptionID)
+}).render("#paypalStarter");
+
+paypal.Buttons({
+  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-4MM864528J575140DNFJ5XQQ"}),
+  onApprove:(d)=>savePlan("growth",d.subscriptionID)
+}).render("#paypalGrowth");
+
+paypal.Buttons({
+  createSubscription:(d,a)=>a.subscription.create({plan_id:"P-1TH20083J44769154NFJ5VTA"}),
+  onApprove:(d)=>savePlan("professional",d.subscriptionID)
+}).render("#paypalPro");
+
+async function savePlan(plan,sub){
+  await updateDoc(doc(db,"users",user.uid),{plan,subscriptionId:sub});
+  alert("Subscribed to "+plan);
+}
 </script>
-
 </body>
 </html>
