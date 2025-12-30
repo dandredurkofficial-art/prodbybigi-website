@@ -6,50 +6,37 @@
 <title>Producer Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
 
 <style>
 *{box-sizing:border-box;font-family:Inter}
 body{margin:0;background:#0b0d12;color:#fff;display:flex;height:100vh}
-
 .sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230;transition:.3s;z-index:1000}
 .sidebar h1{font-size:20px;margin-bottom:28px;color:#6cf}
-.sidebar a{display:block;padding:12px 14px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;font-weight:500}
+.sidebar a{display:block;padding:12px 14px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;font-weight:500;cursor:pointer}
 .sidebar a:hover{background:#1b2133;color:#fff}
 .sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:700;text-align:center;margin-top:20px}
 .sidebar.show{left:0}
-
 .main{flex:1;margin-left:260px;display:flex;flex-direction:column}
-
 .topbar{height:72px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
 .hamburger{font-size:22px;cursor:pointer;display:none}
 .logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
-
 .content{padding:26px;overflow-y:auto}
 .card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
 .page{display:none}
 .page.active{display:block}
-
-h2,h3{margin-top:0}
-button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000}
-button.secondary{background:#1b2133;color:#fff}
-button.small{padding:7px 12px;font-size:13px}
-
-input,textarea,select{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;margin-top:10px;background:#0f1219;color:#fff}
-textarea{min-height:90px}
-
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
 .stat{background:#0f1219;border:1px solid #1d2230;border-radius:16px;padding:18px}
 .stat h4{margin:0;color:#6cf}
 .stat p{font-size:22px;font-weight:700;margin:6px 0 0}
-
-.beat{display:flex;gap:14px;align-items:center}
+.beat{display:flex;gap:14px;align-items:center;margin-bottom:12px}
 .beat img{width:70px;height:70px;border-radius:12px;object-fit:cover}
-
+button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000}
+input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;margin-top:10px;background:#0f1219;color:#fff}
 @media(max-width:900px){.sidebar{left:-260px}.main{margin-left:0}.hamburger{display:block}}
 </style>
 </head>
-
 <body>
 
 <div class="sidebar" id="sidebar">
@@ -58,7 +45,6 @@ textarea{min-height:90px}
   <a onclick="loadPage('tracks')">Tracks</a>
   <a onclick="loadPage('analytics')">Analytics</a>
   <a onclick="loadPage('finance')">Finance</a>
-  <a onclick="loadPage('discography')">Discography</a>
   <a onclick="loadPage('settings')">Settings</a>
   <a class="upgrade" onclick="loadPage('upgrade')">Upgrade to Pro</a>
 </div>
@@ -75,7 +61,7 @@ textarea{min-height:90px}
     <div id="dashboard" class="page active">
       <div class="grid">
         <div class="stat"><h4>Total Plays</h4><p id="statPlays">0</p></div>
-        <div class="stat"><h4>Total Sales</h4><p id="statSales">$0.00</p></div>
+        <div class="stat"><h4>Total Earnings</h4><p id="statSales">$0.00</p></div>
         <div class="stat"><h4>Beats Uploaded</h4><p id="statBeats">0</p></div>
       </div>
     </div>
@@ -87,7 +73,7 @@ textarea{min-height:90px}
         <input id="beatBpm" type="number" placeholder="BPM">
         <input id="beatGenre" placeholder="Genre">
         <input id="beatMood" placeholder="Mood">
-        <input id="beatPrice" type="number" placeholder="Price (USD)">
+        <input id="beatPrice" type="number" placeholder="Price">
         <input id="beatCover" type="file" accept="image/*">
         <input id="beatFile" type="file" accept=".mp3,.wav">
         <button onclick="uploadBeat()">Upload Beat</button>
@@ -97,44 +83,22 @@ textarea{min-height:90px}
     </div>
 
     <div id="analytics" class="page">
-  <div class="card">
-    <h3>Analytics Overview</h3>
-    <canvas id="playsChart" height="120"></canvas>
-    <p style="color:#9aa3c7;font-size:14px">Plays per beat (real data from Firestore)</p>
-  </div>
-</div></div>
+      <div class="card"><h3>Plays Analytics</h3><canvas id="playsChart"></canvas></div>
+    </div>
 
-    <div id="finance" class="page"><div class="card"><h3>Finance</h3><p>Sales, earnings & payouts overview.</p></div></div>
-
-    <div id="discography" class="page">
-      <div class="card">
-        <h3>Discography</h3>
-        <input placeholder="Spotify track URL">
-        <button class="small">Add Release</button>
-      </div>
+    <div id="finance" class="page">
+      <div class="card"><h3>Finance</h3><div id="salesList"></div></div>
     </div>
 
     <div id="settings" class="page">
-      <div class="card">
-        <h3>Profile Settings</h3>
-        <input placeholder="Display Name">
-        <input placeholder="First Name">
-        <input placeholder="Last Name">
-        <input placeholder="Location">
-        <textarea placeholder="Biography"></textarea>
-        <input placeholder="Instagram URL">
-        <input placeholder="Twitter / X URL">
-        <input placeholder="YouTube URL">
-        <input type="file" accept="image/*">
-        <button class="small">Save Profile</button>
-      </div>
+      <div class="card"><h3>Profile</h3><input id="displayName" placeholder="Display Name"><button onclick="saveProfile()">Save</button></div>
     </div>
 
     <div id="upgrade" class="page">
       <div class="grid">
-        <div class="card"><h3>Starter</h3><p>$15 / year</p><div id="paypal-starter"></div></div>
-        <div class="card"><h3>Growth</h3><p>$60 / year</p><div id="paypal-growth"></div></div>
-        <div class="card"><h3>Professional</h3><p>$159 / year</p><div id="paypal-pro"></div></div>
+        <div class="card"><h3>Starter</h3><div id="paypal-starter"></div></div>
+        <div class="card"><h3>Growth</h3><div id="paypal-growth"></div></div>
+        <div class="card"><h3>Professional</h3><div id="paypal-pro"></div></div>
       </div>
     </div>
 
@@ -144,104 +108,37 @@ textarea{min-height:90px}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
-};
+const firebaseConfig={apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",authDomain:"prodbybigi.firebaseapp.com",projectId:"prodbybigi",storageBucket:"prodbybigi.firebasestorage.app",messagingSenderId:"1040553526206",appId:"1:1040553526206:web:38216a9f75eabfe556efef"};
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getFirestore(app);
+let user=null;
 
-let currentUser=null;
+onAuthStateChanged(auth,u=>{if(!u)location.href='login.html';user=u;loadBeats();});
 
-onAuthStateChanged(auth,u=>{if(!u)location.href='login.html';currentUser=u;loadBeats();});
+window.logout=async()=>{await signOut(auth);location.href='login.html';};
+window.toggleMenu=()=>{const s=sidebar.classList.toggle('show');hamburger.innerText=s?'✕':'☰';};
+window.loadPage=p=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p).classList.add('active');pageTitle.innerText=p.charAt(0).toUpperCase()+p.slice(1);if(innerWidth<900){sidebar.classList.remove('show');hamburger.innerText='☰';}};
 
-window.logout = async () => { await signOut(auth); location.href='login.html'; };
-window.toggleMenu = () => { const s=sidebar.classList.toggle('show'); hamburger.innerText=s?'✕':'☰'; };
-window.loadPage = (p)=>{ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active')); document.getElementById(p).classList.add('active'); pageTitle.innerText=p.charAt(0).toUpperCase()+p.slice(1); if(innerWidth<900){sidebar.classList.remove('show');hamburger.innerText='☰';}};
-
-// Cloudinary
 const CLOUD='djd8vki8s';
 const PRESET='beats_unsigned';
 
-async function uploadCloud(file,folder){
-  const f=new FormData();
-  f.append('file',file);
-  f.append('upload_preset',PRESET);
-  f.append('folder',folder);
-  const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:'POST',body:f});
-  return (await r.json()).secure_url;
-}
+async function uploadCloud(file,folder){const f=new FormData();f.append('file',file);f.append('upload_preset',PRESET);f.append('folder',folder);const r=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD}/auto/upload`,{method:'POST',body:f});return (await r.json()).secure_url;}
 
-window.uploadBeat = async ()=>{
-  const title=beatTitle.value;
-  const bpm=beatBpm.value;
-  const genre=beatGenre.value;
-  const mood=beatMood.value;
-  const price=parseFloat(beatPrice.value||29.99);
-  const cover=beatCover.files[0];
-  const file=beatFile.files[0];
-  if(!title||!cover||!file){uploadMsg.innerText='All fields required';return;}
-  uploadMsg.innerText='Uploading...';
-  const coverUrl=await uploadCloud(cover,`covers/${currentUser.uid}`);
-  const fileUrl=await uploadCloud(file,`beats/${currentUser.uid}`);
-  await addDoc(collection(db,'beats'),{
-    uid:currentUser.uid,title,bpm,genre,mood,price,coverUrl,fileUrl,plays:0,createdAt:serverTimestamp()
-  });
-  uploadMsg.innerText='Uploaded successfully';
-  loadBeats();
-};
+window.uploadBeat=async()=>{if(!user)return;uploadMsg.innerText='Uploading...';const cover=await uploadCloud(beatCover.files[0],'covers');const file=await uploadCloud(beatFile.files[0],'beats');await addDoc(collection(db,'beats'),{uid:user.uid,title:beatTitle.value,bpm:beatBpm.value,genre:beatGenre.value,mood:beatMood.value,price:Number(beatPrice.value||29.99),coverUrl:cover,fileUrl:file,plays:0,createdAt:serverTimestamp()});uploadMsg.innerText='Uploaded';loadBeats();};
 
-async function loadBeats(){
-  if(!currentUser)return;
-  const q=query(collection(db,'beats'),where('uid','==',currentUser.uid));
-  const snap=await getDocs(q);
-  beatList.innerHTML='';
-  let totalPlays=0;
-  const labels=[]; const data=[];
+async function loadBeats(){const q=query(collection(db,'beats'),where('uid','==',user.uid));const snap=await getDocs(q);beatList.innerHTML='';let plays=0;const labels=[],data=[];snap.forEach(d=>{const b=d.data();plays+=b.plays||0;labels.push(b.title);data.push(b.plays||0);beatList.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'><div><strong>${b.title}</strong><audio controls src='${b.fileUrl}' onplay="incrementPlay('${d.id}')"></audio></div></div>`;});statBeats.innerText=snap.size;statPlays.innerText=plays;renderChart(labels,data);}
 
-  snap.forEach(d=>{
-    const b=d.data();
-    totalPlays+=b.plays||0;
-    labels.push(b.title);
-    data.push(b.plays||0);
-    beatList.innerHTML+=`<div class='beat'><img src='${b.coverUrl}'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}' onplay="incrementPlay('${d.id}')"></audio></div></div>`;
-  });
-  statBeats.innerText=snap.size;
-  statPlays.innerText=totalPlays;
-  renderChart(labels,data);
-}
+window.incrementPlay=async(id)=>{await updateDoc(doc(db,'beats',id),{plays:increment(1)});};
 
-window.incrementPlay = async (id)=>{
-  const ref=doc(db,'beats',id);
-  await updateDoc(ref,{plays:increment(1)});
-};'/><div><strong>${b.title}</strong><div style='font-size:13px;color:#9aa3c7'>${b.bpm} BPM • ${b.genre} • ${b.mood}</div><div style='color:#6cf'>$${b.price}</div><audio controls src='${b.fileUrl}'></audio></div></div>`;
-  });
-  statBeats.innerText=snap.size;
-  statPlays.innerText=totalPlays;
-}
+function renderChart(labels,data){if(typeof Chart==='undefined')return;const ctx=document.getElementById('playsChart');if(!ctx)return;if(window.chart)window.chart.destroy();window.chart=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data,backgroundColor:'#6cf'}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}
 
-import { doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-function renderChart(labels,data){
-  const ctx=document.getElementById('playsChart');
-  if(!ctx) return;
-  if(window.chart) window.chart.destroy();
-  window.chart=new Chart(ctx,{
-    type:'bar',
-    data:{labels,datasets:[{label:'Plays',data}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}
-  });
-}
+window.saveProfile=async()=>{await updateDoc(doc(db,'users',user.uid),{displayName:displayName.value||''});alert('Saved');};
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'})}).render('#paypal-starter');
 paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'})}).render('#paypal-growth');
