@@ -1,19 +1,30 @@
-<section class="beats">
-  <div class="beat-card">
-    <img src="assets/cover.jpg">
-    <h3>Dark Drill</h3>
-    <p>Prod. JayBeats</p>
-    <span class="tag free">FREE</span>
-    <audio controls src="assets/beat.mp3"></audio>
-    <button class="free-btn">Download</button>
-  </div>
+<div id="marketBeats"></div>
 
-  <div class="beat-card">
-    <img src="assets/cover.jpg">
-    <h3>Trap Heat</h3>
-    <p>Prod. Bigi</p>
-    <span class="tag paid">$39.99</span>
-    <audio controls src="assets/beat.mp3"></audio>
-    <button class="buy-btn">Buy License</button>
-  </div>
-</section>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const q = query(
+  collection(db, "beats"),
+  orderBy("createdAt", "desc")
+);
+
+const snap = await getDocs(q);
+snap.forEach(doc => {
+  const b = doc.data();
+  marketBeats.innerHTML += `
+    <div class="beat-row">
+      <img src="${b.coverUrl}">
+      <div>
+        <strong>${b.title}</strong>
+        <small>${b.genre} • ${b.bpm} BPM</small>
+      </div>
+      <span>$${b.price}</span>
+      <a href="beat.html?beat=${doc.id}">Buy</a>
+    </div>
+  `;
+});
+</script>
