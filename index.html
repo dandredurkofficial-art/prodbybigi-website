@@ -1,28 +1,72 @@
-<div id="homeBeats"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
+<style>
+body { background:#0b0d12; color:white; font-family:Arial; margin:0 }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; padding:30px }
+.beat { background:#121726; padding:15px; border-radius:14px }
+.beat img { width:100%; border-radius:12px }
+</style>
+</head>
+
+<body>
+
+<h2 style="padding:20px">Latest Beats</h2>
+<div class="grid" id="homeBeats"></div>
+
+<!-- ⚠️ MUST BE AT BOTTOM -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+/* 🔴 REQUIRED */
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const q = query(
-  collection(db, "beats"),
-  orderBy("createdAt", "desc"),
-  limit(8)
-);
+const container = document.getElementById("homeBeats");
 
-const snap = await getDocs(q);
-snap.forEach(doc => {
-  const b = doc.data();
-  homeBeats.innerHTML += `
-    <div class="beat-card">
-      <img src="${b.coverUrl}">
-      <h4>${b.title}</h4>
-      <p>$${b.price}</p>
-      <a href="beat.html?beat=${doc.id}">Buy</a>
-    </div>
-  `;
-});
+try {
+  const q = query(
+    collection(db, "beats"),
+    orderBy("createdAt", "desc"),
+    limit(8)
+  );
+
+  const snap = await getDocs(q);
+
+  if (snap.empty) {
+    container.innerHTML = "<p>No beats yet</p>";
+  }
+
+  snap.forEach(doc => {
+    const b = doc.data();
+    container.innerHTML += `
+      <div class="beat">
+        <img src="${b.coverUrl}">
+        <h4>${b.title}</h4>
+        <p>$${b.price}</p>
+      </div>
+    `;
+  });
+
+} catch (err) {
+  console.error(err);
+  container.innerHTML = "<p>Error loading beats</p>";
+}
 </script>
+
+</body>
+</html>
