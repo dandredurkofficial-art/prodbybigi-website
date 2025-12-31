@@ -1,30 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Marketplace</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body { background:#0b0d12; color:white; margin:0; font-family:Arial }
+.row { display:flex; align-items:center; gap:15px; padding:15px; border-bottom:1px solid #1d2230 }
+.row img { width:60px; border-radius:10px }
+</style>
+</head>
+
+<body>
+
+<h2 style="padding:20px">Marketplace</h2>
 <div id="marketBeats"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getFirestore, collection, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const q = query(
-  collection(db, "beats"),
-  orderBy("createdAt", "desc")
-);
+const list = document.getElementById("marketBeats");
 
+const q = query(collection(db, "beats"), orderBy("createdAt", "desc"));
 const snap = await getDocs(q);
+
 snap.forEach(doc => {
   const b = doc.data();
-  marketBeats.innerHTML += `
-    <div class="beat-row">
+  list.innerHTML += `
+    <div class="row">
       <img src="${b.coverUrl}">
       <div>
-        <strong>${b.title}</strong>
+        <strong>${b.title}</strong><br>
         <small>${b.genre} • ${b.bpm} BPM</small>
       </div>
-      <span>$${b.price}</span>
-      <a href="beat.html?beat=${doc.id}">Buy</a>
+      <span style="margin-left:auto">$${b.price}</span>
     </div>
   `;
 });
 </script>
+
+</body>
+</html>
