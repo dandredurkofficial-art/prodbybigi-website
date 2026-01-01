@@ -2,104 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProdByBigi — Sell & Buy Beats</title>
+  <title>ProdByBigi – Beats Marketplace</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
 
-<!-- NAV -->
-<header class="nav">
-  <div class="logo">ProdByBigi</div>
-  <nav>
-    <a href="marketplace.html">Marketplace</a>
-    <a href="register.html">Start Selling</a>
-    <a href="login.html">Sign in</a>
-  </nav>
-</header>
+<body class="home-page">
 
-<!-- 🔥 HERO (NEW — DOES NOT REMOVE ANYTHING) -->
-<section class="hero">
-  <h1>Power your music journey today</h1>
+  <!-- NAV -->
+  <header class="home-nav">
+    <div class="logo">ProdByBigi</div>
+    <nav>
+      <a href="marketplace.html">Marketplace</a>
+      <a href="start-selling.html">Start Selling</a>
+      <a href="login.html">Sign in</a>
+    </nav>
+  </header>
 
-  <ul class="hero-list">
-    <li>🎧 A global marketplace for original beats</li>
-    <li>⚡ Smooth buying & instant downloads</li>
-    <li>📜 Clear licenses for every type of creator</li>
-    <li>🤝 Built by producers, for producers</li>
-  </ul>
+  <!-- HERO -->
+  <section class="home-hero">
+    <h1>Power your music journey today</h1>
 
-  <a href="register.html" class="cta-btn">Get Started</a>
-</section>
+    <ul class="hero-points">
+      <li>🎧 A global marketplace for original beats</li>
+      <li>⚡ Smooth buying & instant downloads</li>
+      <li>📜 Clear licenses for every type of creator</li>
+      <li>🤝 Built by producers, for producers</li>
+    </ul>
 
-<!-- TRENDING BEATS (KEEPING THIS) -->
-<section class="section">
-  <h2>🔥 Trending Beats</h2>
-  <div class="grid" id="trendingBeats"></div>
-</section>
+    <a href="register.html" class="hero-btn">Get Started</a>
+  </section>
 
-<!-- POPULAR GENRES -->
-<section class="section dark">
-  <h2>🎶 Popular Genres</h2>
-  <div class="genres">
-    <span>Hip Hop</span>
-    <span>Drill</span>
-    <span>Afrobeats</span>
-    <span>Trap</span>
-    <span>R&B</span>
-    <span>Pop</span>
-  </div>
-</section>
-
-<!-- APP BADGES -->
-<section class="section">
-  <h2>📱 Available On</h2>
-  <div class="stores">
-    <img src="playstore.png" alt="Google Play" />
-    <img src="appstore.png" alt="App Store" />
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <p>© 2026 ProdByBigi. All rights reserved.</p>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms & Conditions</a>
-    <a href="#">Cookies Policy</a>
-  </div>
-</footer>
-
-<!-- FIREBASE TRENDING LOAD -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const grid = document.getElementById("trendingBeats");
-
-const q = query(collection(db, "beats"), orderBy("createdAt", "desc"), limit(6));
-const snap = await getDocs(q);
-
-snap.forEach(doc => {
-  const b = doc.data();
-  grid.innerHTML += `
-    <div class="beat-card">
-      <h3>${b.title}</h3>
-      <p>${b.genre} • ${b.bpm} BPM</p>
-      <button>Buy $${b.price}</button>
+  <!-- TRENDING -->
+  <section class="home-section">
+    <h2>🔥 Trending Beats</h2>
+    <div class="beat-placeholder">
+      Beats will appear here automatically
     </div>
-  `;
-});
-</script>
+  </section>
+
+  <!-- GENRES -->
+  <section class="home-section">
+    <h2>🎵 Popular Genres</h2>
+    <div class="genre-list">
+      <span>Hip Hop</span>
+      <span>Drill</span>
+      <span>Afrobeats</span>
+      <span>Trap</span>
+      <span>R&B</span>
+      <span>Pop</span>
+    </div>
+  </section>
+
+  <!-- APP BADGES (NO IMAGES) -->
+  <section class="home-section">
+    <h2>📱 Available On</h2>
+    <div class="store-badges">
+      <div class="badge apple"> App Store</div>
+      <div class="badge google">▶ Google Play</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="home-footer">
+    <p>© 2026 ProdByBigi. All rights reserved.</p>
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms & Conditions</a>
+      <a href="cookies.html">Cookies Policy</a>
+    </div>
+  </footer>
 
 </body>
 </html>
