@@ -1,85 +1,101 @@
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   background: #0b0b0b;
   color: #fff;
 }
 
-/* NAV */
-.nav {
+/* NAVBAR */
+.navbar {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  align-items: center;
+  padding: 15px 20px;
   background: #000;
 }
-.nav a {
-  margin-left: 16px;
+
+.navbar a {
   color: #ccc;
+  margin-left: 15px;
   text-decoration: none;
+}
+
+.navbar a:hover {
+  color: #fff;
+}
+
+.logo {
+  font-weight: bold;
+  font-size: 18px;
 }
 
 /* HERO */
 .hero {
-  padding: 50px 20px;
+  padding: 60px 20px;
   background: radial-gradient(circle at top, #0f3d2e, #000);
 }
+
 .hero h1 {
-  font-size: 2rem;
+  font-size: 32px;
+  margin-bottom: 20px;
 }
-.hero-list {
+
+.hero-points {
   list-style: none;
   padding: 0;
+  margin-bottom: 30px;
 }
-.hero-list li {
-  margin: 12px 0;
+
+.hero-points li {
+  margin-bottom: 10px;
+  color: #dcdcdc;
 }
-.cta-btn {
+
+.btn-primary {
   display: inline-block;
-  margin-top: 20px;
-  padding: 14px 28px;
+  padding: 14px 24px;
   background: #1e90ff;
-  border-radius: 8px;
   color: #fff;
   text-decoration: none;
+  border-radius: 6px;
 }
 
 /* SECTIONS */
 .section {
   padding: 40px 20px;
 }
-.section.dark {
-  background: #111;
+
+.section h2 {
+  margin-bottom: 20px;
 }
 
-/* GRID */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-}
-.beat-card {
+/* BEATS PLACEHOLDER */
+.beats-placeholder {
   background: #111;
-  padding: 14px;
-  border-radius: 10px;
-}
-.beat-card button {
-  margin-top: 10px;
-  width: 100%;
+  padding: 30px;
+  border-radius: 8px;
+  color: #888;
+  text-align: center;
 }
 
 /* GENRES */
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
 .genres span {
-  display: inline-block;
-  padding: 10px 14px;
   background: #1a1a1a;
+  padding: 10px 16px;
   border-radius: 20px;
-  margin: 6px;
+  font-size: 14px;
 }
 
 /* STORES */
 .stores img {
-  height: 45px;
-  margin-right: 12px;
+  height: 50px;
+  margin-right: 15px;
 }
 
 /* FOOTER */
@@ -87,8 +103,31 @@ body {
   padding: 30px 20px;
   background: #000;
   text-align: center;
+  color: #888;
 }
+
 .footer-links a {
   margin: 0 10px;
   color: #888;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.muted {
+  color: #777;
+}
+
+.store-badge {
+  height: 50px;
+  margin-right: 15px;
+}
+
+@media (max-width: 600px) {
+  .store-badge {
+    height: 45px;
+    margin-bottom: 10px;
+  }
 }
