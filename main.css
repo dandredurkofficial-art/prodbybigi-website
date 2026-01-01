@@ -1,1 +1,51 @@
+.mobile-header {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  background:#0b0d12;
+  border-bottom:1px solid #1d2230;
+}
 
+.brand {
+  font-weight:800;
+  font-size:18px;
+}
+
+.menu-btn {
+  background:none;
+  border:none;
+  font-size:22px;
+  color:white;
+}
+
+.auth-link {
+  color:#aaa;
+  text-decoration:none;
+}
+
+.mobile-menu {
+  position:fixed;
+  inset:0;
+  background:#0b0d12;
+  padding:24px;
+  display:none;
+  z-index:2000;
+}
+
+.mobile-menu a {
+  display:block;
+  padding:14px 0;
+  font-size:18px;
+  color:white;
+  text-decoration:none;
+}
+
+.mobile-menu .cta {
+  margin-top:20px;
+  background:#6cf;
+  color:black;
+  padding:14px;
+  border-radius:12px;
+  text-align:center;
+}
