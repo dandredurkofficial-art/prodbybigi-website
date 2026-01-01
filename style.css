@@ -1,30 +1,26 @@
-/* RESET */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 body {
-  background: #000;
-  color: #fff;
+  background: #0b0b0b;
+  color: #ffffff;
   line-height: 1.6;
 }
 
-/* NAV */
-.nav {
-  background: #000;
-  border-bottom: 1px solid #111;
-}
-
-.nav-inner {
-  max-width: 1100px;
-  margin: auto;
-  padding: 14px 16px;
+/* NAVBAR */
+.navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px 24px;
+  background: rgba(0,0,0,0.85);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .logo {
@@ -32,147 +28,169 @@ body {
   font-size: 18px;
 }
 
-nav a {
-  color: #ccc;
-  margin-left: 16px;
+.navbar nav a {
+  margin-left: 18px;
   text-decoration: none;
+  color: #cfcfcf;
   font-size: 14px;
 }
 
-nav a:hover {
-  color: #fff;
+.navbar nav a:hover {
+  color: #ffffff;
 }
 
 /* HERO */
 .hero {
-  background: radial-gradient(circle at top, #0e3b2c, #000 70%);
-  padding: 80px 16px;
+  background: radial-gradient(circle at top, #0f3d2e, #000);
+  padding: 80px 24px;
 }
 
 .hero-content {
-  max-width: 700px;
+  max-width: 900px;
   margin: auto;
 }
 
 .hero h1 {
-  font-size: 36px;
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.hero-sub {
+  font-size: 18px;
+  color: #cfcfcf;
   margin-bottom: 20px;
 }
 
-.hero-points {
+.features {
   list-style: none;
   margin-bottom: 30px;
 }
 
-.hero-points li {
-  margin-bottom: 10px;
-  color: #ddd;
+.features li {
+  margin-bottom: 8px;
 }
 
 /* BUTTON */
 .btn-primary {
   display: inline-block;
+  padding: 14px 26px;
   background: #1e90ff;
   color: #fff;
-  padding: 14px 26px;
-  border-radius: 10px;
+  border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
 }
 
-/* SECTIONS */
-.section {
-  max-width: 1100px;
-  margin: auto;
-  padding: 60px 16px;
+.btn-primary:hover {
+  background: #1c7ed6;
 }
 
-.section h2 {
-  margin-bottom: 16px;
+/* SECTIONS */
+.section {
+  padding: 60px 24px;
+  max-width: 1100px;
+  margin: auto;
+}
+
+.section.alt {
+  background: #121212;
+}
+
+.section h2,
+.section h1 {
+  margin-bottom: 12px;
 }
 
 .muted {
-  color: #888;
+  color: #9a9a9a;
+  margin-bottom: 20px;
 }
 
-/* TRENDING PLACEHOLDER */
-.beats-placeholder {
-  margin-top: 20px;
-  padding: 30px;
+/* BEATS */
+.beat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 18px;
+}
+
+.beat-card {
+  background: #161616;
+  padding: 18px;
   border-radius: 12px;
-  background: #111;
-  text-align: center;
-  color: #666;
+  font-size: 14px;
+}
+
+.beat-card span {
+  color: #9a9a9a;
+  display: block;
+  margin: 6px 0;
+}
+
+.beat-card.large {
+  font-size: 15px;
+}
+
+.beat-card strong {
+  color: #1e90ff;
 }
 
 /* GENRES */
-.genres {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.genres span {
-  background: #111;
+.genre-list span {
+  display: inline-block;
+  margin: 6px;
   padding: 10px 16px;
-  border-radius: 999px;
+  background: #1a1a1a;
+  border-radius: 20px;
   font-size: 14px;
 }
 
 /* STORES */
-.stores {
+.store-badges {
   display: flex;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
 .store {
-  background: #111;
-  border-radius: 14px;
-  padding: 16px 22px;
-  min-width: 160px;
+  padding: 14px 22px;
+  border-radius: 10px;
+  background: #1a1a1a;
+  font-weight: 600;
 }
 
-.store small {
-  display: block;
-  font-size: 12px;
-  color: #aaa;
+/* FILTERS */
+.filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
-.store strong {
-  font-size: 18px;
+.filters select {
+  padding: 10px;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
 }
 
 /* FOOTER */
 .footer {
-  border-top: 1px solid #111;
-  padding: 30px 16px;
+  padding: 30px 24px;
+  background: #000;
   text-align: center;
-  color: #777;
+  font-size: 13px;
+  color: #888;
 }
 
 .footer-links {
-  margin-top: 10px;
+  margin-top: 8px;
 }
 
 .footer-links a {
-  color: #777;
-  margin: 0 10px;
+  color: #888;
+  margin: 0 8px;
   text-decoration: none;
-  font-size: 13px;
 }
 
 .footer-links a:hover {
   color: #fff;
-}
-
-/* MOBILE */
-@media (max-width: 600px) {
-  .hero h1 {
-    font-size: 28px;
-  }
-
-  nav a {
-    margin-left: 10px;
-  }
 }
