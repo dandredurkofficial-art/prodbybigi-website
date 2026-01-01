@@ -1,49 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marketplace – ProdByBigi</title>
-
-<link rel="stylesheet" href="style.css">
+  <title>Marketplace — ProdByBigi</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="header">
+<header class="nav">
   <div class="logo">ProdByBigi</div>
-  <nav class="nav">
-    <a href="index.html">Home</a>
-    <a href="login.html">Sign in</a>
-  </nav>
 </header>
 
 <section class="section">
   <h2>Marketplace</h2>
-
-  <div class="grid">
-    <div class="beat-card">
-      <h3>Dark Energy</h3>
-      <span>Trap • 140 BPM</span>
-      <button>Buy $30</button>
-    </div>
-
-    <div class="beat-card">
-      <h3>Summer Vibes</h3>
-      <span>Afrobeats • 105 BPM</span>
-      <button>Buy $35</button>
-    </div>
-
-    <div class="beat-card">
-      <h3>Cold Streets</h3>
-      <span>Drill • 142 BPM</span>
-      <button>Buy $25</button>
-    </div>
-  </div>
+  <div class="grid" id="market"></div>
 </section>
 
-<footer class="footer">
-  <p>© 2026 ProdByBigi</p>
-</footer>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID"
+});
+const db = getFirestore(app);
+
+const grid = document.getElementById("market");
+const snap = await getDocs(collection(db, "beats"));
+
+snap.forEach(doc => {
+  const b = doc.data();
+  grid.innerHTML += `
+    <div class="beat-card">
+      <h3>${b.title}</h3>
+      <p>${b.genre}</p>
+      <button>Buy $${b.price}</button>
+    </div>
+  `;
+});
+</script>
 
 </body>
 </html>
