@@ -1,113 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Producer Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
-<style>
-*{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0d12;color:#fff;display:flex;min-height:100vh}
-.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230;transition:.3s;z-index:1000}
-.sidebar h1{font-size:20px;margin-bottom:24px;color:#6cf}
-.sidebar a{display:block;padding:12px 14px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;font-weight:500;cursor:pointer}
-.sidebar a:hover{background:#1b2133;color:#fff}
-.sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:700;text-align:center;margin-top:20px}
-.sidebar.show{left:0}
-.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
-.topbar{height:72px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
-.hamburger{font-size:22px;cursor:pointer;display:none}
-.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
-.content{padding:26px;overflow-y:auto}
-.page{display:none}
-.page.active{display:block}
-.card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-.stat{background:#0f1219;border:1px solid #1d2230;border-radius:16px;padding:18px}
-.stat h4{margin:0;color:#6cf}
-.stat p{font-size:22px;font-weight:700;margin:6px 0 0}
-.beat{display:flex;gap:14px;align-items:center;margin-bottom:12px}
-.beat img{width:64px;height:64px;border-radius:10px;object-fit:cover}
-button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000}
-button.small{padding:7px 12px;font-size:13px}
-input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;margin-top:10px;background:#0f1219;color:#fff}
-@media(max-width:900px){.sidebar{left:-260px}.main{margin-left:0}.hamburger{display:block}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProdByBigi – Home</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-<div class="sidebar" id="sidebar">
-<h1>ProdByBigi</h1>
-<a onclick="loadPage('dashboard')">Dashboard</a>
-<a onclick="loadPage('tracks')">Tracks</a>
-<a onclick="loadPage('analytics')">Analytics</a>
-<a onclick="loadPage('finance')">Finance</a>
-<a onclick="loadPage('discography')">Discography</a>
-<a onclick="loadPage('settings')">Settings</a>
-<a class="upgrade" onclick="loadPage('upgrade')">Upgrade</a>
-</div>
-<div class="main">
-<div class="topbar">
-<div class="hamburger" id="hamburger" onclick="toggleMenu()">☰</div>
-<strong id="pageTitle">Dashboard</strong>
-<button class="logout" onclick="logout()">Logout</button>
-</div>
-<div class="content">
-<div id="dashboard" class="page active">
-<div class="grid">
-<div class="stat"><h4>Total Plays</h4><p id="statPlays">0</p></div>
-<div class="stat"><h4>Total Revenue</h4><p id="statRevenue">$0</p></div>
-<div class="stat"><h4>Beats</h4><p id="statBeats">0</p></div>
-</div>
-</div>
-<div id="tracks" class="page">
-<div class="card">
-<h3>Upload Beat</h3>
-<input id="beatTitle" placeholder="Title" />
-<input id="beatBpm" type="number" placeholder="BPM" />
-<input id="beatGenre" placeholder="Genre" />
-<input id="beatMood" placeholder="Mood" />
-<input id="beatPrice" type="number" placeholder="Price" />
-<input id="beatCover" type="file" accept="image/*" />
-<input id="beatFile" type="file" accept=".mp3,.wav" />
-<button onclick="uploadBeat()">Upload</button>
-</div>
-<div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
-</div>
-<div id="analytics" class="page">
-<div class="card"><h3>Analytics</h3><canvas id="analyticsChart"></canvas></div>
-</div>
-<div id="finance" class="page">
-<div class="card"><h3>Finance</h3><canvas id="financeChart"></canvas></div>
-</div>
-<div id="discography" class="page"><div class="card"><h3>Discography</h3><input placeholder="Spotify URL" /><button class="small">Add</button></div></div>
-<div id="settings" class="page"><div class="card"><h3>Profile</h3><input id="displayName" placeholder="Display Name" /><input type="file" id="avatar" accept="image/*" /><button class="small" onclick="saveProfile()">Save</button></div></div>
-<div id="upgrade" class="page"><div class="grid"><div class="card"><h3>Starter</h3><div id="paypal-starter"></div></div><div class="card"><h3>Growth</h3><div id="paypal-growth"></div></div><div class="card"><h3>Professional</h3><div id="paypal-pro"></div></div></div></div>
-</div>
-</div>
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
-const firebaseConfig={apiKey:'AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE',authDomain:'prodbybigi.firebaseapp.com',projectId:'prodbybigi',storageBucket:'prodbybigi.firebasestorage.app',appId:'1:1040553526206:web:38216a9f75eabfe556efef'};
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-window.logout=()=>signOut(auth).then(()=>location.href='login.html');
-window.toggleMenu=()=>{const s=sidebar.classList.toggle('show');hamburger.textContent=s?'✕':'☰'};
-window.loadPage=p=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p).classList.add('active');pageTitle.textContent=p.charAt(0).toUpperCase()+p.slice(1);if(innerWidth<900){sidebar.classList.remove('show');hamburger.textContent='☰'}};
-window.uploadBeat=async()=>{const data={title:beatTitle.value,bpm:+beatBpm.value,genre:beatGenre.value,mood:beatMood.value,price:+beatPrice.value,plays:0};await addDoc(collection(db,'beats'),data);loadBeats()};
-async function loadBeats(){beatList.innerHTML='';const q=await getDocs(collection(db,'beats'));statBeats.textContent=q.size;q.forEach(d=>{const b=d.data();beatList.innerHTML+=`<div class='beat'><div>${b.title}</div><button class='small' onclick="deleteBeat('${d.id}')">Delete</button></div>`})}
-window.deleteBeat=async id=>{await deleteDoc(doc(db,'beats',id));loadBeats()};
-async function loadAnalytics(){const q=await getDocs(collection(db,'beats'));let labels=[],plays=[];q.forEach(d=>{labels.push(d.data().title);plays.push(d.data().plays||0)});new Chart(analyticsChart,{type:'bar',data:{labels,datasets:[{label:'Plays',data:plays}]}})}
-async function loadFinance(){const q=await getDocs(collection(db,'sales'));let labels=[],vals=[];q.forEach(d=>{labels.push('Sale');vals.push(d.data().amount)});new Chart(financeChart,{type:'line',data:{labels,datasets:[{label:'Revenue',data:vals}]}})}
-onAuthStateChanged(auth,u=>{if(!u)location.href='login.html';loadBeats();loadAnalytics();loadFinance()});
-</script>
-<script>
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'})}).render('#paypal-starter');
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'})}).render('#paypal-growth');
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'})}).render('#paypal-pro');
-</script>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <div class="logo">ProdByBigi</div>
+  <nav>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="register.html">Start Selling</a>
+    <a href="login.html">Sign in</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Power your music journey today</h1>
+  <ul class="hero-points">
+    <li>🎧 A global marketplace for original beats</li>
+    <li>⚡ Smooth buying & instant downloads</li>
+    <li>📜 Clear licenses for every creator</li>
+    <li>🤝 Built by producers, for producers</li>
+  </ul>
+  <a href="marketplace.html" class="btn-primary">Get Started</a>
+</section>
+
+<!-- TRENDING BEATS -->
+<section class="section">
+  <h2>🔥 Trending Beats</h2>
+  <div class="beats-placeholder">
+    Beats will appear here automatically.
+  </div>
+</section>
+
+<!-- GENRES -->
+<section class="section">
+  <h2>🎵 Popular Genres</h2>
+  <div class="genres">
+    <span>Hip Hop</span>
+    <span>Drill</span>
+    <span>Afrobeats</span>
+    <span>Trap</span>
+    <span>R&B</span>
+    <span>Pop</span>
+  </div>
+</section>
+
+<!-- APP STORES -->
+<section class="section">
+  <h2>📱 Available On</h2>
+  <div class="stores">
+    <img src="assets/playstore.png" alt="Google Play Store">
+    <img src="assets/appstore.png" alt="Apple App Store">
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 ProdByBigi. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms & Conditions</a>
+    <a href="#">Cookies Policy</a>
+  </div>
+</footer>
+
 </body>
 </html>
