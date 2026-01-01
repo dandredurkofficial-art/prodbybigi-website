@@ -1,87 +1,178 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProdByBigi – Beats Marketplace</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
 
-<!-- NAVBAR -->
-<header class="nav">
-  <div class="nav-inner">
-    <div class="logo">ProdByBigi</div>
-    <nav>
-      <a href="marketplace.html">Marketplace</a>
-      <a href="register.html">Start Selling</a>
-      <a href="login.html">Sign in</a>
-    </nav>
-  </div>
-</header>
+body {
+  background: #000;
+  color: #fff;
+  line-height: 1.6;
+}
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>Power your music journey today</h1>
+/* NAV */
+.nav {
+  background: #000;
+  border-bottom: 1px solid #111;
+}
 
-    <ul class="hero-points">
-      <li>🎧 A global marketplace for original beats</li>
-      <li>⚡ Smooth buying & instant downloads</li>
-      <li>📜 Clear licenses for every creator</li>
-      <li>🤝 Built by producers, for producers</li>
-    </ul>
+.nav-inner {
+  max-width: 1100px;
+  margin: auto;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    <a href="register.html" class="btn-primary">Get Started</a>
-  </div>
-</section>
+.logo {
+  font-weight: 700;
+  font-size: 18px;
+}
 
-<!-- TRENDING -->
-<section class="section">
-  <h2>🔥 Trending Beats</h2>
-  <p class="muted">Beats uploaded by producers will appear here automatically.</p>
-  <div class="beats-placeholder">
-    Trending beats coming soon
-  </div>
-</section>
+nav a {
+  color: #ccc;
+  margin-left: 16px;
+  text-decoration: none;
+  font-size: 14px;
+}
 
-<!-- GENRES -->
-<section class="section">
-  <h2>🎵 Popular Genres</h2>
-  <div class="genres">
-    <span>Hip Hop</span>
-    <span>Drill</span>
-    <span>Afrobeats</span>
-    <span>Trap</span>
-    <span>R&B</span>
-    <span>Pop</span>
-  </div>
-</section>
+nav a:hover {
+  color: #fff;
+}
 
-<!-- APP STORE -->
-<section class="section">
-  <h2>📱 Available On</h2>
-  <div class="stores">
-    <div class="store apple">
-      <small>Download on the</small>
-      <strong>App Store</strong>
-    </div>
-    <div class="store google">
-      <small>Get it on</small>
-      <strong>Google Play</strong>
-    </div>
-  </div>
-</section>
+/* HERO */
+.hero {
+  background: radial-gradient(circle at top, #0e3b2c, #000 70%);
+  padding: 80px 16px;
+}
 
-<!-- FOOTER -->
-<footer class="footer">
-  <p>© 2026 ProdByBigi. All rights reserved.</p>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms & Conditions</a>
-    <a href="#">Cookies Policy</a>
-  </div>
-</footer>
+.hero-content {
+  max-width: 700px;
+  margin: auto;
+}
 
-</body>
-</html>
+.hero h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.hero-points {
+  list-style: none;
+  margin-bottom: 30px;
+}
+
+.hero-points li {
+  margin-bottom: 10px;
+  color: #ddd;
+}
+
+/* BUTTON */
+.btn-primary {
+  display: inline-block;
+  background: #1e90ff;
+  color: #fff;
+  padding: 14px 26px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* SECTIONS */
+.section {
+  max-width: 1100px;
+  margin: auto;
+  padding: 60px 16px;
+}
+
+.section h2 {
+  margin-bottom: 16px;
+}
+
+.muted {
+  color: #888;
+}
+
+/* TRENDING PLACEHOLDER */
+.beats-placeholder {
+  margin-top: 20px;
+  padding: 30px;
+  border-radius: 12px;
+  background: #111;
+  text-align: center;
+  color: #666;
+}
+
+/* GENRES */
+.genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.genres span {
+  background: #111;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+
+/* STORES */
+.stores {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.store {
+  background: #111;
+  border-radius: 14px;
+  padding: 16px 22px;
+  min-width: 160px;
+}
+
+.store small {
+  display: block;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.store strong {
+  font-size: 18px;
+}
+
+/* FOOTER */
+.footer {
+  border-top: 1px solid #111;
+  padding: 30px 16px;
+  text-align: center;
+  color: #777;
+}
+
+.footer-links {
+  margin-top: 10px;
+}
+
+.footer-links a {
+  color: #777;
+  margin: 0 10px;
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+/* MOBILE */
+@media (max-width: 600px) {
+  .hero h1 {
+    font-size: 28px;
+  }
+
+  nav a {
+    margin-left: 10px;
+  }
+}
