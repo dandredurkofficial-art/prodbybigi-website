@@ -1,14 +1,51 @@
-<header class="mobile-header">
-  <button class="menu-btn" onclick="toggleMenu()">☰</button>
-  <span class="brand">ProdByBigi</span>
-  <a href="login.html" class="auth-link">Sign in</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ProdByBigi — Buy Beats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="menu">☰</div>
+  <div class="logo">ProdByBigi</div>
+  <a class="signin" href="#">Sign in</a>
 </header>
 
-<nav id="mobileMenu" class="mobile-menu">
-  <button class="close-btn" onclick="toggleMenu()">✕</button>
-  <a href="index.html">Feed</a>
-  <a href="marketplace.html">Tracks</a>
-  <a href="#">Sound Kits</a>
-  <a href="#">Producers</a>
-  <a href="dashboard.html" class="cta">Start Selling 🚀</a>
-</nav>
+<section class="hero">
+  <h1>Your First Hit Starts Here</h1>
+
+  <div class="search">
+    <input placeholder="Explore new sounds — search">
+    <button>Search</button>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2>Latest Beats</h2>
+    <a href="marketplace.html">See more</a>
+  </div>
+
+  <div class="beats-grid">
+    <div class="beat-card">
+      <img src="https://via.placeholder.com/300">
+      <h4>Midnight Vibes</h4>
+      <p>Trap • 140 BPM</p>
+      <button>Buy $29</button>
+    </div>
+
+    <div class="beat-card">
+      <img src="https://via.placeholder.com/300">
+      <h4>Dark Energy</h4>
+      <p>Drill • 142 BPM</p>
+      <button>Buy $35</button>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
