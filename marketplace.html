@@ -1,45 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Marketplace — ProdByBigi</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace – ProdByBigi</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<header class="nav">
+<header class="navbar">
   <div class="logo">ProdByBigi</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="register.html">Start Selling</a>
+    <a href="login.html">Sign in</a>
+  </nav>
 </header>
 
 <section class="section">
-  <h2>Marketplace</h2>
-  <div class="grid" id="market"></div>
+  <h1>Marketplace</h1>
+  <p class="muted">
+    All uploaded beats will appear here automatically.
+  </p>
+
+  <div class="beats-placeholder">
+    No beats yet. Upload coming soon.
+  </div>
 </section>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-const app = initializeApp({
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_PROJECT_ID"
-});
-const db = getFirestore(app);
-
-const grid = document.getElementById("market");
-const snap = await getDocs(collection(db, "beats"));
-
-snap.forEach(doc => {
-  const b = doc.data();
-  grid.innerHTML += `
-    <div class="beat-card">
-      <h3>${b.title}</h3>
-      <p>${b.genre}</p>
-      <button>Buy $${b.price}</button>
-    </div>
-  `;
-});
-</script>
 
 </body>
 </html>
