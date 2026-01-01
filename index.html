@@ -1,51 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ProdByBigi — Buy Beats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProdByBigi – Beats Marketplace</title>
 
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
 <body>
 
-<header class="topbar">
-  <div class="menu">☰</div>
-  <div class="logo">ProdByBigi</div>
-  <a class="signin" href="#">Sign in</a>
+<!-- HEADER -->
+<header class="site-header">
+  <div class="header-left">
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <span class="logo">ProdByBigi</span>
+  </div>
+
+  <nav class="header-links">
+    <a href="marketplace.html">Marketplace</a>
+    <a href="login.html">Sign in</a>
+    <a href="signup.html" class="btn-primary">Get started</a>
+  </nav>
 </header>
 
-<section class="hero">
-  <h1>Your First Hit Starts Here</h1>
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close-btn" onclick="toggleMenu()">✕</button>
+  <a href="marketplace.html">Marketplace</a>
+  <a href="login.html">Sign in</a>
+  <a href="signup.html" class="btn-primary">Start Selling 🚀</a>
+</div>
 
-  <div class="search">
-    <input placeholder="Explore new sounds — search">
+<!-- HERO -->
+<section class="hero">
+  <h1>Your next hit starts here</h1>
+  <p>Buy and sell high-quality beats from independent producers worldwide.</p>
+
+  <div class="search-box">
+    <input type="text" placeholder="Search beats, moods, genres..." />
     <button>Search</button>
   </div>
 </section>
 
-<section class="section">
-  <div class="section-head">
-    <h2>Latest Beats</h2>
-    <a href="marketplace.html">See more</a>
-  </div>
+<!-- VALUE / BENEFITS -->
+<section class="value-section">
+  <div class="value-card">
+    <h2>Build your sound. Sell with confidence.</h2>
 
-  <div class="beats-grid">
-    <div class="beat-card">
-      <img src="https://via.placeholder.com/300">
-      <h4>Midnight Vibes</h4>
-      <p>Trap • 140 BPM</p>
-      <button>Buy $29</button>
-    </div>
+    <ul class="value-list">
+      <li>
+        <span class="check">✓</span>
+        <div>
+          <strong>Premium beats from real producers</strong>
+          <p>
+            Discover original beats crafted by independent creators.
+            No recycled sounds — just authentic music.
+          </p>
+        </div>
+      </li>
 
-    <div class="beat-card">
-      <img src="https://via.placeholder.com/300">
-      <h4>Dark Energy</h4>
-      <p>Drill • 142 BPM</p>
-      <button>Buy $35</button>
-    </div>
+      <li>
+        <span class="check">✓</span>
+        <div>
+          <strong>Fast & secure checkout</strong>
+          <p>
+            Purchase beats instantly with PayPal.
+            Download access after payment.
+          </p>
+        </div>
+      </li>
+
+      <li>
+        <span class="check">✓</span>
+        <div>
+          <strong>Clear licenses</strong>
+          <p>
+            Simple licensing options with no confusion or hidden terms.
+          </p>
+        </div>
+      </li>
+
+      <li>
+        <span class="check">✓</span>
+        <div>
+          <strong>Built for producers</strong>
+          <p>
+            Upload beats, track sales, and grow your brand from one dashboard.
+          </p>
+        </div>
+      </li>
+    </ul>
+
+    <a href="signup.html" class="cta-btn">Get started</a>
   </div>
 </section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <p>© 2026 ProdByBigi. All rights reserved.</p>
+</footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById("mobileMenu").classList.toggle("show");
+}
+</script>
 
 </body>
 </html>
