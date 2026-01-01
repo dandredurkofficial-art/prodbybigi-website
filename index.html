@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProdByBigi – Beats Marketplace</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProdByBigi – Buy & Sell Beats</title>
 
-  <link rel="stylesheet" href="style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
 <!-- HEADER -->
-<header class="site-header">
-  <div class="header-left">
-    <button class="menu-btn" onclick="toggleMenu()">☰</button>
-    <span class="logo">ProdByBigi</span>
-  </div>
+<header class="header">
+  <div class="logo">ProdByBigi</div>
 
-  <nav class="header-links">
+  <nav class="nav">
     <a href="marketplace.html">Marketplace</a>
     <a href="login.html">Sign in</a>
     <a href="register.html" class="btn-primary">Get started</a>
   </nav>
+
+  <button class="menu-btn" onclick="toggleMenu()">☰</button>
 </header>
 
 <!-- MOBILE MENU -->
@@ -29,80 +28,85 @@
   <button class="close-btn" onclick="toggleMenu()">✕</button>
   <a href="marketplace.html">Marketplace</a>
   <a href="login.html">Sign in</a>
-  <a href="register.html" class="btn-primary">Start Selling 🚀</a>
+  <a href="register.html" class="btn-primary">Start Selling</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-  <h1>Your next hit starts here</h1>
-  <p>Buy and sell high-quality beats from independent producers worldwide.</p>
+  <h1>Where producers turn beats into income</h1>
+  <p>Discover, buy, and license premium beats from independent producers worldwide.</p>
 
-  <div class="search-box">
-    <input type="text" placeholder="Search beats, moods, genres..." />
+  <div class="hero-search">
+    <input type="text" placeholder="Search beats, genres, moods...">
     <button>Search</button>
   </div>
 </section>
 
-<!-- VALUE / BENEFITS -->
-<section class="value-section">
-  <div class="value-card">
-    <h2>Build your sound. Sell with confidence.</h2>
+<!-- TRENDING BEATS -->
+<section class="section">
+  <h2>🔥 Trending Beats</h2>
 
-    <ul class="value-list">
-      <li>
-        <span class="check">✓</span>
-        <div>
-          <strong>Premium beats from real producers</strong>
-          <p>
-            Discover original beats crafted by independent creators.
-            No recycled sounds — just authentic music.
-          </p>
-        </div>
-      </li>
+  <div class="grid">
+    <div class="beat-card">
+      <h3>Midnight Drill</h3>
+      <span>Drill • 140 BPM</span>
+      <button>Buy $29</button>
+    </div>
 
-      <li>
-        <span class="check">✓</span>
-        <div>
-          <strong>Fast & secure checkout</strong>
-          <p>
-            Purchase beats instantly with PayPal.
-            Download access after payment.
-          </p>
-        </div>
-      </li>
+    <div class="beat-card">
+      <h3>West Coast Wave</h3>
+      <span>Hip-Hop • 92 BPM</span>
+      <button>Buy $39</button>
+    </div>
 
-      <li>
-        <span class="check">✓</span>
-        <div>
-          <strong>Clear licenses</strong>
-          <p>
-            Simple licensing options with no confusion or hidden terms.
-          </p>
-        </div>
-      </li>
+    <div class="beat-card">
+      <h3>Trap Symphony</h3>
+      <span>Trap • 130 BPM</span>
+      <button>Buy $25</button>
+    </div>
+  </div>
+</section>
 
-      <li>
-        <span class="check">✓</span>
-        <div>
-          <strong>Built for producers</strong>
-          <p>
-            Upload beats, track sales, and grow your brand from one dashboard.
-          </p>
-        </div>
-      </li>
-    </ul>
+<!-- POPULAR GENRES -->
+<section class="section alt">
+  <h2>🎵 Popular Genres</h2>
 
-    <a href="signup.html" class="cta-btn">Get started</a>
+  <div class="genres">
+    <span>Hip-Hop</span>
+    <span>Trap</span>
+    <span>Drill</span>
+    <span>Afrobeats</span>
+    <span>R&B</span>
+    <span>Pop</span>
+    <span>Reggaeton</span>
+    <span>Lo-Fi</span>
+  </div>
+</section>
+
+<!-- APP STORES -->
+<section class="section center">
+  <h2>Available on mobile</h2>
+  <p>Manage beats, sales and uploads anytime.</p>
+
+  <div class="store-logos">
+    <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg">
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="site-footer">
+<footer class="footer">
   <p>© 2026 ProdByBigi. All rights reserved.</p>
+
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms & Conditions</a>
+    <a href="#">Cookies Policy</a>
+  </div>
 </footer>
 
 <script>
-function toggleMenu() {
+function toggleMenu(){
   document.getElementById("mobileMenu").classList.toggle("show");
 }
 </script>
