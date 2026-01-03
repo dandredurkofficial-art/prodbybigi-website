@@ -4,48 +4,53 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProdByBigi – Buy & Sell Beats</title>
-  <link rel="stylesheet" href="css/home.css" />
+
+  <meta name="color-scheme" content="dark">
+  <link rel="stylesheet" href="css/home.css?v=7">
 </head>
 
 <body>
+
+<!-- NAVBAR -->
 <header class="navbar">
-  <div class="nav-left">
-    <span class="logo">ProdByBigi</span>
-  </div>
+  <div class="logo">ProdByBigi</div>
 
   <nav class="nav-links">
-    <a href="#">Marketplace</a>
-    <a href="#">Login</a>
-    <a href="#" class="cta">Get Started</a>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="login.html">Login</a>
+    <a href="register.html" class="cta">Get Started</a>
   </nav>
 
-  <div class="hamburger" onclick="toggleMenu()">
-    ☰
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
 </header>
 
+<!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="#">Marketplace</a>
-  <a href="#">Login</a>
-  <a href="#" class="cta">Get Started</a>
+  <a href="marketplace.html">Marketplace</a>
+  <a href="login.html">Login</a>
+  <a href="register.html" class="highlight">Get Started</a>
 </div>
 
+<!-- HERO -->
 <section class="hero">
-  <h1>Sell Beats. Build a Brand.<br />Get Paid.</h1>
+  <h1>Sell Beats. Build a Brand.<br>Get Paid.</h1>
   <p>The next-generation marketplace for producers & artists.</p>
 
   <div class="hero-actions">
-    <button class="primary">Browse Beats</button>
-    <button class="secondary">Start Selling</button>
+    <a href="marketplace.html" class="btn primary">Browse Beats</a>
+    <a href="register.html" class="btn secondary">Start Selling</a>
   </div>
 </section>
 
+<!-- TRENDING BEATS -->
 <section class="beats">
   <h2>Trending Beats</h2>
 
   <div class="beat-grid">
-
-    <!-- Beat Card -->
     <div class="beat-card">
       <div class="beat-art">
         <button class="play-btn">▶</button>
@@ -84,14 +89,37 @@
         <button class="buy">$49</button>
       </div>
     </div>
-
   </div>
 </section>
 
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <strong>ProdByBigi</strong>
+      <p>© <span id="year"></span> ProdByBigi. All rights reserved.</p>
+    </div>
+
+    <div class="footer-links">
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms & Conditions</a>
+      <a href="cookies.html">Cookies</a>
+      <a href="#" id="cookieSettings">Cookie Settings</a>
+    </div>
+  </div>
+</footer>
+
 <script>
-function toggleMenu() {
-  document.getElementById("mobileMenu").classList.toggle("open");
-}
+  const hamburger = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobileMenu");
+
+  hamburger.addEventListener("click", () => {
+    hamburger.classList.toggle("open");
+    mobileMenu.classList.toggle("open");
+  });
+
+  document.getElementById("year").textContent = new Date().getFullYear();
 </script>
+
 </body>
 </html>
