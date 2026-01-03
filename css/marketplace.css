@@ -10,8 +10,8 @@ body {
   color: #fff;
 }
 
-/* NAV */
-.market-nav {
+/* HEADER (SAME AS INDEX) */
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,66 +20,67 @@ body {
 }
 
 .logo {
-  font-weight: 700;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
-.search input {
-  background: #0f1117;
-  border: 1px solid #1e1e25;
-  border-radius: 20px;
-  padding: 10px 16px;
-  color: #fff;
-  width: 260px;
+.nav-links {
+  display: flex;
+  gap: 20px;
 }
 
 .nav-links a {
-  margin-left: 20px;
+  color: #cbd5f5;
   text-decoration: none;
-  color: #fff;
   font-size: 14px;
 }
 
-.nav-links .sell {
-  color: #3b82f6;
+.nav-links .cta {
+  padding: 6px 14px;
+  border: 1px solid #3b82f6;
+  border-radius: 8px;
 }
 
-/* HAMBURGER */
+/* HAMBURGER (IDENTICAL TO HOME) */
 .hamburger {
   display: none;
-  background: none;
-  border: none;
-  color: #fff;
-  font-size: 26px;
+  flex-direction: column;
+  gap: 5px;
   cursor: pointer;
+}
+
+.hamburger span {
+  width: 24px;
+  height: 2px;
+  background: #fff;
 }
 
 /* MOBILE MENU */
 .mobile-menu {
   display: none;
   flex-direction: column;
-  background: #0b0b0e;
+  background: #050507;
+  border-bottom: 1px solid #1e1e25;
 }
 
 .mobile-menu a {
   padding: 16px;
-  border-top: 1px solid #1e1e25;
-  text-decoration: none;
   color: #fff;
+  text-decoration: none;
+  border-top: 1px solid #1e1e25;
 }
 
-.mobile-menu.show {
+.mobile-menu.open {
   display: flex;
 }
 
-/* MARKETPLACE */
+/* MARKETPLACE CONTENT (UNCHANGED LOOK) */
 .marketplace {
-  padding: 24px;
   max-width: 900px;
   margin: auto;
+  padding: 24px;
 }
 
-/* BEAT CARD */
 .beat-card {
   background: linear-gradient(180deg, #0f172a, #020617);
   border-radius: 18px;
@@ -103,7 +104,6 @@ body {
   height: 70px;
   font-size: 22px;
   color: #fff;
-  cursor: pointer;
 }
 
 .beat-info {
@@ -113,45 +113,33 @@ body {
   padding: 18px;
 }
 
-.beat-info h3 {
-  font-size: 18px;
-}
-
-.beat-info p {
-  font-size: 14px;
-  color: #94a3b8;
-}
-
 .price {
   background: #3b82f6;
   border: none;
   padding: 8px 16px;
   border-radius: 12px;
   color: #fff;
-  cursor: pointer;
 }
 
-/* FOOTER */
+/* FOOTER (SAME AS INDEX) */
 .footer {
   border-top: 1px solid #1e1e25;
-  padding: 20px;
   text-align: center;
+  padding: 20px;
   font-size: 13px;
   color: #94a3b8;
 }
 
 .footer-links {
   margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .footer-links a {
-  margin: 0 8px;
   color: #94a3b8;
   text-decoration: none;
-}
-
-.footer-links a:hover {
-  color: #3b82f6;
 }
 
 /* MOBILE */
@@ -161,10 +149,6 @@ body {
   }
 
   .hamburger {
-    display: block;
-  }
-
-  .search input {
-    width: 160px;
+    display: flex;
   }
 }
