@@ -1,54 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="style.css">
+  <title>Register</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="auth-page">
 
-<h2>Create Account</h2>
+<div class="auth-box">
+  <h2>Create Account</h2>
+  <input id="email" placeholder="Email">
 
-<input id="name" placeholder="Producer Name">
-<input id="registerEmail" placeholder="Email">
+  <input id="password" type="password" placeholder="Password" oninput="checkStrength()">
+  <div id="strength"></div>
 
-<div class="password-wrapper">
-  <input id="registerPassword" type="password" placeholder="Password">
-  <span onclick="togglePassword('registerPassword',this)">👁</span>
+  <button id="regBtn" onclick="registerUser()" disabled>Register</button>
+  <p><a href="login.html">Already have account</a></p>
 </div>
 
-<div class="strength-bar"><div id="strengthFill"></div></div>
-<p id="strengthText">Password strength</p>
-
-<button id="registerBtn" onclick="register()" disabled>Create Account</button>
-
-<script src="auth-ui.js"></script>
-
-<script type="module">
-import { auth, db } from "./firebase.js";
-import { createUserWithEmailAndPassword }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { doc, setDoc, serverTimestamp }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
-
-window.register = async () => {
-  if (!passwordStrong) return;
-
-  const cred = await createUserWithEmailAndPassword(
-    auth,
-    registerEmail.value,
-    registerPassword.value
-  );
-
-  await setDoc(doc(db,"users",cred.user.uid),{
-    displayName: name.value,
-    email: registerEmail.value,
-    role:"producer",
-    plan:"free",
-    createdAt: serverTimestamp(),
-    stats:{ beats:0, plays:0, sales:0 }
-  });
-
-  location.href="dashboard.html";
-};
+<script src="auth-ui.js" type="module"></script>
+<script>
+function checkStrength(){
+  const p = password.value;
+  const strong = p.length >= 8 && /[A-Z]/.test(p) && /\d/.test(p);
+  strength.innerText = strong ? "Strong 🔥" : "Weak ❌";
+  regBtn.disabled = !strong;
+}
 </script>
 </body>
 </html>
