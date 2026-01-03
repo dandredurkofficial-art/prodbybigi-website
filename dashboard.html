@@ -83,9 +83,56 @@ input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #1d22
 </div>
 <div id="discography" class="page"><div class="card"><h3>Discography</h3><input placeholder="Spotify URL" /><button class="small">Add</button></div></div>
 <div id="settings" class="page"><div class="card"><h3>Profile</h3><input id="displayName" placeholder="Display Name" /><input type="file" id="avatar" accept="image/*" /><button class="small" onclick="saveProfile()">Save</button></div></div>
-<div id="upgrade" class="page"><div class="grid"><div class="card"><h3>Starter</h3><div id="paypal-starter"></div></div><div class="card"><h3>Growth</h3><div id="paypal-growth"></div></div><div class="card"><h3>Professional</h3><div id="paypal-pro"></div></div></div></div>
-</div>
-</div>
+<div id="upgrade" class="page">
+<div class="grid">
+<div class='card'>
+          <h3>Starter – $15/year</h3>
+          <ul>
+            <li>0% commission</li>
+            <li>Unlimited MP3/WAV</li>
+            <li>Instant payments</li>
+            <li>Advanced analytics</li>
+            <li>4 custom licenses</li>
+            <li>1 contest submission</li>
+            <li>3 PROkits credits</li>
+          </ul>
+          <div id='paypal-starter'></div>
+        </div>
+
+        <div class='card'>
+          <h3>Growth – $60/year</h3>
+          <ul>
+            <li>Upload stems</li>
+            <li>Sell soundkits & services</li>
+            <li>Unlimited messages</li>
+            <li>Unlimited licenses</li>
+            <li>2 contest submissions</li>
+            <li>5 PROkits credits</li>
+            <li>$15 promote credits</li>
+          </ul>
+          <div id='paypal-growth'></div>
+        </div>
+
+        <div class='card'>
+          <h3>Professional – $159/year</h3>
+          <ul>
+            <li>Custom website</li>
+            <li>Merch & memberships</li>
+            <li>Email marketing</li>
+            <li>Creator Rights access</li>
+            <li>Blog posts</li>
+            <li>10 PROkits credits</li>
+            <li>$35 promote credits</li>
+            <li>5% promote discount</li>
+            <li>Unlimited licenses</li>
+          </ul>
+          <div id='paypal-pro'></div>
+        </div>`;
+
+      loadPayPal();
+    }
+  };
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
