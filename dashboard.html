@@ -1,50 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard — ProdByBigi</title>
-<link rel="stylesheet" href="dashboard.css">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<header class="dash-nav">
-  <div>🎧 Dashboard</div>
-  <button onclick="logout()">Logout</button>
-</header>
+<h1>Producer Dashboard</h1>
+<button onclick="logout()">Logout</button>
 
-<div class="dash">
-  <aside>
-    <a onclick="show('overview')">Overview</a>
-    <a onclick="show('tracks')">Tracks</a>
-    <a onclick="show('sales')">Sales</a>
-    <a onclick="show('settings')">Settings</a>
-  </aside>
+<script type="module">
+import { auth } from "./firebase.js";
+import { onAuthStateChanged, signOut }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-  <main>
-    <section id="overview" class="page active">
-      <h2>Overview</h2>
-      <p>Stats coming soon</p>
-    </section>
+onAuthStateChanged(auth, user => {
+  if (!user) location.href = "login.html";
+});
 
-    <section id="tracks" class="page">
-      <h2>Your Beats</h2>
-      <button>Upload Beat</button>
-    </section>
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "login.html";
+};
+</script>
 
-    <section id="sales" class="page">
-      <h2>Sales</h2>
-      <p>No sales yet</p>
-    </section>
-
-    <section id="settings" class="page">
-      <h2>Profile Settings</h2>
-      <input placeholder="Display Name">
-      <button>Save</button>
-    </section>
-  </main>
-</div>
-
-<script src="dashboard.js"></script>
 </body>
 </html>
