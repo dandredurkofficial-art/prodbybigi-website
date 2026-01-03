@@ -1,38 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="style.css">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="auth-page">
 
-<h2>Login</h2>
-
-<input id="loginEmail" placeholder="Email">
-<div class="password-wrapper">
-  <input id="loginPassword" type="password" placeholder="Password">
-  <span onclick="togglePassword('loginPassword',this)">👁</span>
+<div class="auth-box">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email">
+  <div class="password-box">
+    <input id="password" type="password" placeholder="Password">
+    <span onclick="toggle()">👁</span>
+  </div>
+  <button onclick="loginUser()">Login</button>
+  <p><a href="register.html">Create account</a></p>
 </div>
 
-<button onclick="login()">Login</button>
-
-<script src="auth-ui.js"></script>
-
-<script type="module">
-import { auth } from "./firebase.js";
-import { signInWithEmailAndPassword, onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-
-window.login = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-  } catch {
-    alert("Invalid login");
-  }
-};
-
-onAuthStateChanged(auth, user => {
-  if (user) location.href = "dashboard.html";
-});
+<script src="auth-ui.js" type="module"></script>
+<script>
+function toggle(){
+  password.type = password.type === "password" ? "text" : "password";
+}
 </script>
 </body>
 </html>
