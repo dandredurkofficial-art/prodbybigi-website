@@ -1,39 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login • ProdByBigi</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="auth-container">
-  <h1>Welcome Back</h1>
-  <p>Login to your producer dashboard</p>
+<h2>Login</h2>
 
-  <input type="email" id="loginEmail" placeholder="Email" required>
-
-  <div class="password-wrapper">
-    <input type="password" id="loginPassword" placeholder="Password" required>
-    <span class="toggle-password" onclick="togglePassword('loginPassword', this)">👁</span>
-  </div>
-
-  <button onclick="login()">Login</button>
-
-  <div class="auth-footer">
-    Don’t have an account? <a href="register.html">Register</a>
-  </div>
+<input id="loginEmail" placeholder="Email">
+<div class="password-wrapper">
+  <input id="loginPassword" type="password" placeholder="Password">
+  <span onclick="togglePassword('loginPassword',this)">👁</span>
 </div>
 
-<script src="auth-ui.js"></script>
-<script>
-function login(){
-  // Firebase auth logic goes here
-  window.location.href = "dashboard.html";
-}
-</script>
+<button onclick="login()">Login</button>
 
+<script src="auth-ui.js"></script>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { signInWithEmailAndPassword, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+window.login = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+  } catch {
+    alert("Invalid login");
+  }
+};
+
+onAuthStateChanged(auth, user => {
+  if (user) location.href = "dashboard.html";
+});
+</script>
 </body>
 </html>
