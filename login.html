@@ -3,34 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login | ProdByBigi</title>
-
-  <!-- Login Page Styles -->
-  <link rel="stylesheet" href="login.css">
-
-  <!-- Font -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>Login — ProdByBigi</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="login-wrapper">
-    <div class="login-card">
-      <h1>Welcome Back</h1>
-      <p>Login to your producer account</p>
+<header class="nav">
+  <div class="logo">🎧 ProdByBigi</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="marketplace.html">Marketplace</a>
+  </nav>
+</header>
 
-      <input type="email" id="email" placeholder="Email" />
-      <input type="password" id="password" placeholder="Password" />
+<section class="section">
+  <h1>Login</h1>
 
-      <button id="loginBtn">Login</button>
+  <form id="loginForm" style="max-width:400px;margin-top:20px;">
+    <input type="email" placeholder="Email" required style="width:100%;padding:12px;margin-bottom:12px;">
+    <input type="password" placeholder="Password" required style="width:100%;padding:12px;margin-bottom:12px;">
+    <button type="submit" class="btn" style="width:100%;">Login</button>
+  </form>
 
-      <span class="login-link">
-        Don’t have an account?
-        <a href="register.html">Create one</a>
-      </span>
-    </div>
-  </div>
+  <p style="margin-top:14px;">
+    Don’t have an account?
+    <a href="register.html">Register</a>
+  </p>
+</section>
 
-  <script type="module" src="auth.js"></script>
+<script>
+  // CLEAR any broken state (important)
+  localStorage.removeItem("loggedIn");
+
+  document.getElementById("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // SET LOGIN STATE
+    localStorage.setItem("loggedIn", "true");
+
+    // REDIRECT TO DASHBOARD
+    window.location.href = "dashboard.html";
+  });
+</script>
 
 </body>
 </html>
