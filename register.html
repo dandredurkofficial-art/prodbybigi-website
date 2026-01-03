@@ -1,39 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register — ProdByBigi</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register • ProdByBigi</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-<header class="nav">
-  <div class="logo">🎧 ProdByBigi</div>
-</header>
+<body>
 
 <div class="auth-container">
   <h1>Create Account</h1>
+  <p>Start selling your beats today</p>
 
-  <form id="registerForm">
-    <input type="text" placeholder="Display Name" required>
-    <input type="email" placeholder="Email" required>
-    <input type="password" placeholder="Password" required>
-    <button type="submit">Register</button>
-  </form>
+  <input type="text" id="name" placeholder="Display Name" required>
+  <input type="email" id="registerEmail" placeholder="Email" required>
 
-  <p>
-    Already have an account?
-    <a href="login.html">Login</a>
-  </p>
+  <div class="password-wrapper">
+    <input type="password" id="registerPassword" placeholder="Password" required>
+    <span class="toggle-password" onclick="togglePassword('registerPassword', this)">👁</span>
+  </div>
+
+  <div class="strength-bar">
+    <div class="strength-fill" id="strengthFill"></div>
+  </div>
+  <div class="strength-text" id="strengthText">Password strength</div>
+
+  <button onclick="register()">Create Account</button>
+
+  <div class="auth-footer">
+    Already have an account? <a href="login.html">Login</a>
+  </div>
 </div>
 
+<script src="auth-ui.js"></script>
 <script>
-  document.getElementById("registerForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    localStorage.setItem("loggedIn", "true");
-    window.location.href = "dashboard.html";
-  });
+function register(){
+  // Firebase register logic goes here
+  window.location.href = "dashboard.html";
+}
 </script>
 
 </body>
