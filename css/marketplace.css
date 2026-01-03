@@ -1,38 +1,67 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #000;
-  color: #fff;
+  background: #0b0b0b;
+  color: white;
 }
 
 .nav {
+  padding: 20px;
   display: flex;
   justify-content: space-between;
+}
+
+.beats {
   padding: 20px;
 }
 
-.nav a {
-  color: #ccc;
-  margin-left: 15px;
-  text-decoration: none;
-}
-
-.market {
-  padding: 80px 20px;
-  max-width: 1000px;
-  margin: auto;
-}
-
-.beat-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 20px;
-  margin-top: 40px;
-}
-
 .beat-card {
-  background: #111;
-  padding: 30px;
-  border-radius: 10px;
-  text-align: center;
+  background: #121212;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.licenses {
+  padding: 30px 20px;
+}
+
+.license-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.license-card {
+  background: #141414;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.license-card span {
+  font-size: 22px;
+  color: #1e90ff;
+}
+
+.license-card ul {
+  padding-left: 15px;
+}
+
+button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 10px;
+  background: #1e90ff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+}
+
+.popular {
+  border: 2px solid #1e90ff;
+}
+
+.exclusive {
+  border: 2px solid gold;
 }
