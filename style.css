@@ -1,123 +1,57 @@
-* {
-  box-sizing: border-box;
-  font-family: Inter, system-ui, sans-serif;
-}
+* { box-sizing: border-box; font-family: Inter, sans-serif; }
 
 body {
   margin: 0;
-  background: radial-gradient(circle at top, #141824, #07090f);
-  color: #fff;
-  min-height: 100vh;
+  background: radial-gradient(circle at top, #0b3d2e, #050505);
+  color: white;
+}
+
+/* AUTH */
+.auth-page {
   display: flex;
+  height: 100vh;
   align-items: center;
   justify-content: center;
 }
 
-.auth-container {
-  width: 100%;
-  max-width: 420px;
-  background: #0f1320;
-  border-radius: 18px;
-  padding: 36px;
-  border: 1px solid #1f2437;
-  box-shadow: 0 30px 80px rgba(0,0,0,.6);
-}
-
-.auth-container h1 {
-  margin: 0 0 6px;
-  font-size: 26px;
-  text-align: center;
-}
-
-.auth-container p {
-  text-align: center;
-  color: #9aa4c7;
-  margin-bottom: 24px;
-}
-
-.auth-container input {
-  width: 100%;
-  padding: 13px 14px;
-  margin-bottom: 14px;
+.auth-box {
+  background: #0f0f0f;
+  padding: 30px;
   border-radius: 12px;
-  border: 1px solid #23294a;
-  background: #0b0f1d;
-  color: #fff;
-  font-size: 15px;
+  width: 320px;
 }
 
-.auth-container input:focus {
-  outline: none;
-  border-color: #6cf;
-}
-
-.auth-container button {
+.auth-box input {
   width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg,#6cf,#9f6cff);
+  padding: 10px;
+  margin: 10px 0;
+}
+
+.auth-box button {
+  width: 100%;
+  padding: 10px;
+  background: #1e88ff;
   border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  color: #000;
-  cursor: pointer;
-  font-size: 15px;
-}
-
-.auth-container button:hover {
-  opacity: .9;
-}
-
-.auth-footer {
-  text-align: center;
-  margin-top: 18px;
-  font-size: 14px;
-}
-
-.auth-footer a {
-  color: #6cf;
-  text-decoration: none;
-}
-
-/* PASSWORD UI */
-.password-wrapper {
-  position: relative;
-}
-
-.password-wrapper input {
-  padding-right: 44px;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 18px;
-  color: #bbb;
-}
-
-.toggle-password:hover {
-  color: #6cf;
-}
-
-.strength-bar {
-  height: 6px;
-  background: #1c213a;
+  color: white;
   border-radius: 6px;
-  overflow: hidden;
-  margin-bottom: 8px;
 }
 
-.strength-fill {
-  height: 100%;
-  width: 0%;
-  background: red;
-  transition: .3s;
+/* DASHBOARD */
+header {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
 }
 
-.strength-text {
-  font-size: 13px;
-  color: #9aa4c7;
-  margin-bottom: 14px;
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: #111;
+  padding: 30px;
+  border-radius: 12px;
 }
