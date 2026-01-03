@@ -3,74 +3,54 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProdByBigi – Buy & Sell Premium Beats</title>
+  <title>ProdByBigi – Sell Beats. Build a Brand.</title>
   <link rel="stylesheet" href="css/home.css" />
 </head>
 <body>
 
+<!-- NAV -->
 <header class="nav">
   <div class="logo">ProdByBigi</div>
-  <nav>
+
+  <nav class="nav-links">
     <a href="marketplace.html">Marketplace</a>
     <a href="login.html">Login</a>
-    <a class="btn" href="register.html">Get Started</a>
+    <a class="btn primary" href="register.html">Get Started</a>
   </nav>
+
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
 </header>
 
+<!-- MOBILE MENU -->
+<div id="mobileMenu" class="mobile-menu">
+  <a href="marketplace.html">Marketplace</a>
+  <a href="login.html">Login</a>
+  <a class="btn primary" href="register.html">Get Started</a>
+</div>
+
+<!-- HERO -->
 <section class="hero">
-  <h1>Sell Beats. Build a Brand. Get Paid.</h1>
+  <h1>Sell Beats. Build a Brand.<br/>Get Paid.</h1>
   <p>The next-generation marketplace for producers & artists.</p>
+
   <div class="hero-actions">
-    <a class="primary" href="marketplace.html">Browse Beats</a>
-    <a class="secondary" href="register.html">Start Selling</a>
+    <a class="btn primary" href="marketplace.html">Browse Beats</a>
+    <a class="btn outline" href="register.html">Start Selling</a>
   </div>
 </section>
 
+<!-- STATS -->
 <section class="stats">
   <div><strong>10k+</strong><span>Beats</span></div>
   <div><strong>5k+</strong><span>Producers</span></div>
   <div><strong>Global</strong><span>Artists</span></div>
 </section>
 
-<section class="licenses">
-  <h2>Simple Licensing</h2>
-  <div class="license-grid">
-    <div class="card">
-      <h3>Basic Lease</h3>
-      <p class="price">$19</p>
-      <p>MP3 · 10k streams</p>
-    </div>
-    <div class="card highlight">
-      <h3>Premium Lease</h3>
-      <p class="price">$39</p>
-      <p>WAV · 100k streams</p>
-    </div>
-    <div class="card">
-      <h3>Unlimited</h3>
-      <p class="price">$99</p>
-      <p>Unlimited usage</p>
-    </div>
-  </div>
-</section>
-
-<section class="why">
-  <h2>Why ProdByBigi?</h2>
-  <div class="why-grid">
-    <div>💰 Lower fees, higher payouts</div>
-    <div>⚡ Instant downloads</div>
-    <div>🧑‍🎤 Producer-first platform</div>
-    <div>🔒 Secure licensing</div>
-  </div>
-</section>
-
-<footer>
-  <p>© 2026 ProdByBigi. All rights reserved.</p>
-  <div class="footer-links">
-    <a href="#">Privacy</a>
-    <a href="#">Terms</a>
-    <a href="#">Cookies</a>
-  </div>
-</footer>
+<script>
+function toggleMenu() {
+  document.getElementById("mobileMenu").classList.toggle("show");
+}
+</script>
 
 </body>
 </html>
