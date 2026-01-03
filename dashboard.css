@@ -1,34 +1,10 @@
-body {
-  margin: 0;
-  background: #0d0d0d;
-  color: #fff;
-  font-family: Arial;
-}
-
-.layout {
-  display: flex;
-  height: 100vh;
-}
-
-.sidebar {
-  width: 230px;
-  background: #121212;
-  padding: 20px;
-}
-
-.sidebar a {
-  display: block;
-  padding: 10px;
-  color: #bbb;
-  text-decoration: none;
-}
-
-.sidebar a:hover {
-  background: #1e1e1e;
-  color: #fff;
-}
-
-main {
-  flex: 1;
-  padding: 20px;
-}
+body{margin:0;font-family:sans-serif;background:#0f1219;color:#fff}
+.dash-nav{display:flex;justify-content:space-between;padding:16px;background:#0b0d12}
+.dash{display:flex;height:calc(100vh - 56px)}
+aside{width:220px;background:#0b0d12;padding:20px}
+aside a{display:block;color:#ccc;padding:12px;border-radius:8px;text-decoration:none}
+aside a:hover{background:#1b2133}
+main{flex:1;padding:24px}
+.page{display:none}
+.page.active{display:block}
+button{padding:10px 16px;border:none;border-radius:8px}
