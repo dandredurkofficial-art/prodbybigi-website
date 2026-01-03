@@ -1,102 +1,87 @@
-/* RESET */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body {
+  font-family: Inter, system-ui, sans-serif;
   background: #0b0b0b;
   color: #fff;
-  line-height: 1.6;
 }
 
-/* NAVBAR */
-.navbar {
+a { text-decoration: none; color: inherit; }
+
+.nav {
   display: flex;
   justify-content: space-between;
+  padding: 20px 24px;
   align-items: center;
-  padding: 16px 20px;
+}
+.nav nav a { margin-left: 16px; }
+.nav .btn {
+  padding: 8px 14px;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
 }
 
-.logo {
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.nav-links a {
-  color: #fff;
-  text-decoration: none;
-  margin-left: 16px;
-  font-size: 14px;
-}
-
-/* HERO */
 .hero {
   text-align: center;
-  padding: 80px 20px;
+  padding: 120px 20px;
 }
-
 .hero h1 {
-  font-size: 32px;
-  margin-bottom: 10px;
+  font-size: clamp(2.5rem, 6vw, 4rem);
 }
-
 .hero p {
-  color: #b3b3b3;
-  margin-bottom: 24px;
+  margin: 20px 0;
+  color: #aaa;
 }
-
-.hero button {
-  background: #1e90ff;
-  color: #fff;
-  border: none;
-  padding: 14px 28px;
+.hero-actions a {
+  margin: 10px;
+  padding: 14px 26px;
   border-radius: 8px;
-  font-size: 16px;
-  cursor: pointer;
 }
+.primary { background: #3b82f6; }
+.secondary { border: 1px solid #555; }
 
-/* LICENSES */
-.section {
-  padding: 40px 20px;
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  text-align: center;
+  padding: 60px 20px;
 }
+.stats strong { font-size: 2rem; display: block; }
 
-.section h2 {
-  font-size: 22px;
-  margin-bottom: 20px;
+.licenses {
+  padding: 100px 20px;
+  text-align: center;
 }
-
 .license-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
 }
-
-.license-card {
-  background: #151515;
+.card {
+  background: #141414;
+  padding: 30px;
   border-radius: 14px;
-  padding: 20px;
-  border: 1px solid #222;
 }
-
-.license-card h3 {
-  margin-bottom: 8px;
-}
+.highlight { border: 2px solid #3b82f6; }
 
 .price {
-  font-size: 22px;
+  font-size: 2rem;
   margin: 10px 0;
 }
 
-/* DESKTOP */
-@media (min-width: 768px) {
-  .hero h1 {
-    font-size: 44px;
-  }
-
-  .license-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.why {
+  padding: 100px 20px;
+  text-align: center;
 }
+.why-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  margin-top: 40px;
+}
+
+footer {
+  padding: 40px 20px;
+  text-align: center;
+  color: #777;
+}
+.footer-links a { margin: 0 10px; }
