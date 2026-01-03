@@ -3,34 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProdByBigi Marketplace</title>
+  <title>Marketplace | ProdByBigi</title>
   <link rel="stylesheet" href="css/marketplace.css">
 </head>
-
 <body>
 
-<header class="market-nav">
+<!-- HEADER (same structure as index) -->
+<header class="header">
   <div class="logo">ProdByBigi</div>
 
-  <div class="search">
-    <input type="text" placeholder="Search beats, producers, moods...">
-  </div>
-
   <nav class="nav-links">
+    <a href="marketplace.html">Marketplace</a>
     <a href="login.html">Login</a>
-    <a href="register.html" class="sell">Start Selling</a>
+    <a class="cta" href="register.html">Start Selling</a>
   </nav>
 
-  <button class="hamburger" onclick="toggleMenu()">☰</button>
+  <!-- Hamburger (same as index) -->
+  <div class="hamburger" id="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
 </header>
 
+<!-- Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
+  <a href="marketplace.html">Marketplace</a>
   <a href="login.html">Login</a>
   <a href="register.html">Start Selling</a>
 </div>
 
+<!-- MARKETPLACE CONTENT (UNCHANGED STYLE) -->
 <main class="marketplace">
-
   <div class="beat-card">
     <div class="beat-art">
       <button class="play">▶</button>
@@ -56,24 +60,11 @@
       <button class="price">$29</button>
     </div>
   </div>
-
-  <div class="beat-card">
-    <div class="beat-art">
-      <button class="play">▶</button>
-    </div>
-    <div class="beat-info">
-      <div>
-        <h3>Dark Therapy</h3>
-        <p>Prod. Bigi</p>
-      </div>
-      <button class="price">$49</button>
-    </div>
-  </div>
-
 </main>
 
+<!-- FOOTER (same as index) -->
 <footer class="footer">
-  <p>© 2026 ProdByBigi. All rights reserved.</p>
+  <p>© 2026 ProdByBigi</p>
   <div class="footer-links">
     <a href="#">Privacy Policy</a>
     <a href="#">Terms</a>
@@ -83,9 +74,13 @@
 </footer>
 
 <script>
-function toggleMenu() {
-  document.getElementById("mobileMenu").classList.toggle("show");
-}
+  const hamburger = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobileMenu");
+
+  hamburger.onclick = () => {
+    mobileMenu.classList.toggle("open");
+    hamburger.classList.toggle("active");
+  };
 </script>
 
 </body>
