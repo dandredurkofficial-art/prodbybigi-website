@@ -1,87 +1,56 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: Inter, system-ui, sans-serif;
-  background: #0b0b0b;
-  color: #fff;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProdByBigi – Sell Beats. Build a Brand.</title>
+  <link rel="stylesheet" href="css/home.css" />
+</head>
+<body>
 
-a { text-decoration: none; color: inherit; }
+<!-- NAV -->
+<header class="nav">
+  <div class="logo">ProdByBigi</div>
 
-.nav {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 24px;
-  align-items: center;
-}
-.nav nav a { margin-left: 16px; }
-.nav .btn {
-  padding: 8px 14px;
-  border: 1px solid #3b82f6;
-  border-radius: 6px;
-}
+  <nav class="nav-links">
+    <a href="marketplace.html">Marketplace</a>
+    <a href="login.html">Login</a>
+    <a class="btn primary" href="register.html">Get Started</a>
+  </nav>
 
-.hero {
-  text-align: center;
-  padding: 120px 20px;
-}
-.hero h1 {
-  font-size: clamp(2.5rem, 6vw, 4rem);
-}
-.hero p {
-  margin: 20px 0;
-  color: #aaa;
-}
-.hero-actions a {
-  margin: 10px;
-  padding: 14px 26px;
-  border-radius: 8px;
-}
-.primary { background: #3b82f6; }
-.secondary { border: 1px solid #555; }
+  <div class="hamburger" onclick="toggleMenu()">☰</div>
+</header>
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3,1fr);
-  text-align: center;
-  padding: 60px 20px;
-}
-.stats strong { font-size: 2rem; display: block; }
+<!-- MOBILE MENU -->
+<div id="mobileMenu" class="mobile-menu">
+  <a href="marketplace.html">Marketplace</a>
+  <a href="login.html">Login</a>
+  <a class="btn primary" href="register.html">Get Started</a>
+</div>
 
-.licenses {
-  padding: 100px 20px;
-  text-align: center;
-}
-.license-grid {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-}
-.card {
-  background: #141414;
-  padding: 30px;
-  border-radius: 14px;
-}
-.highlight { border: 2px solid #3b82f6; }
+<!-- HERO -->
+<section class="hero">
+  <h1>Sell Beats. Build a Brand.<br/>Get Paid.</h1>
+  <p>The next-generation marketplace for producers & artists.</p>
 
-.price {
-  font-size: 2rem;
-  margin: 10px 0;
-}
+  <div class="hero-actions">
+    <a class="btn primary" href="marketplace.html">Browse Beats</a>
+    <a class="btn outline" href="register.html">Start Selling</a>
+  </div>
+</section>
 
-.why {
-  padding: 100px 20px;
-  text-align: center;
-}
-.why-grid {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-  margin-top: 40px;
-}
+<!-- STATS -->
+<section class="stats">
+  <div><strong>10k+</strong><span>Beats</span></div>
+  <div><strong>5k+</strong><span>Producers</span></div>
+  <div><strong>Global</strong><span>Artists</span></div>
+</section>
 
-footer {
-  padding: 40px 20px;
-  text-align: center;
-  color: #777;
+<script>
+function toggleMenu() {
+  document.getElementById("mobileMenu").classList.toggle("show");
 }
-.footer-links a { margin: 0 10px; }
+</script>
+
+</body>
+</html>
