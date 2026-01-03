@@ -2,44 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Producer Profile</title>
-  <link rel="stylesheet" href="producer.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prod. Bigi | Producer</title>
+  <link rel="stylesheet" href="css/producer.css">
 </head>
 <body>
 
-<header class="nav">
-  <h1 class="logo">ProdByBigi</h1>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="marketplace.html">Marketplace</a>
-  </nav>
+<header class="producer-header">
+  <div class="overlay"></div>
+  <div class="producer-info">
+    <img src="https://via.placeholder.com/120" class="avatar">
+    <h1>Prod. Bigi</h1>
+    <p>Dark • Trap • Hip-Hop Producer</p>
+
+    <div class="stats">
+      <div><strong>42</strong><span>Beats</span></div>
+      <div><strong>1.2k</strong><span>Sales</span></div>
+      <div><strong>8.4k</strong><span>Followers</span></div>
+    </div>
+
+    <button class="follow">Follow</button>
+  </div>
 </header>
 
-<section class="profile">
-  <img id="avatar" src="https://picsum.photos/200" />
-  <h2 id="producerName">Producer Name</h2>
-  <p id="bio">Independent music producer</p>
+<main class="producer-beats">
 
-  <div class="stats">
-    <div><strong id="beatsCount">0</strong><span>Beats</span></div>
-    <div><strong id="salesCount">0</strong><span>Sales</span></div>
-    <div><strong id="followersCount">0</strong><span>Followers</span></div>
+  <h2>Beats</h2>
+
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Midnight Drip</h3>
+        <p>Trap • 140 BPM</p>
+      </div>
+      <button class="price">$39</button>
+    </div>
   </div>
-</section>
 
-<section class="beats">
-  <h3>🎧 Beats by this Producer</h3>
-
-  <div id="beatsGrid" class="beats-grid">
-    <!-- Beats load here -->
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Cold Streets</h3>
+        <p>Drill • 142 BPM</p>
+      </div>
+      <button class="price">$29</button>
+    </div>
   </div>
-</section>
 
-<footer>
-  <p>© 2026 ProdByBigi</p>
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Dark Therapy</h3>
+        <p>Trap • 130 BPM</p>
+      </div>
+      <button class="price">$49</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  © 2026 ProdByBigi · Privacy · Terms · Cookies
 </footer>
 
-<script src="producer.js"></script>
 </body>
 </html>
