@@ -1,67 +1,42 @@
 body {
   margin: 0;
+  background: #0b0b0f;
+  color: #fff;
   font-family: Arial, sans-serif;
-  background: #0b0b0b;
-  color: white;
 }
 
 .nav {
-  padding: 20px;
   display: flex;
   justify-content: space-between;
-}
-
-.beats {
   padding: 20px;
 }
 
-.beat-card {
-  background: #121212;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
+.market {
+  padding: 60px 20px;
 }
 
-.licenses {
-  padding: 30px 20px;
-}
-
-.license-grid {
+.market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+  gap: 20px;
 }
 
-.license-card {
-  background: #141414;
-  padding: 20px;
-  border-radius: 12px;
-  border: 1px solid #222;
+.market-card {
+  background: #121212;
+  border-radius: 16px;
+  padding: 16px;
 }
 
-.license-card span {
-  font-size: 22px;
-  color: #1e90ff;
-}
-
-.license-card ul {
-  padding-left: 15px;
-}
-
-button {
-  margin-top: 10px;
+.market-card img {
   width: 100%;
+  border-radius: 12px;
+}
+
+.market-card button {
+  width: 100%;
+  margin-top: 10px;
   padding: 10px;
   background: #1e90ff;
   border: none;
-  border-radius: 8px;
-  color: white;
-}
-
-.popular {
-  border: 2px solid #1e90ff;
-}
-
-.exclusive {
-  border: 2px solid gold;
+  border-radius: 12px;
 }
