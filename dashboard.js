@@ -1,9 +1,13 @@
-function loadSection(name) {
-  fetch(`sections/${name}.html`)
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById("content").innerHTML = html;
-    });
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-loadSection("overview");
+function logout(){
+  localStorage.removeItem("loggedIn");
+  location.href="login.html";
+}
+
+if(!localStorage.getItem("loggedIn")){
+  location.href="login.html";
+}
