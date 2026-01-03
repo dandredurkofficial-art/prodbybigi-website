@@ -8,61 +8,85 @@
 </head>
 <body>
 
-<!-- HEADER (same structure as index) -->
+<!-- HEADER -->
 <header class="header">
   <div class="logo">ProdByBigi</div>
 
   <nav class="nav-links">
+    <a href="index.html">Home</a>
     <a href="marketplace.html">Marketplace</a>
     <a href="login.html">Login</a>
     <a class="cta" href="register.html">Start Selling</a>
   </nav>
 
-  <!-- Hamburger (same as index) -->
   <div class="hamburger" id="hamburger">
-    <span></span>
-    <span></span>
-    <span></span>
+    <span></span><span></span><span></span>
   </div>
 </header>
 
-<!-- Mobile Menu -->
+<!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
+  <a href="index.html">Home</a>
   <a href="marketplace.html">Marketplace</a>
   <a href="login.html">Login</a>
   <a href="register.html">Start Selling</a>
 </div>
 
-<!-- MARKETPLACE CONTENT (UNCHANGED STYLE) -->
+<!-- MARKETPLACE -->
 <main class="marketplace">
-  <div class="beat-card">
-    <div class="beat-art">
-      <button class="play">▶</button>
-    </div>
-    <div class="beat-info">
-      <div>
-        <h3>Midnight Drip</h3>
-        <p>Prod. Bigi</p>
-      </div>
-      <button class="price">$39</button>
-    </div>
-  </div>
+  <h1>Trending Beats</h1>
 
-  <div class="beat-card">
-    <div class="beat-art">
-      <button class="play">▶</button>
-    </div>
-    <div class="beat-info">
-      <div>
-        <h3>Cold Streets</h3>
-        <p>Prod. Bigi</p>
+  <div class="beats-grid">
+
+    <div class="beat-card">
+      <div class="beat-cover">
+        <button class="play">▶</button>
       </div>
-      <button class="price">$29</button>
+      <div class="beat-meta">
+        <div>
+          <h3>Midnight Drip</h3>
+          <a href="producer.html?username=bigi" class="producer">
+            Prod. Bigi
+          </a>
+        </div>
+        <button class="price">$39</button>
+      </div>
     </div>
+
+    <div class="beat-card">
+      <div class="beat-cover">
+        <button class="play">▶</button>
+      </div>
+      <div class="beat-meta">
+        <div>
+          <h3>Cold Streets</h3>
+          <a href="producer.html?username=bigi" class="producer">
+            Prod. Bigi
+          </a>
+        </div>
+        <button class="price">$29</button>
+      </div>
+    </div>
+
+    <div class="beat-card">
+      <div class="beat-cover">
+        <button class="play">▶</button>
+      </div>
+      <div class="beat-meta">
+        <div>
+          <h3>Dark Therapy</h3>
+          <a href="producer.html?username=bigi" class="producer">
+            Prod. Bigi
+          </a>
+        </div>
+        <button class="price">$49</button>
+      </div>
+    </div>
+
   </div>
 </main>
 
-<!-- FOOTER (same as index) -->
+<!-- FOOTER -->
 <footer class="footer">
   <p>© 2026 ProdByBigi</p>
   <div class="footer-links">
@@ -78,8 +102,8 @@
   const mobileMenu = document.getElementById("mobileMenu");
 
   hamburger.onclick = () => {
-    mobileMenu.classList.toggle("open");
     hamburger.classList.toggle("active");
+    mobileMenu.classList.toggle("open");
   };
 </script>
 
