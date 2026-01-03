@@ -19,3 +19,62 @@ body{margin:0;font-family:sans-serif;background:#0b0b0b;color:#fff}
 
 .footer{text-align:center;padding:30px;background:#000;color:#888}
 .footer a{color:#888;margin:0 8px}
+
+/* ===============================
+   AUTH (LOGIN & REGISTER)
+================================ */
+.auth-container {
+  max-width: 420px;
+  margin: 80px auto;
+  background: #0f0f0f;
+  padding: 32px;
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.auth-container h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-container p {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 14px;
+}
+
+.auth-container a {
+  color: #ffcc00;
+  text-decoration: none;
+}
+
+.auth-container input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  border: none;
+  background: #1c1c1c;
+  color: white;
+  font-size: 15px;
+}
+
+.auth-container input::placeholder {
+  color: #aaa;
+}
+
+.auth-container button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ffcc00, #ff9900);
+  color: black;
+  cursor: pointer;
+}
+
+.auth-container button:hover {
+  opacity: 0.9;
+}
