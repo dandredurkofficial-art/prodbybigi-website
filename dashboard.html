@@ -1,27 +1,23 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="style.css">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="dashboard">
 
-<h1>Producer Dashboard</h1>
-<button onclick="logout()">Logout</button>
+<header>
+  <h1>Producer Dashboard</h1>
+  <button onclick="logoutUser()">Logout</button>
+</header>
 
-<script type="module">
-import { auth } from "./firebase.js";
-import { onAuthStateChanged, signOut }
-from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+<section class="dash-grid">
+  <div class="card">Upload Beat</div>
+  <div class="card">My Beats</div>
+  <div class="card">Sales</div>
+  <div class="card">Profile</div>
+</section>
 
-onAuthStateChanged(auth, user => {
-  if (!user) location.href = "login.html";
-});
-
-window.logout = async () => {
-  await signOut(auth);
-  location.href = "login.html";
-};
-</script>
-
+<script src="auth-ui.js" type="module"></script>
 </body>
 </html>
