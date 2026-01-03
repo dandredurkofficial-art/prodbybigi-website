@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login — ProdByBigi</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -10,38 +10,29 @@
 
 <header class="nav">
   <div class="logo">🎧 ProdByBigi</div>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="marketplace.html">Marketplace</a>
-  </nav>
 </header>
 
-<section class="section">
-  <h1>Login</h1>
+<div class="auth-container">
+  <h1>Welcome Back</h1>
 
-  <form id="loginForm" style="max-width:400px;margin-top:20px;">
-    <input type="email" placeholder="Email" required style="width:100%;padding:12px;margin-bottom:12px;">
-    <input type="password" placeholder="Password" required style="width:100%;padding:12px;margin-bottom:12px;">
-    <button type="submit" class="btn" style="width:100%;">Login</button>
+  <form id="loginForm">
+    <input type="email" placeholder="Email" required>
+    <input type="password" placeholder="Password" required>
+    <button type="submit">Login</button>
   </form>
 
-  <p style="margin-top:14px;">
+  <p>
     Don’t have an account?
-    <a href="register.html">Register</a>
+    <a href="register.html">Create one</a>
   </p>
-</section>
+</div>
 
 <script>
-  // CLEAR any broken state (important)
   localStorage.removeItem("loggedIn");
 
-  document.getElementById("loginForm").addEventListener("submit", function (e) {
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
     e.preventDefault();
-
-    // SET LOGIN STATE
     localStorage.setItem("loggedIn", "true");
-
-    // REDIRECT TO DASHBOARD
     window.location.href = "dashboard.html";
   });
 </script>
