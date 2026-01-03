@@ -1,80 +1,123 @@
-body{margin:0;font-family:sans-serif;background:#0b0b0b;color:#fff}
-.nav{display:flex;justify-content:space-between;padding:16px 24px;background:#000}
-.nav a{color:#ccc;margin-left:16px;text-decoration:none}
-.logo{font-weight:700}
+* {
+  box-sizing: border-box;
+  font-family: Inter, system-ui, sans-serif;
+}
 
-.hero{text-align:center;padding:80px 20px;background:linear-gradient(#111,#000)}
-.hero h1{font-size:40px}
-.btn{padding:12px 24px;background:#1e90ff;color:#fff;border-radius:6px;text-decoration:none}
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #141824, #07090f);
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 
-.section{padding:60px 24px}
-.alt{background:#111}
-
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.card{background:#161616;padding:20px;border-radius:12px}
-
-.tags span{background:#1a1a1a;padding:10px 16px;border-radius:20px;margin:6px;display:inline-block}
-.stores{display:flex;gap:16px}
-.store{background:#1a1a1a;padding:14px 22px;border-radius:10px}
-
-.footer{text-align:center;padding:30px;background:#000;color:#888}
-.footer a{color:#888;margin:0 8px}
-
-/* ===============================
-   AUTH (LOGIN & REGISTER)
-================================ */
 .auth-container {
+  width: 100%;
   max-width: 420px;
-  margin: 80px auto;
-  background: #0f0f0f;
-  padding: 32px;
-  border-radius: 14px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  background: #0f1320;
+  border-radius: 18px;
+  padding: 36px;
+  border: 1px solid #1f2437;
+  box-shadow: 0 30px 80px rgba(0,0,0,.6);
 }
 
 .auth-container h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 .auth-container p {
   text-align: center;
-  margin-top: 14px;
-  font-size: 14px;
-}
-
-.auth-container a {
-  color: #ffcc00;
-  text-decoration: none;
+  color: #9aa4c7;
+  margin-bottom: 24px;
 }
 
 .auth-container input {
   width: 100%;
-  padding: 14px;
+  padding: 13px 14px;
   margin-bottom: 14px;
-  border-radius: 8px;
-  border: none;
-  background: #1c1c1c;
-  color: white;
+  border-radius: 12px;
+  border: 1px solid #23294a;
+  background: #0b0f1d;
+  color: #fff;
   font-size: 15px;
 }
 
-.auth-container input::placeholder {
-  color: #aaa;
+.auth-container input:focus {
+  outline: none;
+  border-color: #6cf;
 }
 
 .auth-container button {
   width: 100%;
-  padding: 14px;
-  border-radius: 8px;
+  padding: 13px;
+  background: linear-gradient(135deg,#6cf,#9f6cff);
   border: none;
-  font-size: 16px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #ffcc00, #ff9900);
-  color: black;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #000;
   cursor: pointer;
+  font-size: 15px;
 }
 
 .auth-container button:hover {
-  opacity: 0.9;
+  opacity: .9;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 14px;
+}
+
+.auth-footer a {
+  color: #6cf;
+  text-decoration: none;
+}
+
+/* PASSWORD UI */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper input {
+  padding-right: 44px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  color: #bbb;
+}
+
+.toggle-password:hover {
+  color: #6cf;
+}
+
+.strength-bar {
+  height: 6px;
+  background: #1c213a;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.strength-fill {
+  height: 100%;
+  width: 0%;
+  background: red;
+  transition: .3s;
+}
+
+.strength-text {
+  font-size: 13px;
+  color: #9aa4c7;
+  margin-bottom: 14px;
 }
