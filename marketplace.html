@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Marketplace – ProdByBigi</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <link rel="stylesheet" href="css/marketplace.css?v=9">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProdByBigi Marketplace</title>
+  <link rel="stylesheet" href="css/marketplace.css">
 </head>
 
 <body>
 
-<!-- NAVBAR -->
 <header class="market-nav">
   <div class="logo">ProdByBigi</div>
 
@@ -18,89 +16,77 @@
     <input type="text" placeholder="Search beats, producers, moods...">
   </div>
 
-  <nav>
+  <nav class="nav-links">
     <a href="login.html">Login</a>
     <a href="register.html" class="sell">Start Selling</a>
   </nav>
+
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
 </header>
 
-<!-- LAYOUT -->
-<div class="layout">
-
-  <!-- FILTER SIDEBAR -->
-  <aside class="filters">
-    <h3>Filters</h3>
-
-    <label>Genre</label>
-    <select>
-      <option>All</option>
-      <option>Trap</option>
-      <option>Drill</option>
-      <option>Hip Hop</option>
-      <option>R&B</option>
-    </select>
-
-    <label>Mood</label>
-    <select>
-      <option>All</option>
-      <option>Dark</option>
-      <option>Emotional</option>
-      <option>Happy</option>
-    </select>
-
-    <label>Price</label>
-    <select>
-      <option>Any</option>
-      <option>Under $20</option>
-      <option>$20 - $50</option>
-      <option>$50+</option>
-    </select>
-  </aside>
-
-  <!-- BEATS GRID -->
-  <main class="beats">
-
-    <div class="beat-card">
-      <div class="cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="info">
-        <div>
-          <h4>Midnight Drip</h4>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="price">$39</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="info">
-        <div>
-          <h4>Cold Streets</h4>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="price">$29</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="info">
-        <div>
-          <h4>Dark Therapy</h4>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="price">$49</button>
-      </div>
-    </div>
-
-  </main>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="login.html">Login</a>
+  <a href="register.html">Start Selling</a>
 </div>
+
+<main class="marketplace">
+
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Midnight Drip</h3>
+        <p>Prod. Bigi</p>
+      </div>
+      <button class="price">$39</button>
+    </div>
+  </div>
+
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Cold Streets</h3>
+        <p>Prod. Bigi</p>
+      </div>
+      <button class="price">$29</button>
+    </div>
+  </div>
+
+  <div class="beat-card">
+    <div class="beat-art">
+      <button class="play">▶</button>
+    </div>
+    <div class="beat-info">
+      <div>
+        <h3>Dark Therapy</h3>
+        <p>Prod. Bigi</p>
+      </div>
+      <button class="price">$49</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <p>© 2026 ProdByBigi. All rights reserved.</p>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms</a>
+    <a href="#">Cookies</a>
+    <a href="#">Cookie Settings</a>
+  </div>
+</footer>
+
+<script>
+function toggleMenu() {
+  document.getElementById("mobileMenu").classList.toggle("show");
+}
+</script>
 
 </body>
 </html>
