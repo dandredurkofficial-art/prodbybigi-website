@@ -1,45 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register • ProdByBigi</title>
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="auth-container">
-  <h1>Create Account</h1>
-  <p>Start selling your beats today</p>
+<h2>Create Account</h2>
 
-  <input type="text" id="name" placeholder="Display Name" required>
-  <input type="email" id="registerEmail" placeholder="Email" required>
+<input id="name" placeholder="Producer Name">
+<input id="registerEmail" placeholder="Email">
 
-  <div class="password-wrapper">
-    <input type="password" id="registerPassword" placeholder="Password" required>
-    <span class="toggle-password" onclick="togglePassword('registerPassword', this)">👁</span>
-  </div>
-
-  <div class="strength-bar">
-    <div class="strength-fill" id="strengthFill"></div>
-  </div>
-  <div class="strength-text" id="strengthText">Password strength</div>
-
-  <button onclick="register()">Create Account</button>
-
-  <div class="auth-footer">
-    Already have an account? <a href="login.html">Login</a>
-  </div>
+<div class="password-wrapper">
+  <input id="registerPassword" type="password" placeholder="Password">
+  <span onclick="togglePassword('registerPassword',this)">👁</span>
 </div>
 
-<script src="auth-ui.js"></script>
-<script>
-function register(){
-  // Firebase register logic goes here
-  window.location.href = "dashboard.html";
-}
-</script>
+<div class="strength-bar"><div id="strengthFill"></div></div>
+<p id="strengthText">Password strength</p>
 
+<button id="registerBtn" onclick="register()" disabled>Create Account</button>
+
+<script src="auth-ui.js"></script>
+
+<script type="module">
+import { auth, db } from "./firebase.js";
+import { createUserWithEmailAndPassword }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { doc, setDoc, serverTimestamp }
+from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+
+window.register = async () => {
+  if (!passwordStrong) return;
+
+  const cred = await createUserWithEmailAndPassword(
+    auth,
+    registerEmail.value,
+    registerPassword.value
+  );
+
+  await setDoc(doc(db,"users",cred.user.uid),{
+    displayName: name.value,
+    email: registerEmail.value,
+    role:"producer",
+    plan:"free",
+    createdAt: serverTimestamp(),
+    stats:{ beats:0, plays:0, sales:0 }
+  });
+
+  location.href="dashboard.html";
+};
+</script>
 </body>
 </html>
