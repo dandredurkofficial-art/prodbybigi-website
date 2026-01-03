@@ -2,86 +2,75 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProdByBigi — Buy & Sell Beats</title>
-  <link rel="stylesheet" href="/css/home.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProdByBigi – Buy & Sell Premium Beats</title>
+  <link rel="stylesheet" href="css/home.css" />
 </head>
 <body>
 
 <header class="nav">
-  <h1 class="logo">ProdByBigi</h1>
+  <div class="logo">ProdByBigi</div>
   <nav>
     <a href="marketplace.html">Marketplace</a>
     <a href="login.html">Login</a>
-    <a class="cta" href="register.html">Get Started</a>
+    <a class="btn" href="register.html">Get Started</a>
   </nav>
 </header>
 
 <section class="hero">
-  <h2>Buy & Sell Premium Beats</h2>
-  <p>Modern marketplace for producers & artists</p>
-  <a href="marketplace.html" class="hero-btn">Browse Beats</a>
+  <h1>Sell Beats. Build a Brand. Get Paid.</h1>
+  <p>The next-generation marketplace for producers & artists.</p>
+  <div class="hero-actions">
+    <a class="primary" href="marketplace.html">Browse Beats</a>
+    <a class="secondary" href="register.html">Start Selling</a>
+  </div>
+</section>
+
+<section class="stats">
+  <div><strong>10k+</strong><span>Beats</span></div>
+  <div><strong>5k+</strong><span>Producers</span></div>
+  <div><strong>Global</strong><span>Artists</span></div>
 </section>
 
 <section class="licenses">
-  <h3>Popular Licenses</h3>
+  <h2>Simple Licensing</h2>
   <div class="license-grid">
-    <div class="license-card">
-      <h4>Basic Lease</h4>
+    <div class="card">
+      <h3>Basic Lease</h3>
       <p class="price">$19</p>
-      <span>MP3 · 10k Streams</span>
+      <p>MP3 · 10k streams</p>
     </div>
-
-    <div class="license-card featured">
-      <h4>Premium Lease</h4>
+    <div class="card highlight">
+      <h3>Premium Lease</h3>
       <p class="price">$39</p>
-      <span>WAV · 100k Streams</span>
+      <p>WAV · 100k streams</p>
     </div>
-
-    <div class="license-card">
-      <h4>Unlimited</h4>
+    <div class="card">
+      <h3>Unlimited</h3>
       <p class="price">$99</p>
-      <span>Unlimited Usage</span>
+      <p>Unlimited usage</p>
     </div>
   </div>
 </section>
 
-<section class="beats">
-  <h3>🔥 Trending Beats</h3>
-
-  <div class="beats-grid">
-    <div class="beat-card">
-      <img src="https://picsum.photos/400?1">
-      <h4>Midnight Trap</h4>
-      <p>Trap · 140 BPM</p>
-      <audio src=""></audio>
-      <button class="preview">▶ Preview</button>
-    </div>
-
-    <div class="beat-card">
-      <img src="https://picsum.photos/400?2">
-      <h4>Afro Wave</h4>
-      <p>Afrobeats · 110 BPM</p>
-      <audio src=""></audio>
-      <button class="preview">▶ Preview</button>
-    </div>
+<section class="why">
+  <h2>Why ProdByBigi?</h2>
+  <div class="why-grid">
+    <div>💰 Lower fees, higher payouts</div>
+    <div>⚡ Instant downloads</div>
+    <div>🧑‍🎤 Producer-first platform</div>
+    <div>🔒 Secure licensing</div>
   </div>
 </section>
 
 <footer>
-  <p>© 2026 ProdByBigi</p>
+  <p>© 2026 ProdByBigi. All rights reserved.</p>
   <div class="footer-links">
     <a href="#">Privacy</a>
     <a href="#">Terms</a>
     <a href="#">Cookies</a>
   </div>
 </footer>
-
-<script>
-document.querySelectorAll('.preview').forEach(btn => {
-  btn.onclick = () => alert("Preview system ready");
-});
-</script>
 
 </body>
 </html>
