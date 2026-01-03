@@ -10,12 +10,12 @@ body {
   color: #fff;
 }
 
-/* HEADER (SAME AS INDEX) */
+/* HEADER */
 .header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  align-items: center;
+  padding: 16px 22px;
   border-bottom: 1px solid #1e1e25;
 }
 
@@ -36,12 +36,12 @@ body {
 }
 
 .nav-links .cta {
-  padding: 6px 14px;
   border: 1px solid #3b82f6;
+  padding: 6px 14px;
   border-radius: 8px;
 }
 
-/* HAMBURGER (IDENTICAL TO HOME) */
+/* HAMBURGER */
 .hamburger {
   display: none;
   flex-direction: column;
@@ -74,58 +74,82 @@ body {
   display: flex;
 }
 
-/* MARKETPLACE CONTENT (UNCHANGED LOOK) */
+/* MARKETPLACE */
 .marketplace {
-  max-width: 900px;
+  max-width: 1100px;
   margin: auto;
-  padding: 24px;
+  padding: 28px;
 }
 
+.marketplace h1 {
+  margin-bottom: 20px;
+}
+
+.beats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+/* BEAT CARD */
 .beat-card {
   background: linear-gradient(180deg, #0f172a, #020617);
   border-radius: 18px;
-  margin-bottom: 24px;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0,0,0,.6);
 }
 
-.beat-art {
-  height: 180px;
+.beat-cover {
+  height: 200px;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .play {
   background: #3b82f6;
   border: none;
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-  width: 70px;
-  height: 70px;
   font-size: 22px;
   color: #fff;
 }
 
-.beat-info {
+.beat-meta {
+  padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 18px;
+}
+
+.beat-meta h3 {
+  font-size: 16px;
+}
+
+.producer {
+  font-size: 13px;
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.producer:hover {
+  color: #3b82f6;
 }
 
 .price {
   background: #3b82f6;
   border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 8px 14px;
+  border-radius: 10px;
   color: #fff;
 }
 
-/* FOOTER (SAME AS INDEX) */
+/* FOOTER */
 .footer {
   border-top: 1px solid #1e1e25;
-  text-align: center;
   padding: 20px;
+  text-align: center;
   font-size: 13px;
   color: #94a3b8;
 }
@@ -147,7 +171,6 @@ body {
   .nav-links {
     display: none;
   }
-
   .hamburger {
     display: flex;
   }
