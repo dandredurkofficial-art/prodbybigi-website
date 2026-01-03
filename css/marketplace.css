@@ -1,42 +1,62 @@
-body {
+* {
   margin: 0;
-  background: #0b0b0f;
-  color: #fff;
-  font-family: Arial, sans-serif;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.nav {
-  display: flex;
-  justify-content: space-between;
+body {
+  background: #0b0b0b;
+  color: #fff;
+}
+
+/* HEADER */
+.market-header {
+  padding: 20px;
+  text-align: center;
+}
+
+.market-header h1 {
+  font-size: 28px;
+}
+
+/* BEAT GRID */
+.beat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
   padding: 20px;
 }
 
-.market {
-  padding: 60px 20px;
-}
-
-.market-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
-  gap: 20px;
-}
-
-.market-card {
-  background: #121212;
-  border-radius: 16px;
+.beat-card {
+  background: #151515;
+  border-radius: 14px;
   padding: 16px;
+  border: 1px solid #222;
 }
 
-.market-card img {
-  width: 100%;
-  border-radius: 12px;
+.beat-card h3 {
+  margin-bottom: 6px;
 }
 
-.market-card button {
+.beat-card audio {
   width: 100%;
-  margin-top: 10px;
-  padding: 10px;
+  margin: 10px 0;
+}
+
+.buy-btn {
   background: #1e90ff;
   border: none;
-  border-radius: 12px;
+  color: #fff;
+  padding: 10px;
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* DESKTOP */
+@media (min-width: 768px) {
+  .beat-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
