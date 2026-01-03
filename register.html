@@ -8,23 +8,15 @@
 
 <div class="auth-box">
   <h2>Create Account</h2>
-  <input id="email" placeholder="Email">
 
-  <input id="password" type="password" placeholder="Password" oninput="checkStrength()">
-  <div id="strength"></div>
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="password" type="password" placeholder="Password" required>
 
-  <button id="regBtn" onclick="registerUser()" disabled>Register</button>
-  <p><a href="login.html">Already have account</a></p>
+  <button onclick="registerUser()">Register</button>
+
+  <p><a href="login.html">Login</a></p>
 </div>
 
-<script src="auth-ui.js" type="module"></script>
-<script>
-function checkStrength(){
-  const p = password.value;
-  const strong = p.length >= 8 && /[A-Z]/.test(p) && /\d/.test(p);
-  strength.innerText = strong ? "Strong 🔥" : "Weak ❌";
-  regBtn.disabled = !strong;
-}
-</script>
+<script type="module" src="auth-ui.js"></script>
 </body>
 </html>
