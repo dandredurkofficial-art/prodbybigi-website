@@ -1,8 +1,12 @@
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: radial-gradient(circle at top, #0f3d2e, #000);
-  color: #fff;
+  background: #0b0b0b;
+  color: white;
 }
 
 .nav {
@@ -12,75 +16,56 @@ body {
 }
 
 .nav a {
-  color: #ccc;
   margin-left: 15px;
+  color: #aaa;
   text-decoration: none;
 }
 
-.nav .btn {
-  background: #1e90ff;
-  padding: 8px 14px;
+.btn {
+  color: white;
+  border: 1px solid #1e90ff;
+  padding: 6px 12px;
   border-radius: 6px;
-  color: #fff;
 }
 
 .hero {
+  text-align: center;
   padding: 80px 20px;
-  max-width: 900px;
-  margin: auto;
-}
-
-.hero h1 {
-  font-size: 42px;
-}
-
-.hero ul {
-  list-style: none;
-  padding: 0;
-}
-
-.hero li {
-  margin: 10px 0;
 }
 
 .cta {
   display: inline-block;
   margin-top: 20px;
+  padding: 12px 24px;
   background: #1e90ff;
-  padding: 12px 20px;
-  border-radius: 8px;
-  color: #fff;
+  color: white;
   text-decoration: none;
-}
-
-.section {
-  padding: 60px 20px;
-  max-width: 900px;
-  margin: auto;
-}
-
-.genres span {
-  display: inline-block;
-  margin: 8px;
-  padding: 10px 16px;
-  background: #111;
-  border-radius: 20px;
-}
-
-.stores {
-  display: flex;
-  gap: 20px;
-}
-
-.store {
-  padding: 14px 20px;
-  background: #111;
   border-radius: 8px;
+}
+
+.licenses {
+  padding: 40px 20px;
+}
+
+.license-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+.license-card {
+  background: #121212;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.highlight {
+  border: 2px solid #1e90ff;
 }
 
 footer {
   text-align: center;
-  padding: 30px;
-  font-size: 14px;
-  color: #aaa;
+  padding: 20px;
+  color: #555;
 }
