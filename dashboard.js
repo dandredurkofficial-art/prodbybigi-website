@@ -1,13 +1,26 @@
-function show(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+// AUTH GUARD — runs ONCE
+(function () {
+  const loggedIn = localStorage.getItem("loggedIn");
+
+  if (loggedIn !== "true") {
+    window.location.href = "login.html";
+  }
+})();
+
+// PAGE SWITCHER
+function show(pageId) {
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
+  });
+
+  const page = document.getElementById(pageId);
+  if (page) {
+    page.classList.add("active");
+  }
 }
 
-function logout(){
+// LOGOUT — ONLY WHEN CLICKED
+function logout() {
   localStorage.removeItem("loggedIn");
-  location.href="login.html";
-}
-
-if(!localStorage.getItem("loggedIn")){
-  location.href="login.html";
+  window.location.href = "index.html";
 }
