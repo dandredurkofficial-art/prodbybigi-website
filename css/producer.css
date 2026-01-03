@@ -1,0 +1,68 @@
+body {
+  margin: 0;
+  background: #0b0b0f;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.profile {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.profile img {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.stats div {
+  text-align: center;
+}
+
+.beats {
+  padding: 40px 20px;
+}
+
+.beats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.beat-card {
+  background: #121212;
+  padding: 16px;
+  border-radius: 16px;
+}
+
+.beat-card img {
+  width: 100%;
+  border-radius: 12px;
+}
+
+.beat-card button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+}
+
+footer {
+  text-align: center;
+  padding: 30px;
+  opacity: 0.6;
+}
