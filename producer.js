@@ -1,38 +1,36 @@
-// Get producer username from URL
 const params = new URLSearchParams(window.location.search);
-const username = params.get("username") || "prodbigi";
+const username = params.get("username");
 
-// Fake data (replace with Firebase later)
-const producer = {
-  name: username,
-  bio: "Independent music producer",
-  beats: [
-    { title: "Midnight Trap", genre: "Trap", price: 19 },
-    { title: "Afro Wave", genre: "Afrobeats", price: 29 }
-  ]
+// Fake data for now (later → Firebase)
+const producers = {
+  bigi: {
+    name: "Prod. Bigi",
+    bio: "Trap & melodic beats. Dark vibes only.",
+    beats: [
+      { title: "Midnight Drip", price: 39 },
+      { title: "Cold Streets", price: 29 }
+    ]
+  }
 };
 
-// Populate profile
-document.getElementById("producerName").textContent = producer.name;
-document.getElementById("bio").textContent = producer.bio;
-document.getElementById("beatsCount").textContent = producer.beats.length;
-document.getElementById("salesCount").textContent = 124;
-document.getElementById("followersCount").textContent = 312;
+const producer = producers[username];
 
-// Load beats
-const grid = document.getElementById("beatsGrid");
+if (producer) {
+  document.getElementById("producerName").textContent = producer.name;
+  document.getElementById("producerBio").textContent = producer.bio;
 
-producer.beats.forEach(beat => {
-  const card = document.createElement("div");
-  card.className = "beat-card";
+  const container = document.getElementById("producerBeats");
 
-  card.innerHTML = `
-    <img src="https://picsum.photos/400?random=${Math.random()}">
-    <h4>${beat.title}</h4>
-    <p>${beat.genre}</p>
-    <span>$${beat.price}</span>
-    <button>Buy License</button>
-  `;
-
-  grid.appendChild(card);
-});
+  producer.beats.forEach(beat => {
+    const card = document.createElement("div");
+    card.className = "beat-card";
+    card.innerHTML = `
+      <div>
+        <h3>${beat.title}</h3>
+        <p>${producer.name}</p>
+      </div>
+      <button>$${beat.price}</button>
+    `;
+    container.appendChild(card);
+  });
+}
