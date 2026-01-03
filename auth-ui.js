@@ -1,34 +1,53 @@
-let passwordStrong = false;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-window.togglePassword = (id, el) => {
-  const input = document.getElementById(id);
-  input.type = input.type === "password" ? "text" : "password";
-  el.textContent = input.type === "password" ? "👁" : "🙈";
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi",
 };
 
-const pwd = document.getElementById("registerPassword");
-const btn = document.getElementById("registerBtn");
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-if (pwd) {
-  pwd.addEventListener("input", () => {
-    const fill = document.getElementById("strengthFill");
-    const text = document.getElementById("strengthText");
-    let s = 0;
+/* 🔐 AUTH GUARD */
+onAuthStateChanged(auth, user => {
+  const page = location.pathname;
 
-    if (pwd.value.length >= 8) s++;
-    if (/[A-Z]/.test(pwd.value)) s++;
-    if (/[0-9]/.test(pwd.value)) s++;
-    if (/[^A-Za-z0-9]/.test(pwd.value)) s++;
+  if (user && (page.includes("login") || page.includes("register"))) {
+    location.replace("dashboard.html");
+  }
 
-    const labels = ["", "Weak", "Fair", "Good", "Strong"];
-    const colors = ["", "red", "orange", "#ffcc00", "#22c55e"];
+  if (!user && page.includes("dashboard")) {
+    location.replace("login.html");
+  }
+});
 
-    fill.style.width = s * 25 + "%";
-    fill.style.background = colors[s];
-    text.textContent = labels[s];
+/* LOGIN */
+window.loginUser = () => {
+  signInWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).catch(err => alert(err.message));
+};
 
-    passwordStrong = s === 4;
-    btn.disabled = !passwordStrong;
-    btn.style.opacity = passwordStrong ? "1" : "0.5";
-  });
-}
+/* REGISTER */
+window.registerUser = () => {
+  createUserWithEmailAndPassword(
+    auth,
+    email.value,
+    password.value
+  ).catch(err => alert(err.message));
+};
+
+/* LOGOUT */
+window.logoutUser = () => signOut(auth);
+</script>
