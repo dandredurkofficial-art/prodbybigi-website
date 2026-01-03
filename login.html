@@ -8,20 +8,16 @@
 
 <div class="auth-box">
   <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <div class="password-box">
-    <input id="password" type="password" placeholder="Password">
-    <span onclick="toggle()">👁</span>
-  </div>
+
+  <input id="email" type="email" placeholder="Email" required>
+  <input id="password" type="password" placeholder="Password" required>
+
   <button onclick="loginUser()">Login</button>
+
   <p><a href="register.html">Create account</a></p>
 </div>
 
-<script src="auth-ui.js" type="module"></script>
-<script>
-function toggle(){
-  password.type = password.type === "password" ? "text" : "password";
-}
-</script>
+<!-- THIS IS CRITICAL -->
+<script type="module" src="auth-ui.js"></script>
 </body>
 </html>
