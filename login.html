@@ -1,23 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body class="auth-page">
 
-<div class="auth-box">
-  <h2>Login</h2>
+<body>
 
-  <input id="email" type="email" placeholder="Email" required>
-  <input id="password" type="password" placeholder="Password" required>
+<h2>Login</h2>
 
-  <button onclick="loginUser()">Login</button>
+<input id="email" type="email" placeholder="Email" />
+<input id="password" type="password" placeholder="Password" />
 
-  <p><a href="register.html">Create account</a></p>
-</div>
+<button onclick="loginUser()">Login</button>
 
-<!-- THIS IS CRITICAL -->
+<p>
+  Don’t have an account?
+  <a href="register.html">Register</a>
+</p>
+
+<!-- 🔥 MUST BE MODULE -->
 <script type="module" src="auth-ui.js"></script>
+
 </body>
 </html>
