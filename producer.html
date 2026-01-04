@@ -2,25 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Producer</title>
-  <link rel="stylesheet" href="css/producer.css">
+  <title>Producer Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/producer.css" />
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import {
+      getFirestore, doc, getDoc, collection, query, where, getDocs,
+      setDoc, deleteDoc, updateDoc, increment
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+      authDomain: "prodbybigi.firebaseapp.com",
+      projectId: "prodbybigi",
+      storageBucket: "prodbybigi.firebasestorage.app",
+      messagingSenderId: "1040553526206",
+      appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const producerId = params.get("id");
+
+    const followBtn = document.getElementById("followBtn");
+    const followersCountEl = document.getElementById("followersCount");
+    const producerNameEl = document.getElementById("producerName");
+    const beatsGrid = document.getElementById("beatsGrid");
+
+    async function loadProducer() {
+      const producerRef = doc(db, "producers", producerId);
+      const snap = await getDoc(producerRef);
+
+      if (!snap.exists()) return;
+
+      const data = snap.data();
+      producerNameEl.textContent = data.name;
+      followersCountEl.textContent = `${data.followersCount || 0} followers`;
+    }
+
+    async function loadBeats() {
+      const q = query(
+        collection(db, "beats"),
+        where("producerId", "==", producerId)
+      );
+      const snap = await getDocs(q);
+
+      beatsGrid.innerHTML = "";
+      snap.forEach(doc => {
+        const beat = doc.data();
+        beatsGrid.innerHTML += `
+          <div class="beat-card">
+            <img src="${beat.coverUrl}" />
+            <h4>${beat.title}</h4>
+            <span>$${beat.price}</span>
+          </div>
+        `;
+      });
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        followBtn.textContent = "Login to follow";
+        followBtn.disabled = true;
+        return;
+      }
+
+      const followRef = doc(db, "users", user.uid, "following", producerId);
+      const producerRef = doc(db, "producers", producerId);
+
+      const followSnap = await getDoc(followRef);
+
+      if (followSnap.exists()) {
+        followBtn.textContent = "Following";
+        followBtn.classList.add("following");
+      }
+
+      followBtn.onclick = async () => {
+        if (followBtn.classList.contains("following")) {
+          await deleteDoc(followRef);
+          await updateDoc(producerRef, { followersCount: increment(-1) });
+          followBtn.textContent = "Follow";
+          followBtn.classList.remove("following");
+        } else {
+          await setDoc(followRef, { followedAt: new Date() });
+          await updateDoc(producerRef, { followersCount: increment(1) });
+          followBtn.textContent = "Following";
+          followBtn.classList.add("following");
+        }
+      };
+    });
+
+    loadProducer();
+    loadBeats();
+  </script>
 </head>
+
 <body>
+  <header class="producer-header">
+    <h1 id="producerName">Producer</h1>
+    <button id="followBtn" class="follow-btn">Follow</button>
+    <p id="followersCount"></p>
+  </header>
 
-<header class="header">
-  <div class="logo">ProdByBigi</div>
-  <a href="marketplace.html" class="back">← Marketplace</a>
-</header>
-
-<section class="producer-hero">
-  <h1 id="producerName"></h1>
-  <p id="producerBio">Producer beats</p>
-</section>
-
-<section class="producer-beats" id="producerBeats"></section>
-
-<script src="js/beats-data.js"></script>
-<script src="js/producer.js"></script>
+  <section class="beats-section">
+    <h2>Beats</h2>
+    <div id="beatsGrid" class="beats-grid"></div>
+  </section>
 </body>
 </html>
