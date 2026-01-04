@@ -1,6 +1,3 @@
-// auth-ui.js (ES MODULE)
-
-// 🔥 Firebase imports
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
@@ -11,78 +8,54 @@ import {
   getFirestore,
   doc,
   setDoc,
-  getDoc
+  getDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 🔥 Firebase config (MUST include projectId)
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi", // ✅ REQUIRED
+  projectId: "prodbybigi",
 };
 
-// 🔥 Init Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔥 Inputs
-const emailInput = document.getElementById("email");
-const passwordInput = document.getElementById("password");
+// LOGIN
+window.loginUser = async () => {
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email.value, password.value);
+    location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
-// ==========================
-// 🔐 LOGIN
-// ==========================
-const loginBtn = document.getElementById("loginBtn");
-if (loginBtn) {
-  loginBtn.addEventListener("click", async () => {
-    try {
-      await signInWithEmailAndPassword(
-        auth,
-        emailInput.value,
-        passwordInput.value
-      );
+// REGISTER
+window.registerUser = async () => {
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const uid = cred.user.uid;
 
-      window.location.href = "dashboard.html";
-    } catch (err) {
-      alert(err.message);
+    const producerRef = doc(db, "producers", uid);
+    const snap = await getDoc(producerRef);
+
+    // ⛔ Prevent overwrite
+    if (!snap.exists()) {
+      await setDoc(producerRef, {
+        uid,
+        email: cred.user.email,
+        name: "New Producer",
+        role: "producer", // 👈 DEFAULT ROLE
+        plan: "free",
+        uploads: 0,
+        createdAt: serverTimestamp()
+      });
     }
-  });
-}
 
-// ==========================
-// 🧑‍🎤 REGISTER + PRODUCER DOC (ONE TIME)
-// ==========================
-const registerBtn = document.getElementById("registerBtn");
-if (registerBtn) {
-  registerBtn.addEventListener("click", async () => {
-    try {
-      const cred = await createUserWithEmailAndPassword(
-        auth,
-        emailInput.value,
-        passwordInput.value
-      );
-
-      const user = cred.user;
-
-      const producerRef = doc(db, "producers", user.uid);
-      const snap = await getDoc(producerRef);
-
-      // ✅ Create producer document ONLY if it doesn't exist
-      if (!snap.exists()) {
-        await setDoc(producerRef, {
-          uid: user.uid,
-          email: user.email,
-          displayName: "",
-          beatsCount: 0,
-          followers: 0,
-          createdAt: Date.now()
-        });
-      }
-
-      window.location.href = "dashboard.html";
-    } catch (err) {
-      alert(err.message);
-    }
-  });
-}
+    location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+};
