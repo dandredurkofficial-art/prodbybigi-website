@@ -59,3 +59,18 @@ window.registerUser = async () => {
     alert(err.message);
   }
 };
+
+// Attach button handlers AFTER DOM loads
+document.addEventListener("DOMContentLoaded", () => {
+  const loginBtn = document.getElementById("loginBtn");
+  const registerBtn = document.getElementById("registerBtn");
+
+  if (loginBtn) {
+    loginBtn.addEventListener("click", window.loginUser);
+  }
+
+  if (registerBtn) {
+    registerBtn.addEventListener("click", window.registerUser);
+  }
+});
+
