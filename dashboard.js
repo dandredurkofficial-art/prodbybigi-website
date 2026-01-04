@@ -1,13 +1,16 @@
-// AUTH GUARD — runs ONCE
-(function () {
-  const loggedIn = localStorage.getItem("loggedIn");
+// 🔐 FIREBASE AUTH GUARD — SAFE & RELIABLE
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  if (loggedIn !== "true") {
+const auth = getAuth();
+
+// ✅ REAL auth check (replaces localStorage completely)
+onAuthStateChanged(auth, user => {
+  if (!user) {
     window.location.href = "login.html";
   }
-})();
+});
 
-// PAGE SWITCHER
+// 📄 PAGE SWITCHER
 function show(pageId) {
   document.querySelectorAll(".page").forEach(p => {
     p.classList.remove("active");
@@ -19,8 +22,18 @@ function show(pageId) {
   }
 }
 
-// LOGOUT — ONLY WHEN CLICKED
+// 🚪 LOGOUT — Firebase safe
 function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "index.html";
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  });
+}
+
+// 📱 MOBILE MENU
+function toggleMenu() {
+  const sidebar = document.getElementById("sidebar");
+  const hamburger = document.getElementById("hamburger");
+
+  sidebar.classList.toggle("show");
+  hamburger.textContent = sidebar.classList.contains("show") ? "✕" : "☰";
 }
