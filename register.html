@@ -1,84 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Register – ProdByBigi</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<style>
-* { box-sizing: border-box; font-family: Inter }
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: #0b0d12;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-.card {
-  background: #121726;
-  border: 1px solid #1d2230;
-  padding: 28px;
-  border-radius: 18px;
-  width: 100%;
-  max-width: 380px;
-}
-h2 { margin-top: 0; color: #6cf }
-input {
-  width: 100%;
-  padding: 12px;
-  margin-top: 12px;
-  border-radius: 12px;
-  border: 1px solid #1d2230;
-  background: #0f1219;
-  color: #fff;
-}
-.roles {
-  margin-top: 16px;
-}
-.roles label {
-  display: block;
-  margin-top: 8px;
-  cursor: pointer;
-}
-button {
-  width: 100%;
-  margin-top: 18px;
-  padding: 12px;
-  border-radius: 14px;
-  border: none;
-  background: #6cf;
-  font-weight: 700;
-  cursor: pointer;
-}
-p { margin-top: 16px; text-align: center }
-a { color: #6cf; text-decoration: none }
-</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create Account</title>
+<link rel="stylesheet" href="css/auth.css">
 </head>
-
 <body>
 
-<div class="card">
+<div class="auth-box">
   <h2>Create Account</h2>
 
-  <input id="email" type="email" placeholder="Email" />
-  <input id="password" type="password" placeholder="Password" />
+  <input id="email" type="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
 
-  <div class="roles">
-    <label>
-      <input type="radio" name="role" value="producer" />
-      Producer (sell beats)
-    </label>
-    <label>
-      <input type="radio" name="role" value="buyer" />
-      Buyer (purchase beats)
-    </label>
-  </div>
+  <!-- ROLE SELECT -->
+  <select id="role">
+    <option value="producer">Producer (Sell Beats)</option>
+    <option value="buyer">Buyer (Purchase Beats)</option>
+  </select>
 
-  <button id="registerBtn" type="button">Create Account</button>
+  <button onclick="registerUser()">Create Account</button>
 
   <p>
     Already have an account?
