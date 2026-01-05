@@ -1,51 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; font-family: Inter }
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #111827, #020617);
+  color: #fff;
+}
+header {
+  height: 70px;
+  background: #020617;
+  border-bottom: 1px solid #1f2933;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+header h1 {
+  font-size: 18px;
+  color: #38bdf8;
+}
+.logout {
+  background: #ef4444;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.container {
+  padding: 24px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 20px;
+}
+.card {
+  background: #020617;
+  border: 1px solid #1f2933;
+  border-radius: 16px;
+  padding: 20px;
+}
+.card h3 {
+  margin: 0;
+  color: #38bdf8;
+}
+.card p {
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 10px;
+}
+</style>
 </head>
 
-<body class="dark">
+<body>
 
-<header class="topbar">
-  <h2>🛡️ Admin Dashboard</h2>
-  <button onclick="logout()">Logout</button>
+<header>
+  <h1>🛡️ Admin Dashboard</h1>
+  <button class="logout" id="logoutBtn">Logout</button>
 </header>
 
-<section class="stats">
-  <div class="card">
-    <h3>Total Revenue</h3>
-    <p id="totalRevenue">$0</p>
+<div class="container">
+  <div class="grid">
+    <div class="card">
+      <h3>Total Revenue</h3>
+      <p id="totalRevenue">$0</p>
+    </div>
+    <div class="card">
+      <h3>Total Orders</h3>
+      <p id="totalOrders">0</p>
+    </div>
+    <div class="card">
+      <h3>Total Beats Sold</h3>
+      <p id="totalBeats">0</p>
+    </div>
   </div>
+</div>
 
-  <div class="card">
-    <h3>Total Orders</h3>
-    <p id="totalOrders">0</p>
-  </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  <div class="card">
-    <h3>Total Beats Sold</h3>
-    <p id="totalBeats">0</p>
-  </div>
-</section>
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi"
+};
 
-<section class="table">
-  <h3>Top Producers</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Producer</th>
-        <th>Sales</th>
-        <th>Revenue</th>
-      </tr>
-    </thead>
-    <tbody id="producersTable"></tbody>
-  </table>
-</section>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-<script type="module" src="admin-analytics.js"></script>
-<script type="module" src="auth-ui.js"></script>
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    location.href = "login.html";
+    return;
+  }
+
+  const userSnap = await getDoc(doc(db, "users", user.uid));
+  if (!userSnap.exists() || userSnap.data().role !== "admin") {
+    alert("Access denied.");
+    location.href = "login.html";
+    return;
+  }
+
+  // ✅ LOAD ANALYTICS ONCE
+  const ordersSnap = await getDocs(collection(db, "orders"));
+  document.getElementById("totalOrders").textContent = ordersSnap.size;
+
+  let revenue = 0;
+  ordersSnap.forEach(d => revenue += d.data().amount || 0);
+  document.getElementById("totalRevenue").textContent = `$${revenue}`;
+
+  document.getElementById("totalBeats").textContent = ordersSnap.size;
+});
+
+document.getElementById("logoutBtn").onclick = async () => {
+  await signOut(auth);
+  location.href = "login.html";
+};
+</script>
 
 </body>
 </html>
