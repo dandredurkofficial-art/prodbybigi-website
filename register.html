@@ -2,32 +2,94 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create Account</title>
-<link rel="stylesheet" href="css/auth.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  background:#0b0d12;
+  color:#fff;
+  font-family:Inter;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+.card{
+  background:#121726;
+  padding:30px;
+  border-radius:16px;
+  width:100%;
+  max-width:380px;
+  border:1px solid #1d2230;
+}
+h2{text-align:center;margin-bottom:20px}
+input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #1d2230;
+  background:#0f1219;
+  color:#fff;
+  margin-bottom:14px;
+}
+.role{
+  display:flex;
+  gap:14px;
+  margin-bottom:18px;
+}
+.role label{
+  flex:1;
+  background:#0f1219;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #1d2230;
+  cursor:pointer;
+  text-align:center;
+}
+button{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:none;
+  background:#6cf;
+  font-weight:700;
+  cursor:pointer;
+}
+a{color:#6cf;text-decoration:none}
+</style>
 </head>
+
 <body>
 
-<div class="auth-box">
+<div class="card">
   <h2>Create Account</h2>
 
   <input id="email" type="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
 
-  <!-- ROLE SELECT -->
-  <select id="role">
-    <option value="producer">Producer (Sell Beats)</option>
-    <option value="buyer">Buyer (Purchase Beats)</option>
-  </select>
+  <div class="role">
+    <label>
+      <input type="radio" name="role" value="producer"> Producer
+    </label>
+    <label>
+      <input type="radio" name="role" value="buyer"> Buyer
+    </label>
+  </div>
 
   <button onclick="registerUser()">Create Account</button>
 
-  <p>
+  <p style="text-align:center;margin-top:14px">
     Already have an account?
     <a href="login.html">Login</a>
   </p>
 </div>
 
+<!-- AUTH SCRIPT -->
 <script type="module" src="auth-ui.js"></script>
+
 </body>
 </html>
