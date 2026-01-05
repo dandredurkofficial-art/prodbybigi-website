@@ -3,27 +3,70 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Login</title>
+<title>Login – ProdByBigi</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; font-family: Inter }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #0b0d12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+.card {
+  background: #121726;
+  border: 1px solid #1d2230;
+  padding: 28px;
+  border-radius: 18px;
+  width: 100%;
+  max-width: 380px;
+}
+h2 { margin-top: 0; color: #6cf }
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid #1d2230;
+  background: #0f1219;
+  color: #fff;
+}
+button {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  background: #6cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+p { margin-top: 16px; text-align: center }
+a { color: #6cf; text-decoration: none }
+</style>
 </head>
 
 <body>
 
-<h2>Login</h2>
+<div class="card">
+  <h2>Login</h2>
 
-<input id="email" type="email" placeholder="Email" />
-<br /><br />
-<input id="password" type="password" placeholder="Password" />
-<br /><br />
+  <input id="email" type="email" placeholder="Email" />
+  <input id="password" type="password" placeholder="Password" />
 
-<button id="loginBtn">Login</button>
+  <button id="loginBtn" type="button">Login</button>
 
-<p>
-  Don’t have an account?
-  <a href="register.html">Register</a>
-</p>
+  <p>
+    Don’t have an account?
+    <a href="register.html">Register</a>
+  </p>
+</div>
 
-<!-- MUST be module -->
 <script type="module" src="auth-ui.js"></script>
-
 </body>
 </html>
