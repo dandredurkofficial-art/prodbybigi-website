@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword
+  createUserWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore,
@@ -12,39 +13,93 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ======================
+   FIREBASE CONFIG
+====================== */
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
+  projectId: "prodbybigi"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* LOGIN */
+/* ======================
+   LOGIN
+====================== */
 window.loginUser = async () => {
-  const cred = await signInWithEmailAndPassword(auth, email.value, password.value);
-  const snap = await getDoc(doc(db, "users", cred.user.uid));
+  try {
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
 
-  const role = snap.data().role;
-  location.href = role === "producer"
-    ? "dashboard.html"
-    : "buyer-dashboard.html";
+    const snap = await getDoc(doc(db, "users", cred.user.uid));
+
+    if (!snap.exists()) {
+      alert("Account data missing. Contact support.");
+      await signOut(auth);
+      return;
+    }
+
+    const role = snap.data().role;
+
+    if (role === "producer") {
+      window.location.href = "dashboard.html";
+    } else {
+      window.location.href = "buyer-dashboard.html";
+    }
+
+  } catch (err) {
+    alert(err.message);
+  }
 };
 
-/* REGISTER */
+/* ======================
+   REGISTER
+====================== */
 window.registerUser = async () => {
-  const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
+  try {
+    const roleInput = document.querySelector('input[name="role"]:checked');
+    if (!roleInput) {
+      alert("Please select a role");
+      return;
+    }
 
-  await setDoc(doc(db, "users", cred.user.uid), {
-    uid: cred.user.uid,
-    email: cred.user.email,
-    role: role.value,   // 👈 producer or buyer
-    createdAt: serverTimestamp()
-  });
+    const role = roleInput.value;
 
-  location.href = role.value === "producer"
-    ? "dashboard.html"
-    : "buyer-dashboard.html";
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+
+    await setDoc(doc(db, "users", cred.user.uid), {
+      uid: cred.user.uid,
+      email: cred.user.email,
+      role: role,
+      plan: role === "producer" ? "free" : "buyer",
+      createdAt: serverTimestamp()
+    });
+
+    if (role === "producer") {
+      window.location.href = "dashboard.html";
+    } else {
+      window.location.href = "buyer-dashboard.html";
+    }
+
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+/* ======================
+   LOGOUT (USED EVERYWHERE)
+====================== */
+window.logoutUser = async () => {
+  await signOut(auth);
+  window.location.href = "login.html";
 };
