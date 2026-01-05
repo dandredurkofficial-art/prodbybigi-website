@@ -46,5 +46,5 @@ window.registerUser = async () => {
 
   location.href = role.value === "producer"
     ? "producer-dashboard.html"
-    : "buyer-dashboard.html";
+    : "dashboard.html";
 };
