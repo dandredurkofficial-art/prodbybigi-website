@@ -2,194 +2,159 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Producer Studio</title>
+<title>Producer Studio – MVP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body {
   margin: 0;
-  font-family: Inter, sans-serif;
-  background: #0b1020;
+  font-family: Inter, system-ui;
+  background: #0b0f1a;
   color: #fff;
-}
-.app {
   display: flex;
 }
 .sidebar {
   width: 260px;
-  background: #0e1430;
+  background: #0f1629;
   padding: 20px;
-  min-height: 100vh;
+  position: fixed;
+  height: 100%;
+  transition: transform .3s;
 }
-.sidebar h2 {
-  margin: 0 0 20px;
-}
+.sidebar h2 { margin-bottom: 30px; }
 .sidebar a {
   display: block;
-  padding: 10px;
-  border-radius: 6px;
-  color: #cfd3ff;
+  padding: 12px;
+  color: #cfd8ff;
   text-decoration: none;
-  margin-bottom: 6px;
+  border-radius: 8px;
 }
-.sidebar a:hover {
-  background: #1a2150;
+.sidebar a.active, .sidebar a:hover {
+  background: #1b2a5b;
 }
-.main {
-  flex: 1;
-  padding: 20px;
-}
-.hidden {
+.close-btn {
   display: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+main {
+  margin-left: 260px;
+  padding: 30px;
+  width: 100%;
 }
 .card {
-  background: #121a3a;
-  padding: 16px;
-  border-radius: 10px;
-  margin-bottom: 16px;
+  background: #111a33;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
 }
-input, select, textarea, button {
+input, select, button {
   width: 100%;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 8px;
   border: none;
+  margin-top: 10px;
 }
 button {
-  background: #5b6cff;
+  background: #3b6cff;
   color: white;
   cursor: pointer;
 }
-button.secondary {
-  background: #2a335f;
+.locked {
+  opacity: .5;
 }
-@media(max-width:768px){
+@media (max-width: 768px) {
   .sidebar {
-    position: fixed;
-    z-index: 99;
-    left: 0;
-    top: 0;
     transform: translateX(-100%);
-    transition: 0.3s;
+    z-index: 10;
   }
-  .sidebar.open {
+  .sidebar.show {
     transform: translateX(0);
+  }
+  .close-btn {
+    display: block;
+  }
+  main {
+    margin-left: 0;
   }
 }
 </style>
 </head>
 
 <body>
-<div class="app">
 
 <div class="sidebar" id="sidebar">
-  <h2 id="producerName">Producer</h2>
-  <a onclick="showPage('dashboard')">Dashboard</a>
-  <a onclick="showPage('content')">Content</a>
+  <span class="close-btn" onclick="toggleMenu()">✕</span>
+  <h2>Producer Studio</h2>
+  <a onclick="showPage('dashboard')" class="active">Dashboard</a>
   <a onclick="showPage('upload')">Upload</a>
-  <a onclick="showPage('licenses')">Licenses</a>
+  <a onclick="showPage('content')">Content</a>
   <a onclick="showPage('finance')">Finance</a>
-  <a onclick="showPage('analytics')">Analytics</a>
-  <a onclick="showPage('pro')">Pro</a>
-  <a onclick="showPage('discounts')">Discounts</a>
+  <a onclick="showPage('analytics')" class="locked">Analytics 🔒</a>
+  <a onclick="showPage('pro')" class="locked">Pro 🔒</a>
+  <a onclick="showPage('discounts')" class="locked">Discounts 🔒</a>
   <a onclick="showPage('settings')">Settings</a>
   <a onclick="logout()">Logout</a>
 </div>
 
-<div class="main">
+<main>
+<button onclick="toggleMenu()">☰</button>
 
-<!-- DASHBOARD -->
-<div id="dashboard" class="page">
-  <div class="card">
-    <h3>Latest Sales</h3>
-    <div id="sales"></div>
-  </div>
+<div id="dashboard" class="page card">
+  <h3>Welcome</h3>
+  <p>Continue where you left off.</p>
 </div>
 
-<!-- UPLOAD -->
-<div id="upload" class="page hidden">
-  <div class="card">
-    <h3>Upload</h3>
-    <select id="uploadType">
-      <option value="track">Beat</option>
-      <option value="soundkit">Sound Kit</option>
-      <option value="service">Service</option>
-    </select>
-    <input id="title" placeholder="Title">
-    <input id="price" placeholder="Price">
-    <input id="image" placeholder="Cover Image URL (Cloudinary)">
-    <button onclick="upload()">Upload</button>
-  </div>
+<div id="upload" class="page card" style="display:none;">
+  <h3>Upload Content</h3>
+  <select id="contentType">
+    <option value="beat">Beat</option>
+    <option value="soundkit">Sound Kit</option>
+    <option value="service">Service</option>
+  </select>
+  <input id="title" placeholder="Title">
+  <button onclick="uploadContent()">Create</button>
 </div>
 
-<!-- CONTENT -->
-<div id="content" class="page hidden">
-  <div class="card">
-    <h3>Your Content</h3>
-    <div id="contentList"></div>
-  </div>
+<div id="content" class="page card" style="display:none;">
+  <h3>Your Content</h3>
+  <div id="contentList"></div>
 </div>
 
-<!-- LICENSES -->
-<div id="licenses" class="page hidden">
-  <div class="card">
-    <h3>Create License</h3>
-    <input id="licenseName" placeholder="License Name">
-    <textarea id="licenseTerms" placeholder="Terms"></textarea>
-    <button onclick="createLicense()">Save License</button>
-  </div>
+<div id="finance" class="page card" style="display:none;">
+  <h3>Finance</h3>
+  <p>No earnings yet. This will populate when buyers purchase.</p>
 </div>
 
-<!-- FINANCE -->
-<div id="finance" class="page hidden">
-  <div class="card">
-    <h3>Earnings</h3>
-    <div id="earnings">$0</div>
-  </div>
+<div id="analytics" class="page card" style="display:none;">
+  <h3>Analytics</h3>
+  <p>Upgrade to Pro to unlock analytics.</p>
 </div>
 
-<!-- ANALYTICS -->
-<div id="analytics" class="page hidden">
-  <div class="card">
-    <h3>Stats</h3>
-    <div id="stats"></div>
-  </div>
+<div id="pro" class="page card" style="display:none;">
+  <h3>Upgrade to Pro</h3>
+  <p>Unlock analytics, discounts, and pro tools.</p>
 </div>
 
-<!-- PRO -->
-<div id="pro" class="page hidden">
-  <div class="card">
-    <h3>Upgrade to Pro</h3>
-    <button onclick="upgrade()">Upgrade</button>
-  </div>
+<div id="discounts" class="page card" style="display:none;">
+  <h3>Discounts</h3>
+  <p>Upgrade to Pro to manage discounts.</p>
 </div>
 
-<!-- DISCOUNTS -->
-<div id="discounts" class="page hidden">
-  <div class="card">
-    <h3>Discounts (Pro)</h3>
-  </div>
+<div id="settings" class="page card" style="display:none;">
+  <h3>Settings</h3>
+  <input id="displayName" placeholder="Display Name">
+  <input id="photoURL" placeholder="Profile Image URL">
+  <button onclick="saveSettings()">Save</button>
 </div>
 
-<!-- SETTINGS -->
-<div id="settings" class="page hidden">
-  <div class="card">
-    <h3>Profile</h3>
-    <input id="displayName" placeholder="Display Name">
-    <input id="photoURL" placeholder="Profile Image URL">
-    <button onclick="saveProfile()">Save</button>
-  </div>
-</div>
+</main>
 
-</div>
-</div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-<script>
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
@@ -199,63 +164,55 @@ const firebaseConfig = {
   appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+const db = getFirestore();
 
-let user;
-
-auth.onAuthStateChanged(async u => {
-  if(!u) return location.href = "/login.html";
-  user = u;
-  const doc = await db.collection("producers").doc(u.uid).get();
-  if(doc.exists) {
-    document.getElementById("producerName").innerText = doc.data().displayName || "Producer";
-  }
-});
-
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
+window.showPage = (id) => {
+  document.querySelectorAll('.page').forEach(p => p.style.display='none');
+  document.getElementById(id).style.display = 'block';
 }
 
-function upload(){
-  db.collection("content").add({
+window.uploadContent = async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("Not logged in");
+
+  await addDoc(collection(db, "content"), {
     uid: user.uid,
-    type: uploadType.value,
+    type: contentType.value,
     title: title.value,
-    price: price.value,
-    image: image.value,
-    created: Date.now()
+    createdAt: Date.now()
   });
-  alert("Uploaded");
+
+  alert("Created");
+  loadContent();
 }
 
-function createLicense(){
-  db.collection("licenses").add({
-    uid: user.uid,
-    name: licenseName.value,
-    terms: licenseTerms.value
+async function loadContent() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const q = query(collection(db,"content"), where("uid","==",user.uid));
+  const snap = await getDocs(q);
+  contentList.innerHTML = "";
+  snap.forEach(d => {
+    contentList.innerHTML += `<p>${d.data().type} — ${d.data().title}</p>`;
   });
-  alert("License saved");
 }
 
-function saveProfile(){
-  db.collection("producers").doc(user.uid).set({
+window.saveSettings = async () => {
+  const user = auth.currentUser;
+  await updateDoc(doc(db,"users",user.uid), {
     displayName: displayName.value,
     photoURL: photoURL.value
-  },{merge:true});
-  alert("Profile updated");
+  });
+  alert("Saved");
 }
 
-function upgrade(){
-  db.collection("producers").doc(user.uid).update({plan:"pro"});
-  alert("Pro unlocked");
-}
+window.logout = () => signOut(auth);
+window.toggleMenu = () => sidebar.classList.toggle("show");
 
-function logout(){
-  auth.signOut();
-}
+auth.onAuthStateChanged(u => u && loadContent());
 </script>
 </body>
 </html>
