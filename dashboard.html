@@ -1,155 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta charset="UTF-8">
 <title>Producer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://www.paypal.com/sdk/js?client-id=AdurYcARCdHIlIJL9uH2ui23x2VV4AUbuGdTeBGDJUMTdb99sc7ntdekg8jszs3v6r1UXeJrfJ9oXPvO&vault=true&intent=subscription"></script>
 
 <style>
 *{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0d12;color:#fff;display:flex;min-height:100vh}
-.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230;transition:.3s;z-index:1000}
-.sidebar h1{font-size:20px;margin-bottom:24px;color:#6cf}
-.sidebar a{display:block;padding:12px 14px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;font-weight:500;cursor:pointer}
+body{margin:0;background:#0b0d12;color:#fff;display:flex}
+.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;top:0;bottom:0;border-right:1px solid #1d2230}
+.sidebar h1{color:#6cf;margin-bottom:24px}
+.sidebar a{display:block;padding:12px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;cursor:pointer}
 .sidebar a:hover{background:#1b2133;color:#fff}
-.sidebar .upgrade{background:linear-gradient(135deg,#6cf,#9f6cff);color:#000;font-weight:700;text-align:center;margin-top:20px}
-.sidebar.show{left:0}
-.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
+.locked{opacity:.4}
+.main{margin-left:260px;flex:1}
 .topbar{height:72px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
-.hamburger{font-size:22px;cursor:pointer;display:none}
-.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
-.content{padding:26px;overflow-y:auto}
+.logout{background:#ef4444;border:none;color:#fff;padding:8px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+.content{padding:26px}
 .page{display:none}
 .page.active{display:block}
 .card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-.stat{background:#0f1219;border:1px solid #1d2230;border-radius:16px;padding:18px}
-.stat h4{margin:0;color:#6cf}
-.stat p{font-size:22px;font-weight:700;margin:6px 0 0}
-.beat{display:flex;gap:14px;align-items:center;margin-bottom:12px}
-.beat img{width:64px;height:64px;border-radius:10px;object-fit:cover}
-button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000}
-button.small{padding:7px 12px;font-size:13px}
-input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;margin-top:10px;background:#0f1219;color:#fff}
-@media(max-width:900px){.sidebar{left:-260px}.main{margin-left:0}.hamburger{display:block}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+input,select{width:100%;padding:12px;border-radius:12px;border:1px solid #1d2230;background:#0f1219;color:#fff;margin-bottom:12px}
+button{background:#6cf;border:none;padding:12px 18px;border-radius:14px;font-weight:700;cursor:pointer}
+.beat{background:#0f1219;border:1px solid #1d2230;border-radius:14px;padding:14px}
+.notice{padding:20px;border-radius:16px;background:#0f172a;border:1px dashed #334155;text-align:center}
 </style>
 </head>
 
 <body>
 
-<div class="sidebar" id="sidebar">
+<div class="sidebar">
   <h1>ProdByBigi</h1>
-  <a onclick="loadPage('dashboard')">Dashboard</a>
-  <a onclick="loadPage('tracks')">Tracks</a>
-  <a onclick="loadPage('analytics')">Analytics</a>
-  <a onclick="loadPage('finance')">Finance</a>
-  <a onclick="loadPage('discography')">Discography</a>
-  <a onclick="loadPage('settings')">Settings</a>
-  <a class="upgrade" onclick="loadPage('upgrade')">Upgrade</a>
+  <a onclick="show('dashboard')">Dashboard</a>
+  <a onclick="show('upload')">Upload Beat</a>
+  <a onclick="show('beats')">My Beats</a>
+  <a onclick="show('finance')">Finance</a>
+  <a onclick="openAnalytics()" class="locked">Analytics 🔒</a>
+  <a onclick="show('account')">Account Settings</a>
+  <a onclick="show('upgrade')">Upgrade</a>
 </div>
 
 <div class="main">
   <div class="topbar">
-    <div class="hamburger" id="hamburger" onclick="toggleMenu()">☰</div>
-    <strong id="pageTitle">Dashboard</strong>
+    <strong id="title">Dashboard</strong>
     <button class="logout" onclick="logout()">Logout</button>
   </div>
 
   <div class="content">
 
+    <!-- DASHBOARD -->
     <div id="dashboard" class="page active">
       <div class="grid">
-        <div class="stat"><h4>Total Plays</h4><p id="statPlays">0</p></div>
-        <div class="stat"><h4>Total Revenue</h4><p id="statRevenue">$0</p></div>
-        <div class="stat"><h4>Beats</h4><p id="statBeats">0</p></div>
+        <div class="card"><h4>Total Beats</h4><h2 id="beatCount">0</h2></div>
+        <div class="card"><h4>Total Plays</h4><h2 id="plays">0</h2></div>
+        <div class="card"><h4>Total Revenue</h4><h2>$<span id="revenue">0</span></h2></div>
       </div>
     </div>
 
-    <div id="tracks" class="page">
+    <!-- UPLOAD -->
+    <div id="upload" class="page">
       <div class="card">
-        <h3>Upload Beat</h3>
-        <input id="beatTitle" placeholder="Title" />
-        <input id="beatBpm" type="number" placeholder="BPM" />
-        <input id="beatGenre" placeholder="Genre" />
-        <input id="beatMood" placeholder="Mood" />
-        <input id="beatPrice" type="number" placeholder="Price" />
-        <input id="beatCover" type="file" accept="image/*" />
-        <input id="beatFile" type="file" accept=".mp3,.wav" />
-        <button onclick="uploadBeat()">Upload</button>
+        <h2>Upload Beat</h2>
+        <input id="titleInput" placeholder="Beat title">
+        <input id="genreInput" placeholder="Genre">
+        <input id="bpmInput" placeholder="BPM">
+        <input id="priceInput" placeholder="Price ($)">
+        <input type="file" id="coverInput" accept="image/*">
+        <input type="file" id="audioInput" accept="audio/*">
+        <button onclick="uploadBeat()">Upload Beat</button>
       </div>
-      <div class="card"><h3>Your Beats</h3><div id="beatList"></div></div>
     </div>
 
-    <div id="analytics" class="page">
-      <div class="card"><h3>Analytics</h3><canvas id="analyticsChart"></canvas></div>
+    <!-- MY BEATS -->
+    <div id="beats" class="page">
+      <div class="card">
+        <h2>My Beats</h2>
+        <div id="beatsList" class="grid"></div>
+      </div>
     </div>
 
+    <!-- FINANCE -->
     <div id="finance" class="page">
-      <div class="card"><h3>Finance</h3><canvas id="financeChart"></canvas></div>
-    </div>
-
-    <div id="discography" class="page">
-      <div class="card"><h3>Discography</h3><input placeholder="Spotify URL" /><button class="small">Add</button></div>
-    </div>
-
-    <div id="settings" class="page">
       <div class="card">
-        <h3>Profile</h3>
-        <input id="displayName" placeholder="Display Name" />
-        <input type="file" id="avatar" accept="image/*" />
-        <button class="small" onclick="saveProfile()">Save</button>
+        <h2>Wallet</h2>
+        <h1>$<span id="wallet">0</span></h1>
+        <small>Payouts processed manually by admin</small>
       </div>
     </div>
 
+    <!-- ANALYTICS (LOCKED) -->
+    <div id="analytics" class="page">
+      <div class="notice">
+        <h2>Analytics Locked 🔒</h2>
+        <p>Upgrade to access advanced sales & audience analytics.</p>
+        <button onclick="show('upgrade')">Upgrade Now</button>
+      </div>
+    </div>
+
+    <!-- ACCOUNT -->
+    <div id="account" class="page">
+      <div class="card">
+        <h2>Account Settings</h2>
+        <p>Email: <span id="email"></span></p>
+        <p>Plan: <span id="plan">Free</span></p>
+      </div>
+    </div>
+
+    <!-- UPGRADE -->
     <div id="upgrade" class="page">
-      <div class="grid">
-        <div class="card">
-          <h3>Starter – $15/year</h3>
-          <ul>
-            <li>0% commission</li>
-            <li>Unlimited MP3/WAV</li>
-            <li>Instant payments</li>
-            <li>Advanced analytics</li>
-            <li>4 custom licenses</li>
-            <li>1 contest submission</li>
-            <li>3 PROkits credits</li>
-          </ul>
-          <div id="paypal-starter"></div>
-        </div>
-
-        <div class="card">
-          <h3>Growth – $60/year</h3>
-          <ul>
-            <li>Upload stems</li>
-            <li>Sell soundkits & services</li>
-            <li>Unlimited messages</li>
-            <li>Unlimited licenses</li>
-            <li>2 contest submissions</li>
-            <li>5 PROkits credits</li>
-            <li>$15 promote credits</li>
-          </ul>
-          <div id="paypal-growth"></div>
-        </div>
-
-        <div class="card">
-          <h3>Professional – $159/year</h3>
-          <ul>
-            <li>Custom website</li>
-            <li>Merch & memberships</li>
-            <li>Email marketing</li>
-            <li>Creator Rights access</li>
-            <li>Blog posts</li>
-            <li>10 PROkits credits</li>
-            <li>$35 promote credits</li>
-            <li>5% promote discount</li>
-            <li>Unlimited licenses</li>
-          </ul>
-          <div id="paypal-pro"></div>
-        </div>
+      <div class="card">
+        <h2>Upgrade Plan</h2>
+        <p>Unlock analytics, priority payouts & more.</p>
+        <button>Upgrade (Coming Soon)</button>
       </div>
     </div>
 
@@ -157,75 +122,71 @@ input,textarea{width:100%;padding:11px;border-radius:10px;border:1px solid #1d22
 </div>
 
 <script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey:'AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE',
-  authDomain:'prodbybigi.firebaseapp.com',
-  projectId:'prodbybigi',
-  storageBucket:'prodbybigi.firebasestorage.app',
-  appId:'1:1040553526206:web:38216a9f75eabfe556efef'
-};
+const app = initializeApp({
+  apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain:"prodbybigi.firebaseapp.com",
+  projectId:"prodbybigi",
+  storageBucket:"prodbybigi.appspot.com",
+  appId:"1:1040553526206:web:38216a9f75eabfe556efef"
+});
 
-const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-window.logout = () => signOut(auth).then(()=>location.href='login.html');
-window.toggleMenu = () => {const s=sidebar.classList.toggle('show');hamburger.textContent=s?'✕':'☰'};
-window.loadPage = p => {
+window.show = p => {
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   document.getElementById(p).classList.add('active');
-  pageTitle.textContent=p.charAt(0).toUpperCase()+p.slice(1);
-  if(innerWidth<900){sidebar.classList.remove('show');hamburger.textContent='☰'}
+  title.textContent = p;
 };
 
-window.uploadBeat = async () => {
-  await addDoc(collection(db,'beats'),{
-    title:beatTitle.value,
-    bpm:+beatBpm.value,
-    genre:beatGenre.value,
-    mood:beatMood.value,
-    price:+beatPrice.value,
-    plays:0
+window.openAnalytics = () => show("analytics");
+window.logout = ()=>signOut(auth).then(()=>location.href="login.html");
+
+onAuthStateChanged(auth, async user => {
+  if(!user) return location.href="login.html";
+  email.textContent=user.email;
+
+  const q = query(collection(db,"beats"), where("producerId","==",user.uid));
+  const snap = await getDocs(q);
+
+  let plays=0,revenue=0;
+  beatsList.innerHTML="";
+  snap.forEach(d=>{
+    const b=d.data();
+    plays+=b.plays||0;
+    revenue+=b.revenue||0;
+    beatsList.innerHTML+=`<div class="beat"><strong>${b.title}</strong><small>$${b.price}</small></div>`;
   });
-  loadBeats();
-};
 
-async function loadBeats(){
-  beatList.innerHTML='';
-  const q=await getDocs(collection(db,'beats'));
-  statBeats.textContent=q.size;
-  q.forEach(d=>{
-    beatList.innerHTML+=`
-      <div class="beat">
-        <div>${d.data().title}</div>
-        <button class="small" onclick="deleteBeat('${d.id}')">Delete</button>
-      </div>`;
-  });
-}
-
-window.deleteBeat = async id => {
-  await deleteDoc(doc(db,'beats',id));
-  loadBeats();
-};
-
-onAuthStateChanged(auth,u=>{
-  if(!u) location.href='login.html';
-  loadBeats();
+  beatCount.textContent=snap.size;
+  document.getElementById("plays").textContent=plays;
+  document.getElementById("revenue").textContent=revenue.toFixed(2);
+  wallet.textContent=revenue.toFixed(2);
 });
-</script>
 
-<script>
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-8FN35171F4185880VNFJ5YGI'})}).render('#paypal-starter');
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-4MM864528J575140DNFJ5XQQ'})}).render('#paypal-growth');
-paypal.Buttons({createSubscription:(d,a)=>a.subscription.create({plan_id:'P-1TH20083J44769154NFJ5VTA'})}).render('#paypal-pro');
+window.uploadBeat = async ()=>{
+  const u=auth.currentUser;
+  if(!u)return;
+  const cover=coverInput.files[0], audio=audioInput.files[0];
+  const cRef=ref(storage,`covers/${Date.now()}_${cover.name}`);
+  const aRef=ref(storage,`beats/${Date.now()}_${audio.name}`);
+  await uploadBytes(cRef,cover); await uploadBytes(aRef,audio);
+  await addDoc(collection(db,"beats"),{
+    producerId:u.uid,title:titleInput.value,genre:genreInput.value,
+    bpm:bpmInput.value,price:Number(priceInput.value),
+    coverURL:await getDownloadURL(cRef),
+    audioURL:await getDownloadURL(aRef),
+    plays:0,revenue:0,createdAt:serverTimestamp()
+  });
+  alert("Beat uploaded"); location.reload();
+};
 </script>
-
-<!-- ✅ SAFE ROLE / AUTH GUARD (ONE LINE) -->
-<script type="module" src="/js/dashboard-guard.js"></script>
 
 </body>
 </html>
