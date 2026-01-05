@@ -8,7 +8,6 @@ import {
   getFirestore,
   doc,
   setDoc,
-  getDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -23,54 +22,42 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // LOGIN
-window.loginUser = async () => {
+document.getElementById("loginBtn")?.addEventListener("click", async () => {
   try {
-    const cred = await signInWithEmailAndPassword(auth, email.value, password.value);
-    location.href = "dashboard.html";
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    await signInWithEmailAndPassword(auth, email, password);
+    window.location.href = "dashboard.html";
   } catch (err) {
     alert(err.message);
-  }
-};
-
-// REGISTER
-window.registerUser = async () => {
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
-    const uid = cred.user.uid;
-
-    const producerRef = doc(db, "producers", uid);
-    const snap = await getDoc(producerRef);
-
-    // ⛔ Prevent overwrite
-    if (!snap.exists()) {
-      await setDoc(producerRef, {
-        uid,
-        email: cred.user.email,
-        name: "New Producer",
-        role: "producer", // 👈 DEFAULT ROLE
-        plan: "free",
-        uploads: 0,
-        createdAt: serverTimestamp()
-      });
-    }
-
-    location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
-  }
-};
-
-// Attach button handlers AFTER DOM loads
-document.addEventListener("DOMContentLoaded", () => {
-  const loginBtn = document.getElementById("loginBtn");
-  const registerBtn = document.getElementById("registerBtn");
-
-  if (loginBtn) {
-    loginBtn.addEventListener("click", window.loginUser);
-  }
-
-  if (registerBtn) {
-    registerBtn.addEventListener("click", window.registerUser);
   }
 });
 
+// REGISTER
+document.getElementById("registerBtn")?.addEventListener("click", async () => {
+  try {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const role = document.getElementById("role").value;
+
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = cred.user.uid;
+
+    const collectionName = role === "producer" ? "producers" : "buyers";
+
+    await setDoc(doc(db, collectionName, uid), {
+      uid,
+      email,
+      role,
+      createdAt: serverTimestamp(),
+      ...(role === "producer"
+        ? { beatsCount: 0, totalSales: 0 }
+        : { purchases: 0 })
+    });
+
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert(err.message);
+  }
+});
