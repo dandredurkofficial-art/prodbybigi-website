@@ -2,14 +2,14 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getAuth,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  createUserWithEmailAndPassword
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore,
   doc,
-  getDoc,
   setDoc,
-  serverTimestamp,
+  getDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -22,63 +22,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-/* ======================
-   LOGIN
-====================== */
+/* LOGIN */
 window.loginUser = async () => {
-  try {
-    const cred = await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
+  const cred = await signInWithEmailAndPassword(auth, email.value, password.value);
+  const snap = await getDoc(doc(db, "users", cred.user.uid));
 
-    const uid = cred.user.uid;
-
-    // 🔑 ENSURE USER DOC EXISTS
-    const producerRef = doc(db, "producers", uid);
-    const snap = await getDoc(producerRef);
-
-    if (!snap.exists()) {
-      await setDoc(producerRef, {
-        uid,
-        email: cred.user.email,
-        role: "producer",
-        plan: "free",
-        createdAt: serverTimestamp(),
-      });
-    }
-
-    location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
-  }
+  const role = snap.data().role;
+  location.href = role === "producer"
+    ? "producer-dashboard.html"
+    : "buyer-dashboard.html";
 };
 
-/* ======================
-   REGISTER
-====================== */
+/* REGISTER */
 window.registerUser = async () => {
-  try {
-    const cred = await createUserWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
+  const cred = await createUserWithEmailAndPassword(auth, email.value, password.value);
 
-    const uid = cred.user.uid;
+  await setDoc(doc(db, "users", cred.user.uid), {
+    uid: cred.user.uid,
+    email: cred.user.email,
+    role: role.value,   // 👈 producer or buyer
+    createdAt: serverTimestamp()
+  });
 
-    // 🧱 CREATE USER DOC (ONE TIME)
-    await setDoc(doc(db, "producers", uid), {
-      uid,
-      email: cred.user.email,
-      role: "producer",
-      plan: "free",
-      createdAt: serverTimestamp(),
-    });
-
-    location.href = "dashboard.html";
-  } catch (err) {
-    alert(err.message);
-  }
+  location.href = role.value === "producer"
+    ? "producer-dashboard.html"
+    : "buyer-dashboard.html";
 };
