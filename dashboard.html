@@ -1,268 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Producer Dashboard – ProdByBigi</title>
+<meta charset="UTF-8">
+<title>Producer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-* { box-sizing: border-box; font-family: Inter, system-ui; }
-body { margin: 0; background: #0b0f1a; color: #fff; display: flex; }
-
-/* Sidebar */
-.sidebar {
-  width: 260px;
-  background: #0f1527;
-  padding: 20px;
-  height: 100vh;
-  position: fixed;
-  left: 0;
-  top: 0;
-}
-.sidebar h2 { color: #4da3ff; }
-.sidebar a {
-  display: block;
-  padding: 10px;
-  color: #cbd5f5;
-  text-decoration: none;
-  border-radius: 6px;
-  margin-bottom: 6px;
-}
-.sidebar a:hover { background: #1b2344; }
-.locked { opacity: 0.5; cursor: not-allowed; }
-
-/* Mobile */
+body{margin:0;background:#0b0f1a;color:#fff;font-family:Inter,system-ui}
+.sidebar{width:260px;background:#0f1527;height:100vh;position:fixed;padding:20px}
+.sidebar a{display:block;color:#cbd5f5;padding:10px;border-radius:6px;text-decoration:none}
+.sidebar a:hover{background:#1b2344}
+.main{margin-left:260px;padding:20px}
+.page{display:none}
+.page.active{display:block}
+.card{background:#121a33;padding:20px;border-radius:12px;margin-bottom:20px}
+input,select,textarea{width:100%;padding:10px;border-radius:6px;border:none;background:#0f1527;color:#fff;margin-bottom:10px}
+button{background:#4da3ff;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer}
+.lock{opacity:.5}
 @media(max-width:900px){
-  .sidebar { position: absolute; transform: translateX(-100%); transition: .3s; }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar{transform:translateX(-100%);transition:.3s}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
 }
-
-.close-btn {
-  display:none;
-  cursor:pointer;
-  color:#fff;
-}
-@media(max-width:900px){
-  .close-btn{ display:block; }
-}
-
-/* Main */
-.main {
-  margin-left: 260px;
-  padding: 20px;
-  width: 100%;
-}
-@media(max-width:900px){
-  .main { margin-left: 0; }
-}
-
-.card {
-  background: #121a33;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-  gap: 16px;
-}
-
-button {
-  background: #4da3ff;
-  border: none;
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-button.secondary { background:#1f2a4d; }
-
-.hidden { display:none; }
 </style>
 </head>
 
 <body>
 
 <div class="sidebar" id="sidebar">
-  <span class="close-btn" onclick="toggleMenu()">✖</span>
   <h2 id="producerName">Producer</h2>
-
-  <a onclick="showPage('dashboard')">Dashboard</a>
-  <a onclick="showPage('content')">Content</a>
-  <a onclick="showPage('upload')">Upload</a>
-  <a onclick="showPage('licenses')">Licenses</a>
-  <a onclick="showPage('pro')" id="proLink">Pro</a>
-  <a onclick="showPage('discounts')" id="discountLink">Discounts</a>
-  <a onclick="showPage('finance')">Finance</a>
-  <a onclick="showPage('analytics')">Analytics</a>
-  <a onclick="showPage('settings')">Settings</a>
+  <a onclick="show('dashboard')">Dashboard</a>
+  <a onclick="show('content')">Content</a>
+  <a onclick="show('upload')">Upload</a>
+  <a onclick="show('licenses')">Licenses</a>
+  <a onclick="show('finance')">Finance</a>
+  <a onclick="show('analytics')">Analytics</a>
+  <a onclick="show('pro')">Pro</a>
+  <a onclick="show('discounts')">Discounts</a>
+  <a onclick="show('settings')">Settings</a>
   <a onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
-  <button class="secondary" onclick="toggleMenu()">☰</button>
+<button onclick="toggleMenu()">☰</button>
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="page">
-    <h1>Dashboard</h1>
+<!-- DASHBOARD -->
+<div id="dashboard" class="page active">
+  <h1>Dashboard</h1>
+  <div class="card"><h3>Latest Sales</h3><ul id="sales"></ul></div>
+</div>
 
-    <div class="grid">
-      <div class="card">
-        <h3>Latest Sales</h3>
-        <ul id="latestSales"></ul>
-      </div>
+<!-- CONTENT -->
+<div id="content" class="page">
+  <h1>Your Content</h1>
+  <div id="contentList"></div>
+</div>
 
-      <div class="card">
-        <h3>Continue where you left</h3>
-        <div id="lastActivity">No activity yet</div>
-      </div>
+<!-- UPLOAD -->
+<div id="upload" class="page">
+  <h1>Upload</h1>
+  <select id="uploadType" onchange="switchUpload()">
+    <option value="track">Track</option>
+    <option value="soundkit">Soundkit</option>
+    <option value="service">Service</option>
+  </select>
 
-      <div class="card">
-        <h3>Add New Content</h3>
-        <button onclick="showPage('upload')">Create Track</button>
-        <button onclick="showPage('upload')">Create Collection</button>
-        <button onclick="showPage('upload')">Create Service</button>
-        <button onclick="showPage('upload')">Create Soundkit</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- CONTENT -->
-  <div id="content" class="page hidden">
-    <h1>Your Content</h1>
-    <div id="contentList"></div>
-  </div>
-
-  <!-- UPLOAD -->
-  <div id="upload" class="page hidden">
-    <h1>Upload</h1>
-    <select id="uploadType">
-      <option value="track">Track</option>
-      <option value="soundkit">Soundkit</option>
-      <option value="service">Service</option>
-    </select>
-  </div>
-
-  <!-- LICENSES -->
-  <div id="licenses" class="page hidden">
-    <h1>Licenses</h1>
-    <p>Manage and create licenses</p>
-  </div>
-
-  <!-- PRO -->
-  <div id="pro" class="page hidden">
-    <h1>Pro Tools</h1>
-    <p>Page Builder, Blog, Memberships, Templates</p>
-  </div>
-
-  <!-- DISCOUNTS -->
-  <div id="discounts" class="page hidden">
-    <h1>Discounts</h1>
-    <p>Bulk discounts & coupon codes</p>
-  </div>
-
-  <!-- FINANCE -->
-  <div id="finance" class="page hidden">
-    <h1>Finance</h1>
-    <div id="balance"></div>
-  </div>
-
-  <!-- ANALYTICS -->
-  <div id="analytics" class="page hidden">
-    <h1>Analytics</h1>
-    <canvas id="analyticsChart"></canvas>
-  </div>
-
-  <!-- SETTINGS -->
-  <div id="settings" class="page hidden">
-    <h1>Settings</h1>
-    <input type="text" id="displayName" placeholder="Display Name">
-    <button onclick="saveProfile()">Save</button>
+  <div class="card">
+    <input id="title" placeholder="Title">
+    <input id="price" placeholder="Price">
+    <button onclick="createContent()">Publish</button>
   </div>
 </div>
 
+<!-- LICENSES -->
+<div id="licenses" class="page">
+  <h1>Licenses</h1>
+  <input id="licenseName" placeholder="License name">
+  <input id="licensePrice" placeholder="Price">
+  <button onclick="createLicense()">Create License</button>
+  <div id="licenseList"></div>
+</div>
+
+<!-- FINANCE -->
+<div id="finance" class="page">
+  <h1>Finance</h1>
+  <div class="card" id="balance">$0</div>
+</div>
+
+<!-- ANALYTICS -->
+<div id="analytics" class="page">
+  <h1>Analytics</h1>
+  <canvas id="chart"></canvas>
+</div>
+
+<!-- PRO -->
+<div id="pro" class="page">
+  <h1>Upgrade to Pro</h1>
+  <button onclick="upgrade()">Upgrade Now</button>
+</div>
+
+<!-- DISCOUNTS -->
+<div id="discounts" class="page">
+  <h1>Discounts</h1>
+  <p>Available on Pro</p>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="page">
+  <h1>Settings</h1>
+  <input id="displayName" placeholder="Display Name">
+  <textarea id="bio" placeholder="Bio"></textarea>
+  <input id="location" placeholder="Location">
+  <button onclick="saveProfile()">Save</button>
+</div>
+
+</div>
+
 <script>
-/* Firebase */
 firebase.initializeApp({
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi"
+  apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain:"prodbybigi.firebaseapp.com",
+  projectId:"prodbybigi"
 });
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-let currentUser;
-let userData;
+const auth=firebase.auth();
+const db=firebase.firestore();
+let user,profile;
 
-/* Auth */
-auth.onAuthStateChanged(async user => {
-  if(!user) return location.href="/login.html";
-  currentUser = user;
-
-  const snap = await db.collection("users").doc(user.uid).get();
-  userData = snap.data();
-
-  document.getElementById("producerName").innerText = userData.displayName || "Producer";
-
-  if(userData.plan !== "pro"){
-    document.getElementById("proLink").classList.add("locked");
-    document.getElementById("discountLink").classList.add("locked");
-  }
-
-  loadDashboard();
+auth.onAuthStateChanged(async u=>{
+  if(!u)return location.href="/login.html";
+  user=u;
+  const snap=await db.collection("users").doc(u.uid).get();
+  profile=snap.data();
+  producerName.innerText=profile.displayName||"Producer";
+  loadSales(); loadContent(); loadAnalytics();
 });
 
-/* Pages */
-function showPage(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-
-  if((id==="pro"||id==="discounts") && userData.plan!=="pro"){
-    alert("Upgrade to Pro to access this page");
-    showPage('dashboard');
-  }
+function show(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-function toggleMenu(){
-  document.getElementById("sidebar").classList.toggle("open");
+function toggleMenu(){ sidebar.classList.toggle("open"); }
+
+async function createContent(){
+  await db.collection("content").add({
+    producerId:user.uid,
+    type:uploadType.value,
+    title:title.value,
+    price:Number(price.value),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  alert("Uploaded");
+  loadContent();
 }
 
-/* Dashboard Data */
-async function loadDashboard(){
-  const sales = await db.collection("orders")
-    .where("producerId","==",currentUser.uid)
-    .orderBy("createdAt","desc").limit(5).get();
+async function loadContent(){
+  const q=await db.collection("content").where("producerId","==",user.uid).get();
+  contentList.innerHTML="";
+  q.forEach(d=>contentList.innerHTML+=`<div>${d.data().title}</div>`);
+}
 
-  const ul = document.getElementById("latestSales");
-  ul.innerHTML="";
-  sales.forEach(doc=>{
-    ul.innerHTML+=`<li>$${doc.data().total}</li>`;
+async function createLicense(){
+  await db.collection("licenses").add({
+    producerId:user.uid,
+    name:licenseName.value,
+    price:Number(licensePrice.value)
   });
 }
 
-/* Profile */
+async function loadSales(){
+  const q=await db.collection("orders").where("producerId","==",user.uid).limit(5).get();
+  sales.innerHTML="";
+  q.forEach(d=>sales.innerHTML+=`<li>$${d.data().total}</li>`);
+}
+
+function loadAnalytics(){
+  new Chart(chart,{type:"line",data:{labels:["Now"],datasets:[{data:[0]}]}});
+}
+
 async function saveProfile(){
-  await db.collection("users").doc(currentUser.uid).update({
-    displayName: document.getElementById("displayName").value
+  await db.collection("users").doc(user.uid).update({
+    displayName:displayName.value,
+    bio:bio.value,
+    location:location.value
   });
-  alert("Profile updated");
+  alert("Saved");
 }
 
-/* Logout */
+function upgrade(){
+  db.collection("users").doc(user.uid).update({plan:"pro"});
+  alert("Upgraded");
+}
+
 function logout(){
   auth.signOut().then(()=>location.href="/login.html");
 }
 </script>
-
 </body>
 </html>
