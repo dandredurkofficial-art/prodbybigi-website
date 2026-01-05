@@ -2,285 +2,287 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Producer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Producer Dashboard – ProdByBigi</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0d12;color:#fff;display:flex;min-height:100vh}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: #0b0f16;
+  color: #fff;
+}
 
 /* ===== SIDEBAR ===== */
-.sidebar{
-  width:260px;
-  background:#0f1219;
-  padding:22px;
-  position:fixed;
-  left:0;top:0;bottom:0;
-  border-right:1px solid #1d2230;
-  transition:.3s;
-  z-index:1000;
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100%;
+  background: linear-gradient(180deg,#0e1320,#090c14);
+  padding: 20px;
+  z-index: 1000;
+  transition: transform .3s ease;
 }
-.sidebar-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.sidebar.hidden {
+  transform: translateX(-100%);
 }
-.sidebar h1{font-size:22px;color:#6cf;margin:0}
-.close-btn{
-  display:none;
-  font-size:22px;
-  cursor:pointer;
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  color: #4fc3f7;
 }
-.sidebar a{
-  display:block;
-  padding:12px 14px;
-  border-radius:12px;
-  color:#b8c1d9;
-  text-decoration:none;
-  margin:6px 0;
-  font-weight:500;
+.nav {
+  margin-top: 30px;
 }
-.sidebar a:hover{background:#1b2133;color:#fff}
-.sidebar .locked{opacity:.5}
-.sidebar .upgrade{
-  background:linear-gradient(135deg,#6cf,#9f6cff);
-  color:#000;
-  font-weight:700;
-  text-align:center;
-  margin-top:16px;
+.nav button {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #cfd8dc;
+  padding: 12px;
+  text-align: left;
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.nav button:hover {
+  background: #1c2235;
+}
+.locked {
+  opacity: .5;
+}
+.close-btn {
+  display: none;
+  font-size: 22px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+/* ===== TOP BAR ===== */
+.topbar {
+  margin-left: 260px;
+  padding: 15px;
+  background: #0e1320;
+  display: flex;
+  align-items: center;
+}
+.menu-btn {
+  display: none;
+  font-size: 22px;
+  cursor: pointer;
 }
 
 /* ===== MAIN ===== */
-.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
-.topbar{
-  height:72px;
-  background:#0f1219;
-  border-bottom:1px solid #1d2230;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 22px;
+.main {
+  margin-left: 260px;
+  padding: 20px;
 }
-.hamburger{
-  font-size:22px;
-  cursor:pointer;
-  display:none;
-}
-.logout{
-  background:#ef4444;
-  border:none;
-  padding:8px 14px;
-  border-radius:10px;
-  font-weight:600;
-  color:#fff;
-  cursor:pointer;
-}
-
-.content{padding:26px}
-.page{display:none}
-.page.active{display:block}
+.page { display: none; }
+.page.active { display: block; }
 
 /* ===== CARDS ===== */
-.card{
-  background:#121726;
-  border:1px solid #1d2230;
-  border-radius:18px;
-  padding:22px;
-  margin-bottom:22px;
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 20px;
 }
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:20px;
+.card {
+  background: #12182a;
+  border-radius: 14px;
+  padding: 20px;
 }
-.stat{
-  background:#0f1219;
-  border:1px solid #1d2230;
-  border-radius:16px;
-  padding:18px;
+.card h3 {
+  margin: 0;
+  color: #90caf9;
 }
-.stat h4{margin:0;color:#6cf}
-.stat p{font-size:22px;font-weight:700;margin:6px 0 0}
 
-/* ===== INPUTS ===== */
-input,textarea{
-  width:100%;
-  padding:11px;
-  border-radius:10px;
-  border:1px solid #1d2230;
-  margin-top:10px;
-  background:#0f1219;
-  color:#fff;
+/* ===== UPLOAD PAGE (BEATSTARS STYLE) ===== */
+.upload-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
 }
-button{
-  background:#6cf;
-  border:none;
-  padding:10px 16px;
-  border-radius:12px;
-  font-weight:700;
-  cursor:pointer;
-  color:#000;
-  margin-top:12px;
+.section {
+  background: #12182a;
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
-button.small{padding:7px 12px;font-size:13px}
+.section h4 {
+  margin-top: 0;
+}
+input, textarea, select {
+  width: 100%;
+  background: #0b0f16;
+  border: 1px solid #1f2a44;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+.upload-box {
+  border: 2px dashed #1f2a44;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.publish-btn {
+  background: #2979ff;
+  border: none;
+  padding: 14px;
+  width: 100%;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* ===== MOBILE ===== */
-@media(max-width:900px){
-  .main{margin-left:0}
-  .hamburger{display:block}
-  .sidebar{
-    transform:translateX(-100%);
-  }
-  .sidebar.show{
-    transform:translateX(0);
-  }
-  .close-btn{
-    display:block;
-  }
+@media(max-width:768px){
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.show { transform: translateX(0); }
+  .close-btn { display: block; }
+  .menu-btn { display: block; }
+  .main, .topbar { margin-left: 0; }
+  .upload-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- ===== SIDEBAR ===== -->
-<div class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <h1>ProdByBigi</h1>
-    <span class="close-btn" onclick="toggleSidebar()">✕</span>
+<!-- SIDEBAR -->
+<div class="sidebar hidden" id="sidebar">
+  <div style="display:flex;align-items:center">
+    <div class="logo">ProdByBigi</div>
+    <div class="close-btn" onclick="toggleMenu()">✕</div>
   </div>
 
-  <a onclick="show('dashboard')">Dashboard</a>
-  <a onclick="show('upload')">Upload Beat</a>
-  <a onclick="show('beats')">My Beats</a>
-  <a onclick="show('finance')">Finance</a>
-  <a class="locked">Analytics 🔒</a>
-  <a onclick="show('settings')">Account Settings</a>
-  <a onclick="show('upgrade')" class="upgrade">Upgrade</a>
+  <div class="nav">
+    <button onclick="showPage('home')">Dashboard</button>
+    <button onclick="showPage('upload')">Upload Beat</button>
+    <button onclick="showPage('beats')">My Beats</button>
+    <button onclick="showPage('finance')">Finance</button>
+    <button onclick="showAnalytics()" class="locked">Analytics 🔒</button>
+    <button onclick="showPage('settings')">Account Settings</button>
+    <button onclick="showPage('upgrade')">Upgrade</button>
+  </div>
 </div>
 
-<!-- ===== MAIN ===== -->
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <h3 style="margin-left:10px">Producer Dashboard</h3>
+</div>
+
+<!-- MAIN -->
 <div class="main">
-  <div class="topbar">
-    <span class="hamburger" onclick="toggleSidebar()">☰</span>
-    <strong id="title">Dashboard</strong>
-    <button class="logout" onclick="logout()">Logout</button>
-  </div>
 
-  <div class="content">
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="page active">
-      <div class="grid">
-        <div class="stat"><h4>Total Beats</h4><p id="statBeats">0</p></div>
-        <div class="stat"><h4>Total Plays</h4><p>0</p></div>
-        <div class="stat"><h4>Total Revenue</h4><p>$0.00</p></div>
-      </div>
-    </div>
-
-    <!-- UPLOAD -->
-    <div id="upload" class="page">
-      <div class="card">
-        <h3>Upload Beat</h3>
-        <input id="beatTitle" placeholder="Title">
-        <input id="beatBpm" type="number" placeholder="BPM">
-        <input id="beatGenre" placeholder="Genre">
-        <input id="beatPrice" type="number" placeholder="Price">
-        <button onclick="uploadBeat()">Publish Beat</button>
-      </div>
-    </div>
-
-    <!-- MY BEATS -->
-    <div id="beats" class="page">
-      <div class="card">
-        <h3>My Beats</h3>
-        <div id="beatList"></div>
-      </div>
-    </div>
-
-    <!-- FINANCE -->
-    <div id="finance" class="page">
-      <div class="card">
-        <h3>Wallet</h3>
-        <p>Balance: <strong>$0.00</strong></p>
-        <button>Request Payout</button>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div id="settings" class="page">
-      <div class="card">
-        <h3>Account Settings</h3>
-        <input placeholder="Display Name">
-        <button>Save</button>
-      </div>
-    </div>
-
-    <!-- UPGRADE -->
-    <div id="upgrade" class="page">
-      <div class="card">
-        <h3>Upgrade to Unlock Analytics</h3>
-        <p>Advanced stats, sales charts, payouts.</p>
-        <button>Upgrade Now</button>
-      </div>
-    </div>
-
+<!-- DASHBOARD -->
+<div id="home" class="page active">
+  <div class="cards">
+    <div class="card"><h3>Total Beats</h3><p>0</p></div>
+    <div class="card"><h3>Total Plays</h3><p>0</p></div>
+    <div class="card"><h3>Total Revenue</h3><p>$0.00</p></div>
   </div>
 </div>
 
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+<!-- UPLOAD -->
+<div id="upload" class="page">
+  <div class="upload-grid">
+    <div>
+      <div class="section">
+        <h4>Basic Info</h4>
+        <label>Title</label>
+        <input placeholder="New Track">
+        <label>Description</label>
+        <textarea rows="4"></textarea>
+      </div>
 
-const app = initializeApp({
-  apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain:"prodbybigi.firebaseapp.com",
-  projectId:"prodbybigi"
-});
-const auth = getAuth(app);
-const db = getFirestore(app);
+      <div class="section">
+        <h4>Metadata</h4>
+        <label>BPM</label>
+        <input>
+        <label>Key</label>
+        <select><option>None</option></select>
+        <label>Tags</label>
+        <input placeholder="trap, drill">
+      </div>
 
-window.toggleSidebar = () => {
-  sidebar.classList.toggle('show');
-};
+      <div class="section">
+        <h4>Monetization</h4>
+        <label>Basic License Price</label>
+        <input value="23.99">
+      </div>
+    </div>
 
-window.show = p => {
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.getElementById(p).classList.add('active');
-  title.textContent = p;
-  if(innerWidth<900) sidebar.classList.remove('show');
-};
+    <div>
+      <div class="section">
+        <div class="upload-box">Master Track (.wav / .mp3)</div>
+        <div class="upload-box">Preview Track (Tagged)</div>
+        <button class="publish-btn">Publish Track</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-window.logout = () => signOut(auth).then(()=>location.href='login.html');
+<!-- MY BEATS -->
+<div id="beats" class="page">
+  <div class="section">Your uploaded beats will appear here.</div>
+</div>
 
-window.uploadBeat = async () => {
-  await addDoc(collection(db,'beats'),{
-    title:beatTitle.value,
-    bpm:+beatBpm.value,
-    genre:beatGenre.value,
-    price:+beatPrice.value,
-    plays:0
-  });
-  loadBeats();
-};
+<!-- FINANCE -->
+<div id="finance" class="page">
+  <div class="section">Earnings, payouts & refunds.</div>
+</div>
 
-async function loadBeats(){
-  beatList.innerHTML='';
-  const q=await getDocs(collection(db,'beats'));
-  statBeats.textContent=q.size;
-  q.forEach(d=>{
-    beatList.innerHTML+=`<p>${d.data().title}</p>`;
-  });
+<!-- SETTINGS -->
+<div id="settings" class="page">
+  <div class="section">Account settings page.</div>
+</div>
+
+<!-- UPGRADE -->
+<div id="upgrade" class="page">
+  <div class="section">
+    <h3>Upgrade to Pro</h3>
+    <button class="publish-btn" onclick="upgrade()">Upgrade Now</button>
+  </div>
+</div>
+
+</div>
+
+<script>
+let isPro = false;
+
+function toggleMenu(){
+  document.getElementById('sidebar').classList.toggle('show');
 }
 
-onAuthStateChanged(auth,u=>{
-  if(!u) location.href='login.html';
-  loadBeats();
-});
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  toggleMenu();
+}
+
+function showAnalytics(){
+  if(!isPro){
+    alert("Upgrade to unlock analytics");
+    showPage('upgrade');
+  } else {
+    alert("Analytics page coming soon");
+  }
+}
+
+function upgrade(){
+  isPro = true;
+  alert("Pro activated! Analytics unlocked.");
+}
 </script>
 
 </body>
