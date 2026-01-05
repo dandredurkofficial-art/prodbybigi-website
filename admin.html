@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="css/admin.css">
+<script type="module" src="admin-auth.js"></script>
+
+<style>
+  body { visibility: hidden; }
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <h1>🛡️ Admin Dashboard</h1>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<main class="stats">
+
+  <div class="card">
+    <h3>Total Revenue</h3>
+    <p id="revenue">$0</p>
+  </div>
+
+  <div class="card">
+    <h3>Total Orders</h3>
+    <p id="orders">0</p>
+  </div>
+
+  <div class="card">
+    <h3>Beats Sold</h3>
+    <p id="beats">0</p>
+  </div>
+
+</main>
+
+<section class="table">
+  <h2>Top Producers</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Producer</th>
+        <th>Sales</th>
+        <th>Revenue</th>
+      </tr>
+    </thead>
+    <tbody id="producers">
+      <tr>
+        <td colspan="3">No data yet</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</body>
+</html>
