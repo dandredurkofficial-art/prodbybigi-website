@@ -109,3 +109,8 @@ async function redirectByRole(uid) {
   alert("Profile not found. Contact support.");
   await auth.signOut();
 }
+
+// BUTTON WIRING (VERY IMPORTANT)
+document.getElementById("loginBtn")?.addEventListener("click", loginUser);
+document.getElementById("registerBtn")?.addEventListener("click", registerUser);
+
