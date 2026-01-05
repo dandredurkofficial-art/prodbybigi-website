@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Buyer Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+* { box-sizing: border-box; font-family: Inter }
+body {
+  margin: 0;
+  background: #0b0d12;
+  color: #fff;
+  min-height: 100vh;
+}
+.topbar {
+  height: 70px;
+  background: #0f1219;
+  border-bottom: 1px solid #1d2230;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+}
+.logout {
+  background: #ef4444;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+.container {
+  padding: 26px;
+}
+.card {
+  background: #121726;
+  border: 1px solid #1d2230;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 22px;
+}
+.beat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 1px solid #1d2230;
+}
+.beat:last-child { border-bottom: none }
+button {
+  background: #6cf;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #000;
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <strong>Buyer Dashboard</strong>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <h3>Profile</h3>
+    <p><strong>Email:</strong> <span id="buyerEmail">—</span></p>
+    <p><strong>Name:</strong> <span id="buyerName">—</span></p>
+  </div>
+
+  <div class="card">
+    <h3>Purchased Beats</h3>
+    <div id="purchases">
+      <p>No purchases yet.</p>
+    </div>
+  </div>
+
+</div>
+
+<script type="module" src="buyer-dashboard.js"></script>
+</body>
+</html>
