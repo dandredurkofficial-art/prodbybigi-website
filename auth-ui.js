@@ -29,7 +29,7 @@ window.loginUser = async () => {
 
   const role = snap.data().role;
   location.href = role === "producer"
-    ? "producer-dashboard.html"
+    ? "dashboard.html"
     : "buyer-dashboard.html";
 };
 
@@ -45,6 +45,6 @@ window.registerUser = async () => {
   });
 
   location.href = role.value === "producer"
-    ? "producer-dashboard.html"
-    : "dashboard.html";
+    ? "dashboard.html"
+    : "buyer-dashboard.html";
 };
