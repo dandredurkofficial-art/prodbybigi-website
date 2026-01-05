@@ -8,6 +8,7 @@ import {
   getFirestore,
   doc,
   setDoc,
+  getDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -21,43 +22,90 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// LOGIN
-document.getElementById("loginBtn")?.addEventListener("click", async () => {
+/* ----------------------------------
+   🔐 LOGIN WITH ROLE REDIRECT
+---------------------------------- */
+window.loginUser = async () => {
   try {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+    const cred = await signInWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
 
-    await signInWithEmailAndPassword(auth, email, password);
-    window.location.href = "dashboard.html";
+    redirectByRole(cred.user.uid);
   } catch (err) {
     alert(err.message);
   }
-});
+};
 
-// REGISTER
-document.getElementById("registerBtn")?.addEventListener("click", async () => {
+/* ----------------------------------
+   📝 REGISTER (ROLE REQUIRED)
+---------------------------------- */
+window.registerUser = async () => {
   try {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    const role = document.getElementById("role").value;
+    const role = document.querySelector('input[name="role"]:checked')?.value;
 
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    if (!role) {
+      alert("Please select a role");
+      return;
+    }
+
+    const cred = await createUserWithEmailAndPassword(
+      auth,
+      email.value,
+      password.value
+    );
+
     const uid = cred.user.uid;
 
-    const collectionName = role === "producer" ? "producers" : "buyers";
+    // PRODUCER
+    if (role === "producer") {
+      await setDoc(doc(db, "producers", uid), {
+        uid,
+        email: cred.user.email,
+        name: "New Producer",
+        role: "producer",
+        plan: "free",
+        beatsCount: 0,
+        followers: 0,
+        createdAt: serverTimestamp()
+      });
+    }
 
-    await setDoc(doc(db, collectionName, uid), {
-      uid,
-      email,
-      role,
-      createdAt: serverTimestamp(),
-      ...(role === "producer"
-        ? { beatsCount: 0, totalSales: 0 }
-        : { purchases: 0 })
-    });
+    // BUYER
+    if (role === "buyer") {
+      await setDoc(doc(db, "buyers", uid), {
+        uid,
+        email: cred.user.email,
+        name: "New Buyer",
+        role: "buyer",
+        createdAt: serverTimestamp()
+      });
+    }
 
-    window.location.href = "dashboard.html";
+    redirectByRole(uid);
   } catch (err) {
     alert(err.message);
   }
-});
+};
+
+/* ----------------------------------
+   🚦 ROLE REDIRECT LOGIC
+---------------------------------- */
+async function redirectByRole(uid) {
+  const producerSnap = await getDoc(doc(db, "producers", uid));
+  if (producerSnap.exists()) {
+    location.href = "dashboard.html";
+    return;
+  }
+
+  const buyerSnap = await getDoc(doc(db, "buyers", uid));
+  if (buyerSnap.exists()) {
+    location.href = "buyer-dashboard.html";
+    return;
+  }
+
+  alert("Profile not found. Contact support.");
+  await auth.signOut();
+}
