@@ -2,204 +2,259 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Producer Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Producer Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;background:#0b0f1a;color:#fff;font-family:Inter,system-ui}
-.sidebar{width:260px;background:#0f1527;height:100vh;position:fixed;padding:20px}
-.sidebar a{display:block;color:#cbd5f5;padding:10px;border-radius:6px;text-decoration:none}
-.sidebar a:hover{background:#1b2344}
-.main{margin-left:260px;padding:20px}
-.page{display:none}
-.page.active{display:block}
-.card{background:#121a33;padding:20px;border-radius:12px;margin-bottom:20px}
-input,select,textarea{width:100%;padding:10px;border-radius:6px;border:none;background:#0f1527;color:#fff;margin-bottom:10px}
-button{background:#4da3ff;color:#fff;border:none;padding:10px 16px;border-radius:6px;cursor:pointer}
-.lock{opacity:.5}
-@media(max-width:900px){
-  .sidebar{transform:translateX(-100%);transition:.3s}
-  .sidebar.open{transform:translateX(0)}
-  .main{margin-left:0}
+body {
+  margin: 0;
+  font-family: Inter, sans-serif;
+  background: #0b1020;
+  color: #fff;
+}
+.app {
+  display: flex;
+}
+.sidebar {
+  width: 260px;
+  background: #0e1430;
+  padding: 20px;
+  min-height: 100vh;
+}
+.sidebar h2 {
+  margin: 0 0 20px;
+}
+.sidebar a {
+  display: block;
+  padding: 10px;
+  border-radius: 6px;
+  color: #cfd3ff;
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+.sidebar a:hover {
+  background: #1a2150;
+}
+.main {
+  flex: 1;
+  padding: 20px;
+}
+.hidden {
+  display: none;
+}
+.card {
+  background: #121a3a;
+  padding: 16px;
+  border-radius: 10px;
+  margin-bottom: 16px;
+}
+input, select, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: none;
+}
+button {
+  background: #5b6cff;
+  color: white;
+  cursor: pointer;
+}
+button.secondary {
+  background: #2a335f;
+}
+@media(max-width:768px){
+  .sidebar {
+    position: fixed;
+    z-index: 99;
+    left: 0;
+    top: 0;
+    transform: translateX(-100%);
+    transition: 0.3s;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
 }
 </style>
 </head>
 
 <body>
+<div class="app">
 
 <div class="sidebar" id="sidebar">
   <h2 id="producerName">Producer</h2>
-  <a onclick="show('dashboard')">Dashboard</a>
-  <a onclick="show('content')">Content</a>
-  <a onclick="show('upload')">Upload</a>
-  <a onclick="show('licenses')">Licenses</a>
-  <a onclick="show('finance')">Finance</a>
-  <a onclick="show('analytics')">Analytics</a>
-  <a onclick="show('pro')">Pro</a>
-  <a onclick="show('discounts')">Discounts</a>
-  <a onclick="show('settings')">Settings</a>
+  <a onclick="showPage('dashboard')">Dashboard</a>
+  <a onclick="showPage('content')">Content</a>
+  <a onclick="showPage('upload')">Upload</a>
+  <a onclick="showPage('licenses')">Licenses</a>
+  <a onclick="showPage('finance')">Finance</a>
+  <a onclick="showPage('analytics')">Analytics</a>
+  <a onclick="showPage('pro')">Pro</a>
+  <a onclick="showPage('discounts')">Discounts</a>
+  <a onclick="showPage('settings')">Settings</a>
   <a onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
-<button onclick="toggleMenu()">☰</button>
 
 <!-- DASHBOARD -->
-<div id="dashboard" class="page active">
-  <h1>Dashboard</h1>
-  <div class="card"><h3>Latest Sales</h3><ul id="sales"></ul></div>
-</div>
-
-<!-- CONTENT -->
-<div id="content" class="page">
-  <h1>Your Content</h1>
-  <div id="contentList"></div>
+<div id="dashboard" class="page">
+  <div class="card">
+    <h3>Latest Sales</h3>
+    <div id="sales"></div>
+  </div>
 </div>
 
 <!-- UPLOAD -->
-<div id="upload" class="page">
-  <h1>Upload</h1>
-  <select id="uploadType" onchange="switchUpload()">
-    <option value="track">Track</option>
-    <option value="soundkit">Soundkit</option>
-    <option value="service">Service</option>
-  </select>
-
+<div id="upload" class="page hidden">
   <div class="card">
+    <h3>Upload</h3>
+    <select id="uploadType">
+      <option value="track">Beat</option>
+      <option value="soundkit">Sound Kit</option>
+      <option value="service">Service</option>
+    </select>
     <input id="title" placeholder="Title">
     <input id="price" placeholder="Price">
-    <button onclick="createContent()">Publish</button>
+    <input id="image" placeholder="Cover Image URL (Cloudinary)">
+    <button onclick="upload()">Upload</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div id="content" class="page hidden">
+  <div class="card">
+    <h3>Your Content</h3>
+    <div id="contentList"></div>
   </div>
 </div>
 
 <!-- LICENSES -->
-<div id="licenses" class="page">
-  <h1>Licenses</h1>
-  <input id="licenseName" placeholder="License name">
-  <input id="licensePrice" placeholder="Price">
-  <button onclick="createLicense()">Create License</button>
-  <div id="licenseList"></div>
+<div id="licenses" class="page hidden">
+  <div class="card">
+    <h3>Create License</h3>
+    <input id="licenseName" placeholder="License Name">
+    <textarea id="licenseTerms" placeholder="Terms"></textarea>
+    <button onclick="createLicense()">Save License</button>
+  </div>
 </div>
 
 <!-- FINANCE -->
-<div id="finance" class="page">
-  <h1>Finance</h1>
-  <div class="card" id="balance">$0</div>
+<div id="finance" class="page hidden">
+  <div class="card">
+    <h3>Earnings</h3>
+    <div id="earnings">$0</div>
+  </div>
 </div>
 
 <!-- ANALYTICS -->
-<div id="analytics" class="page">
-  <h1>Analytics</h1>
-  <canvas id="chart"></canvas>
+<div id="analytics" class="page hidden">
+  <div class="card">
+    <h3>Stats</h3>
+    <div id="stats"></div>
+  </div>
 </div>
 
 <!-- PRO -->
-<div id="pro" class="page">
-  <h1>Upgrade to Pro</h1>
-  <button onclick="upgrade()">Upgrade Now</button>
+<div id="pro" class="page hidden">
+  <div class="card">
+    <h3>Upgrade to Pro</h3>
+    <button onclick="upgrade()">Upgrade</button>
+  </div>
 </div>
 
 <!-- DISCOUNTS -->
-<div id="discounts" class="page">
-  <h1>Discounts</h1>
-  <p>Available on Pro</p>
+<div id="discounts" class="page hidden">
+  <div class="card">
+    <h3>Discounts (Pro)</h3>
+  </div>
 </div>
 
 <!-- SETTINGS -->
-<div id="settings" class="page">
-  <h1>Settings</h1>
-  <input id="displayName" placeholder="Display Name">
-  <textarea id="bio" placeholder="Bio"></textarea>
-  <input id="location" placeholder="Location">
-  <button onclick="saveProfile()">Save</button>
+<div id="settings" class="page hidden">
+  <div class="card">
+    <h3>Profile</h3>
+    <input id="displayName" placeholder="Display Name">
+    <input id="photoURL" placeholder="Profile Image URL">
+    <button onclick="saveProfile()">Save</button>
+  </div>
 </div>
 
+</div>
 </div>
 
 <script>
-firebase.initializeApp({
-  apiKey:"AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain:"prodbybigi.firebaseapp.com",
-  projectId:"prodbybigi"
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let user;
+
+auth.onAuthStateChanged(async u => {
+  if(!u) return location.href = "/login.html";
+  user = u;
+  const doc = await db.collection("producers").doc(u.uid).get();
+  if(doc.exists) {
+    document.getElementById("producerName").innerText = doc.data().displayName || "Producer";
+  }
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
-let user,profile;
-
-auth.onAuthStateChanged(async u=>{
-  if(!u)return location.href="/login.html";
-  user=u;
-  const snap=await db.collection("users").doc(u.uid).get();
-  profile=snap.data();
-  producerName.innerText=profile.displayName||"Producer";
-  loadSales(); loadContent(); loadAnalytics();
-});
-
-function show(id){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
 }
 
-function toggleMenu(){ sidebar.classList.toggle("open"); }
-
-async function createContent(){
-  await db.collection("content").add({
-    producerId:user.uid,
-    type:uploadType.value,
-    title:title.value,
-    price:Number(price.value),
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+function upload(){
+  db.collection("content").add({
+    uid: user.uid,
+    type: uploadType.value,
+    title: title.value,
+    price: price.value,
+    image: image.value,
+    created: Date.now()
   });
   alert("Uploaded");
-  loadContent();
 }
 
-async function loadContent(){
-  const q=await db.collection("content").where("producerId","==",user.uid).get();
-  contentList.innerHTML="";
-  q.forEach(d=>contentList.innerHTML+=`<div>${d.data().title}</div>`);
-}
-
-async function createLicense(){
-  await db.collection("licenses").add({
-    producerId:user.uid,
-    name:licenseName.value,
-    price:Number(licensePrice.value)
+function createLicense(){
+  db.collection("licenses").add({
+    uid: user.uid,
+    name: licenseName.value,
+    terms: licenseTerms.value
   });
+  alert("License saved");
 }
 
-async function loadSales(){
-  const q=await db.collection("orders").where("producerId","==",user.uid).limit(5).get();
-  sales.innerHTML="";
-  q.forEach(d=>sales.innerHTML+=`<li>$${d.data().total}</li>`);
-}
-
-function loadAnalytics(){
-  new Chart(chart,{type:"line",data:{labels:["Now"],datasets:[{data:[0]}]}});
-}
-
-async function saveProfile(){
-  await db.collection("users").doc(user.uid).update({
-    displayName:displayName.value,
-    bio:bio.value,
-    location:location.value
-  });
-  alert("Saved");
+function saveProfile(){
+  db.collection("producers").doc(user.uid).set({
+    displayName: displayName.value,
+    photoURL: photoURL.value
+  },{merge:true});
+  alert("Profile updated");
 }
 
 function upgrade(){
-  db.collection("users").doc(user.uid).update({plan:"pro"});
-  alert("Upgraded");
+  db.collection("producers").doc(user.uid).update({plan:"pro"});
+  alert("Pro unlocked");
 }
 
 function logout(){
-  auth.signOut().then(()=>location.href="/login.html");
+  auth.signOut();
 }
 </script>
 </body>
