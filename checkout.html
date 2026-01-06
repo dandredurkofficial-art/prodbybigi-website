@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout</title>
+<style>
+body{
+  background:#070a12;color:#fff;font-family:Inter;padding:20px;
+}
+.card{
+  background:#0b1220;border:1px solid #1f2937;border-radius:16px;padding:20px;
+}
+button{
+  background:#3b82f6;border:none;padding:14px;width:100%;
+  border-radius:12px;color:#fff;font-size:16px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h2 id="beatName"></h2>
+  <p>License: <strong id="license"></strong></p>
+  <h1 id="price"></h1>
+
+  <button disabled>Pay with Stripe (next step)</button>
+</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+document.getElementById("beatName").innerText = "Beat ID: " + params.get("beat");
+document.getElementById("license").innerText = params.get("license");
+document.getElementById("price").innerText = "$" + params.get("price");
+</script>
+
+</body>
+</html>
