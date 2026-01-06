@@ -1,218 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Producer Studio – MVP</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<title>Producer Studio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+<!-- BASIC STYLE (BeatStars-like clean studio) -->
 <style>
 body {
   margin: 0;
-  font-family: Inter, system-ui;
-  background: #0b0f1a;
+  font-family: Arial, sans-serif;
+  background: #0f0f14;
   color: #fff;
-  display: flex;
 }
 .sidebar {
-  width: 260px;
-  background: #0f1629;
-  padding: 20px;
+  width: 220px;
+  background: #15151f;
+  height: 100vh;
   position: fixed;
-  height: 100%;
-  transition: transform .3s;
+  padding: 20px;
 }
-.sidebar h2 { margin-bottom: 30px; }
-.sidebar a {
+.sidebar h2 {
+  color: #ff4d4d;
+}
+.sidebar button {
   display: block;
-  padding: 12px;
-  color: #cfd8ff;
-  text-decoration: none;
-  border-radius: 8px;
-}
-.sidebar a.active, .sidebar a:hover {
-  background: #1b2a5b;
-}
-.close-btn {
-  display: none;
-  font-size: 20px;
+  width: 100%;
+  margin: 10px 0;
+  padding: 10px;
+  background: #222;
+  border: none;
+  color: #fff;
   cursor: pointer;
 }
-main {
-  margin-left: 260px;
-  padding: 30px;
-  width: 100%;
+.sidebar button:hover {
+  background: #ff4d4d;
 }
-.card {
-  background: #111a33;
+.main {
+  margin-left: 240px;
   padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
 }
-input, select, button {
+.page {
+  display: none;
+}
+.page.active {
+  display: block;
+}
+input, select, textarea {
   width: 100%;
-  padding: 12px;
-  border-radius: 8px;
+  padding: 10px;
+  margin: 8px 0;
+  background: #222;
   border: none;
+  color: #fff;
+}
+button.primary {
+  background: #ff4d4d;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  cursor: pointer;
   margin-top: 10px;
 }
-button {
-  background: #3b6cff;
-  color: white;
-  cursor: pointer;
-}
-.locked {
-  opacity: .5;
-}
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    z-index: 10;
-  }
-  .sidebar.show {
-    transform: translateX(0);
-  }
-  .close-btn {
-    display: block;
-  }
-  main {
-    margin-left: 0;
-  }
+.card {
+  background: #1b1b27;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 6px;
 }
 </style>
-</head>
 
+<!-- Cloudinary -->
+<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+
+<!-- Firebase (COMPAT – STABLE) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+</head>
 <body>
 
-<div class="sidebar" id="sidebar">
-  <span class="close-btn" onclick="toggleMenu()">✕</span>
+<div class="sidebar">
   <h2>Producer Studio</h2>
-  <a onclick="showPage('dashboard')" class="active">Dashboard</a>
-  <a onclick="showPage('upload')">Upload</a>
-  <a onclick="showPage('content')">Content</a>
-  <a onclick="showPage('finance')">Finance</a>
-  <a onclick="showPage('analytics')" class="locked">Analytics 🔒</a>
-  <a onclick="showPage('pro')" class="locked">Pro 🔒</a>
-  <a onclick="showPage('discounts')" class="locked">Discounts 🔒</a>
-  <a onclick="showPage('settings')">Settings</a>
-  <a onclick="logout()">Logout</a>
+  <button onclick="showPage('dashboard')">Dashboard</button>
+  <button onclick="showPage('upload')">Upload</button>
+  <button onclick="showPage('content')">Content</button>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<main>
-<button onclick="toggleMenu()">☰</button>
+<div class="main">
 
-<div id="dashboard" class="page card">
-  <h3>Welcome</h3>
-  <p>Continue where you left off.</p>
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="page active">
+    <h1>Welcome back</h1>
+    <p>This is your producer studio.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div id="upload" class="page">
+    <h1>Upload New Content</h1>
+
+    <label>Type</label>
+    <select id="type">
+      <option value="beat">Beat</option>
+      <option value="soundkit">Soundkit</option>
+      <option value="service">Service</option>
+    </select>
+
+    <label>Title</label>
+    <input id="title" placeholder="Name your product" />
+
+    <label>Description</label>
+    <textarea id="description"></textarea>
+
+    <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
+    <p id="artworkStatus">No artwork</p>
+
+    <button class="primary" onclick="uploadAudio()">Upload File</button>
+    <p id="audioStatus">No file</p>
+
+    <button class="primary" onclick="publish()">Publish</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content" class="page">
+    <h1>Your Content</h1>
+    <div id="contentList"></div>
+  </div>
+
 </div>
 
-<div id="upload" class="page card" style="display:none;">
-  <h3>Upload Content</h3>
-  <select id="contentType">
-    <option value="beat">Beat</option>
-    <option value="soundkit">Sound Kit</option>
-    <option value="service">Service</option>
-  </select>
-  <input id="title" placeholder="Title">
-  <button onclick="uploadContent()">Create</button>
-</div>
-
-<div id="content" class="page card" style="display:none;">
-  <h3>Your Content</h3>
-  <div id="contentList"></div>
-</div>
-
-<div id="finance" class="page card" style="display:none;">
-  <h3>Finance</h3>
-  <p>No earnings yet. This will populate when buyers purchase.</p>
-</div>
-
-<div id="analytics" class="page card" style="display:none;">
-  <h3>Analytics</h3>
-  <p>Upgrade to Pro to unlock analytics.</p>
-</div>
-
-<div id="pro" class="page card" style="display:none;">
-  <h3>Upgrade to Pro</h3>
-  <p>Unlock analytics, discounts, and pro tools.</p>
-</div>
-
-<div id="discounts" class="page card" style="display:none;">
-  <h3>Discounts</h3>
-  <p>Upgrade to Pro to manage discounts.</p>
-</div>
-
-<div id="settings" class="page card" style="display:none;">
-  <h3>Settings</h3>
-  <input id="displayName" placeholder="Display Name">
-  <input id="photoURL" placeholder="Profile Image URL">
-  <button onclick="saveSettings()">Save</button>
-</div>
-
-</main>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
+<script>
+/* FIREBASE CONFIG */
+firebase.initializeApp({
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
-};
+  projectId: "prodbybigi"
+});
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-window.showPage = (id) => {
-  document.querySelectorAll('.page').forEach(p => p.style.display='none');
-  document.getElementById(id).style.display = 'block';
+/* AUTH GUARD */
+auth.onAuthStateChanged(user => {
+  if (!user) location.href = "login.html";
+  else loadContent();
+});
+
+/* NAV */
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-window.uploadContent = async () => {
-  const user = auth.currentUser;
-  if (!user) return alert("Not logged in");
+/* LOGOUT */
+function logout() {
+  auth.signOut();
+}
 
-  await addDoc(collection(db, "content"), {
-    uid: user.uid,
-    type: contentType.value,
+/* CLOUDINARY */
+const cloudName = "djd8vkI8s";
+let artworkUrl = null;
+let audioUrl = null;
+
+function uploadArtwork() {
+  cloudinary.openUploadWidget({
+    cloudName,
+    uploadPreset: "unsigned_images",
+    resourceType: "image"
+  }, (err, res) => {
+    if (!err && res.event === "success") {
+      artworkUrl = res.info.secure_url;
+      artworkStatus.innerText = "Artwork uploaded ✅";
+    }
+  });
+}
+
+function uploadAudio() {
+  cloudinary.openUploadWidget({
+    cloudName,
+    uploadPreset: "unsigned_audio",
+    resourceType: "video"
+  }, (err, res) => {
+    if (!err && res.event === "success") {
+      audioUrl = res.info.secure_url;
+      audioStatus.innerText = "File uploaded ✅";
+    }
+  });
+}
+
+/* SAVE TO FIRESTORE */
+async function publish() {
+  const user = auth.currentUser;
+  if (!audioUrl) return alert("Upload file first");
+
+  await db.collection("content").add({
+    producerId: user.uid,
+    type: type.value,
     title: title.value,
-    createdAt: Date.now()
+    description: description.value,
+    artworkUrl,
+    audioUrl,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   });
 
-  alert("Created");
+  alert("Published successfully");
+  artworkUrl = audioUrl = null;
+  artworkStatus.innerText = "No artwork";
+  audioStatus.innerText = "No file";
   loadContent();
 }
 
+/* LOAD CONTENT */
 async function loadContent() {
   const user = auth.currentUser;
-  if (!user) return;
+  const snap = await db.collection("content")
+    .where("producerId", "==", user.uid)
+    .get();
 
-  const q = query(collection(db,"content"), where("uid","==",user.uid));
-  const snap = await getDocs(q);
   contentList.innerHTML = "";
-  snap.forEach(d => {
-    contentList.innerHTML += `<p>${d.data().type} — ${d.data().title}</p>`;
+  snap.forEach(doc => {
+    const d = doc.data();
+    contentList.innerHTML += `
+      <div class="card">
+        <strong>${d.title}</strong>
+        <p>${d.type}</p>
+      </div>
+    `;
   });
 }
-
-window.saveSettings = async () => {
-  const user = auth.currentUser;
-  await updateDoc(doc(db,"users",user.uid), {
-    displayName: displayName.value,
-    photoURL: photoURL.value
-  });
-  alert("Saved");
-}
-
-window.logout = () => signOut(auth);
-window.toggleMenu = () => sidebar.classList.toggle("show");
-
-auth.onAuthStateChanged(u => u && loadContent());
 </script>
+
 </body>
 </html>
