@@ -5,9 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Producer Studio</title>
 
+<!-- Cloudinary -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
 
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, addDoc, getDocs, doc, updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+window.firebaseReady = false;
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef",
+  measurementId: "G-7HR862H9L7"
+};
+
+const app = initializeApp(firebaseConfig);
+window.db = getFirestore(app);
+window.firebaseReady = true;
+</script>
+
 <style>
+/* ===== BASE ===== */
 body {
   margin:0;
   font-family:Inter,system-ui;
@@ -27,24 +53,41 @@ header {
   background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;
 }
 .layout {display:flex;min-height:calc(100vh - 64px);}
+
+/* ===== NAV ===== */
 nav {
-  width:240px;border-right:1px solid #1f2937;padding:12px;
+  width:240px;
+  border-right:1px solid #1f2937;
+  padding:16px;
 }
 nav a {
-  display:block;padding:10px;border-radius:8px;color:#9ca3af;cursor:pointer;
+  display:block;
+  padding:12px;
+  margin-bottom:6px;
+  border-radius:10px;
+  color:#9ca3af;
+  cursor:pointer;
 }
-nav a.active {background:#111827;color:#fff;}
-main {flex:1;padding:16px;}
+nav a.active {
+  background:#111827;
+  color:#fff;
+}
+
+/* ===== MAIN ===== */
+main {flex:1;padding:24px;}
 .page {display:none;}
 .page.active {display:block;}
 
+/* ===== CARDS ===== */
 .card {
   background:#0b1220;
   border:1px solid #1f2937;
   border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
+  padding:20px;
+  margin-bottom:20px;
 }
+
+/* ===== INPUTS ===== */
 input,textarea {
   width:100%;
   background:#05070c;
@@ -54,53 +97,39 @@ input,textarea {
   color:#fff;
   margin-bottom:12px;
 }
+
+/* ===== TOGGLES ===== */
 .toggle {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin:10px 0;
+  gap:12px;
+  margin:12px 0;
 }
 .price {width:120px;}
+
 button.primary {
-  background:#3b82f6;border:none;padding:12px;border-radius:10px;color:#fff;
+  background:#3b82f6;
+  border:none;
+  padding:14px;
+  border-radius:10px;
+  color:#fff;
+  cursor:pointer;
 }
 
-/* MOBILE */
-@media(max-width:900px){
-  nav{
-    display:none;
-    position:fixed;
-    height:100%;
-    background:#070a12;
-    z-index:10;
-    top:64px;
-    left:0;
-  }
-  nav.open{display:block;}
-}
-@media (max-width: 640px) {
-  .toggle {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  .price {width:100%;}
-  button.primary {width:100%;}
-}
-
-/* ARTWORK */
+/* ===== ARTWORK ===== */
 .artwork-preview {
   width:100%;
-  max-width:240px;
+  max-width:260px;
   aspect-ratio:1/1;
-  border-radius:12px;
+  border-radius:14px;
   background:#05070c;
   border:1px dashed #1f2937;
   display:flex;
   align-items:center;
   justify-content:center;
   overflow:hidden;
-  margin-bottom:12px;
+  margin-bottom:14px;
 }
 .artwork-preview img {
   width:100%;
@@ -108,17 +137,17 @@ button.primary {
   object-fit:cover;
 }
 
-/* TRACK LIST */
+/* ===== TRACK LIST ===== */
 .track {
   display:flex;
-  gap:12px;
   align-items:center;
-  margin-bottom:12px;
+  gap:14px;
+  margin-bottom:14px;
 }
 .track img {
-  width:56px;
-  height:56px;
-  border-radius:8px;
+  width:64px;
+  height:64px;
+  border-radius:10px;
   object-fit:cover;
 }
 .track button {
@@ -127,6 +156,25 @@ button.primary {
   color:#fff;
   padding:8px 12px;
   border-radius:8px;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  nav {
+    display:none;
+    position:fixed;
+    top:64px;
+    left:0;
+    height:100%;
+    background:#070a12;
+    z-index:10;
+  }
+  nav.open {display:block;}
+}
+@media(max-width:640px){
+  .toggle {flex-direction:column;align-items:flex-start;}
+  .price {width:100%;}
+  button.primary {width:100%;}
 }
 </style>
 </head>
@@ -149,34 +197,69 @@ button.primary {
 
 <main>
 
+<!-- DASHBOARD -->
 <section id="dashboard" class="page active">
   <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
 </section>
 
+<!-- UPLOAD -->
 <section id="upload" class="page">
-  <!-- UNCHANGED -->
-  <div class="card">
-    <h2>Basic Info</h2>
-    <div class="artwork-preview" id="artworkBox"><span>Artwork Preview</span></div>
-    <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
-    <input id="title" placeholder="Track title">
-    <textarea id="desc" placeholder="Description"></textarea>
-    <input id="bpm" placeholder="BPM">
-    <input id="key" placeholder="Key">
-    <button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
-    <button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
-  </div>
 
-  <div class="card">
-    <h2>Monetization</h2>
-    <div class="toggle"><label>Basic License</label><input type="checkbox" id="basicEnabled"><input class="price" id="basicPrice" value="29.99"></div>
-    <div class="toggle"><label>Premium License</label><input type="checkbox" id="premiumEnabled"><input class="price" id="premiumPrice" value="79.99"></div>
-    <div class="toggle"><label>Exclusive License</label><input type="checkbox" id="exclusiveEnabled"><input class="price" id="exclusivePrice" value="299.99"></div>
-    <button class="primary" onclick="publishBeat()">Publish Beat</button>
-  </div>
+<div class="card">
+<h2>Track Details</h2>
+
+<div class="artwork-preview" id="artworkBox">
+  <span>Artwork Preview</span>
+</div>
+<button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
+
+<input id="title" placeholder="Track title">
+<textarea id="desc" placeholder="Description"></textarea>
+<input id="bpm" placeholder="BPM">
+<input id="key" placeholder="Key">
+
+<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
+</div>
+
+<div class="card">
+<h2>Licenses & Pricing</h2>
+
+<div class="toggle">
+  <label>Basic (MP3)</label>
+  <input type="checkbox" id="basicEnabled" checked>
+  <input class="price" id="basicPrice" value="29.99">
+</div>
+
+<div class="toggle">
+  <label>Premium (WAV)</label>
+  <input type="checkbox" id="premiumEnabled">
+  <input class="price" id="premiumPrice" value="79.99">
+</div>
+
+<div class="toggle">
+  <label>Exclusive</label>
+  <input type="checkbox" id="exclusiveEnabled">
+  <input class="price" id="exclusivePrice" value="299.99">
+</div>
+
+<div class="toggle">
+  <label>Free Download</label>
+  <input type="checkbox" id="freeDownload">
+</div>
+
+<div class="toggle">
+  <label>Include in Bulk Discounts</label>
+  <input type="checkbox" id="bulkDiscount">
+</div>
+
+<button class="primary" onclick="publishBeat()">Publish Beat</button>
+</div>
+
 </section>
 
+<!-- TRACKS -->
 <section id="tracks" class="page">
   <div class="card">
     <h2>Your Beats</h2>
@@ -184,25 +267,13 @@ button.primary {
   </div>
 </section>
 
-<!-- ✅ NEW: EDIT TRACK PAGE -->
-<section id="edit" class="page">
-  <div class="card">
-    <h2>Edit Track</h2>
-
-    <div class="artwork-preview" id="editArtwork"></div>
-    <button class="primary" onclick="editUploadArtwork()">Change Artwork</button>
-
-    <input id="editTitle" placeholder="Track title">
-    <input id="editBpm" placeholder="BPM">
-    <input id="editKey" placeholder="Key">
-
-    <button class="primary" onclick="editUploadPreview()">Change Preview</button>
-    <button class="primary" onclick="saveEdit()">Save Changes</button>
-  </div>
-</section>
-
+<!-- FINANCE -->
 <section id="finance" class="page">
-  <div class="card"><h2>Payouts</h2><p>$0.00</p><button class="primary">Withdraw</button></div>
+  <div class="card">
+    <h2>Payouts</h2>
+    <p>$0.00</p>
+    <button class="primary">Withdraw</button>
+  </div>
 </section>
 
 </main>
@@ -210,9 +281,7 @@ button.primary {
 
 <script>
 let uploadedArtwork=null, fullAudio=null, previewAudio=null;
-let beatsData=[];
-let currentAudio=null;
-let editIndex=null;
+let beatsData=[]; let currentAudio=null;
 
 function toggleMenu(){
   sidebar.classList.toggle("open");
@@ -221,13 +290,14 @@ function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event?.target?.classList.add('active');
+  event.target.classList.add('active');
   sidebar.classList.remove("open");
 }
 
+/* ===== CLOUDINARY ===== */
 function uploadArtwork(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vki8s",
+    cloudName:"djd8vkI8s",
     uploadPreset:"unsigned_images",
     resourceType:"image"
   },(_,res)=>{
@@ -239,30 +309,64 @@ function uploadArtwork(){
 }
 function uploadFullAudio(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vki8s",
+    cloudName:"djd8vkI8s",
     uploadPreset:"unsigned_audio",
     resourceType:"video"
   },(_,res)=>{
-    if(res?.event==="success") fullAudio=res.info.secure_url;
+    if(res?.event==="success"){
+      fullAudio=res.info.secure_url;
+      alert("Full beat uploaded");
+    }
   });
 }
 function uploadPreviewAudio(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vki8s",
+    cloudName:"djd8vkI8s",
     uploadPreset:"unsigned_audio",
     resourceType:"video"
   },(_,res)=>{
-    if(res?.event==="success") previewAudio=res.info.secure_url;
+    if(res?.event==="success"){
+      previewAudio=res.info.secure_url;
+      alert("Preview uploaded");
+    }
   });
 }
 
-function publishBeat(){
-  beatsData.push({
+/* ===== FIRESTORE ===== */
+async function publishBeat(){
+  if(!window.firebaseReady) return alert("Firebase not ready");
+  if(!fullAudio || !previewAudio) return alert("Upload both audios");
+
+  const beat={
     title:title.value,
+    desc:desc.value,
     bpm:bpm.value,
     key:key.value,
     artwork:uploadedArtwork,
-    preview:previewAudio
+    fullAudio,
+    previewAudio,
+    licenses:{
+      basic:{enabled:basicEnabled.checked,price:basicPrice.value},
+      premium:{enabled:premiumEnabled.checked,price:premiumPrice.value},
+      exclusive:{enabled:exclusiveEnabled.checked,price:exclusivePrice.value}
+    },
+    freeDownload:freeDownload.checked,
+    bulkDiscount:bulkDiscount.checked,
+    createdAt:Date.now()
+  };
+
+  await addDoc(collection(db,"beats"),beat);
+  alert("Beat published");
+  loadBeats();
+}
+
+async function loadBeats(){
+  beats.innerHTML="";
+  beatsData=[];
+  const snap=await getDocs(collection(db,"beats"));
+  snap.forEach(docu=>{
+    const b={id:docu.id,...docu.data()};
+    beatsData.push(b);
   });
   renderTracks();
 }
@@ -270,66 +374,27 @@ function publishBeat(){
 function renderTracks(){
   beats.innerHTML="";
   beatsData.forEach((b,i)=>{
-    beats.innerHTML+=`
-      <div class="track">
-        <img src="${b.artwork||''}">
-        <div style="flex:1">
-          <strong>${b.title}</strong><br>
-          <small>${b.bpm} BPM • ${b.key}</small>
-        </div>
-        <button onclick="playPreview(${i})">▶</button>
-        <button onclick="openEdit(${i})">Edit</button>
-      </div>`;
+    const d=document.createElement("div");
+    d.className="track";
+    d.innerHTML=`
+      <img src="${b.artwork||''}">
+      <div style="flex:1">
+        <strong>${b.title}</strong><br>
+        BPM ${b.bpm} • ${b.key}
+      </div>
+      <button onclick="playPreview(${i})">▶</button>
+    `;
+    beats.appendChild(d);
   });
 }
 
 function playPreview(i){
   if(currentAudio) currentAudio.pause();
-  currentAudio=new Audio(beatsData[i].preview);
+  currentAudio=new Audio(beatsData[i].previewAudio);
   currentAudio.play();
 }
 
-/* EDIT */
-function openEdit(i){
-  editIndex=i;
-  const b=beatsData[i];
-  editArtwork.innerHTML=`<img src="${b.artwork||''}">`;
-  editTitle.value=b.title;
-  editBpm.value=b.bpm;
-  editKey.value=b.key;
-  showPage('edit');
-}
-function editUploadArtwork(){
-  cloudinary.openUploadWidget({
-    cloudName:"YOUR_CLOUD_NAME",
-    uploadPreset:"unsigned_images",
-    resourceType:"image"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      beatsData[editIndex].artwork=res.info.secure_url;
-      editArtwork.innerHTML=`<img src="${res.info.secure_url}">`;
-    }
-  });
-}
-function editUploadPreview(){
-  cloudinary.openUploadWidget({
-    cloudName:"YOUR_CLOUD_NAME",
-    uploadPreset:"unsigned_audio",
-    resourceType:"video"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      beatsData[editIndex].preview=res.info.secure_url;
-    }
-  });
-}
-function saveEdit(){
-  const b=beatsData[editIndex];
-  b.title=editTitle.value;
-  b.bpm=editBpm.value;
-  b.key=editKey.value;
-  renderTracks();
-  showPage('tracks');
-}
+loadBeats();
 </script>
 
 </body>
