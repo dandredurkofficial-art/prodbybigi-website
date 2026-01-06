@@ -67,7 +67,7 @@ button.primary {
   background:#3b82f6;border:none;padding:12px;border-radius:10px;color:#fff;
 }
 
-/* MOBILE NAV */
+/* MOBILE */
 @media(max-width:900px){
   nav{
     display:none;
@@ -80,8 +80,6 @@ button.primary {
   }
   nav.open{display:block;}
 }
-
-/* UPLOAD LAYOUT FIX */
 @media (max-width: 640px) {
   .toggle {
     flex-direction: column;
@@ -92,7 +90,7 @@ button.primary {
   button.primary {width:100%;}
 }
 
-/* ARTWORK PREVIEW */
+/* ARTWORK */
 .artwork-preview {
   width:100%;
   max-width:240px;
@@ -152,7 +150,9 @@ button.primary {
 <textarea id="desc" placeholder="Description"></textarea>
 <input id="bpm" placeholder="BPM">
 <input id="key" placeholder="Key">
-<button class="primary" onclick="uploadAudio()">Upload Audio</button>
+
+<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 </div>
 
 <div class="card">
@@ -192,26 +192,20 @@ button.primary {
 </section>
 
 <section id="tracks" class="page">
-  <div class="card">
-    <h2>Your Beats</h2>
-    <div id="beats"></div>
-  </div>
+  <div class="card"><h2>Your Beats</h2><div id="beats"></div></div>
 </section>
 
 <section id="finance" class="page">
-  <div class="card">
-    <h2>Payouts</h2>
-    <p>$0.00</p>
-    <button class="primary">Withdraw</button>
-  </div>
+  <div class="card"><h2>Payouts</h2><p>$0.00</p><button class="primary">Withdraw</button></div>
 </section>
 
 </main>
 </div>
 
 <script>
-let uploadedAudio = null;
 let uploadedArtwork = null;
+let fullAudio = null;
+let previewAudio = null;
 
 function toggleMenu(){
   document.getElementById("sidebar").classList.toggle("open");
@@ -227,38 +221,55 @@ function showPage(id){
 
 function uploadArtwork(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vki8s",
+    cloudName:"YOUR_CLOUD_NAME",
     uploadPreset:"unsigned_images",
     resourceType:"image"
   },(err,res)=>{
     if(res?.event==="success"){
       uploadedArtwork = res.info.secure_url;
-      document.getElementById("artworkBox").innerHTML =
-        `<img src="${uploadedArtwork}">`;
+      artworkBox.innerHTML = `<img src="${uploadedArtwork}">`;
     }
   });
 }
 
-function uploadAudio(){
+function uploadFullAudio(){
   cloudinary.openUploadWidget({
     cloudName:"YOUR_CLOUD_NAME",
     uploadPreset:"unsigned_audio",
     resourceType:"video"
   },(err,res)=>{
     if(res?.event==="success"){
-      uploadedAudio=res.info.secure_url;
-      alert("Audio uploaded");
+      fullAudio = res.info.secure_url;
+      alert("Full beat uploaded");
+    }
+  });
+}
+
+function uploadPreviewAudio(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vki8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
+  },(err,res)=>{
+    if(res?.event==="success"){
+      previewAudio = res.info.secure_url;
+      alert("Preview beat uploaded");
     }
   });
 }
 
 function publishBeat(){
-  if(!uploadedAudio) return alert("Upload audio first");
+  if(!fullAudio || !previewAudio){
+    return alert("Upload full beat and preview beat");
+  }
 
-  const beat={
-    title:title.value,
-    artwork:uploadedArtwork,
-    audio:uploadedAudio,
+  const beat = {
+    title: title.value,
+    artwork: uploadedArtwork,
+    audio: {
+      full: fullAudio,
+      preview: previewAudio
+    },
     licenses:{
       basic:{enabled:basicEnabled.checked,price:basicPrice.value},
       premium:{enabled:premiumEnabled.checked,price:premiumPrice.value},
@@ -268,8 +279,8 @@ function publishBeat(){
     bulkDiscount:bulkDiscount.checked
   };
 
-  console.log("READY FOR FIRESTORE:",beat);
-  alert("Beat ready (connect Firestore next)");
+  console.log("READY FOR FIRESTORE:", beat);
+  alert("Beat ready (tagged preview included)");
 }
 </script>
 
