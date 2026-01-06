@@ -53,9 +53,9 @@ button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-wei
     <!-- DASHBOARD -->
     <div id="dashboard" class="page active">
       <div class="grid">
-        <div class="card"><h3>Sales</h3><p id="salesTotal">$0</p></div>
+        <div class="card"><h3>Total Sales</h3><p id="salesTotal">$0.00</p></div>
+        <div class="card"><h3>Available Balance</h3><p id="availableBalance">$0.00</p></div>
         <div class="card"><h3>Beats</h3><p id="beatsCount">0</p></div>
-        <div class="card"><h3>Licenses</h3><p id="licensesCount">0</p></div>
       </div>
     </div>
 
@@ -91,11 +91,24 @@ button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-wei
       </div>
     </div>
 
-    <!-- FINANCE -->
+    <!-- FINANCE (REAL) -->
     <div id="finance" class="page">
+      <div class="grid">
+        <div class="card">
+          <h3>Available Balance</h3>
+          <p id="financeBalance">$0.00</p>
+        </div>
+
+        <div class="card">
+          <h3>Request Payout</h3>
+          <input id="payoutAmount" type="number" placeholder="Amount" />
+          <button onclick="requestPayout()">Request Payout</button>
+        </div>
+      </div>
+
       <div class="card">
-        <h3>Balance</h3>
-        <p>$0.00</p>
+        <h3>Payout History</h3>
+        <div id="payoutList"></div>
       </div>
     </div>
 
@@ -130,7 +143,7 @@ button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-wei
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -143,12 +156,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let uid = null;
+let availableBalance = 0;
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (!user) location.href = "login.html";
   uid = user.uid;
-  loadBeats();
-  loadLicenses();
+  await loadBeats();
+  await loadLicenses();
+  await loadFinance();
 });
 
 window.logout = () => signOut(auth).then(()=>location.href="login.html");
@@ -165,7 +180,7 @@ async function uploadBeat(){
     price:+beatPrice.value,
     producerId:uid,
     licenses:Array.from(licenseSelect.selectedOptions).map(o=>o.value),
-    createdAt:Date.now()
+    createdAt:serverTimestamp()
   });
   loadBeats();
 }
@@ -186,7 +201,7 @@ async function createLicense(){
     price:+licensePrice.value,
     terms:licenseTerms.value,
     producerId:uid,
-    createdAt:Date.now()
+    createdAt:serverTimestamp()
   });
   loadLicenses();
 }
@@ -196,12 +211,50 @@ async function loadLicenses(){
   licenseSelect.innerHTML="";
   const q=query(collection(db,"licenses"),where("producerId","==",uid));
   const snap=await getDocs(q);
-  licensesCount.textContent=snap.size;
   snap.forEach(d=>{
     licenseList.innerHTML+=`<div class="beat">${d.data().name}</div>`;
     licenseSelect.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
   });
 }
+
+async function loadFinance(){
+  let totalSales = 0;
+  let totalPaid = 0;
+
+  const ordersSnap = await getDocs(query(collection(db,"orders"),where("producerId","==",uid)));
+  ordersSnap.forEach(o=>totalSales += o.data().amount);
+
+  const payoutsSnap = await getDocs(query(collection(db,"payouts"),where("producerId","==",uid), where("status","==","paid")));
+  payoutsSnap.forEach(p=>totalPaid += p.data().amount);
+
+  availableBalance = totalSales - totalPaid;
+
+  salesTotal.textContent = `$${totalSales.toFixed(2)}`;
+  availableBalanceEl.textContent = `$${availableBalance.toFixed(2)}`;
+  financeBalance.textContent = `$${availableBalance.toFixed(2)}`;
+
+  payoutList.innerHTML="";
+  const allPayouts = await getDocs(query(collection(db,"payouts"),where("producerId","==",uid)));
+  allPayouts.forEach(p=>{
+    payoutList.innerHTML += `<div class="beat">$${p.data().amount} – ${p.data().status}</div>`;
+  });
+}
+
+window.requestPayout = async () => {
+  const amount = +payoutAmount.value;
+  if (amount <= 0 || amount > availableBalance) {
+    alert("Invalid amount");
+    return;
+  }
+  await addDoc(collection(db,"payouts"),{
+    producerId:uid,
+    amount,
+    status:"pending",
+    createdAt:serverTimestamp()
+  });
+  payoutAmount.value="";
+  loadFinance();
+};
 </script>
 
 </body>
