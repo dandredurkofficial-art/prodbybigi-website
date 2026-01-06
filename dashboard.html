@@ -81,21 +81,35 @@ button.primary {
   nav.open{display:block;}
 }
 
-/* 🔥 FIX UPLOAD LAYOUT (MOBILE SAFE, DESKTOP UNCHANGED) */
+/* UPLOAD LAYOUT FIX */
 @media (max-width: 640px) {
   .toggle {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
+  .price {width:100%;}
+  button.primary {width:100%;}
+}
 
-  .price {
-    width: 100%;
-  }
-
-  button.primary {
-    width: 100%;
-  }
+/* ARTWORK PREVIEW */
+.artwork-preview {
+  width:100%;
+  max-width:240px;
+  aspect-ratio:1/1;
+  border-radius:12px;
+  background:#05070c;
+  border:1px dashed #1f2937;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+.artwork-preview img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 </style>
 </head>
@@ -127,6 +141,13 @@ button.primary {
 
 <div class="card">
 <h2>Basic Info</h2>
+
+<div class="artwork-preview" id="artworkBox">
+  <span>Artwork Preview</span>
+</div>
+
+<button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
+
 <input id="title" placeholder="Track title">
 <textarea id="desc" placeholder="Description"></textarea>
 <input id="bpm" placeholder="BPM">
@@ -190,6 +211,7 @@ button.primary {
 
 <script>
 let uploadedAudio = null;
+let uploadedArtwork = null;
 
 function toggleMenu(){
   document.getElementById("sidebar").classList.toggle("open");
@@ -201,6 +223,20 @@ function showPage(id){
   document.getElementById(id).classList.add('active');
   event.target.classList.add('active');
   document.getElementById("sidebar").classList.remove("open");
+}
+
+function uploadArtwork(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vki8s",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
+  },(err,res)=>{
+    if(res?.event==="success"){
+      uploadedArtwork = res.info.secure_url;
+      document.getElementById("artworkBox").innerHTML =
+        `<img src="${uploadedArtwork}">`;
+    }
+  });
 }
 
 function uploadAudio(){
@@ -221,6 +257,7 @@ function publishBeat(){
 
   const beat={
     title:title.value,
+    artwork:uploadedArtwork,
     audio:uploadedAudio,
     licenses:{
       basic:{enabled:basicEnabled.checked,price:basicPrice.value},
