@@ -2,137 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Producer Studio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Producer Studio</title>
 
-<!-- BASIC STYLE (BeatStars-like clean studio) -->
-<style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f0f14;
-  color: #fff;
-}
-.sidebar {
-  width: 220px;
-  background: #15151f;
-  height: 100vh;
-  position: fixed;
-  padding: 20px;
-}
-.sidebar h2 {
-  color: #ff4d4d;
-}
-.sidebar button {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 10px;
-  background: #222;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-}
-.sidebar button:hover {
-  background: #ff4d4d;
-}
-.main {
-  margin-left: 240px;
-  padding: 20px;
-}
-.page {
-  display: none;
-}
-.page.active {
-  display: block;
-}
-input, select, textarea {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  background: #222;
-  border: none;
-  color: #fff;
-}
-button.primary {
-  background: #ff4d4d;
-  border: none;
-  padding: 12px;
-  color: #fff;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.card {
-  background: #1b1b27;
-  padding: 15px;
-  margin: 10px 0;
-  border-radius: 6px;
-}
-</style>
-
-<!-- Cloudinary -->
-<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
-
-<!-- Firebase (COMPAT – STABLE) -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
+<!-- Cloudinary -->
+<script src="https://upload-widget.cloudinary.com/global/all.js"></script>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system}
+body{margin:0;background:#0b0f19;color:#fff}
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#0f1525;padding:20px}
+.logo{color:#ff4d4d;font-weight:700;margin-bottom:30px}
+.nav a{display:block;padding:12px;color:#cbd5e1;text-decoration:none;border-radius:8px;margin-bottom:6px}
+.nav a:hover,.nav a.active{background:#1e293b;color:#fff}
+.main{flex:1;padding:24px;max-width:1200px}
+.card{background:#111827;padding:24px;border-radius:12px;max-width:720px}
+h1{margin-top:0}
+label{display:block;margin-top:16px;color:#9ca3af;font-size:14px}
+input,textarea,select{width:100%;margin-top:6px;padding:12px;border-radius:8px;border:none;background:#1f2937;color:#fff}
+.actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+button{background:#ff4d4d;border:none;padding:12px 18px;border-radius:8px;color:#fff;cursor:pointer}
+.hidden{display:none}
+
+@media(max-width:768px){
+  .app{flex-direction:column}
+  .sidebar{width:100%}
+}
+</style>
 </head>
+
 <body>
+<div class="app">
 
-<div class="sidebar">
-  <h2>Producer Studio</h2>
-  <button onclick="showPage('dashboard')">Dashboard</button>
-  <button onclick="showPage('upload')">Upload</button>
-  <button onclick="showPage('content')">Content</button>
-  <button onclick="logout()">Logout</button>
-</div>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">Producer Studio</div>
+    <nav class="nav">
+      <a onclick="showPage('dashboard')" class="active">Dashboard</a>
+      <a onclick="showPage('upload')">Upload</a>
+      <a onclick="showPage('content')">Content</a>
+      <a onclick="showPage('settings')">Settings</a>
+      <a onclick="logout()">Logout</a>
+    </nav>
+  </aside>
 
-<div class="main">
+  <!-- MAIN -->
+  <main class="main">
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="page active">
-    <h1>Welcome back</h1>
-    <p>This is your producer studio.</p>
-  </div>
+    <!-- DASHBOARD -->
+    <section id="dashboard">
+      <div class="card">
+        <h1>Dashboard</h1>
+        <p>Welcome back. Your latest uploads and sales will appear here.</p>
+      </div>
+    </section>
 
-  <!-- UPLOAD -->
-  <div id="upload" class="page">
-    <h1>Upload New Content</h1>
+    <!-- UPLOAD -->
+    <section id="upload" class="hidden">
+      <div class="card">
+        <h1>Upload New Content</h1>
 
-    <label>Type</label>
-    <select id="type">
-      <option value="beat">Beat</option>
-      <option value="soundkit">Soundkit</option>
-      <option value="service">Service</option>
-    </select>
+        <label>Type</label>
+        <select id="type">
+          <option value="beat">Beat</option>
+          <option value="soundkit">Sound Kit</option>
+          <option value="service">Service</option>
+        </select>
 
-    <label>Title</label>
-    <input id="title" placeholder="Name your product" />
+        <label>Title</label>
+        <input id="title" placeholder="Product title" />
 
-    <label>Description</label>
-    <textarea id="description"></textarea>
+        <label>Description</label>
+        <textarea id="description"></textarea>
 
-    <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
-    <p id="artworkStatus">No artwork</p>
+        <div class="actions">
+          <button onclick="uploadArtwork()">Upload Artwork</button>
+          <button onclick="uploadFile()">Upload File</button>
+          <button onclick="publish()">Publish</button>
+        </div>
 
-    <button class="primary" onclick="uploadAudio()">Upload File</button>
-    <p id="audioStatus">No file</p>
+        <p id="uploadStatus"></p>
+      </div>
+    </section>
 
-    <button class="primary" onclick="publish()">Publish</button>
-  </div>
+    <!-- CONTENT -->
+    <section id="content" class="hidden">
+      <div class="card">
+        <h1>Your Content</h1>
+        <ul id="contentList"></ul>
+      </div>
+    </section>
 
-  <!-- CONTENT -->
-  <div id="content" class="page">
-    <h1>Your Content</h1>
-    <div id="contentList"></div>
-  </div>
+    <!-- SETTINGS -->
+    <section id="settings" class="hidden">
+      <div class="card">
+        <h1>Settings</h1>
 
+        <label>Display Name</label>
+        <input id="displayName" />
+
+        <label>Profile Image</label>
+        <button onclick="uploadAvatar()">Upload Avatar</button>
+
+        <div class="actions">
+          <button onclick="saveProfile()">Save</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
 </div>
 
 <script>
-/* FIREBASE CONFIG */
+/* FIREBASE */
 firebase.initializeApp({
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
@@ -142,95 +130,103 @@ firebase.initializeApp({
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* AUTH GUARD */
-auth.onAuthStateChanged(user => {
-  if (!user) location.href = "login.html";
-  else loadContent();
+auth.onAuthStateChanged(user=>{
+  if(!user) location.href="/login.html";
 });
 
 /* NAV */
-function showPage(id) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-
-/* LOGOUT */
-function logout() {
-  auth.signOut();
+function showPage(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.remove("active"));
 }
 
 /* CLOUDINARY */
-const cloudName = "djd8vkI8s";
-let artworkUrl = null;
-let audioUrl = null;
+const cloudName="djd8vkI8s";
+let artworkURL="", fileURL="";
 
-function uploadArtwork() {
+function uploadArtwork(){
   cloudinary.openUploadWidget({
     cloudName,
-    uploadPreset: "unsigned_images",
-    resourceType: "image"
-  }, (err, res) => {
-    if (!err && res.event === "success") {
-      artworkUrl = res.info.secure_url;
-      artworkStatus.innerText = "Artwork uploaded ✅";
+    uploadPreset:"unsigned_images"
+  },(e,r)=>{
+    if(!e && r.event==="success"){
+      artworkURL=r.info.secure_url;
+      alert("Artwork uploaded");
     }
   });
 }
 
-function uploadAudio() {
+function uploadFile(){
   cloudinary.openUploadWidget({
     cloudName,
-    uploadPreset: "unsigned_audio",
-    resourceType: "video"
-  }, (err, res) => {
-    if (!err && res.event === "success") {
-      audioUrl = res.info.secure_url;
-      audioStatus.innerText = "File uploaded ✅";
+    uploadPreset:"unsigned_audio",
+    resourceType:"auto"
+  },(e,r)=>{
+    if(!e && r.event==="success"){
+      fileURL=r.info.secure_url;
+      alert("File uploaded");
     }
   });
 }
 
-/* SAVE TO FIRESTORE */
-async function publish() {
-  const user = auth.currentUser;
-  if (!audioUrl) return alert("Upload file first");
+/* PUBLISH */
+function publish(){
+  const user=auth.currentUser;
+  if(!user)return;
 
-  await db.collection("content").add({
-    producerId: user.uid,
-    type: type.value,
-    title: title.value,
-    description: description.value,
-    artworkUrl,
-    audioUrl,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  db.collection("content").add({
+    uid:user.uid,
+    type:type.value,
+    title:title.value,
+    description:description.value,
+    artwork:artworkURL,
+    file:fileURL,
+    created:firebase.firestore.FieldValue.serverTimestamp()
+  }).then(()=>{
+    uploadStatus.innerText="Published successfully";
+    loadContent();
   });
-
-  alert("Published successfully");
-  artworkUrl = audioUrl = null;
-  artworkStatus.innerText = "No artwork";
-  audioStatus.innerText = "No file";
-  loadContent();
 }
 
 /* LOAD CONTENT */
-async function loadContent() {
-  const user = auth.currentUser;
-  const snap = await db.collection("content")
-    .where("producerId", "==", user.uid)
-    .get();
+function loadContent(){
+  const user=auth.currentUser;
+  db.collection("content").where("uid","==",user.uid)
+    .onSnapshot(snap=>{
+      contentList.innerHTML="";
+      snap.forEach(d=>{
+        const li=document.createElement("li");
+        li.innerText=d.data().title+" ("+d.data().type+")";
+        contentList.appendChild(li);
+      });
+    });
+}
 
-  contentList.innerHTML = "";
-  snap.forEach(doc => {
-    const d = doc.data();
-    contentList.innerHTML += `
-      <div class="card">
-        <strong>${d.title}</strong>
-        <p>${d.type}</p>
-      </div>
-    `;
+/* SETTINGS */
+function uploadAvatar(){
+  cloudinary.openUploadWidget({
+    cloudName,
+    uploadPreset:"unsigned_images"
+  },(e,r)=>{
+    if(!e && r.event==="success"){
+      db.collection("users").doc(auth.currentUser.uid)
+        .set({avatar:r.info.secure_url},{merge:true});
+    }
   });
 }
-</script>
 
+function saveProfile(){
+  db.collection("users").doc(auth.currentUser.uid)
+    .set({displayName:displayName.value},{merge:true});
+}
+
+/* LOGOUT */
+function logout(){
+  auth.signOut().then(()=>location.href="/login.html");
+}
+
+loadContent();
+</script>
 </body>
 </html>
