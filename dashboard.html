@@ -7,128 +7,7 @@
 
 <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
 
-<!-- ✅ ADDED: Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentUser = null;
-let uploadedAudio = null;
-
-/* ---------------- AUTH ---------------- */
-onAuthStateChanged(auth, user => {
-  if (!user) location.href = "login.html";
-  currentUser = user;
-  loadBeats();
-});
-
-/* ---------------- CLOUDINARY ---------------- */
-window.uploadAudio = function () {
-  cloudinary.openUploadWidget({
-    cloudName: "djd8vki8s", // ✅ YOUR CLOUD
-    uploadPreset: "unsigned_audio",
-    resourceType: "video"
-  }, (err, res) => {
-    if (res?.event === "success") {
-      uploadedAudio = res.info.secure_url;
-      alert("Audio uploaded successfully");
-    }
-  });
-};
-
-/* ---------------- SAVE BEAT ---------------- */
-window.publishBeat = async function () {
-  if (!uploadedAudio) return alert("Upload audio first");
-
-  const beat = {
-    producerId: currentUser.uid,
-    title: title.value,
-    description: desc.value,
-    bpm: bpm.value,
-    key: key.value,
-    audioUrl: uploadedAudio,
-
-    licenses: {
-      basic: { enabled: basicEnabled.checked, price: Number(basicPrice.value) },
-      premium: { enabled: premiumEnabled.checked, price: Number(premiumPrice.value) },
-      exclusive: { enabled: exclusiveEnabled.checked, price: Number(exclusivePrice.value) }
-    },
-
-    freeDownload: freeDownload.checked,
-    bulkDiscount: bulkDiscount.checked,
-    createdAt: serverTimestamp()
-  };
-
-  await addDoc(collection(db, "beats"), beat);
-  alert("Beat published successfully");
-  loadBeats();
-};
-
-/* ---------------- LOAD TRACKS ---------------- */
-async function loadBeats() {
-  if (!currentUser) return;
-
-  const q = query(
-    collection(db, "beats"),
-    where("producerId", "==", currentUser.uid)
-  );
-
-  const snap = await getDocs(q);
-  beats.innerHTML = "";
-
-  snap.forEach(doc => {
-    const b = doc.data();
-    beats.innerHTML += `
-      <div class="card">
-        <strong>${b.title}</strong>
-        <p>
-          MP3: ${b.licenses.basic.enabled ? "$" + b.licenses.basic.price : "Off"} |
-          WAV: ${b.licenses.premium.enabled ? "$" + b.licenses.premium.price : "Off"} |
-          EXCL: ${b.licenses.exclusive.enabled ? "$" + b.licenses.exclusive.price : "Off"}
-        </p>
-      </div>
-    `;
-  });
-}
-
-/* ---------------- UI ---------------- */
-window.toggleMenu = function () {
-  document.getElementById("sidebar").classList.toggle("open");
-};
-
-window.showPage = function (id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
-  document.getElementById("sidebar").classList.remove("open");
-};
-</script>
-
 <style>
-/* ⬅️ YOUR ORIGINAL CSS — UNTOUCHED */
 body {
   margin:0;
   font-family:Inter,system-ui;
@@ -178,12 +57,11 @@ input,textarea {
 .toggle {
   display:flex;align-items:center;justify-content:space-between;margin:10px 0;
 }
-.price {
-  width:120px;
-}
+.price {width:120px;}
 button.primary {
   background:#3b82f6;border:none;padding:12px;border-radius:10px;color:#fff;
 }
+
 @media(max-width:900px){
   nav{display:none;position:fixed;height:100%;background:#070a12;z-index:10;}
   nav.open{display:block;}
@@ -192,6 +70,7 @@ button.primary {
 </head>
 
 <body>
+
 <header>
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
   <strong>Producer Studio</strong>
@@ -208,23 +87,72 @@ button.primary {
 
 <main>
 
+<!-- DASHBOARD -->
 <section id="dashboard" class="page active">
   <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
 </section>
 
+<!-- UPLOAD BEAT (FIXED) -->
 <section id="upload" class="page">
-  <!-- ⬅️ YOUR ORIGINAL UPLOAD FORM — UNTOUCHED -->
-  <!-- Already wired -->
-</section>
 
-<section id="tracks" class="page">
   <div class="card">
-    <h2>Your Beats</h2>
-    <div id="beats"></div>
+    <h2>Upload Beat</h2>
+
+    <h3>Basic Info</h3>
+    <input id="title" placeholder="Track title">
+    <textarea id="desc" placeholder="Description"></textarea>
+
+    <h3>Metadata</h3>
+    <input id="bpm" placeholder="BPM">
+    <input id="key" placeholder="Key">
+
+    <h3>Audio File</h3>
+    <button class="primary" onclick="uploadAudio()">Upload Audio</button>
   </div>
+
+  <div class="card">
+    <h2>Monetization</h2>
+
+    <div class="toggle">
+      <label>Basic License (MP3)</label>
+      <input type="checkbox" id="basicEnabled" checked>
+      <input class="price" id="basicPrice" value="29.99">
+    </div>
+
+    <div class="toggle">
+      <label>Premium License (WAV)</label>
+      <input type="checkbox" id="premiumEnabled">
+      <input class="price" id="premiumPrice" value="79.99">
+    </div>
+
+    <div class="toggle">
+      <label>Exclusive License</label>
+      <input type="checkbox" id="exclusiveEnabled">
+      <input class="price" id="exclusivePrice" value="299.99">
+    </div>
+
+    <div class="toggle">
+      <label>Enable free download</label>
+      <input type="checkbox" id="freeDownload">
+    </div>
+
+    <div class="toggle">
+      <label>Include in bulk discounts</label>
+      <input type="checkbox" id="bulkDiscount">
+    </div>
+
+    <button class="primary" onclick="publishBeat()">Publish Beat</button>
+  </div>
+
 </section>
 
+<!-- TRACKS -->
+<section id="tracks" class="page">
+  <div class="card"><h2>Your Beats</h2><div id="beats"></div></div>
+</section>
+
+<!-- FINANCE -->
 <section id="finance" class="page">
   <div class="card">
     <h2>Payouts</h2>
@@ -235,5 +163,57 @@ button.primary {
 
 </main>
 </div>
+
+<script>
+let uploadedAudio = null;
+
+function toggleMenu(){
+  document.getElementById("sidebar").classList.toggle("open");
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+  document.getElementById("sidebar").classList.remove("open");
+}
+
+function uploadAudio(){
+  cloudinary.openUploadWidget({
+    cloudName:"YOUR_CLOUD_NAME",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
+  },(err,res)=>{
+    if(res?.event==="success"){
+      uploadedAudio=res.info.secure_url;
+      alert("Audio uploaded");
+    }
+  });
+}
+
+function publishBeat(){
+  if(!uploadedAudio) return alert("Upload audio first");
+
+  const beat={
+    title:title.value,
+    description:desc.value,
+    bpm:bpm.value,
+    key:key.value,
+    audio:uploadedAudio,
+    licenses:{
+      basic:{enabled:basicEnabled.checked,price:basicPrice.value},
+      premium:{enabled:premiumEnabled.checked,price:premiumPrice.value},
+      exclusive:{enabled:exclusiveEnabled.checked,price:exclusivePrice.value}
+    },
+    freeDownload:freeDownload.checked,
+    bulkDiscount:bulkDiscount.checked
+  };
+
+  console.log("READY FOR FIRESTORE:",beat);
+  alert("Beat ready (connect Firestore next)");
+}
+</script>
+
 </body>
 </html>
