@@ -2,188 +2,205 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Producer Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #0f0f14;
-  color: #fff;
-}
-header {
-  padding: 15px;
-  background: #161622;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-main {
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
-}
-.card {
-  background: #1c1c2b;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-input, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 6px;
-  border: none;
-}
-button {
-  background: #6c5ce7;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-.license-item {
-  background: #2a2a3d;
-  padding: 10px;
-  margin-top: 8px;
-  border-radius: 6px;
-}
+*{box-sizing:border-box;font-family:Inter}
+body{margin:0;background:#0b0d12;color:#fff;display:flex;min-height:100vh}
+.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230}
+.sidebar h1{font-size:20px;margin-bottom:20px;color:#6cf}
+.sidebar a{display:block;padding:12px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;cursor:pointer}
+.sidebar a:hover{background:#1b2133;color:#fff}
+.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
+.topbar{height:70px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
+.content{padding:26px}
+.page{display:none}
+.page.active{display:block}
+.card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+input,textarea,select{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;background:#0f1219;color:#fff;margin-top:10px}
+button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000;margin-top:10px}
+.beat{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #1d2230}
+@media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>Producer Dashboard</h2>
-  <button onclick="logout()">Logout</button>
-</header>
-
-<main>
-
-<!-- UPLOAD BEAT -->
-<div class="card">
-  <h3>Upload Beat</h3>
-
-  <input id="beatTitle" placeholder="Beat Title" />
-
-  <input id="audioUrl" placeholder="Audio URL (Cloudinary)" />
-  <input id="artworkUrl" placeholder="Artwork URL (Cloudinary)" />
-
-  <h4>Attach Licenses</h4>
-  <div id="licenseList"></div>
-
-  <button onclick="publishBeat()">Publish Beat</button>
+<div class="sidebar">
+  <h1>ProdByBigi</h1>
+  <a onclick="showPage('dashboard')">Dashboard</a>
+  <a onclick="showPage('tracks')">Content</a>
+  <a onclick="showPage('licenses')">Licenses</a>
+  <a onclick="showPage('finance')">Finance</a>
+  <a onclick="showPage('analytics')">Analytics</a>
+  <a onclick="showPage('settings')">Settings</a>
+  <a onclick="showPage('upgrade')">Upgrade</a>
 </div>
 
-<!-- MY BEATS -->
-<div class="card">
-  <h3>My Beats</h3>
-  <div id="myBeats"></div>
+<div class="main">
+  <div class="topbar">
+    <strong id="pageTitle">Dashboard</strong>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="page active">
+      <div class="grid">
+        <div class="card"><h3>Sales</h3><p id="salesTotal">$0</p></div>
+        <div class="card"><h3>Beats</h3><p id="beatsCount">0</p></div>
+        <div class="card"><h3>Licenses</h3><p id="licensesCount">0</p></div>
+      </div>
+    </div>
+
+    <!-- TRACKS -->
+    <div id="tracks" class="page">
+      <div class="card">
+        <h3>Upload Beat</h3>
+        <input id="beatTitle" placeholder="Title" />
+        <input id="beatPrice" type="number" placeholder="Price" />
+        <select id="licenseSelect" multiple></select>
+        <button onclick="uploadBeat()">Upload</button>
+      </div>
+
+      <div class="card">
+        <h3>Your Beats</h3>
+        <div id="beatList"></div>
+      </div>
+    </div>
+
+    <!-- LICENSES -->
+    <div id="licenses" class="page">
+      <div class="card">
+        <h3>Create License</h3>
+        <input id="licenseName" placeholder="License Name" />
+        <input id="licensePrice" type="number" placeholder="Price" />
+        <textarea id="licenseTerms" placeholder="Terms"></textarea>
+        <button onclick="createLicense()">Create License</button>
+      </div>
+
+      <div class="card">
+        <h3>Your Licenses</h3>
+        <div id="licenseList"></div>
+      </div>
+    </div>
+
+    <!-- FINANCE -->
+    <div id="finance" class="page">
+      <div class="card">
+        <h3>Balance</h3>
+        <p>$0.00</p>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="analytics" class="page">
+      <div class="card">
+        <h3>Analytics</h3>
+        <p>Upgrade to Pro to unlock advanced analytics</p>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="settings" class="page">
+      <div class="card">
+        <h3>Profile</h3>
+        <input id="displayName" placeholder="Display Name" />
+        <button onclick="saveProfile()">Save</button>
+      </div>
+    </div>
+
+    <!-- UPGRADE -->
+    <div id="upgrade" class="page">
+      <div class="card">
+        <h3>Upgrade to Pro</h3>
+        <p>Unlock analytics, discounts, pro tools.</p>
+      </div>
+    </div>
+
+  </div>
 </div>
 
-</main>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js";
 
-<script>
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
   projectId: "prodbybigi"
 };
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    window.location.href = "login.html";
-  } else {
-    loadLicenses();
-    loadBeats();
-  }
+let uid = null;
+
+onAuthStateChanged(auth, user => {
+  if (!user) location.href = "login.html";
+  uid = user.uid;
+  loadBeats();
+  loadLicenses();
 });
 
-function logout() {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
+window.logout = () => signOut(auth).then(()=>location.href="login.html");
+
+window.showPage = id => {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  pageTitle.textContent = id.charAt(0).toUpperCase()+id.slice(1);
+};
+
+async function uploadBeat(){
+  await addDoc(collection(db,"beats"),{
+    title:beatTitle.value,
+    price:+beatPrice.value,
+    producerId:uid,
+    licenses:Array.from(licenseSelect.selectedOptions).map(o=>o.value),
+    createdAt:Date.now()
+  });
+  loadBeats();
+}
+
+async function loadBeats(){
+  beatList.innerHTML="";
+  const q=query(collection(db,"beats"),where("producerId","==",uid));
+  const snap=await getDocs(q);
+  beatsCount.textContent=snap.size;
+  snap.forEach(d=>{
+    beatList.innerHTML+=`<div class="beat">${d.data().title}</div>`;
   });
 }
 
-// LOAD LICENSES
-function loadLicenses() {
-  const container = document.getElementById("licenseList");
-  container.innerHTML = "";
-
-  db.collection("licenses")
-    .where("uid", "==", auth.currentUser.uid)
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        const l = doc.data();
-        container.innerHTML += `
-          <div class="license-item">
-            <label>
-              <input type="checkbox" value="${doc.id}" />
-              ${l.name} — $${l.price}
-            </label>
-          </div>
-        `;
-      });
-    });
-}
-
-// PUBLISH BEAT
-function publishBeat() {
-  const title = document.getElementById("beatTitle").value;
-  const audioUrl = document.getElementById("audioUrl").value;
-  const artworkUrl = document.getElementById("artworkUrl").value;
-
-  const licenseIds = [];
-  document.querySelectorAll("#licenseList input:checked")
-    .forEach(cb => licenseIds.push(cb.value));
-
-  if (!title || !audioUrl || licenseIds.length === 0) {
-    alert("Fill all fields & select at least one license");
-    return;
-  }
-
-  db.collection("beats").add({
-    uid: auth.currentUser.uid,
-    title,
-    audioUrl,
-    artworkUrl,
-    licenseIds,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  }).then(() => {
-    alert("Beat uploaded");
-    loadBeats();
+async function createLicense(){
+  await addDoc(collection(db,"licenses"),{
+    name:licenseName.value,
+    price:+licensePrice.value,
+    terms:licenseTerms.value,
+    producerId:uid,
+    createdAt:Date.now()
   });
+  loadLicenses();
 }
 
-// LOAD BEATS
-function loadBeats() {
-  const container = document.getElementById("myBeats");
-  container.innerHTML = "";
-
-  db.collection("beats")
-    .where("uid", "==", auth.currentUser.uid)
-    .get()
-    .then(snapshot => {
-      snapshot.forEach(doc => {
-        const b = doc.data();
-        container.innerHTML += `
-          <div class="license-item">
-            <strong>${b.title}</strong><br>
-            Licenses attached: ${b.licenseIds.length}
-          </div>
-        `;
-      });
-    });
+async function loadLicenses(){
+  licenseList.innerHTML="";
+  licenseSelect.innerHTML="";
+  const q=query(collection(db,"licenses"),where("producerId","==",uid));
+  const snap=await getDocs(q);
+  licensesCount.textContent=snap.size;
+  snap.forEach(d=>{
+    licenseList.innerHTML+=`<div class="beat">${d.data().name}</div>`;
+    licenseSelect.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
+  });
 }
 </script>
 
