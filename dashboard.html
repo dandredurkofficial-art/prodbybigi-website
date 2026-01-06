@@ -9,41 +9,87 @@
 
 <style>
 *{box-sizing:border-box;font-family:Inter}
-body{margin:0;background:#0b0d12;color:#fff;display:flex;min-height:100vh}
-.sidebar{width:260px;background:#0f1219;padding:22px;position:fixed;left:0;top:0;bottom:0;border-right:1px solid #1d2230}
+body{margin:0;background:#0b0d12;color:#fff;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:260px;
+  background:#0f1219;
+  padding:22px;
+  position:fixed;
+  left:0;top:0;bottom:0;
+  border-right:1px solid #1d2230;
+  z-index:1000;
+}
 .sidebar h1{font-size:20px;margin-bottom:20px;color:#6cf}
-.sidebar a{display:block;padding:12px;border-radius:12px;color:#b8c1d9;text-decoration:none;margin-bottom:6px;cursor:pointer}
+.sidebar a{
+  display:block;padding:12px;border-radius:12px;
+  color:#b8c1d9;text-decoration:none;margin-bottom:6px;cursor:pointer
+}
 .sidebar a:hover{background:#1b2133;color:#fff}
-.main{flex:1;margin-left:260px;display:flex;flex-direction:column}
-.topbar{height:70px;background:#0f1219;border-bottom:1px solid #1d2230;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+
+/* MOBILE SIDEBAR */
+.sidebar.mobile-hidden{transform:translateX(-100%)}
+.sidebar.mobile-show{transform:translateX(0)}
+.sidebar{transition:transform .3s ease}
+
+/* MAIN */
+.main{margin-left:260px;min-height:100vh}
+.topbar{
+  height:70px;background:#0f1219;border-bottom:1px solid #1d2230;
+  display:flex;align-items:center;justify-content:space-between;padding:0 18px
+}
+.menu-btn{
+  display:none;
+  font-size:22px;
+  background:none;
+  border:none;
+  color:#fff;
+  cursor:pointer;
+}
 .logout{background:#ef4444;border:none;padding:8px 14px;border-radius:10px;font-weight:600;color:#fff;cursor:pointer}
 .content{padding:26px}
+
+/* PAGES */
 .page{display:none}
 .page.active{display:block}
-.card{background:#121726;border:1px solid #1d2230;border-radius:18px;padding:22px;margin-bottom:22px}
+.card{
+  background:#121726;border:1px solid #1d2230;
+  border-radius:18px;padding:22px;margin-bottom:22px
+}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
-input,textarea,select{width:100%;padding:11px;border-radius:10px;border:1px solid #1d2230;background:#0f1219;color:#fff;margin-top:10px}
+input,textarea,select{
+  width:100%;padding:11px;border-radius:10px;
+  border:1px solid #1d2230;background:#0f1219;color:#fff;margin-top:10px
+}
 button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-weight:700;cursor:pointer;color:#000;margin-top:10px}
 .beat{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid #1d2230}
-@media(max-width:900px){.sidebar{display:none}.main{margin-left:0}}
+
+/* MOBILE */
+@media(max-width:900px){
+  .main{margin-left:0}
+  .menu-btn{display:block}
+}
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
+<!-- SIDEBAR -->
+<div id="sidebar" class="sidebar mobile-hidden">
   <h1>ProdByBigi</h1>
-  <a onclick="showPage('dashboard')">Dashboard</a>
-  <a onclick="showPage('tracks')">Content</a>
-  <a onclick="showPage('licenses')">Licenses</a>
-  <a onclick="showPage('finance')">Finance</a>
-  <a onclick="showPage('analytics')">Analytics</a>
-  <a onclick="showPage('settings')">Settings</a>
-  <a onclick="showPage('upgrade')">Upgrade</a>
+  <a onclick="nav('dashboard')">Dashboard</a>
+  <a onclick="nav('tracks')">Content</a>
+  <a onclick="nav('licenses')">Licenses</a>
+  <a onclick="nav('finance')">Finance</a>
+  <a onclick="nav('analytics')">Analytics</a>
+  <a onclick="nav('settings')">Settings</a>
+  <a onclick="nav('upgrade')">Upgrade</a>
 </div>
 
 <div class="main">
   <div class="topbar">
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
     <strong id="pageTitle">Dashboard</strong>
     <button class="logout" onclick="logout()">Logout</button>
   </div>
@@ -63,12 +109,11 @@ button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-wei
     <div id="tracks" class="page">
       <div class="card">
         <h3>Upload Beat</h3>
-        <input id="beatTitle" placeholder="Title" />
-        <input id="beatPrice" type="number" placeholder="Price" />
+        <input id="beatTitle" placeholder="Title">
+        <input id="beatPrice" type="number" placeholder="Price">
         <select id="licenseSelect" multiple></select>
         <button onclick="uploadBeat()">Upload</button>
       </div>
-
       <div class="card">
         <h3>Your Beats</h3>
         <div id="beatList"></div>
@@ -79,62 +124,44 @@ button{background:#6cf;border:none;padding:10px 16px;border-radius:12px;font-wei
     <div id="licenses" class="page">
       <div class="card">
         <h3>Create License</h3>
-        <input id="licenseName" placeholder="License Name" />
-        <input id="licensePrice" type="number" placeholder="Price" />
+        <input id="licenseName" placeholder="License Name">
+        <input id="licensePrice" type="number" placeholder="Price">
         <textarea id="licenseTerms" placeholder="Terms"></textarea>
         <button onclick="createLicense()">Create License</button>
       </div>
-
-      <div class="card">
-        <h3>Your Licenses</h3>
-        <div id="licenseList"></div>
-      </div>
+      <div class="card"><h3>Your Licenses</h3><div id="licenseList"></div></div>
     </div>
 
-    <!-- FINANCE (REAL) -->
+    <!-- FINANCE -->
     <div id="finance" class="page">
       <div class="grid">
-        <div class="card">
-          <h3>Available Balance</h3>
-          <p id="financeBalance">$0.00</p>
-        </div>
-
+        <div class="card"><h3>Available Balance</h3><p id="financeBalance">$0.00</p></div>
         <div class="card">
           <h3>Request Payout</h3>
-          <input id="payoutAmount" type="number" placeholder="Amount" />
-          <button onclick="requestPayout()">Request Payout</button>
+          <input id="payoutAmount" type="number">
+          <button onclick="requestPayout()">Request</button>
         </div>
       </div>
-
-      <div class="card">
-        <h3>Payout History</h3>
-        <div id="payoutList"></div>
-      </div>
+      <div class="card"><h3>Payout History</h3><div id="payoutList"></div></div>
     </div>
 
     <!-- ANALYTICS -->
     <div id="analytics" class="page">
-      <div class="card">
-        <h3>Analytics</h3>
-        <p>Upgrade to Pro to unlock advanced analytics</p>
-      </div>
+      <div class="card">Upgrade to Pro to unlock analytics</div>
     </div>
 
     <!-- SETTINGS -->
     <div id="settings" class="page">
       <div class="card">
         <h3>Profile</h3>
-        <input id="displayName" placeholder="Display Name" />
+        <input id="displayName" placeholder="Display Name">
         <button onclick="saveProfile()">Save</button>
       </div>
     </div>
 
     <!-- UPGRADE -->
     <div id="upgrade" class="page">
-      <div class="card">
-        <h3>Upgrade to Pro</h3>
-        <p>Unlock analytics, discounts, pro tools.</p>
-      </div>
+      <div class="card">Upgrade to Pro</div>
     </div>
 
   </div>
@@ -155,105 +182,22 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let uid = null;
-let availableBalance = 0;
+let uid=null,availableBalance=0;
 
-onAuthStateChanged(auth, async user => {
-  if (!user) location.href = "login.html";
-  uid = user.uid;
-  await loadBeats();
-  await loadLicenses();
-  await loadFinance();
-});
+onAuthStateChanged(auth,u=>{if(!u)location.href="login.html";uid=u.uid;loadBeats();loadLicenses();loadFinance();});
 
-window.logout = () => signOut(auth).then(()=>location.href="login.html");
+window.logout=()=>signOut(auth).then(()=>location.href="login.html");
 
-window.showPage = id => {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  pageTitle.textContent = id.charAt(0).toUpperCase()+id.slice(1);
+window.toggleMenu=()=>{
+  sidebar.classList.toggle('mobile-show');
+  sidebar.classList.toggle('mobile-hidden');
 };
 
-async function uploadBeat(){
-  await addDoc(collection(db,"beats"),{
-    title:beatTitle.value,
-    price:+beatPrice.value,
-    producerId:uid,
-    licenses:Array.from(licenseSelect.selectedOptions).map(o=>o.value),
-    createdAt:serverTimestamp()
-  });
-  loadBeats();
-}
-
-async function loadBeats(){
-  beatList.innerHTML="";
-  const q=query(collection(db,"beats"),where("producerId","==",uid));
-  const snap=await getDocs(q);
-  beatsCount.textContent=snap.size;
-  snap.forEach(d=>{
-    beatList.innerHTML+=`<div class="beat">${d.data().title}</div>`;
-  });
-}
-
-async function createLicense(){
-  await addDoc(collection(db,"licenses"),{
-    name:licenseName.value,
-    price:+licensePrice.value,
-    terms:licenseTerms.value,
-    producerId:uid,
-    createdAt:serverTimestamp()
-  });
-  loadLicenses();
-}
-
-async function loadLicenses(){
-  licenseList.innerHTML="";
-  licenseSelect.innerHTML="";
-  const q=query(collection(db,"licenses"),where("producerId","==",uid));
-  const snap=await getDocs(q);
-  snap.forEach(d=>{
-    licenseList.innerHTML+=`<div class="beat">${d.data().name}</div>`;
-    licenseSelect.innerHTML+=`<option value="${d.id}">${d.data().name}</option>`;
-  });
-}
-
-async function loadFinance(){
-  let totalSales = 0;
-  let totalPaid = 0;
-
-  const ordersSnap = await getDocs(query(collection(db,"orders"),where("producerId","==",uid)));
-  ordersSnap.forEach(o=>totalSales += o.data().amount);
-
-  const payoutsSnap = await getDocs(query(collection(db,"payouts"),where("producerId","==",uid), where("status","==","paid")));
-  payoutsSnap.forEach(p=>totalPaid += p.data().amount);
-
-  availableBalance = totalSales - totalPaid;
-
-  salesTotal.textContent = `$${totalSales.toFixed(2)}`;
-  availableBalanceEl.textContent = `$${availableBalance.toFixed(2)}`;
-  financeBalance.textContent = `$${availableBalance.toFixed(2)}`;
-
-  payoutList.innerHTML="";
-  const allPayouts = await getDocs(query(collection(db,"payouts"),where("producerId","==",uid)));
-  allPayouts.forEach(p=>{
-    payoutList.innerHTML += `<div class="beat">$${p.data().amount} – ${p.data().status}</div>`;
-  });
-}
-
-window.requestPayout = async () => {
-  const amount = +payoutAmount.value;
-  if (amount <= 0 || amount > availableBalance) {
-    alert("Invalid amount");
-    return;
-  }
-  await addDoc(collection(db,"payouts"),{
-    producerId:uid,
-    amount,
-    status:"pending",
-    createdAt:serverTimestamp()
-  });
-  payoutAmount.value="";
-  loadFinance();
+window.nav=id=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  pageTitle.textContent=id.charAt(0).toUpperCase()+id.slice(1);
+  if(innerWidth<900) toggleMenu();
 };
 </script>
 
