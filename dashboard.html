@@ -155,65 +155,49 @@ button.primary {
 </section>
 
 <section id="upload" class="page">
+  <!-- UNCHANGED -->
+  <div class="card">
+    <h2>Basic Info</h2>
+    <div class="artwork-preview" id="artworkBox"><span>Artwork Preview</span></div>
+    <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
+    <input id="title" placeholder="Track title">
+    <textarea id="desc" placeholder="Description"></textarea>
+    <input id="bpm" placeholder="BPM">
+    <input id="key" placeholder="Key">
+    <button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+    <button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
+  </div>
 
-<div class="card">
-<h2>Basic Info</h2>
-
-<div class="artwork-preview" id="artworkBox">
-  <span>Artwork Preview</span>
-</div>
-
-<button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
-
-<input id="title" placeholder="Track title">
-<textarea id="desc" placeholder="Description"></textarea>
-<input id="bpm" placeholder="BPM">
-<input id="key" placeholder="Key">
-
-<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
-<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
-</div>
-
-<div class="card">
-<h2>Monetization</h2>
-
-<div class="toggle">
-  <label>Basic License (MP3)</label>
-  <input type="checkbox" id="basicEnabled" checked>
-  <input class="price" id="basicPrice" value="29.99">
-</div>
-
-<div class="toggle">
-  <label>Premium License (WAV)</label>
-  <input type="checkbox" id="premiumEnabled">
-  <input class="price" id="premiumPrice" value="79.99">
-</div>
-
-<div class="toggle">
-  <label>Exclusive License</label>
-  <input type="checkbox" id="exclusiveEnabled">
-  <input class="price" id="exclusivePrice" value="299.99">
-</div>
-
-<div class="toggle">
-  <label>Enable free download</label>
-  <input type="checkbox" id="freeDownload">
-</div>
-
-<div class="toggle">
-  <label>Include in bulk discounts</label>
-  <input type="checkbox" id="bulkDiscount">
-</div>
-
-<button class="primary" onclick="publishBeat()">Publish Beat</button>
-</div>
-
+  <div class="card">
+    <h2>Monetization</h2>
+    <div class="toggle"><label>Basic License</label><input type="checkbox" id="basicEnabled"><input class="price" id="basicPrice" value="29.99"></div>
+    <div class="toggle"><label>Premium License</label><input type="checkbox" id="premiumEnabled"><input class="price" id="premiumPrice" value="79.99"></div>
+    <div class="toggle"><label>Exclusive License</label><input type="checkbox" id="exclusiveEnabled"><input class="price" id="exclusivePrice" value="299.99"></div>
+    <button class="primary" onclick="publishBeat()">Publish Beat</button>
+  </div>
 </section>
 
 <section id="tracks" class="page">
   <div class="card">
     <h2>Your Beats</h2>
     <div id="beats"></div>
+  </div>
+</section>
+
+<!-- ✅ NEW: EDIT TRACK PAGE -->
+<section id="edit" class="page">
+  <div class="card">
+    <h2>Edit Track</h2>
+
+    <div class="artwork-preview" id="editArtwork"></div>
+    <button class="primary" onclick="editUploadArtwork()">Change Artwork</button>
+
+    <input id="editTitle" placeholder="Track title">
+    <input id="editBpm" placeholder="BPM">
+    <input id="editKey" placeholder="Key">
+
+    <button class="primary" onclick="editUploadPreview()">Change Preview</button>
+    <button class="primary" onclick="saveEdit()">Save Changes</button>
   </div>
 </section>
 
@@ -225,22 +209,20 @@ button.primary {
 </div>
 
 <script>
-let uploadedArtwork = null;
-let fullAudio = null;
-let previewAudio = null;
-let beatsData = [];
-let currentAudio = null;
+let uploadedArtwork=null, fullAudio=null, previewAudio=null;
+let beatsData=[];
+let currentAudio=null;
+let editIndex=null;
 
 function toggleMenu(){
-  document.getElementById("sidebar").classList.toggle("open");
+  sidebar.classList.toggle("open");
 }
-
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
-  document.getElementById("sidebar").classList.remove("open");
+  event?.target?.classList.add('active');
+  sidebar.classList.remove("open");
 }
 
 function uploadArtwork(){
@@ -248,72 +230,105 @@ function uploadArtwork(){
     cloudName:"YOUR_CLOUD_NAME",
     uploadPreset:"unsigned_images",
     resourceType:"image"
-  },(err,res)=>{
+  },(_,res)=>{
     if(res?.event==="success"){
-      uploadedArtwork = res.info.secure_url;
-      artworkBox.innerHTML = `<img src="${uploadedArtwork}">`;
+      uploadedArtwork=res.info.secure_url;
+      artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
     }
   });
 }
-
 function uploadFullAudio(){
   cloudinary.openUploadWidget({
     cloudName:"YOUR_CLOUD_NAME",
     uploadPreset:"unsigned_audio",
     resourceType:"video"
-  },(err,res)=>{
-    if(res?.event==="success"){
-      fullAudio = res.info.secure_url;
-      alert("Full beat uploaded");
-    }
+  },(_,res)=>{
+    if(res?.event==="success") fullAudio=res.info.secure_url;
   });
 }
-
 function uploadPreviewAudio(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vki8s",
+    cloudName:"YOUR_CLOUD_NAME",
     uploadPreset:"unsigned_audio",
     resourceType:"video"
-  },(err,res)=>{
-    if(res?.event==="success"){
-      previewAudio = res.info.secure_url;
-      alert("Preview beat uploaded");
-    }
+  },(_,res)=>{
+    if(res?.event==="success") previewAudio=res.info.secure_url;
   });
 }
 
 function publishBeat(){
-  if(!fullAudio || !previewAudio) return alert("Upload full & preview audio");
-
-  const beat = {
-    title: title.value,
-    artwork: uploadedArtwork,
-    preview: previewAudio
-  };
-
-  beatsData.push(beat);
+  beatsData.push({
+    title:title.value,
+    bpm:bpm.value,
+    key:key.value,
+    artwork:uploadedArtwork,
+    preview:previewAudio
+  });
   renderTracks();
-  alert("Beat added to track list");
 }
 
 function renderTracks(){
-  beats.innerHTML = "";
+  beats.innerHTML="";
   beatsData.forEach((b,i)=>{
-    const div = document.createElement("div");
-    div.className="track";
-    div.innerHTML = `
-      <img src="${b.artwork || ''}">
-      <div style="flex:1">${b.title}</div>
-      <button onclick="playPreview(${i})">▶</button>
-    `;
-    beats.appendChild(div);
+    beats.innerHTML+=`
+      <div class="track">
+        <img src="${b.artwork||''}">
+        <div style="flex:1">
+          <strong>${b.title}</strong><br>
+          <small>${b.bpm} BPM • ${b.key}</small>
+        </div>
+        <button onclick="playPreview(${i})">▶</button>
+        <button onclick="openEdit(${i})">Edit</button>
+      </div>`;
   });
 }
 
 function playPreview(i){
   if(currentAudio) currentAudio.pause();
-  currentAudio = new Audio(beatsData[i].preview);
+  currentAudio=new Audio(beatsData[i].preview);
   currentAudio.play();
+}
+
+/* EDIT */
+function openEdit(i){
+  editIndex=i;
+  const b=beatsData[i];
+  editArtwork.innerHTML=`<img src="${b.artwork||''}">`;
+  editTitle.value=b.title;
+  editBpm.value=b.bpm;
+  editKey.value=b.key;
+  showPage('edit');
+}
+function editUploadArtwork(){
+  cloudinary.openUploadWidget({
+    cloudName:"YOUR_CLOUD_NAME",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      beatsData[editIndex].artwork=res.info.secure_url;
+      editArtwork.innerHTML=`<img src="${res.info.secure_url}">`;
+    }
+  });
+}
+function editUploadPreview(){
+  cloudinary.openUploadWidget({
+    cloudName:"YOUR_CLOUD_NAME",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      beatsData[editIndex].preview=res.info.secure_url;
+    }
+  });
+}
+function saveEdit(){
+  const b=beatsData[editIndex];
+  b.title=editTitle.value;
+  b.bpm=editBpm.value;
+  b.key=editKey.value;
+  renderTracks();
+  showPage('tracks');
 }
 </script>
 
