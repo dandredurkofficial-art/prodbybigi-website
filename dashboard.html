@@ -2,256 +2,189 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Producer Studio</title>
+<title>Producer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
 
 <style>
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:system-ui, sans-serif;
-  background:#0b1020;
-  color:#fff;
-  display:flex;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f0f14;
+  color: #fff;
 }
-
-/* SIDEBAR */
-.sidebar{
-  width:240px;
-  background:#0f172a;
-  padding:20px;
-  height:100vh;
+header {
+  padding: 15px;
+  background: #161622;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.sidebar h2{
-  margin:0 0 20px;
-  color:#38bdf8;
+main {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
 }
-.sidebar a{
-  display:block;
-  padding:10px;
-  margin-bottom:6px;
-  color:#cbd5f5;
-  text-decoration:none;
-  border-radius:6px;
-  cursor:pointer;
+.card {
+  background: #1c1c2b;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
-.sidebar a:hover{
-  background:#1e293b;
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 6px;
+  border: none;
 }
-
-/* MAIN */
-.main{
-  flex:1;
-  padding:20px;
-  overflow-y:auto;
+button {
+  background: #6c5ce7;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
 }
-.hidden{display:none}
-
-/* CARD */
-.card{
-  background:#020617;
-  padding:20px;
-  border-radius:12px;
-  max-width:700px;
-}
-input{
-  width:100%;
-  padding:10px;
-  margin:8px 0 16px;
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:6px;
-  color:white;
-}
-label{display:block;margin-top:8px;color:#94a3b8}
-button{
-  padding:10px 14px;
-  background:#38bdf8;
-  color:black;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-}
-button:hover{opacity:.85}
-ul{list-style:none;padding:0}
-li{
-  background:#020617;
-  border:1px solid #1e293b;
-  padding:12px;
-  border-radius:8px;
-  margin-bottom:10px;
-}
-small{color:#94a3b8}
-
-/* MOBILE */
-@media(max-width:768px){
-  body{flex-direction:column}
-  .sidebar{width:100%;height:auto}
+.license-item {
+  background: #2a2a3d;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>Producer Studio</h2>
-  <a onclick="showPage('dashboard')">Dashboard</a>
-  <a onclick="showPage('upload')">Upload</a>
-  <a onclick="showPage('content')">Content</a>
-  <a onclick="showPage('licenses')">Licenses</a>
-  <a onclick="showPage('settings')">Settings</a>
-  <a onclick="logout()">Logout</a>
+<header>
+  <h2>Producer Dashboard</h2>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<main>
+
+<!-- UPLOAD BEAT -->
+<div class="card">
+  <h3>Upload Beat</h3>
+
+  <input id="beatTitle" placeholder="Beat Title" />
+
+  <input id="audioUrl" placeholder="Audio URL (Cloudinary)" />
+  <input id="artworkUrl" placeholder="Artwork URL (Cloudinary)" />
+
+  <h4>Attach Licenses</h4>
+  <div id="licenseList"></div>
+
+  <button onclick="publishBeat()">Publish Beat</button>
 </div>
 
-<!-- MAIN -->
-<div class="main">
-
-<!-- DASHBOARD -->
-<section id="dashboard">
-  <h1>Dashboard</h1>
-  <p>Welcome back. Your studio is ready.</p>
-</section>
-
-<!-- UPLOAD -->
-<section id="upload" class="hidden">
-  <h1>Upload</h1>
-  <p>Beat / Sound Kit / Service upload coming next.</p>
-</section>
-
-<!-- CONTENT -->
-<section id="content" class="hidden">
-  <h1>Your Content</h1>
-  <p>Your tracks, kits and services will appear here.</p>
-</section>
-
-<!-- LICENSES -->
-<section id="licenses" class="hidden">
-  <div class="card">
-    <h1>Licenses Manager</h1>
-
-    <label>License Name</label>
-    <input id="licenseName" placeholder="Basic Lease"/>
-
-    <label>Price ($)</label>
-    <input id="licensePrice" type="number"/>
-
-    <label>Max Streams</label>
-    <input id="licenseStreams" type="number" placeholder="50000"/>
-
-    <label><input type="checkbox" id="licenseMp3"/> MP3 Included</label>
-    <label><input type="checkbox" id="licenseWav"/> WAV Included</label>
-    <label><input type="checkbox" id="licenseTrackouts"/> Trackouts Included</label>
-    <label><input type="checkbox" id="licenseCommercial"/> Commercial Use</label>
-
-    <button onclick="createLicense()">Create License</button>
-
-    <hr style="margin:24px 0;border-color:#1e293b">
-
-    <h2>Your Licenses</h2>
-    <ul id="licenseList"></ul>
-  </div>
-</section>
-
-<!-- SETTINGS -->
-<section id="settings" class="hidden">
-  <h1>Settings</h1>
-  <p>Profile & payout settings coming next.</p>
-</section>
-
+<!-- MY BEATS -->
+<div class="card">
+  <h3>My Beats</h3>
+  <div id="myBeats"></div>
 </div>
+
+</main>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+  projectId: "prodbybigi"
 };
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-/* PAGE SWITCH */
-function showPage(id){
-  document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));
-  document.getElementById(id).classList.remove("hidden");
-}
+auth.onAuthStateChanged(user => {
+  if (!user) {
+    window.location.href = "login.html";
+  } else {
+    loadLicenses();
+    loadBeats();
+  }
+});
 
-/* LOGOUT */
-function logout(){
-  auth.signOut().then(()=>location.href="login.html");
-}
-
-/* LICENSE LOGIC */
-function createLicense(){
-  const user = auth.currentUser;
-  if(!user) return;
-
-  db.collection("licenses").add({
-    uid:user.uid,
-    name:licenseName.value,
-    price:Number(licensePrice.value),
-    streams:Number(licenseStreams.value),
-    mp3:licenseMp3.checked,
-    wav:licenseWav.checked,
-    trackouts:licenseTrackouts.checked,
-    commercialUse:licenseCommercial.checked,
-    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
   });
-
-  licenseName.value="";
-  licensePrice.value="";
-  licenseStreams.value="";
-  licenseMp3.checked=false;
-  licenseWav.checked=false;
-  licenseTrackouts.checked=false;
-  licenseCommercial.checked=false;
 }
 
-function loadLicenses(){
-  const user = auth.currentUser;
-  if(!user) return;
+// LOAD LICENSES
+function loadLicenses() {
+  const container = document.getElementById("licenseList");
+  container.innerHTML = "";
 
   db.collection("licenses")
-    .where("uid","==",user.uid)
-    .onSnapshot(snap=>{
-      licenseList.innerHTML="";
-      snap.forEach(doc=>{
-        const l=doc.data();
-        const li=document.createElement("li");
-        li.innerHTML=`
-          <strong>${l.name}</strong> — $${l.price}<br>
-          <small>
-            Streams: ${l.streams}<br>
-            ${l.mp3?"MP3 ":""}${l.wav?"WAV ":""}${l.trackouts?"Trackouts ":""}
-            ${l.commercialUse?"Commercial":""}
-          </small><br>
-          <button onclick="deleteLicense('${doc.id}')">Delete</button>
+    .where("uid", "==", auth.currentUser.uid)
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const l = doc.data();
+        container.innerHTML += `
+          <div class="license-item">
+            <label>
+              <input type="checkbox" value="${doc.id}" />
+              ${l.name} — $${l.price}
+            </label>
+          </div>
         `;
-        licenseList.appendChild(li);
       });
     });
 }
 
-function deleteLicense(id){
-  if(confirm("Delete this license?")){
-    db.collection("licenses").doc(id).delete();
+// PUBLISH BEAT
+function publishBeat() {
+  const title = document.getElementById("beatTitle").value;
+  const audioUrl = document.getElementById("audioUrl").value;
+  const artworkUrl = document.getElementById("artworkUrl").value;
+
+  const licenseIds = [];
+  document.querySelectorAll("#licenseList input:checked")
+    .forEach(cb => licenseIds.push(cb.value));
+
+  if (!title || !audioUrl || licenseIds.length === 0) {
+    alert("Fill all fields & select at least one license");
+    return;
   }
+
+  db.collection("beats").add({
+    uid: auth.currentUser.uid,
+    title,
+    audioUrl,
+    artworkUrl,
+    licenseIds,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(() => {
+    alert("Beat uploaded");
+    loadBeats();
+  });
 }
 
-/* AUTH */
-auth.onAuthStateChanged(user=>{
-  if(!user) location.href="login.html";
-  loadLicenses();
-});
+// LOAD BEATS
+function loadBeats() {
+  const container = document.getElementById("myBeats");
+  container.innerHTML = "";
+
+  db.collection("beats")
+    .where("uid", "==", auth.currentUser.uid)
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const b = doc.data();
+        container.innerHTML += `
+          <div class="license-item">
+            <strong>${b.title}</strong><br>
+            Licenses attached: ${b.licenseIds.length}
+          </div>
+        `;
+      });
+    });
+}
 </script>
 
 </body>
