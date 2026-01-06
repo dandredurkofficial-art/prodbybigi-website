@@ -55,16 +55,47 @@ input,textarea {
   margin-bottom:12px;
 }
 .toggle {
-  display:flex;align-items:center;justify-content:space-between;margin:10px 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:10px 0;
 }
-.price {width:120px;}
+.price {
+  width:120px;
+}
 button.primary {
   background:#3b82f6;border:none;padding:12px;border-radius:10px;color:#fff;
 }
 
+/* MOBILE NAV */
 @media(max-width:900px){
-  nav{display:none;position:fixed;height:100%;background:#070a12;z-index:10;}
+  nav{
+    display:none;
+    position:fixed;
+    height:100%;
+    background:#070a12;
+    z-index:10;
+    top:64px;
+    left:0;
+  }
   nav.open{display:block;}
+}
+
+/* 🔥 FIX UPLOAD LAYOUT (MOBILE SAFE, DESKTOP UNCHANGED) */
+@media (max-width: 640px) {
+  .toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .price {
+    width: 100%;
+  }
+
+  button.primary {
+    width: 100%;
+  }
 }
 </style>
 </head>
@@ -87,72 +118,65 @@ button.primary {
 
 <main>
 
-<!-- DASHBOARD -->
 <section id="dashboard" class="page active">
   <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
 </section>
 
-<!-- UPLOAD BEAT (FIXED) -->
 <section id="upload" class="page">
 
-  <div class="card">
-    <h2>Upload Beat</h2>
+<div class="card">
+<h2>Basic Info</h2>
+<input id="title" placeholder="Track title">
+<textarea id="desc" placeholder="Description"></textarea>
+<input id="bpm" placeholder="BPM">
+<input id="key" placeholder="Key">
+<button class="primary" onclick="uploadAudio()">Upload Audio</button>
+</div>
 
-    <h3>Basic Info</h3>
-    <input id="title" placeholder="Track title">
-    <textarea id="desc" placeholder="Description"></textarea>
+<div class="card">
+<h2>Monetization</h2>
 
-    <h3>Metadata</h3>
-    <input id="bpm" placeholder="BPM">
-    <input id="key" placeholder="Key">
+<div class="toggle">
+  <label>Basic License (MP3)</label>
+  <input type="checkbox" id="basicEnabled" checked>
+  <input class="price" id="basicPrice" value="29.99">
+</div>
 
-    <h3>Audio File</h3>
-    <button class="primary" onclick="uploadAudio()">Upload Audio</button>
-  </div>
+<div class="toggle">
+  <label>Premium License (WAV)</label>
+  <input type="checkbox" id="premiumEnabled">
+  <input class="price" id="premiumPrice" value="79.99">
+</div>
 
-  <div class="card">
-    <h2>Monetization</h2>
+<div class="toggle">
+  <label>Exclusive License</label>
+  <input type="checkbox" id="exclusiveEnabled">
+  <input class="price" id="exclusivePrice" value="299.99">
+</div>
 
-    <div class="toggle">
-      <label>Basic License (MP3)</label>
-      <input type="checkbox" id="basicEnabled" checked>
-      <input class="price" id="basicPrice" value="29.99">
-    </div>
+<div class="toggle">
+  <label>Enable free download</label>
+  <input type="checkbox" id="freeDownload">
+</div>
 
-    <div class="toggle">
-      <label>Premium License (WAV)</label>
-      <input type="checkbox" id="premiumEnabled">
-      <input class="price" id="premiumPrice" value="79.99">
-    </div>
+<div class="toggle">
+  <label>Include in bulk discounts</label>
+  <input type="checkbox" id="bulkDiscount">
+</div>
 
-    <div class="toggle">
-      <label>Exclusive License</label>
-      <input type="checkbox" id="exclusiveEnabled">
-      <input class="price" id="exclusivePrice" value="299.99">
-    </div>
-
-    <div class="toggle">
-      <label>Enable free download</label>
-      <input type="checkbox" id="freeDownload">
-    </div>
-
-    <div class="toggle">
-      <label>Include in bulk discounts</label>
-      <input type="checkbox" id="bulkDiscount">
-    </div>
-
-    <button class="primary" onclick="publishBeat()">Publish Beat</button>
-  </div>
+<button class="primary" onclick="publishBeat()">Publish Beat</button>
+</div>
 
 </section>
 
-<!-- TRACKS -->
 <section id="tracks" class="page">
-  <div class="card"><h2>Your Beats</h2><div id="beats"></div></div>
+  <div class="card">
+    <h2>Your Beats</h2>
+    <div id="beats"></div>
+  </div>
 </section>
 
-<!-- FINANCE -->
 <section id="finance" class="page">
   <div class="card">
     <h2>Payouts</h2>
@@ -197,9 +221,6 @@ function publishBeat(){
 
   const beat={
     title:title.value,
-    description:desc.value,
-    bpm:bpm.value,
-    key:key.value,
     audio:uploadedAudio,
     licenses:{
       basic:{enabled:basicEnabled.checked,price:basicPrice.value},
