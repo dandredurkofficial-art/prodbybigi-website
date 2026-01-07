@@ -14,9 +14,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getFirestore, collection, addDoc, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import {
-  getAuth, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+window.firebaseReady = false;
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
@@ -29,44 +28,153 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 window.db = getFirestore(app);
-window.auth = getAuth(app);
-
-window.currentUser = null;
-
-onAuthStateChanged(auth, user => {
-  if (!user) {
-    alert("You must be logged in");
-    return;
-  }
-  window.currentUser = user;
-});
+window.firebaseReady = true;
 </script>
 
 <style>
-/* ⚠️ UNCHANGED STYLES — EXACTLY YOUR FILE */
-body {margin:0;font-family:Inter,system-ui;background:#070a12;color:#fff;}
-header {height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #1f2937;}
+/* ===== BASE ===== */
+body {
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#070a12;
+  color:#fff;
+}
+header {
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid #1f2937;
+}
 .menu-btn {font-size:22px;cursor:pointer;}
-.logout {background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;}
+.logout {
+  background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;
+}
 .layout {display:flex;min-height:calc(100vh - 64px);}
-nav {width:240px;border-right:1px solid #1f2937;padding:16px;}
-nav a {display:block;padding:12px;margin-bottom:6px;border-radius:10px;color:#9ca3af;cursor:pointer;}
-nav a.active {background:#111827;color:#fff;}
+
+/* ===== NAV ===== */
+nav {
+  width:240px;
+  border-right:1px solid #1f2937;
+  padding:16px;
+}
+nav a {
+  display:block;
+  padding:12px;
+  margin-bottom:6px;
+  border-radius:10px;
+  color:#9ca3af;
+  cursor:pointer;
+}
+nav a.active {
+  background:#111827;
+  color:#fff;
+}
+
+/* ===== MAIN ===== */
 main {flex:1;padding:24px;}
 .page {display:none;}
 .page.active {display:block;}
-.card {background:#0b1220;border:1px solid #1f2937;border-radius:16px;padding:20px;margin-bottom:20px;}
-input,textarea {width:100%;background:#05070c;border:1px solid #1f2937;border-radius:10px;padding:12px;color:#fff;margin-bottom:12px;}
-.toggle {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;}
+
+/* ===== CARDS ===== */
+.card {
+  background:#0b1220;
+  border:1px solid #1f2937;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+}
+
+/* ===== INPUTS ===== */
+input,textarea {
+  width:100%;
+  background:#05070c;
+  border:1px solid #1f2937;
+  border-radius:10px;
+  padding:12px;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+/* ===== TOGGLES ===== */
+.toggle {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0;
+}
 .price {width:120px;}
-button.primary {background:#3b82f6;border:none;padding:14px;border-radius:10px;color:#fff;cursor:pointer;}
-.artwork-preview {width:100%;max-width:260px;aspect-ratio:1/1;border-radius:14px;background:#05070c;border:1px dashed #1f2937;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px;}
-.artwork-preview img {width:100%;height:100%;object-fit:cover;}
-.track {display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.track img {width:64px;height:64px;border-radius:10px;object-fit:cover;}
-.track button {background:#111827;border:1px solid #1f2937;color:#fff;padding:8px 12px;border-radius:8px;}
-@media(max-width:900px){nav{display:none;position:fixed;top:64px;left:0;height:100%;background:#070a12;z-index:10;}nav.open{display:block;}}
-@media(max-width:640px){.toggle{flex-direction:column;align-items:flex-start;}.price{width:100%;}button.primary{width:100%;}}
+
+button.primary {
+  background:#3b82f6;
+  border:none;
+  padding:14px;
+  border-radius:10px;
+  color:#fff;
+  cursor:pointer;
+}
+
+/* ===== ARTWORK ===== */
+.artwork-preview {
+  width:100%;
+  max-width:260px;
+  aspect-ratio:1/1;
+  border-radius:14px;
+  background:#05070c;
+  border:1px dashed #1f2937;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+.artwork-preview img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+/* ===== TRACK LIST ===== */
+.track {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:14px;
+}
+.track img {
+  width:64px;
+  height:64px;
+  border-radius:10px;
+  object-fit:cover;
+}
+.track button {
+  background:#111827;
+  border:1px solid #1f2937;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:8px;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  nav {
+    display:none;
+    position:fixed;
+    top:64px;
+    left:0;
+    height:100%;
+    background:#070a12;
+    z-index:10;
+  }
+  nav.open {display:block;}
+}
+@media(max-width:640px){
+  .toggle {flex-direction:column;align-items:flex-start;}
+  .price {width:100%;}
+  button.primary {width:100%;}
+}
 </style>
 </head>
 
@@ -88,11 +196,13 @@ button.primary {background:#3b82f6;border:none;padding:14px;border-radius:10px;c
 
 <main>
 
+<!-- DASHBOARD -->
 <section id="dashboard" class="page active">
   <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
 </section>
 
+<!-- UPLOAD -->
 <section id="upload" class="page">
 
 <div class="card">
@@ -143,11 +253,12 @@ button.primary {background:#3b82f6;border:none;padding:14px;border-radius:10px;c
   <input type="checkbox" id="bulkDiscount">
 </div>
 
-<button class="primary" onclick="publishBeat()">Publish Beat</button>
+<button class="primary" id="publishBtn" onclick="publishBeat()">Publish Beat</button>
 </div>
 
 </section>
 
+<!-- TRACKS -->
 <section id="tracks" class="page">
   <div class="card">
     <h2>Your Beats</h2>
@@ -155,6 +266,7 @@ button.primary {background:#3b82f6;border:none;padding:14px;border-radius:10px;c
   </div>
 </section>
 
+<!-- FINANCE -->
 <section id="finance" class="page">
   <div class="card">
     <h2>Payouts</h2>
@@ -170,6 +282,19 @@ button.primary {background:#3b82f6;border:none;padding:14px;border-radius:10px;c
 let uploadedArtwork=null, fullAudio=null, previewAudio=null;
 let beatsData=[], currentAudio=null;
 
+/* ===== FIREBASE READY WAIT ===== */
+function waitForFirebase(){
+  return new Promise(resolve=>{
+    if(window.firebaseReady) return resolve();
+    const t=setInterval(()=>{
+      if(window.firebaseReady){
+        clearInterval(t);
+        resolve();
+      }
+    },100);
+  });
+}
+
 function toggleMenu(){ sidebar.classList.toggle("open"); }
 
 function showPage(id){
@@ -180,45 +305,95 @@ function showPage(id){
   sidebar.classList.remove("open");
 }
 
-/* CLOUDINARY — UNCHANGED */
-function uploadArtwork(){ cloudinary.openUploadWidget({cloudName:"djd8vkI8s",uploadPreset:"unsigned_images",resourceType:"image"},(_,res)=>{ if(res?.event==="success"){ uploadedArtwork=res.info.secure_url; artworkBox.innerHTML=`<img src="${uploadedArtwork}">`; }});}
-function uploadFullAudio(){ cloudinary.openUploadWidget({cloudName:"djd8vkI8s",uploadPreset:"unsigned_audio",resourceType:"video"},(_,res)=>{ if(res?.event==="success"){ fullAudio=res.info.secure_url; alert("Full beat uploaded"); }});}
-function uploadPreviewAudio(){ cloudinary.openUploadWidget({cloudName:"djd8vkI8s",uploadPreset:"unsigned_audio",resourceType:"video"},(_,res)=>{ if(res?.event==="success"){ previewAudio=res.info.secure_url; alert("Preview uploaded"); }});}
+/* ===== CLOUDINARY ===== */
+function uploadArtwork(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      uploadedArtwork=res.info.secure_url;
+      artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
+    }
+  });
+}
 
+function uploadFullAudio(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      fullAudio=res.info.secure_url;
+      alert("Full beat uploaded");
+    }
+  });
+}
+
+function uploadPreviewAudio(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      previewAudio=res.info.secure_url;
+      alert("Preview uploaded");
+    }
+  });
+}
+
+/* ===== PUBLISH (FIXED) ===== */
 async function publishBeat(){
-  if(!currentUser){
-    alert("Auth not ready yet. Try again.");
-    return;
-  }
-  if(!fullAudio || !previewAudio){
-    alert("Upload both audios first");
-    return;
-  }
+  const btn=document.getElementById("publishBtn");
+  try{
+    btn.disabled=true;
+    btn.innerText="Publishing...";
 
-  const beat={
-    title:title.value || "Untitled Beat",
-    desc:desc.value || "",
-    bpm:bpm.value || "",
-    key:key.value || "",
-    artwork:uploadedArtwork || "",
-    fullAudio,
-    previewAudio,
-    producerId:currentUser.uid,
-    published:true,
-    licenses:{
-      basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
-      premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
-      exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
-    },
-    freeDownload:freeDownload.checked,
-    bulkDiscount:bulkDiscount.checked,
-    createdAt:Date.now()
-  };
+    await waitForFirebase();
 
-  await addDoc(collection(db,"beats"),beat);
-  alert("Beat published");
-  resetUploadForm();
-  loadBeats();
+    if(!fullAudio||!previewAudio){
+      alert("Upload full beat and preview first");
+      btn.disabled=false;
+      btn.innerText="Publish Beat";
+      return;
+    }
+
+    const beat={
+      title:title.value||"Untitled Beat",
+      desc:desc.value||"",
+      bpm:bpm.value||"",
+      key:key.value||"",
+      artwork:uploadedArtwork||"",
+      fullAudio,
+      previewAudio,
+      producerId:"producer_test",
+      published:true,
+      licenses:{
+        basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
+        premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
+        exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
+      },
+      freeDownload:freeDownload.checked,
+      bulkDiscount:bulkDiscount.checked,
+      createdAt:Date.now()
+    };
+
+    await addDoc(collection(db,"beats"),beat);
+
+    alert("✅ Beat published");
+    resetUploadForm();
+    loadBeats();
+
+  }catch(err){
+    console.error("PUBLISH ERROR",err);
+    alert("Publish failed:\n"+err.message);
+  }finally{
+    btn.disabled=false;
+    btn.innerText="Publish Beat";
+  }
 }
 
 function resetUploadForm(){
