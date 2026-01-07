@@ -428,6 +428,7 @@ function renderTracks(){
         <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
         <button onclick="playPreview(${i})">▶</button>
         <button onclick="editBeat(${i})">Edit</button>
+        <button onclick="deleteBeat(${i})">Delete</button>
       </div>`;
   });
 }
