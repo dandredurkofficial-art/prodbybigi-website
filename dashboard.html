@@ -15,16 +15,13 @@ import {
   getFirestore, collection, addDoc, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-window.firebaseReady = false;
-
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
   projectId: "prodbybigi",
   storageBucket: "prodbybigi.firebasestorage.app",
   messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef",
-  measurementId: "G-7HR862H9L7"
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -33,36 +30,139 @@ window.firebaseReady = true;
 </script>
 
 <style>
-body{margin:0;font-family:Inter,system-ui;background:#070a12;color:#fff;}
-header{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid #1f2937;}
-.menu-btn{font-size:22px;cursor:pointer;}
-.logout{background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;}
-.layout{display:flex;min-height:calc(100vh - 64px);}
-nav{width:240px;border-right:1px solid #1f2937;padding:16px;}
-nav a{display:block;padding:12px;margin-bottom:6px;border-radius:10px;color:#9ca3af;cursor:pointer;}
-nav a.active{background:#111827;color:#fff;}
-main{flex:1;padding:24px;}
-.page{display:none;}
-.page.active{display:block;}
-.card{background:#0b1220;border:1px solid #1f2937;border-radius:16px;padding:20px;margin-bottom:20px;}
-input,textarea{width:100%;background:#05070c;border:1px solid #1f2937;border-radius:10px;padding:12px;color:#fff;margin-bottom:12px;}
-.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;}
-.price{width:120px;}
-button.primary{background:#3b82f6;border:none;padding:14px;border-radius:10px;color:#fff;cursor:pointer;}
-.artwork-preview{width:100%;max-width:260px;aspect-ratio:1/1;border-radius:14px;background:#05070c;border:1px dashed #1f2937;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:14px;}
-.artwork-preview img{width:100%;height:100%;object-fit:cover;}
-.track{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.track img{width:64px;height:64px;border-radius:10px;object-fit:cover;}
-.track button{background:#111827;border:1px solid #1f2937;color:#fff;padding:8px 12px;border-radius:8px;}
+body {
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#070a12;
+  color:#fff;
+}
+header {
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 16px;
+  border-bottom:1px solid #1f2937;
+}
+.menu-btn {font-size:22px;cursor:pointer;}
+.logout {
+  background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;
+}
+.layout {display:flex;min-height:calc(100vh - 64px);}
+
+nav {
+  width:240px;
+  border-right:1px solid #1f2937;
+  padding:16px;
+}
+nav a {
+  display:block;
+  padding:12px;
+  margin-bottom:6px;
+  border-radius:10px;
+  color:#9ca3af;
+  cursor:pointer;
+}
+nav a.active {
+  background:#111827;
+  color:#fff;
+}
+
+main {flex:1;padding:24px;}
+.page {display:none;}
+.page.active {display:block;}
+
+.card {
+  background:#0b1220;
+  border:1px solid #1f2937;
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+}
+
+input,textarea {
+  width:100%;
+  background:#05070c;
+  border:1px solid #1f2937;
+  border-radius:10px;
+  padding:12px;
+  color:#fff;
+  margin-bottom:12px;
+}
+
+.toggle {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:12px 0;
+}
+.price {width:120px;}
+
+button.primary {
+  background:#3b82f6;
+  border:none;
+  padding:14px;
+  border-radius:10px;
+  color:#fff;
+  cursor:pointer;
+}
+
+.artwork-preview {
+  width:100%;
+  max-width:260px;
+  aspect-ratio:1/1;
+  border-radius:14px;
+  background:#05070c;
+  border:1px dashed #1f2937;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+.artwork-preview img {
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.track {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  margin-bottom:14px;
+}
+.track img {
+  width:64px;
+  height:64px;
+  border-radius:10px;
+  object-fit:cover;
+}
+.track button {
+  background:#111827;
+  border:1px solid #1f2937;
+  color:#fff;
+  padding:8px 12px;
+  border-radius:8px;
+}
 
 @media(max-width:900px){
-  nav{display:none;position:fixed;top:64px;left:0;height:100%;background:#070a12;z-index:10;}
-  nav.open{display:block;}
+  nav {
+    display:none;
+    position:fixed;
+    top:64px;
+    left:0;
+    height:100%;
+    background:#070a12;
+    z-index:10;
+  }
+  nav.open {display:block;}
 }
 @media(max-width:640px){
-  .toggle{flex-direction:column;align-items:flex-start;}
-  .price{width:100%;}
-  button.primary{width:100%;}
+  .toggle {flex-direction:column;align-items:flex-start;}
+  .price {width:100%;}
+  button.primary {width:100%;}
 }
 </style>
 </head>
@@ -95,7 +195,9 @@ button.primary{background:#3b82f6;border:none;padding:14px;border-radius:10px;co
 <div class="card">
 <h2>Track Details</h2>
 
-<div class="artwork-preview" id="artworkBox"><span>Artwork Preview</span></div>
+<div class="artwork-preview" id="artworkBox">
+  <span>Artwork Preview</span>
+</div>
 <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
 
 <input id="title" placeholder="Track title">
@@ -103,8 +205,8 @@ button.primary{background:#3b82f6;border:none;padding:14px;border-radius:10px;co
 <input id="bpm" placeholder="BPM">
 <input id="key" placeholder="Key">
 
-<button class="primary" id="fullBtn" onclick="uploadFullAudio()">Upload Full Beat</button>
-<button class="primary" id="previewBtn" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
+<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 </div>
 
 <div class="card">
@@ -138,7 +240,7 @@ button.primary{background:#3b82f6;border:none;padding:14px;border-radius:10px;co
   <input type="checkbox" id="bulkDiscount">
 </div>
 
-<button class="primary" onclick="publishBeat(event)">Publish Beat</button>
+<button class="primary" onclick="publishBeat()">Publish Beat</button>
 </div>
 
 </section>
@@ -166,6 +268,7 @@ let uploadedArtwork=null, fullAudio=null, previewAudio=null;
 let beatsData=[], currentAudio=null;
 
 function toggleMenu(){ sidebar.classList.toggle("open"); }
+
 function showPage(id){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
@@ -174,10 +277,11 @@ function showPage(id){
   sidebar.classList.remove("open");
 }
 
-/* CLOUDINARY */
 function uploadArtwork(){
   cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",uploadPreset:"unsigned_images",resourceType:"image"
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
   },(_,res)=>{
     if(res?.event==="success"){
       uploadedArtwork=res.info.secure_url;
@@ -185,79 +289,102 @@ function uploadArtwork(){
     }
   });
 }
+
 function uploadFullAudio(){
-  fullBtn.disabled=true; fullBtn.textContent="Uploading…";
   cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",uploadPreset:"unsigned_audio",resourceType:"video"
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
   },(_,res)=>{
     if(res?.event==="success"){
       fullAudio=res.info.secure_url;
-      fullBtn.textContent="Uploaded ✔";
-      fullBtn.disabled=false;
+      alert("Full beat uploaded");
     }
   });
 }
+
 function uploadPreviewAudio(){
-  previewBtn.disabled=true; previewBtn.textContent="Uploading…";
   cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",uploadPreset:"unsigned_audio",resourceType:"video"
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"video"
   },(_,res)=>{
     if(res?.event==="success"){
       previewAudio=res.info.secure_url;
-      previewBtn.textContent="Uploaded ✔";
-      previewBtn.disabled=false;
+      alert("Preview uploaded");
     }
   });
 }
 
-/* FIRESTORE */
-async function publishBeat(e){
-  if(!fullAudio||!previewAudio){alert("Upload both audios first");return;}
-  const btn=e.target;
-  btn.disabled=true; btn.textContent="Publishing…";
-
+async function publishBeat(){
   try{
-    await addDoc(collection(db,"beats"),{
-      title:title.value,desc:desc.value,bpm:bpm.value,key:key.value,
-      artwork:uploadedArtwork,fullAudio,previewAudio,
-      createdAt:Date.now(),status:"published"
-    });
-    alert("Beat published");
-    resetForm();
+    if(!fullAudio || !previewAudio){
+      alert("Upload both audios first");
+      return;
+    }
+
+    const beat={
+      title:title.value || "Untitled Beat",
+      desc:desc.value || "",
+      bpm:bpm.value || "",
+      key:key.value || "",
+      artwork:uploadedArtwork || "",
+      fullAudio,
+      previewAudio,
+      producerId:"TEMP_PRODUCER",
+      published:true,
+      licenses:{
+        basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
+        premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
+        exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
+      },
+      freeDownload:freeDownload.checked,
+      bulkDiscount:bulkDiscount.checked,
+      createdAt:Date.now()
+    };
+
+    await addDoc(collection(db,"beats"),beat);
+    alert("Beat published successfully");
+    resetUploadForm();
     loadBeats();
   }catch(err){
     console.error(err);
-    alert("Publish failed");
+    alert("Publish failed: "+err.message);
   }
-  btn.disabled=false; btn.textContent="Publish Beat";
 }
 
-function resetForm(){
+function resetUploadForm(){
   title.value=desc.value=bpm.value=key.value="";
-  artworkBox.innerHTML="<span>Artwork Preview</span>";
   uploadedArtwork=fullAudio=previewAudio=null;
-  fullBtn.textContent="Upload Full Beat";
-  previewBtn.textContent="Upload Preview (Tagged)";
+  artworkBox.innerHTML="<span>Artwork Preview</span>";
 }
 
 async function loadBeats(){
-  beats.innerHTML=""; beatsData=[];
+  beats.innerHTML="";
+  beatsData=[];
   const snap=await getDocs(collection(db,"beats"));
-  snap.forEach(d=>beatsData.push({id:d.id,...d.data()}));
+  snap.forEach(d=>beatsData.push(d.data()));
+  renderTracks();
+}
+
+function renderTracks(){
+  beats.innerHTML="";
   beatsData.forEach((b,i)=>{
     beats.innerHTML+=`
       <div class="track">
         <img src="${b.artwork||''}">
-        <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm}</div>
+        <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
         <button onclick="playPreview(${i})">▶</button>
       </div>`;
   });
 }
+
 function playPreview(i){
-  if(currentAudio)currentAudio.pause();
+  if(currentAudio) currentAudio.pause();
   currentAudio=new Audio(beatsData[i].previewAudio);
   currentAudio.play();
 }
+
 loadBeats();
 </script>
 
