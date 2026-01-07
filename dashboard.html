@@ -29,7 +29,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 window.db = getFirestore(app);
 
-/* 🔒 EXPOSE FIRESTORE FUNCTIONS (CRITICAL FIX) */
 window.addDoc = addDoc;
 window.collection = collection;
 window.getDocs = getDocs;
@@ -117,6 +116,11 @@ button.primary {
   cursor:pointer;
 }
 
+button.primary[disabled]{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
 .artwork-preview {
   width:100%;
   max-width:260px;
@@ -134,6 +138,12 @@ button.primary {
   width:100%;
   height:100%;
   object-fit:cover;
+}
+
+.upload-status{
+  font-size:13px;
+  color:#22c55e;
+  margin-bottom:8px;
 }
 
 .track {
@@ -207,6 +217,7 @@ button.primary {
 <div class="artwork-preview" id="artworkBox">
   <span>Artwork Preview</span>
 </div>
+<div id="artworkStatus"></div>
 <button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
 
 <input id="title" placeholder="Track title">
@@ -214,7 +225,10 @@ button.primary {
 <input id="bpm" placeholder="BPM">
 <input id="key" placeholder="Key">
 
+<div id="fullStatus"></div>
 <button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+
+<div id="previewStatus"></div>
 <button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 </div>
 
@@ -249,7 +263,7 @@ button.primary {
   <input type="checkbox" id="bulkDiscount">
 </div>
 
-<button class="primary" onclick="publishBeat()">Publish Beat</button>
+<button class="primary" id="publishBtn" onclick="publishBeat()">Publish Beat</button>
 </div>
 
 </section>
@@ -295,6 +309,7 @@ function uploadArtwork(){
     if(res?.event==="success"){
       uploadedArtwork=res.info.secure_url;
       artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
+      artworkStatus.innerHTML=`<div class="upload-status">✔ Artwork uploaded</div>`;
     }
   });
 }
@@ -307,7 +322,7 @@ function uploadFullAudio(){
   },(_,res)=>{
     if(res?.event==="success"){
       fullAudio=res.info.secure_url;
-      alert("Full beat uploaded");
+      fullStatus.innerHTML=`<div class="upload-status">✔ Full beat uploaded</div>`;
     }
   });
 }
@@ -320,18 +335,21 @@ function uploadPreviewAudio(){
   },(_,res)=>{
     if(res?.event==="success"){
       previewAudio=res.info.secure_url;
-      alert("Preview uploaded");
+      previewStatus.innerHTML=`<div class="upload-status">✔ Preview uploaded</div>`;
     }
   });
 }
 
 async function publishBeat(){
-  try{
-    if(!fullAudio || !previewAudio){
-      alert("Upload both audios first");
-      return;
-    }
+  if(!fullAudio || !previewAudio){
+    alert("Upload both audios first");
+    return;
+  }
 
+  publishBtn.disabled=true;
+  publishBtn.innerText="Publishing...";
+
+  try{
     await addDoc(collection(db,"beats"),{
       title:title.value || "Untitled Beat",
       desc:desc.value || "",
@@ -352,13 +370,23 @@ async function publishBeat(){
       createdAt:Date.now()
     });
 
-    alert("✅ Beat published");
+    resetUploadForm();
     loadBeats();
+    alert("✅ Beat published");
 
   }catch(err){
-    console.error(err);
     alert("Publish failed: "+err.message);
   }
+
+  publishBtn.disabled=false;
+  publishBtn.innerText="Publish Beat";
+}
+
+function resetUploadForm(){
+  title.value=desc.value=bpm.value=key.value="";
+  uploadedArtwork=fullAudio=previewAudio=null;
+  artworkBox.innerHTML="<span>Artwork Preview</span>";
+  artworkStatus.innerHTML=fullStatus.innerHTML=previewStatus.innerHTML="";
 }
 
 async function loadBeats(){
