@@ -432,6 +432,28 @@ function renderTracks(){
   });
 }
 
+function editBeat(i){
+  const b=beatsData[i];
+  editingBeatId=b.id;
+  title.value=b.title;
+  desc.value=b.desc;
+  bpm.value=b.bpm;
+  key.value=b.key;
+  uploadedArtwork=b.artwork;
+  fullAudio=b.fullAudio;
+  previewAudio=b.previewAudio;
+  artworkBox.innerHTML=b.artwork?`<img src="${b.artwork}">`:"<span>Artwork Preview</span>";
+  basicEnabled.checked=b.licenses.basic.enabled;
+  basicPrice.value=b.licenses.basic.price;
+  premiumEnabled.checked=b.licenses.premium.enabled;
+  premiumPrice.value=b.licenses.premium.price;
+  exclusiveEnabled.checked=b.licenses.exclusive.enabled;
+  exclusivePrice.value=b.licenses.exclusive.price;
+  freeDownload.checked=b.freeDownload;
+  bulkDiscount.checked=b.bulkDiscount;
+  showPage('upload');
+}
+
 function playPreview(i){
   if(currentAudio) currentAudio.pause();
   currentAudio=new Audio(beatsData[i].previewAudio);
