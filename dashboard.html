@@ -403,19 +403,12 @@ function resetUploadForm(){
 }
 
 async function loadBeats(){
-  if(!currentUser) return;
-
   beats.innerHTML="";
   beatsData=[];
-
-  const q = query(
-    collection(db,"beats"),
-    where("producerId","==",currentUser.uid)
-  );
-
-  const snap = await getDocs(q);
-  snap.forEach(d => beatsData.push(d.data()));
-
+  const snap=await getDocs(collection(db,"beats"));
+  snap.forEach(d=>{
+    beatsData.push({id:d.id,...d.data()});
+  });
   renderTracks();
 }
 
