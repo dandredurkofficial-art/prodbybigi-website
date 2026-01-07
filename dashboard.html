@@ -28,6 +28,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 window.db = getFirestore(app);
+
+/* 🔒 EXPOSE FIRESTORE FUNCTIONS (CRITICAL FIX) */
+window.addDoc = addDoc;
+window.collection = collection;
+window.getDocs = getDocs;
+
 window.firebaseReady = true;
 </script>
 
@@ -53,7 +59,6 @@ header {
 }
 .layout {display:flex;min-height:calc(100vh - 64px);}
 
-/* ===== NAV ===== */
 nav {
   width:240px;
   border-right:1px solid #1f2937;
@@ -72,12 +77,10 @@ nav a.active {
   color:#fff;
 }
 
-/* ===== MAIN ===== */
 main {flex:1;padding:24px;}
 .page {display:none;}
 .page.active {display:block;}
 
-/* ===== CARDS ===== */
 .card {
   background:#0b1220;
   border:1px solid #1f2937;
@@ -86,7 +89,6 @@ main {flex:1;padding:24px;}
   margin-bottom:20px;
 }
 
-/* ===== INPUTS ===== */
 input,textarea {
   width:100%;
   background:#05070c;
@@ -97,7 +99,6 @@ input,textarea {
   margin-bottom:12px;
 }
 
-/* ===== TOGGLES ===== */
 .toggle {
   display:flex;
   align-items:center;
@@ -116,7 +117,6 @@ button.primary {
   cursor:pointer;
 }
 
-/* ===== ARTWORK ===== */
 .artwork-preview {
   width:100%;
   max-width:260px;
@@ -136,7 +136,6 @@ button.primary {
   object-fit:cover;
 }
 
-/* ===== TRACK LIST ===== */
 .track {
   display:flex;
   align-items:center;
@@ -157,7 +156,6 @@ button.primary {
   border-radius:8px;
 }
 
-/* ===== MOBILE ===== */
 @media(max-width:900px){
   nav {
     display:none;
@@ -196,13 +194,11 @@ button.primary {
 
 <main>
 
-<!-- DASHBOARD -->
 <section id="dashboard" class="page active">
   <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
 </section>
 
-<!-- UPLOAD -->
 <section id="upload" class="page">
 
 <div class="card">
@@ -253,12 +249,11 @@ button.primary {
   <input type="checkbox" id="bulkDiscount">
 </div>
 
-<button class="primary" id="publishBtn" onclick="publishBeat()">Publish Beat</button>
+<button class="primary" onclick="publishBeat()">Publish Beat</button>
 </div>
 
 </section>
 
-<!-- TRACKS -->
 <section id="tracks" class="page">
   <div class="card">
     <h2>Your Beats</h2>
@@ -266,7 +261,6 @@ button.primary {
   </div>
 </section>
 
-<!-- FINANCE -->
 <section id="finance" class="page">
   <div class="card">
     <h2>Payouts</h2>
@@ -282,19 +276,6 @@ button.primary {
 let uploadedArtwork=null, fullAudio=null, previewAudio=null;
 let beatsData=[], currentAudio=null;
 
-/* ===== FIREBASE READY WAIT ===== */
-function waitForFirebase(){
-  return new Promise(resolve=>{
-    if(window.firebaseReady) return resolve();
-    const t=setInterval(()=>{
-      if(window.firebaseReady){
-        clearInterval(t);
-        resolve();
-      }
-    },100);
-  });
-}
-
 function toggleMenu(){ sidebar.classList.toggle("open"); }
 
 function showPage(id){
@@ -305,7 +286,6 @@ function showPage(id){
   sidebar.classList.remove("open");
 }
 
-/* ===== CLOUDINARY ===== */
 function uploadArtwork(){
   cloudinary.openUploadWidget({
     cloudName:"djd8vkI8s",
@@ -345,28 +325,19 @@ function uploadPreviewAudio(){
   });
 }
 
-/* ===== PUBLISH (FIXED) ===== */
 async function publishBeat(){
-  const btn=document.getElementById("publishBtn");
   try{
-    btn.disabled=true;
-    btn.innerText="Publishing...";
-
-    await waitForFirebase();
-
-    if(!fullAudio||!previewAudio){
-      alert("Upload full beat and preview first");
-      btn.disabled=false;
-      btn.innerText="Publish Beat";
+    if(!fullAudio || !previewAudio){
+      alert("Upload both audios first");
       return;
     }
 
-    const beat={
-      title:title.value||"Untitled Beat",
-      desc:desc.value||"",
-      bpm:bpm.value||"",
-      key:key.value||"",
-      artwork:uploadedArtwork||"",
+    await addDoc(collection(db,"beats"),{
+      title:title.value || "Untitled Beat",
+      desc:desc.value || "",
+      bpm:bpm.value || "",
+      key:key.value || "",
+      artwork:uploadedArtwork || "",
       fullAudio,
       previewAudio,
       producerId:"producer_test",
@@ -379,27 +350,15 @@ async function publishBeat(){
       freeDownload:freeDownload.checked,
       bulkDiscount:bulkDiscount.checked,
       createdAt:Date.now()
-    };
-
-    await addDoc(collection(db,"beats"),beat);
+    });
 
     alert("✅ Beat published");
-    resetUploadForm();
     loadBeats();
 
   }catch(err){
-    console.error("PUBLISH ERROR",err);
-    alert("Publish failed:\n"+err.message);
-  }finally{
-    btn.disabled=false;
-    btn.innerText="Publish Beat";
+    console.error(err);
+    alert("Publish failed: "+err.message);
   }
-}
-
-function resetUploadForm(){
-  title.value=desc.value=bpm.value=key.value="";
-  uploadedArtwork=fullAudio=previewAudio=null;
-  artworkBox.innerHTML="<span>Artwork Preview</span>";
 }
 
 async function loadBeats(){
