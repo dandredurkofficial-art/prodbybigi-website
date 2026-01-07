@@ -15,8 +15,6 @@ import {
   getFirestore, collection, addDoc, getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-window.firebaseReady = false;
-
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
@@ -28,17 +26,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 window.db = getFirestore(app);
-
-/* 🔒 EXPOSE FIRESTORE FUNCTIONS (CRITICAL FIX) */
-window.addDoc = addDoc;
-window.collection = collection;
-window.getDocs = getDocs;
-
 window.firebaseReady = true;
 </script>
 
 <style>
-/* ===== BASE ===== */
 body {
   margin:0;
   font-family:Inter,system-ui;
@@ -214,8 +205,8 @@ button.primary {
 <input id="bpm" placeholder="BPM">
 <input id="key" placeholder="Key">
 
-<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
-<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
+<button id="fullBtn" class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+<button id="previewBtn" class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 </div>
 
 <div class="card">
@@ -307,7 +298,7 @@ function uploadFullAudio(){
   },(_,res)=>{
     if(res?.event==="success"){
       fullAudio=res.info.secure_url;
-      alert("Full beat uploaded");
+      fullBtn.innerText="✔ Full Beat Uploaded";
     }
   });
 }
@@ -320,45 +311,46 @@ function uploadPreviewAudio(){
   },(_,res)=>{
     if(res?.event==="success"){
       previewAudio=res.info.secure_url;
-      alert("Preview uploaded");
+      previewBtn.innerText="✔ Preview Uploaded";
     }
   });
 }
 
 async function publishBeat(){
-  try{
-    if(!fullAudio || !previewAudio){
-      alert("Upload both audios first");
-      return;
-    }
-
-    await addDoc(collection(db,"beats"),{
-      title:title.value || "Untitled Beat",
-      desc:desc.value || "",
-      bpm:bpm.value || "",
-      key:key.value || "",
-      artwork:uploadedArtwork || "",
-      fullAudio,
-      previewAudio,
-      producerId:"producer_test",
-      published:true,
-      licenses:{
-        basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
-        premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
-        exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
-      },
-      freeDownload:freeDownload.checked,
-      bulkDiscount:bulkDiscount.checked,
-      createdAt:Date.now()
-    });
-
-    alert("✅ Beat published");
-    loadBeats();
-
-  }catch(err){
-    console.error(err);
-    alert("Publish failed: "+err.message);
+  if(!fullAudio || !previewAudio){
+    alert("Upload both audios first");
+    return;
   }
+
+  await addDoc(collection(db,"beats"),{
+    title:title.value||"Untitled Beat",
+    desc:desc.value||"",
+    bpm:bpm.value||"",
+    key:key.value||"",
+    artwork:uploadedArtwork||"",
+    fullAudio,
+    previewAudio,
+    licenses:{
+      basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
+      premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
+      exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
+    },
+    freeDownload:freeDownload.checked,
+    bulkDiscount:bulkDiscount.checked,
+    createdAt:Date.now()
+  });
+
+  alert("✅ Beat published");
+  resetUploadForm();
+  loadBeats();
+}
+
+function resetUploadForm(){
+  title.value=desc.value=bpm.value=key.value="";
+  uploadedArtwork=fullAudio=previewAudio=null;
+  artworkBox.innerHTML="<span>Artwork Preview</span>";
+  fullBtn.innerText="Upload Full Beat";
+  previewBtn.innerText="Upload Preview (Tagged)";
 }
 
 async function loadBeats(){
@@ -375,7 +367,10 @@ function renderTracks(){
     beats.innerHTML+=`
       <div class="track">
         <img src="${b.artwork||''}">
-        <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
+        <div style="flex:1">
+          <strong>${b.title}</strong><br>
+          BPM ${b.bpm} • ${b.key}
+        </div>
         <button onclick="playPreview(${i})">▶</button>
       </div>`;
   });
@@ -387,7 +382,14 @@ function playPreview(i){
   currentAudio.play();
 }
 
-loadBeats();
+function waitForFirebaseAndLoad(){
+  if(window.firebaseReady){
+    loadBeats();
+  } else {
+    setTimeout(waitForFirebaseAndLoad,100);
+  }
+}
+waitForFirebaseAndLoad();
 </script>
 
 </body>
