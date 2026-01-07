@@ -383,19 +383,16 @@ async function publishBeat(){
       createdAt:Date.now()
     });
 
-    if(editingBeatId){
-    await updateDoc(doc(db,"beats",editingBeatId),beatData);
-    editingBeatId=null;
-    alert("✅ Beat updated");
-  }else{
-    beatData.createdAt=Date.now();
-    await addDoc(collection(db,"beats"),beatData);
+    resetUploadForm();
+    loadBeats();
     alert("✅ Beat published");
+
+  }catch(err){
+    alert("Publish failed: "+err.message);
   }
 
-  resetUploadForm();
-  loadBeats();
-  showPage('tracks');
+  publishBtn.disabled=false;
+  publishBtn.innerText="Publish Beat";
 }
 
 function resetUploadForm(){
