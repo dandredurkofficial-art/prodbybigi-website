@@ -461,6 +461,18 @@ function playPreview(i){
   currentAudio.play();
 }
 
+async function deleteBeat(i){
+  const beat = beatsData[i];
+  if(!confirm(`Delete "${beat.title}"? This cannot be undone.`)) return;
+  try{
+    await deleteDoc(doc(db,"beats",beat.id));
+    alert("Beat deleted");
+    loadBeats();
+  }catch(err){
+    alert("Delete failed: "+err.message);
+  }
+}
+
 loadBeats();
 </script>
 
