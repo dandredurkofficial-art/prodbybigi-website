@@ -383,16 +383,19 @@ async function publishBeat(){
       createdAt:Date.now()
     });
 
-    resetUploadForm();
-    loadBeats();
+    if(editingBeatId){
+    await updateDoc(doc(db,"beats",editingBeatId),beatData);
+    editingBeatId=null;
+    alert("✅ Beat updated");
+  }else{
+    beatData.createdAt=Date.now();
+    await addDoc(collection(db,"beats"),beatData);
     alert("✅ Beat published");
-
-  }catch(err){
-    alert("Publish failed: "+err.message);
   }
 
-  publishBtn.disabled=false;
-  publishBtn.innerText="Publish Beat";
+  resetUploadForm();
+  loadBeats();
+  showPage('tracks');
 }
 
 function resetUploadForm(){
@@ -427,6 +430,7 @@ function renderTracks(){
         <img src="${b.artwork||''}">
         <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
         <button onclick="playPreview(${i})">▶</button>
+        <button onclick="editBeat(${i})">Edit</button>
       </div>`;
   });
 }
