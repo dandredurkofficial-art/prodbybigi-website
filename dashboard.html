@@ -358,7 +358,7 @@ async function publishBeat(){
       artwork:uploadedArtwork || "",
       fullAudio,
       previewAudio,
-      producerId:"producer_test",
+      producerId: currentUser.uid,
       published:true,
       licenses:{
         basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
