@@ -383,6 +383,16 @@ async function publishBeat(){
       createdAt:Date.now()
     });
 
+    if(editingBeatId){
+    await updateDoc(doc(db,"beats",editingBeatId),beatData);
+    editingBeatId=null;
+    alert("✅ Beat updated");
+  }else{
+    beatData.createdAt=Date.now();
+    await addDoc(collection(db,"beats"),beatData);
+    alert("✅ Beat published");
+  }
+
     resetUploadForm();
     loadBeats();
     alert("✅ Beat published");
