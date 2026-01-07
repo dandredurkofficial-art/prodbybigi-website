@@ -359,12 +359,8 @@ async function publishBeat(){
     return;
   }
 
-  publishBtn.disabled=true;
-  publishBtn.innerText="Publishing...";
-
-  try{
-    await addDoc(collection(db,"beats"),{
-      title:title.value || "Untitled Beat",
+  const beatData={
+      title:title.value||"Untitled Beat",
       desc:desc.value || "",
       bpm:bpm.value || "",
       key:key.value || "",
