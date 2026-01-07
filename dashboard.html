@@ -359,8 +359,12 @@ async function publishBeat(){
     return;
   }
 
-  const beatData={
-      title:title.value||"Untitled Beat",
+  publishBtn.disabled=true;
+  publishBtn.innerText="Publishing...";
+
+  try{
+    await addDoc(collection(db,"beats"),{
+      title:title.value || "Untitled Beat",
       desc:desc.value || "",
       bpm:bpm.value || "",
       key:key.value || "",
@@ -378,16 +382,6 @@ async function publishBeat(){
       bulkDiscount:bulkDiscount.checked,
       createdAt:Date.now()
     });
-
-    if(editingBeatId){
-    await updateDoc(doc(db,"beats",editingBeatId),beatData);
-    editingBeatId=null;
-    alert("✅ Beat updated");
-  }else{
-    beatData.createdAt=Date.now();
-    await addDoc(collection(db,"beats"),beatData);
-    alert("✅ Beat published");
-  }
 
     resetUploadForm();
     loadBeats();
@@ -409,12 +403,19 @@ function resetUploadForm(){
 }
 
 async function loadBeats(){
+  if(!currentUser) return;
+
   beats.innerHTML="";
   beatsData=[];
-  const snap=await getDocs(collection(db,"beats"));
-  snap.forEach(d=>{
-    beatsData.push({id:d.id,...d.data()});
-  });
+
+  const q = query(
+    collection(db,"beats"),
+    where("producerId","==",currentUser.uid)
+  );
+
+  const snap = await getDocs(q);
+  snap.forEach(d => beatsData.push(d.data()));
+
   renderTracks();
 }
 
@@ -426,31 +427,8 @@ function renderTracks(){
         <img src="${b.artwork||''}">
         <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
         <button onclick="playPreview(${i})">▶</button>
-        <button onclick="editBeat(${i})">✏️ Edit</button>
       </div>`;
   });
-}
-
-function editBeat(i){
-  const b=beatsData[i];
-  editingBeatId=b.id;
-  title.value=b.title;
-  desc.value=b.desc;
-  bpm.value=b.bpm;
-  key.value=b.key;
-  uploadedArtwork=b.artwork;
-  fullAudio=b.fullAudio;
-  previewAudio=b.previewAudio;
-  artworkBox.innerHTML=b.artwork?`<img src="${b.artwork}">`:"<span>Artwork Preview</span>";
-  basicEnabled.checked=b.licenses.basic.enabled;
-  basicPrice.value=b.licenses.basic.price;
-  premiumEnabled.checked=b.licenses.premium.enabled;
-  premiumPrice.value=b.licenses.premium.price;
-  exclusiveEnabled.checked=b.licenses.exclusive.enabled;
-  exclusivePrice.value=b.licenses.exclusive.price;
-  freeDownload.checked=b.freeDownload;
-  bulkDiscount.checked=b.bulkDiscount;
-  showPage('upload');
 }
 
 function playPreview(i){
