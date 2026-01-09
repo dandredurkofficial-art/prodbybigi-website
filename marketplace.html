@@ -1,192 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marketplace | ProdByBigi</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketplace | ProdByBigi</title>
 
-<link rel="stylesheet" href="css/marketplace.css">
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window.db = db;
-window.getDocs = getDocs;
-window.collection = collection;
-</script>
-
-<style>
-body {
-  margin:0;
-  font-family:Inter,system-ui;
-  background:#05070c;
-  color:#fff;
-}
-
-/* ===== GRID ===== */
-.beats-grid {
-  display:grid;
-  gap:16px;
-}
-
-/* Mobile = 2 columns */
-@media (max-width: 768px) {
-  .beats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Desktop */
-@media (min-width: 769px) {
-  .beats-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-.beat-card {
-  background:#0b1220;
-  border-radius:16px;
-  overflow:hidden;
-}
-
-/* ===== ARTWORK ===== */
-.beat-cover {
-  position:relative;
-  aspect-ratio:1/1;
-  background:#000;
-}
-
-.beat-cover img {
-  width:100%;
-  height:100%;
-  object-fit:contain; /* FIXED */
-}
-
-.play-btn {
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  background:rgba(0,0,0,.35);
-  cursor:pointer;
-}
-
-/* ===== META ===== */
-.beat-meta {
-  padding:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-
-.beat-meta h3 {
-  font-size:14px;
-  margin:0;
-}
-
-.producer {
-  font-size:12px;
-  color:#9ca3af;
-}
-
-.price {
-  background:#2563eb;
-  border:none;
-  padding:6px 10px;
-  border-radius:999px;
-  color:#fff;
-  font-size:12px;
-}
-</style>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/marketplace.css">
 </head>
-
 <body>
 
+<!-- HEADER -->
 <header class="header">
   <div class="logo">ProdByBigi</div>
+
+  <nav class="nav-links">
+    <a href="index.html">Home</a>
+    <a class="active" href="marketplace.html">Feed</a>
+    <a href="login.html">Login</a>
+    <a class="cta" href="register.html">Start Selling</a>
+  </nav>
+
+  <div class="hamburger" id="hamburger">☰</div>
 </header>
 
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="marketplace.html">Feed</a>
+  <a href="marketplace.html">Tracks</a>
+  <a href="soundkits.html">Sound Kits</a>
+  <a href="producers.html">Producers</a>
+  <a class="cta" href="register.html">Start Selling</a>
+</div>
+
+<!-- MARKETPLACE -->
 <main class="marketplace">
   <h1>Trending Beats</h1>
-  <div class="beats-grid" id="beatsGrid"></div>
+
+  <div class="beats-grid" id="beatsGrid">
+    <!-- Beats injected by JS -->
+  </div>
 </main>
 
-<script>
-let beats = [];
-let currentAudio = null;
-let currentIndex = null;
+<!-- FOOTER -->
+<footer class="footer">
+  <p>© 2026 ProdByBigi</p>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms</a>
+    <a href="#">Cookies</a>
+  </div>
+</footer>
 
-async function loadMarketplaceBeats() {
-  const snap = await getDocs(collection(db, "beats"));
-  beats = [];
-  snap.forEach(d => beats.push(d.data()));
-  renderBeats();
-}
+<!-- SCRIPTS -->
+<script src="js/menu.js"></script>
+<script type="module">
+  import { db } from "./js/firebase.js";
+  import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-function renderBeats() {
-  beatsGrid.innerHTML = "";
+  const grid = document.getElementById("beatsGrid");
 
-  beats.forEach((b, i) => {
-    beatsGrid.innerHTML += `
+  const snapshot = await getDocs(collection(db, "beats"));
+
+  snapshot.forEach(async (docSnap) => {
+    const beat = docSnap.data();
+
+    // get producer name
+    let producerName = "Unknown Producer";
+    if (beat.producerId) {
+      const userSnap = await getDoc(doc(db, "users", beat.producerId));
+      if (userSnap.exists()) producerName = userSnap.data().username;
+    }
+
+    grid.innerHTML += `
       <div class="beat-card">
         <div class="beat-cover">
-          <img src="${b.artwork}">
-          <div class="play-btn" onclick="togglePlay(${i})" id="play-${i}">▶</div>
+          <img src="${beat.coverUrl}" alt="${beat.title}">
+          <button class="play" onclick="togglePlay('${beat.previewUrl}', this)">▶</button>
         </div>
+
         <div class="beat-meta">
           <div>
-            <h3>${b.title}</h3>
-            <div class="producer">Prod. @Producer</div>
+            <h3>${beat.title}</h3>
+            <a href="producer.html?id=${beat.producerId}" class="producer">
+              Prod. ${producerName}
+            </a>
           </div>
-          <button class="price">$${b.licenses?.basic?.price || "29.99"}</button>
+          <button class="price">$${beat.price}</button>
         </div>
       </div>
     `;
   });
-}
-
-function togglePlay(index) {
-  if (currentAudio && currentIndex === index) {
-    currentAudio.pause();
-    document.getElementById(`play-${index}`).innerText = "▶";
-    currentIndex = null;
-    return;
-  }
-
-  if (currentAudio) {
-    currentAudio.pause();
-    document.getElementById(`play-${currentIndex}`).innerText = "▶";
-  }
-
-  currentAudio = new Audio(beats[index].previewAudio);
-  currentAudio.play();
-  currentIndex = index;
-  document.getElementById(`play-${index}`).innerText = "⏸";
-
-  currentAudio.onended = () => {
-    document.getElementById(`play-${index}`).innerText = "▶";
-    currentIndex = null;
-  };
-}
-
-loadMarketplaceBeats();
 </script>
 
+<script src="js/player.js"></script>
 </body>
 </html>
