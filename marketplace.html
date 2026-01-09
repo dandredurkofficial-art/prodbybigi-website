@@ -1,40 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Marketplace | ProdByBigi</title>
-
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/marketplace.css" />
+  <title>Marketplace – ProdByBigi</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/marketplace.css">
 </head>
-
 <body>
 
-<header class="header">
-  <button id="menuBtn" class="hamburger">☰</button>
+<header>
+  <div class="menu-btn">☰</div>
   <div class="logo">ProdByBigi</div>
 </header>
 
-<nav id="mobileMenu" class="mobile-menu hidden">
-  <a href="marketplace.html">Tracks</a>
-  <a href="producers.html">Producers</a>
-  <a href="soundkits.html">Sound Kits</a>
-  <a href="register.html" class="sell-btn">Start Selling</a>
+<nav class="mobile-menu">
+  <a href="/">Home</a>
+  <a href="/marketplace.html">Tracks</a>
 </nav>
 
-<main class="page">
-  <h1 class="page-title">Trending Beats</h1>
+<h1 class="page-title">Trending Beats</h1>
 
-  <div id="beatsGrid" class="beats-grid"></div>
-</main>
+<div id="beatsGrid" class="beats-grid"></div>
 
-<footer class="footer">
-  © 2026 ProdByBigi · Privacy · Terms
-</footer>
+<footer>© 2026 ProdByBigi</footer>
 
-<script src="js/menu.js"></script>
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/player.js"></script>
+<script type="module">
+  import { loadBeats } from "/js/firebase.js";
+  loadBeats("beatsGrid");
+</script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
 </body>
 </html>
