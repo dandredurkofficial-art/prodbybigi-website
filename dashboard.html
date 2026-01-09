@@ -38,6 +38,7 @@ window.getDocs = getDocs;
 window.query = query;
 window.where = where;
 window.updateDoc = updateDoc;
+window.doc = doc;
 window.deleteDoc = deleteDoc;
 
 window.currentUser = null;
@@ -416,7 +417,7 @@ async function loadBeats(){
   );
 
   const snap = await getDocs(q);
-  snap.forEach(d => beatsData.push(d.data()));
+  snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
 
   renderTracks();
 }
