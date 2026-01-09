@@ -2,124 +2,93 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProdByBigi – Buy & Sell Beats</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProdByBigi | Your First Hit Starts Here</title>
 
-  <meta name="color-scheme" content="dark">
-  <link rel="stylesheet" href="css/home.css?v=7">
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/marketplace.css">
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-<header class="navbar">
+<!-- HEADER -->
+<header class="header">
   <div class="logo">ProdByBigi</div>
 
   <nav class="nav-links">
-    <a href="marketplace.html">Marketplace</a>
+    <a class="active" href="index.html">Home</a>
+    <a href="marketplace.html">Feed</a>
     <a href="login.html">Login</a>
-    <a href="register.html" class="cta">Get Started</a>
+    <a class="cta" href="register.html">Start Selling</a>
   </nav>
 
-  <div class="hamburger" id="hamburger">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+  <div class="hamburger" id="hamburger">☰</div>
 </header>
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <a href="marketplace.html">Marketplace</a>
-  <a href="login.html">Login</a>
-  <a href="register.html" class="highlight">Get Started</a>
+  <a href="marketplace.html">Feed</a>
+  <a href="marketplace.html">Tracks</a>
+  <a href="soundkits.html">Sound Kits</a>
+  <a href="producers.html">Producers</a>
+  <a class="cta" href="register.html">Start Selling</a>
 </div>
 
 <!-- HERO -->
 <section class="hero">
-  <h1>Sell Beats. Build a Brand.<br>Get Paid.</h1>
-  <p>The next-generation marketplace for producers & artists.</p>
+  <h1>YOUR FIRST HIT STARTS HERE</h1>
 
-  <div class="hero-actions">
-    <a href="marketplace.html" class="btn primary">Browse Beats</a>
-    <a href="register.html" class="btn secondary">Start Selling</a>
+  <div class="search-box">
+    <input type="text" placeholder="Explore new sounds">
+    <button>Search</button>
   </div>
 </section>
 
-<!-- TRENDING BEATS -->
-<section class="beats">
+<!-- TRENDING -->
+<section class="marketplace">
   <h2>Trending Beats</h2>
 
-  <div class="beat-grid">
-    <div class="beat-card">
-      <div class="beat-art">
-        <button class="play-btn">▶</button>
-      </div>
-      <div class="beat-info">
-        <div>
-          <h3>Midnight Drip</h3>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="buy">$39</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="beat-art">
-        <button class="play-btn">▶</button>
-      </div>
-      <div class="beat-info">
-        <div>
-          <h3>Cold Streets</h3>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="buy">$29</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="beat-art">
-        <button class="play-btn">▶</button>
-      </div>
-      <div class="beat-info">
-        <div>
-          <h3>Dark Therapy</h3>
-          <span>Prod. Bigi</span>
-        </div>
-        <button class="buy">$49</button>
-      </div>
-    </div>
-  </div>
+  <div class="beats-grid" id="homeBeats"></div>
 </section>
 
 <!-- FOOTER -->
 <footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <strong>ProdByBigi</strong>
-      <p>© <span id="year"></span> ProdByBigi. All rights reserved.</p>
-    </div>
-
-    <div class="footer-links">
-      <a href="privacy.html">Privacy Policy</a>
-      <a href="terms.html">Terms & Conditions</a>
-      <a href="cookies.html">Cookies</a>
-      <a href="#" id="cookieSettings">Cookie Settings</a>
-    </div>
+  <p>© 2026 ProdByBigi</p>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms</a>
+    <a href="#">Cookies</a>
   </div>
 </footer>
 
-<script>
-  const hamburger = document.getElementById("hamburger");
-  const mobileMenu = document.getElementById("mobileMenu");
+<!-- SCRIPTS -->
+<script src="js/menu.js"></script>
+<script type="module">
+  import { db } from "./js/firebase.js";
+  import { collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  hamburger.addEventListener("click", () => {
-    hamburger.classList.toggle("open");
-    mobileMenu.classList.toggle("open");
+  const grid = document.getElementById("homeBeats");
+  const q = query(collection(db, "beats"), limit(4));
+  const snapshot = await getDocs(q);
+
+  snapshot.forEach((docSnap) => {
+    const beat = docSnap.data();
+
+    grid.innerHTML += `
+      <div class="beat-card">
+        <div class="beat-cover">
+          <img src="${beat.coverUrl}">
+          <button class="play" onclick="togglePlay('${beat.previewUrl}', this)">▶</button>
+        </div>
+
+        <div class="beat-meta">
+          <h3>${beat.title}</h3>
+          <button class="price">$${beat.price}</button>
+        </div>
+      </div>
+    `;
   });
-
-  document.getElementById("year").textContent = new Date().getFullYear();
 </script>
 
+<script src="js/player.js"></script>
 </body>
 </html>
