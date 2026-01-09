@@ -1,136 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Marketplace | ProdByBigi</title>
-  <link rel="stylesheet" href="css/marketplace.css">
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketplace | ProdByBigi</title>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="logo">ProdByBigi</div>
+<link rel="stylesheet" href="css/marketplace.css">
 
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="marketplace.html">Marketplace</a>
-    <a href="login.html">Login</a>
-    <a class="cta" href="register.html">Start Selling</a>
-  </nav>
-
-  <div class="hamburger" id="hamburger">
-    <span></span><span></span><span></span>
-  </div>
-</header>
-
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <a href="index.html">Home</a>
-  <a href="marketplace.html">Marketplace</a>
-  <a href="login.html">Login</a>
-  <a href="register.html">Start Selling</a>
-</div>
-
-<!-- MARKETPLACE -->
-<main class="marketplace">
-  <h1>Trending Beats</h1>
-
-  <!-- 🔥 REAL BEATS LOAD HERE -->
-  <div class="beats-grid" id="marketBeats"></div>
-</main>
-
-<!-- FOOTER -->
-<footer class="footer">
-  <p>© 2026 ProdByBigi</p>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms</a>
-    <a href="#">Cookies</a>
-    <a href="#">Cookie Settings</a>
-  </div>
-</footer>
-
-<!-- MOBILE MENU SCRIPT -->
-<script>
-  const hamburger = document.getElementById("hamburger");
-  const mobileMenu = document.getElementById("mobileMenu");
-
-  hamburger.onclick = () => {
-    hamburger.classList.toggle("active");
-    mobileMenu.classList.toggle("open");
-  };
-</script>
-
-<!-- 🔥 FIREBASE MARKETPLACE LOADER -->
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  where
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi"
+  projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const beatsGrid = document.getElementById("marketBeats");
+window.db = db;
+window.getDocs = getDocs;
+window.collection = collection;
+</script>
+
+<style>
+body {
+  margin:0;
+  font-family:Inter,system-ui;
+  background:#05070c;
+  color:#fff;
+}
+
+/* ===== GRID ===== */
+.beats-grid {
+  display:grid;
+  gap:16px;
+}
+
+/* Mobile = 2 columns */
+@media (max-width: 768px) {
+  .beats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop */
+@media (min-width: 769px) {
+  .beats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.beat-card {
+  background:#0b1220;
+  border-radius:16px;
+  overflow:hidden;
+}
+
+/* ===== ARTWORK ===== */
+.beat-cover {
+  position:relative;
+  aspect-ratio:1/1;
+  background:#000;
+}
+
+.beat-cover img {
+  width:100%;
+  height:100%;
+  object-fit:contain; /* FIXED */
+}
+
+.play-btn {
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:28px;
+  background:rgba(0,0,0,.35);
+  cursor:pointer;
+}
+
+/* ===== META ===== */
+.beat-meta {
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.beat-meta h3 {
+  font-size:14px;
+  margin:0;
+}
+
+.producer {
+  font-size:12px;
+  color:#9ca3af;
+}
+
+.price {
+  background:#2563eb;
+  border:none;
+  padding:6px 10px;
+  border-radius:999px;
+  color:#fff;
+  font-size:12px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="header">
+  <div class="logo">ProdByBigi</div>
+</header>
+
+<main class="marketplace">
+  <h1>Trending Beats</h1>
+  <div class="beats-grid" id="beatsGrid"></div>
+</main>
+
+<script>
+let beats = [];
 let currentAudio = null;
+let currentIndex = null;
 
 async function loadMarketplaceBeats() {
-  beatsGrid.innerHTML = "<p>Loading beats...</p>";
+  const snap = await getDocs(collection(db, "beats"));
+  beats = [];
+  snap.forEach(d => beats.push(d.data()));
+  renderBeats();
+}
 
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true)
-  );
-
-  const snap = await getDocs(q);
-
+function renderBeats() {
   beatsGrid.innerHTML = "";
 
-  snap.forEach(doc => {
-    const b = doc.data();
-
+  beats.forEach((b, i) => {
     beatsGrid.innerHTML += `
       <div class="beat-card">
-        <div class="beat-cover" style="background-image:url('${b.artwork || ""}')">
-          <button class="play" onclick="playPreview('${b.previewAudio}')">▶</button>
+        <div class="beat-cover">
+          <img src="${b.artwork}">
+          <div class="play-btn" onclick="togglePlay(${i})" id="play-${i}">▶</div>
         </div>
-
         <div class="beat-meta">
           <div>
             <h3>${b.title}</h3>
-            <a href="producer.html?username=${b.producerId || "producer"}" class="producer">
-              Prod. ${b.producerId || "Producer"}
-            </a>
+            <div class="producer">Prod. @Producer</div>
           </div>
-          <button class="price">
-            $${b.licenses?.basic?.price || 0}
-          </button>
+          <button class="price">$${b.licenses?.basic?.price || "29.99"}</button>
         </div>
       </div>
     `;
   });
-
-  if (snap.empty) {
-    beatsGrid.innerHTML = "<p>No beats available yet.</p>";
-  }
 }
 
-window.playPreview = (url) => {
-  if (currentAudio) currentAudio.pause();
-  currentAudio = new Audio(url);
+function togglePlay(index) {
+  if (currentAudio && currentIndex === index) {
+    currentAudio.pause();
+    document.getElementById(`play-${index}`).innerText = "▶";
+    currentIndex = null;
+    return;
+  }
+
+  if (currentAudio) {
+    currentAudio.pause();
+    document.getElementById(`play-${currentIndex}`).innerText = "▶";
+  }
+
+  currentAudio = new Audio(beats[index].previewAudio);
   currentAudio.play();
-};
+  currentIndex = index;
+  document.getElementById(`play-${index}`).innerText = "⏸";
+
+  currentAudio.onended = () => {
+    document.getElementById(`play-${index}`).innerText = "▶";
+    currentIndex = null;
+  };
+}
 
 loadMarketplaceBeats();
 </script>
