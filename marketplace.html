@@ -1,35 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Marketplace – ProdByBigi</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marketplace</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/marketplace.css">
 </head>
 <body>
 
-<header>
-  <div class="menu-btn">☰</div>
-  <div class="logo">ProdByBigi</div>
+<header class="topbar">
+  <button id="menuBtn">☰</button>
+  <h1>ProdByBigi</h1>
 </header>
 
-<nav class="mobile-menu">
+<div id="mobileMenu" class="mobile-menu">
   <a href="/">Home</a>
-  <a href="/marketplace.html">Tracks</a>
-</nav>
-
-<div class="marketplace-grid" id="marketplaceGrid">
-  <!-- JS inserts beat cards here -->
+  <a href="/register.html">Start Selling</a>
 </div>
 
-<div id="beatsGrid" class="beats-grid"></div>
+<section class="section">
+  <h3>All Beats</h3>
+  <div class="beat-grid" id="marketplaceGrid"></div>
+</section>
 
 <footer>© 2026 ProdByBigi</footer>
 
-<script type="module">
-  import { loadBeats } from "/js/firebase.js";
-  loadBeats("beatsGrid");
-</script>
-<script src="/js/menu.js"></script>
-<script src="/js/player.js"></script>
+<script type="module" src="/js/menu.js"></script>
+<script type="module" src="/js/player.js"></script>
 </body>
 </html>
