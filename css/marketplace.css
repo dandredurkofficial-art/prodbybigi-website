@@ -1,118 +1,32 @@
-/* =========================
-   MARKETPLACE PAGE
-   ========================= */
-
-.marketplace-header {
-  padding: 24px 16px;
-}
-
-.marketplace-header h1 {
-  color: #fff;
-  font-size: 22px;
-}
-
-/* =========================
-   GRID LAYOUT
-   ========================= */
-
-/* MOBILE — 2 per row */
-.marketplace-grid {
+.beat-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
-  padding: 0 16px 60px;
 }
 
-/* TABLET */
-@media (min-width: 768px) {
-  .marketplace-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-/* DESKTOP — 5 per row */
 @media (min-width: 1200px) {
-  .marketplace-grid {
+  .beat-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
-/* =========================
-   BEAT CARD
-   ========================= */
-
 .beat-card {
   background: #111;
-  border-radius: 14px;
-  padding: 10px;
-  color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .beat-card img {
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 10px;
 }
 
-.beat-card h3 {
-  font-size: 14px;
-  margin: 8px 0 2px;
-}
-
-.beat-card .producer {
-  font-size: 12px;
-  color: #aaa;
-}
-
-.beat-card .price {
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.beat-card button {
-  margin-top: 6px;
-  width: 100%;
+.beat-info {
   padding: 8px;
-  border-radius: 999px;
-  border: none;
-  background: #fff;
-  color: #000;
-  font-weight: 600;
-  cursor: pointer;
 }
 
-/* =========================
-   HARD MOBILE GRID FIX
-   ========================= */
-
-/* Force grid container */
-.trending-grid,
-.marketplace-grid {
-  display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 14px !important;
+.play-btn {
+  width: 100%;
+  margin-top: 6px;
 }
-
-/* Desktop override */
-@media (min-width: 1200px) {
-  .trending-grid,
-  .marketplace-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
-}
-
-/* Kill full-width cards */
-.beat-card {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-/* Kill full-width images */
-.beat-card img {
-  width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 1 / 1 !important;
-  object-fit: cover !important;
-}
-
