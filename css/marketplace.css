@@ -1,177 +1,65 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body {
-  background: #050507;
-  color: #fff;
-}
-
-/* HEADER */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 22px;
-  border-bottom: 1px solid #1e1e25;
-}
-
-.logo {
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.nav-links {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-links a {
-  color: #cbd5f5;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.nav-links .cta {
-  border: 1px solid #3b82f6;
-  padding: 6px 14px;
-  border-radius: 8px;
-}
-
-/* HAMBURGER */
-.hamburger {
-  display: none;
-  flex-direction: column;
-  gap: 5px;
-  cursor: pointer;
-}
-
-.hamburger span {
-  width: 24px;
-  height: 2px;
-  background: #fff;
-}
-
-/* MOBILE MENU */
-.mobile-menu {
-  display: none;
-  flex-direction: column;
-  background: #050507;
-  border-bottom: 1px solid #1e1e25;
-}
-
-.mobile-menu a {
+.page-title {
   padding: 16px;
-  color: #fff;
-  text-decoration: none;
-  border-top: 1px solid #1e1e25;
-}
-
-.mobile-menu.open {
-  display: flex;
-}
-
-/* MARKETPLACE */
-.marketplace {
-  max-width: 1100px;
-  margin: auto;
-  padding: 28px;
-}
-
-.marketplace h1 {
-  margin-bottom: 20px;
+  font-size: 22px;
 }
 
 .beats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
-}
-
-/* BEAT CARD */
-.beat-card {
-  background: linear-gradient(180deg, #0f172a, #020617);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,.6);
-}
-
-.beat-cover {
-  height: 200px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.play {
-  background: #3b82f6;
-  border: none;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  font-size: 22px;
-  color: #fff;
-}
-
-.beat-meta {
+  gap: 16px;
   padding: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.beat-meta h3 {
-  font-size: 16px;
+/* Mobile: 2 per row */
+@media (max-width: 768px) {
+  .beats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Desktop: 5 per row */
+@media (min-width: 769px) {
+  .beats-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.beat-card {
+  background: #111;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.artwork {
+  width: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+}
+
+.beat-info {
+  padding: 10px;
+}
+
+.beat-info h3 {
+  font-size: 14px;
+  margin: 0;
 }
 
 .producer {
-  font-size: 13px;
-  color: #94a3b8;
-  text-decoration: none;
+  font-size: 12px;
+  opacity: 0.7;
 }
 
-.producer:hover {
-  color: #3b82f6;
+.play-btn {
+  margin-top: 6px;
+  background: #fff;
+  color: #000;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .price {
-  background: #3b82f6;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 10px;
-  color: #fff;
-}
-
-/* FOOTER */
-.footer {
-  border-top: 1px solid #1e1e25;
-  padding: 20px;
-  text-align: center;
-  font-size: 13px;
-  color: #94a3b8;
-}
-
-.footer-links {
-  margin-top: 8px;
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-}
-
-.footer-links a {
-  color: #94a3b8;
-  text-decoration: none;
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
-  }
+  float: right;
+  font-weight: bold;
 }
