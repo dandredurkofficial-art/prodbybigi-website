@@ -2,77 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Marketplace – ProdByBigi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Marketplace | ProdByBigi</title>
 
-  <link rel="stylesheet" href="/css/global.css" />
-  <link rel="stylesheet" href="/css/marketplace.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/marketplace.css" />
 </head>
+
 <body>
 
-<header class="topbar">
-  <button id="menuBtn">☰</button>
-  <h1>ProdByBigi</h1>
+<header class="header">
+  <button id="menuBtn" class="hamburger">☰</button>
+  <div class="logo">ProdByBigi</div>
 </header>
 
-<nav id="mobileMenu" class="menu hidden">
-  <a href="/index.html">Feed</a>
-  <a href="/marketplace.html">Tracks</a>
-  <a href="/producers.html">Producers</a>
-  <a href="/register.html" class="sell-btn">Start Selling</a>
+<nav id="mobileMenu" class="mobile-menu hidden">
+  <a href="marketplace.html">Tracks</a>
+  <a href="producers.html">Producers</a>
+  <a href="soundkits.html">Sound Kits</a>
+  <a href="register.html" class="sell-btn">Start Selling</a>
 </nav>
 
-<main>
-  <h2 class="page-title">Trending Beats</h2>
+<main class="page">
+  <h1 class="page-title">Trending Beats</h1>
 
-  <section id="beatsGrid" class="beats-grid"></section>
+  <div id="beatsGrid" class="beats-grid"></div>
 </main>
 
-<script type="module" src="/js/firebase.js"></script>
-<script type="module" src="/js/player.js"></script>
-<script src="/js/menu.js"></script>
+<footer class="footer">
+  © 2026 ProdByBigi · Privacy · Terms
+</footer>
 
-<script type="module">
-  import { db } from "/js/firebase.js";
-  import {
-    collection,
-    query,
-    where,
-    orderBy,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const grid = document.getElementById("beatsGrid");
-
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true),
-    orderBy("createdAt", "desc")
-  );
-
-  const snap = await getDocs(q);
-
-  snap.forEach(doc => {
-    const beat = doc.data();
-
-    grid.innerHTML += `
-      <div class="beat-card">
-        <img src="${beat.artwork}" class="artwork" />
-        <div class="beat-info">
-          <h3>${beat.title}</h3>
-          <p class="producer">${beat.producerName || "Producer"}</p>
-
-          <button class="play-btn"
-            data-audio="${beat.previewAudio}">
-            ▶ Play
-          </button>
-
-          <span class="price">$${beat.price}</span>
-        </div>
-      </div>
-    `;
-  });
-</script>
-
+<script src="js/menu.js"></script>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/player.js"></script>
 </body>
 </html>
