@@ -1,22 +1,114 @@
-.hero {
-  padding: 40px 20px;
-  background: linear-gradient(180deg, #111, #000);
+/* =========================
+   HOME PAGE STYLES
+   ========================= */
+
+.home-hero {
+  background: radial-gradient(circle at center, #1a1a1a, #000);
+  padding: 60px 16px 40px;
+  text-align: center;
 }
 
-.hero h1 {
-  font-size: 32px;
-  margin-bottom: 16px;
+.home-hero h1 {
+  color: #fff;
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
 }
 
-.hero input {
-  width: 100%;
-  padding: 14px;
-  border-radius: 30px;
+.home-search {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  gap: 10px;
+}
+
+.home-search input {
+  flex: 1;
+  padding: 14px 18px;
+  border-radius: 999px;
   border: none;
+  font-size: 16px;
   outline: none;
 }
 
-.section-title {
-  padding: 20px;
-  font-size: 24px;
+.home-search button {
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* =========================
+   TRENDING SECTION
+   ========================= */
+
+.trending-section {
+  padding: 24px 16px 60px;
+}
+
+.trending-section h2 {
+  color: #fff;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+
+/* MOBILE FIRST — 2 beats per row */
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+/* DESKTOP — 5 beats per row */
+@media (min-width: 1200px) {
+  .home-hero h1 {
+    font-size: 42px;
+  }
+
+  .trending-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* =========================
+   BEAT CARD (shared look)
+   ========================= */
+
+.beat-card {
+  background: #111;
+  border-radius: 14px;
+  padding: 10px;
+  color: #fff;
+}
+
+.beat-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.beat-card h3 {
+  font-size: 14px;
+  margin: 8px 0 2px;
+}
+
+.beat-card .producer {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.beat-card button {
+  margin-top: 6px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 999px;
+  border: none;
+  background: #fff;
+  color: #000;
+  font-weight: 600;
+  cursor: pointer;
 }
