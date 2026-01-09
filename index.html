@@ -1,52 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ProdByBigi</title>
-
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/home.css" />
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
-
 <body>
 
-<header class="header">
-  <button id="menuBtn" class="hamburger">☰</button>
+<header>
+  <div class="menu-btn">☰</div>
   <div class="logo">ProdByBigi</div>
-
-  <div class="nav-links">
-    <a href="login.html">Sign in</a>
-    <a href="register.html">Sign up</a>
-  </div>
 </header>
 
-<nav id="mobileMenu" class="mobile-menu hidden">
-  <a href="marketplace.html">Tracks</a>
-  <a href="producers-profile.html">Producers</a>
-  <a href="soundkits.html">Sound Kits</a>
-  <a href="register.html" class="sell-btn">Start Selling</a>
+<nav class="mobile-menu">
+  <a href="/marketplace.html">Tracks</a>
+  <a href="/login.html">Sign In</a>
 </nav>
 
 <section class="hero">
   <h1>Your first hit starts here</h1>
-  <div class="search-bar">
-    <input placeholder="Explore new sounds…" />
-    <button>Search</button>
-  </div>
+  <input placeholder="Explore new sounds..." />
 </section>
 
-<section class="home-section">
-  <h2>Trending Beats</h2>
-  <div id="homeGrid" class="beats-grid"></div>
-</section>
+<h2 class="section-title">Trending Beats</h2>
+<div id="homeBeats" class="beats-grid"></div>
 
-<footer class="footer">
-  © 2026 ProdByBigi
-</footer>
+<footer>© 2026 ProdByBigi</footer>
 
-<script src="js/menu.js"></script>
-<script type="module" src="js/firebase.js"></script>
-<script type="module" src="js/player.js"></script>
+<script type="module">
+  import { loadBeats } from "/js/firebase.js";
+  loadBeats("homeBeats");
+</script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
 </body>
 </html>
