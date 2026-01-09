@@ -1,42 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ProdByBigi</title>
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
 
-<header>
-  <div class="menu-btn">☰</div>
-  <div class="logo">ProdByBigi</div>
+<header class="topbar">
+  <button id="menuBtn">☰</button>
+  <h1>ProdByBigi</h1>
 </header>
 
-<nav class="mobile-menu">
+<div id="mobileMenu" class="mobile-menu">
   <a href="/marketplace.html">Tracks</a>
-  <a href="/login.html">Sign In</a>
-</nav>
+  <a href="/producers.html">Producers</a>
+  <a href="/register.html">Start Selling</a>
+</div>
 
 <section class="hero">
-  <h1>Your first hit starts here</h1>
+  <h2>Your first hit starts here</h2>
   <input placeholder="Explore new sounds..." />
 </section>
 
-<section class="trending-section">
-  <h2>Trending Beats</h2>
-
-  <div class="trending-grid" id="trendingBeats">
-    <!-- JS inserts beat cards here -->
-  </div>
+<section class="section">
+  <h3>Trending Beats</h3>
+  <div class="beat-grid" id="trendingGrid"></div>
 </section>
 
 <footer>© 2026 ProdByBigi</footer>
 
-<script type="module">
-  import { loadBeats } from "/js/firebase.js";
-  loadBeats("homeBeats");
-</script>
-<script src="/js/menu.js"></script>
-<script src="/js/player.js"></script>
+<script type="module" src="/js/menu.js"></script>
+<script type="module" src="/js/player.js"></script>
 </body>
 </html>
