@@ -2,93 +2,73 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ProdByBigi | Your First Hit Starts Here</title>
+  <title>ProdByBigi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/marketplace.css">
+  <link rel="stylesheet" href="/css/global.css" />
+  <link rel="stylesheet" href="/css/home.css" />
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="logo">ProdByBigi</div>
-
-  <nav class="nav-links">
-    <a class="active" href="index.html">Home</a>
-    <a href="marketplace.html">Feed</a>
-    <a href="login.html">Login</a>
-    <a class="cta" href="register.html">Start Selling</a>
-  </nav>
-
-  <div class="hamburger" id="hamburger">☰</div>
+<header class="topbar">
+  <button id="menuBtn">☰</button>
+  <h1>ProdByBigi</h1>
+  <div class="auth-links">
+    <a href="/login.html">Sign in</a>
+    <a href="/register.html">Sign up</a>
+  </div>
 </header>
 
-<!-- MOBILE MENU -->
-<div class="mobile-menu" id="mobileMenu">
-  <a href="marketplace.html">Feed</a>
-  <a href="marketplace.html">Tracks</a>
-  <a href="soundkits.html">Sound Kits</a>
-  <a href="producers.html">Producers</a>
-  <a class="cta" href="register.html">Start Selling</a>
-</div>
+<nav id="mobileMenu" class="menu hidden">
+  <a href="/marketplace.html">Tracks</a>
+  <a href="/producers.html">Producers</a>
+  <a href="/register.html" class="sell-btn">Start Selling</a>
+</nav>
 
-<!-- HERO -->
 <section class="hero">
-  <h1>YOUR FIRST HIT STARTS HERE</h1>
-
-  <div class="search-box">
-    <input type="text" placeholder="Explore new sounds">
-    <button>Search</button>
-  </div>
+  <h2>Your first hit starts here</h2>
+  <input type="search" placeholder="Explore new sounds..." />
 </section>
 
-<!-- TRENDING -->
-<section class="marketplace">
-  <h2>Trending Beats</h2>
-
-  <div class="beats-grid" id="homeBeats"></div>
+<section class="home-section">
+  <h3>Trending Beats</h3>
+  <div id="homeGrid" class="beats-grid"></div>
 </section>
 
-<!-- FOOTER -->
-<footer class="footer">
-  <p>© 2026 ProdByBigi</p>
-  <div class="footer-links">
-    <a href="#">Privacy Policy</a>
-    <a href="#">Terms</a>
-    <a href="#">Cookies</a>
-  </div>
-</footer>
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
 
-<!-- SCRIPTS -->
-<script src="js/menu.js"></script>
 <script type="module">
-  import { db } from "./js/firebase.js";
-  import { collection, getDocs, limit, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { db } from "/js/firebase.js";
+  import {
+    collection,
+    query,
+    where,
+    limit,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  const grid = document.getElementById("homeBeats");
-  const q = query(collection(db, "beats"), limit(4));
-  const snapshot = await getDocs(q);
+  const grid = document.getElementById("homeGrid");
 
-  snapshot.forEach((docSnap) => {
-    const beat = docSnap.data();
+  const q = query(
+    collection(db, "beats"),
+    where("published", "==", true),
+    limit(10)
+  );
+
+  const snap = await getDocs(q);
+
+  snap.forEach(doc => {
+    const beat = doc.data();
 
     grid.innerHTML += `
       <div class="beat-card">
-        <div class="beat-cover">
-          <img src="${beat.coverUrl}">
-          <button class="play" onclick="togglePlay('${beat.previewUrl}', this)">▶</button>
-        </div>
-
-        <div class="beat-meta">
-          <h3>${beat.title}</h3>
-          <button class="price">$${beat.price}</button>
-        </div>
+        <img src="${beat.artwork}" />
+        <p>${beat.title}</p>
       </div>
     `;
   });
 </script>
 
-<script src="js/player.js"></script>
 </body>
 </html>
