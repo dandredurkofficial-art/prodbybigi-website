@@ -36,54 +36,8 @@
 <main class="marketplace">
   <h1>Trending Beats</h1>
 
-  <div class="beats-grid">
-
-    <div class="beat-card">
-      <div class="beat-cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="beat-meta">
-        <div>
-          <h3>Midnight Drip</h3>
-          <a href="producer.html?username=bigi" class="producer">
-            Prod. Bigi
-          </a>
-        </div>
-        <button class="price">$39</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="beat-cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="beat-meta">
-        <div>
-          <h3>Cold Streets</h3>
-          <a href="producer.html?username=bigi" class="producer">
-            Prod. Bigi
-          </a>
-        </div>
-        <button class="price">$29</button>
-      </div>
-    </div>
-
-    <div class="beat-card">
-      <div class="beat-cover">
-        <button class="play">▶</button>
-      </div>
-      <div class="beat-meta">
-        <div>
-          <h3>Dark Therapy</h3>
-          <a href="producer.html?username=bigi" class="producer">
-            Prod. Bigi
-          </a>
-        </div>
-        <button class="price">$49</button>
-      </div>
-    </div>
-
-  </div>
+  <!-- 🔥 REAL BEATS LOAD HERE -->
+  <div class="beats-grid" id="marketBeats"></div>
 </main>
 
 <!-- FOOTER -->
@@ -97,6 +51,7 @@
   </div>
 </footer>
 
+<!-- MOBILE MENU SCRIPT -->
 <script>
   const hamburger = document.getElementById("hamburger");
   const mobileMenu = document.getElementById("mobileMenu");
@@ -105,6 +60,79 @@
     hamburger.classList.toggle("active");
     mobileMenu.classList.toggle("open");
   };
+</script>
+
+<!-- 🔥 FIREBASE MARKETPLACE LOADER -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+  authDomain: "prodbybigi.firebaseapp.com",
+  projectId: "prodbybigi"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const beatsGrid = document.getElementById("marketBeats");
+let currentAudio = null;
+
+async function loadMarketplaceBeats() {
+  beatsGrid.innerHTML = "<p>Loading beats...</p>";
+
+  const q = query(
+    collection(db, "beats"),
+    where("published", "==", true)
+  );
+
+  const snap = await getDocs(q);
+
+  beatsGrid.innerHTML = "";
+
+  snap.forEach(doc => {
+    const b = doc.data();
+
+    beatsGrid.innerHTML += `
+      <div class="beat-card">
+        <div class="beat-cover" style="background-image:url('${b.artwork || ""}')">
+          <button class="play" onclick="playPreview('${b.previewAudio}')">▶</button>
+        </div>
+
+        <div class="beat-meta">
+          <div>
+            <h3>${b.title}</h3>
+            <a href="producer.html?username=${b.producerId || "producer"}" class="producer">
+              Prod. ${b.producerId || "Producer"}
+            </a>
+          </div>
+          <button class="price">
+            $${b.licenses?.basic?.price || 0}
+          </button>
+        </div>
+      </div>
+    `;
+  });
+
+  if (snap.empty) {
+    beatsGrid.innerHTML = "<p>No beats available yet.</p>";
+  }
+}
+
+window.playPreview = (url) => {
+  if (currentAudio) currentAudio.pause();
+  currentAudio = new Audio(url);
+  currentAudio.play();
+};
+
+loadMarketplaceBeats();
 </script>
 
 </body>
