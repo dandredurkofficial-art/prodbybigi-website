@@ -2,73 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ProdByBigi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ProdByBigi</title>
 
-  <link rel="stylesheet" href="/css/global.css" />
-  <link rel="stylesheet" href="/css/home.css" />
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/home.css" />
 </head>
+
 <body>
 
-<header class="topbar">
-  <button id="menuBtn">☰</button>
-  <h1>ProdByBigi</h1>
-  <div class="auth-links">
-    <a href="/login.html">Sign in</a>
-    <a href="/register.html">Sign up</a>
+<header class="header">
+  <button id="menuBtn" class="hamburger">☰</button>
+  <div class="logo">ProdByBigi</div>
+
+  <div class="nav-links">
+    <a href="login.html">Sign in</a>
+    <a href="register.html">Sign up</a>
   </div>
 </header>
 
-<nav id="mobileMenu" class="menu hidden">
-  <a href="/marketplace.html">Tracks</a>
-  <a href="/producers.html">Producers</a>
-  <a href="/register.html" class="sell-btn">Start Selling</a>
+<nav id="mobileMenu" class="mobile-menu hidden">
+  <a href="marketplace.html">Tracks</a>
+  <a href="producers.html">Producers</a>
+  <a href="soundkits.html">Sound Kits</a>
+  <a href="register.html" class="sell-btn">Start Selling</a>
 </nav>
 
 <section class="hero">
-  <h2>Your first hit starts here</h2>
-  <input type="search" placeholder="Explore new sounds..." />
+  <h1>Your first hit starts here</h1>
+  <div class="search-bar">
+    <input placeholder="Explore new sounds…" />
+    <button>Search</button>
+  </div>
 </section>
 
 <section class="home-section">
-  <h3>Trending Beats</h3>
+  <h2>Trending Beats</h2>
   <div id="homeGrid" class="beats-grid"></div>
 </section>
 
-<script type="module" src="/js/firebase.js"></script>
-<script src="/js/menu.js"></script>
+<footer class="footer">
+  © 2026 ProdByBigi
+</footer>
 
-<script type="module">
-  import { db } from "/js/firebase.js";
-  import {
-    collection,
-    query,
-    where,
-    limit,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const grid = document.getElementById("homeGrid");
-
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true),
-    limit(10)
-  );
-
-  const snap = await getDocs(q);
-
-  snap.forEach(doc => {
-    const beat = doc.data();
-
-    grid.innerHTML += `
-      <div class="beat-card">
-        <img src="${beat.artwork}" />
-        <p>${beat.title}</p>
-      </div>
-    `;
-  });
-</script>
-
+<script src="js/menu.js"></script>
+<script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/player.js"></script>
 </body>
 </html>
