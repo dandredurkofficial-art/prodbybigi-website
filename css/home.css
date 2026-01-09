@@ -112,3 +112,38 @@
   font-weight: 600;
   cursor: pointer;
 }
+
+/* =========================
+   HARD MOBILE GRID FIX
+   ========================= */
+
+/* Force grid container */
+.trending-grid,
+.marketplace-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+/* Desktop override */
+@media (min-width: 1200px) {
+  .trending-grid,
+  .marketplace-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Kill full-width cards */
+.beat-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Kill full-width images */
+.beat-card img {
+  width: 100% !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  object-fit: cover !important;
+}
+
