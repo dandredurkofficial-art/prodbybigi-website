@@ -1,14 +1,9 @@
-const menuBtn =
-  document.getElementById("menuBtn") ||
-  document.getElementById("hamburger");
+document.addEventListener("DOMContentLoaded", () => {
+  const btn = document.querySelector(".menu-btn");
+  const menu = document.querySelector(".mobile-menu");
+  if (!btn || !menu) return;
 
-const mobileMenu =
-  document.getElementById("mobileMenu") ||
-  document.querySelector(".menu");
-
-if (menuBtn && mobileMenu) {
-  menuBtn.addEventListener("click", () => {
-    mobileMenu.classList.toggle("hidden");
-    mobileMenu.classList.toggle("open");
-  });
-}
+  btn.onclick = () => {
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  };
+});
