@@ -1,62 +1,37 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  query,
-  where,
-  orderBy,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔐 YOUR REAL CONFIG */
 const firebaseConfig = {
   apiKey: "YOUR_KEY",
   authDomain: "YOUR_DOMAIN",
   projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* 🧠 RENDER BEATS */
-async function loadBeats(containerId) {
-  const grid = document.getElementById(containerId);
-  if (!grid) return;
+export async function loadBeats(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
 
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true),
-    orderBy("createdAt", "desc")
-  );
-
+  const q = query(collection(db, "beats"), where("published", "==", true));
   const snap = await getDocs(q);
-  grid.innerHTML = "";
 
-  snap.forEach((doc) => {
-    const b = doc.data();
+  container.innerHTML = "";
 
-    grid.innerHTML += `
-      <div class="beat-card">
-        <div class="beat-cover">
-          <img src="${b.artwork}" alt="${b.title}">
-          <button class="play-btn" data-audio="${b.previewAudio}">▶</button>
-        </div>
+  snap.forEach(doc => {
+    const beat = doc.data();
 
-        <div class="beat-meta">
-          <h3>${b.title}</h3>
-          <a href="producer-profile.html?id=${b.producerId}">
-            Prod. ${b.producerName || "Producer"}
-          </a>
-          <span class="price">$${b.price}</span>
-        </div>
-      </div>
+    const card = document.createElement("div");
+    card.className = "beat-card";
+
+    card.innerHTML = `
+      <img src="${beat.artwork}" />
+      <h3>${beat.title}</h3>
+      <p>${beat.producerName}</p>
+      <button onclick="playBeat('${beat.audioUrl}')">▶ Play</button>
     `;
+
+    container.appendChild(card);
   });
 }
-
-/* AUTO LOAD */
-loadBeats("beatsGrid");
-loadBeats("homeGrid");
