@@ -1,67 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Producer | ProdByBigi</title>
-
-  <link rel="stylesheet" href="css/global.css" />
-  <link rel="stylesheet" href="css/marketplace.css" />
+  <title>Producer</title>
+  <link rel="stylesheet" href="/css/global.css">
 </head>
-
 <body>
 
-<header class="header">
-  <a href="marketplace.html">← Back</a>
-  <div class="logo">Producer</div>
+<header>
+  <div class="menu-btn">☰</div>
+  <div class="logo">ProdByBigi</div>
 </header>
 
-<main class="page">
-  <h1 id="producerName">Producer</h1>
-  <div id="beatsGrid" class="beats-grid"></div>
-</main>
+<h1 style="padding:20px">Producer Beats</h1>
+<div id="beatsGrid" class="beats-grid"></div>
 
-<footer class="footer">© 2026 ProdByBigi</footer>
+<footer>© 2026 ProdByBigi</footer>
 
 <script type="module">
-import { getFirestore, collection, query, where, getDocs } from
-"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-
-const firebaseConfig = { /* same config */ };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-const params = new URLSearchParams(window.location.search);
-const producerId = params.get("id");
-
-const grid = document.getElementById("beatsGrid");
-
-const q = query(
-  collection(db, "beats"),
-  where("producerId", "==", producerId),
-  where("published", "==", true)
-);
-
-const snap = await getDocs(q);
-snap.forEach(doc => {
-  const b = doc.data();
-  grid.innerHTML += `
-    <div class="beat-card">
-      <div class="beat-cover">
-        <img src="${b.artwork}">
-        <button class="play-btn" data-audio="${b.previewAudio}">▶</button>
-      </div>
-      <div class="beat-meta">
-        <h3>${b.title}</h3>
-        <span class="price">$${b.price}</span>
-      </div>
-    </div>
-  `;
-});
+  import { loadBeats } from "/js/firebase.js";
+  loadBeats("beatsGrid");
 </script>
-
-<script type="module" src="js/player.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
 </body>
 </html>
