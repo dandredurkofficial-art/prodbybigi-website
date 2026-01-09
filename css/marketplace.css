@@ -1,65 +1,75 @@
-.page-title {
+.page {
   padding: 16px;
-  font-size: 22px;
 }
 
+.page-title {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+/* GRID */
 .beats-grid {
   display: grid;
-  gap: 16px;
-  padding: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
 
-/* Mobile: 2 per row */
-@media (max-width: 768px) {
-  .beats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* Desktop: 5 per row */
-@media (min-width: 769px) {
+/* DESKTOP */
+@media (min-width: 1024px) {
   .beats-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
+/* CARD */
 .beat-card {
-  background: #111;
-  border-radius: 10px;
+  background: #0b0b0b;
+  border-radius: 16px;
   overflow: hidden;
 }
 
-.artwork {
+.beat-cover {
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+.beat-cover img {
   width: 100%;
-  aspect-ratio: 1/1;
-  object-fit: cover;
-}
-
-.beat-info {
-  padding: 10px;
-}
-
-.beat-info h3 {
-  font-size: 14px;
-  margin: 0;
-}
-
-.producer {
-  font-size: 12px;
-  opacity: 0.7;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
 }
 
 .play-btn {
-  margin-top: 6px;
-  background: #fff;
-  color: #000;
+  position: absolute;
+  inset: 0;
   border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
+  background: rgba(0,0,0,0.4);
+  color: white;
+  font-size: 28px;
   cursor: pointer;
 }
 
+.beat-meta {
+  padding: 10px;
+}
+
+.beat-meta h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.beat-meta a {
+  font-size: 12px;
+  color: #aaa;
+  display: block;
+  margin-bottom: 6px;
+}
+
 .price {
-  float: right;
-  font-weight: bold;
+  background: #2563eb;
+  padding: 6px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  display: inline-block;
 }
