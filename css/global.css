@@ -30,8 +30,13 @@ body {
 .mobile-menu {
   display: none;
   flex-direction: column;
-  padding: 12px;
   background: #111;
+}
+
+.mobile-menu a {
+  padding: 12px;
+  color: white;
+  text-decoration: none;
 }
 
 .mobile-menu.open {
