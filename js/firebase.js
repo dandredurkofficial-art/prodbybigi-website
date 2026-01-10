@@ -1,37 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
   projectId: "prodbybigi",
+  storageBucket: "prodbybigi.firebasestorage.app",
+  messagingSenderId: "1040553526206",
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export async function loadBeats(containerId) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const q = query(collection(db, "beats"), where("published", "==", true));
-  const snap = await getDocs(q);
-
-  container.innerHTML = "";
-
-  snap.forEach(doc => {
-    const beat = doc.data();
-
-    const card = document.createElement("div");
-    card.className = "beat-card";
-
-    card.innerHTML = `
-      <img src="${beat.artwork}" />
-      <h3>${beat.title}</h3>
-      <p>${beat.producerName}</p>
-      <button onclick="playBeat('${beat.audioUrl}')">▶ Play</button>
-    `;
-
-    container.appendChild(card);
-  });
-}
+export { db };
