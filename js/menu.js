@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.querySelector(".menu-btn");
-  const menu = document.querySelector(".mobile-menu");
+  const btn = document.getElementById("menuBtn");
+const menu = document.getElementById("mobileMenu");
   if (!btn || !menu) return;
 
   btn.onclick = () => {
