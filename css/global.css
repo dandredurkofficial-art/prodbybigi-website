@@ -11,8 +11,20 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
+  padding: 14px;
   background: #000;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+#menuBtn {
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px 10px;
 }
 
 .mobile-menu {
