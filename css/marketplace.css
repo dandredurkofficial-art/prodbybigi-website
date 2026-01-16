@@ -1,18 +1,26 @@
-.beat-grid {
+body {
+  background: #000;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  margin: 0;
+}
+
+.beats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
+  padding: 16px;
 }
 
-@media (min-width: 1200px) {
-  .beat-grid {
+@media (min-width: 1024px) {
+  .beats-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
 .beat-card {
   background: #111;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
 }
 
@@ -20,13 +28,16 @@
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
+  display: block;
 }
 
 .beat-info {
-  padding: 8px;
+  padding: 10px;
 }
 
 .play-btn {
-  width: 100%;
-  margin-top: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 20px;
+  border: none;
 }
