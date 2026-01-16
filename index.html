@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ProdByBigi</title>
-  <link rel="stylesheet" href="/css/home.css" />
-  <link rel="stylesheet" href="/css/marketplace.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/home.css">
+<link rel="stylesheet" href="/css/marketplace.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
 
 <header>
@@ -20,35 +23,43 @@
 
 <section class="hero">
   <h2>Your first hit starts here</h2>
-  <input class="search" placeholder="Explore new sounds…" />
+  <input placeholder="Explore new sounds…">
 </section>
 
-<section class="trending">
-  <h3>Trending Beats</h3>
-  <div class="trending-grid" id="trendingGrid"></div>
-</section>
+<h3 style="padding:16px;">Trending Beats</h3>
+<div class="beats-grid" id="trending"></div>
 
-<script type="module">
-  import { fetchBeats } from "/js/firebase.js";
+<footer>
+  © <span id="year"></span> ProdByBigi  
+  <div class="footer-icons">
+    <a href="#">IG</a>
+    <a href="#">X</a>
+    <a href="#">YT</a>
+  </div>
+</footer>
 
-  const grid = document.getElementById("trendingGrid");
+<script src="/js/firebase.js"></script>
+<script src="/js/player.js"></script>
+<script src="/js/menu.js"></script>
 
-  fetchBeats(5).then(beats => {
-    beats.forEach(b => {
-      grid.innerHTML += `
-        <div class="beat-card">
-          <img src="${b.artwork}">
-          <div class="beat-info">
-            <strong>${b.title}</strong><br>
-            <button class="play-btn" data-audio="${b.audioUrl}">▶ Play</button>
-          </div>
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+fetchBeats(5).then(beats => {
+  const grid = document.getElementById("trending");
+  beats.forEach(b => {
+    grid.innerHTML += `
+      <div class="beat-card">
+        <img src="${b.artwork}">
+        <div class="beat-info">
+          <strong>${b.title}</strong><br>
+          <button data-audio="${b.audioUrl}">▶ Play</button>
         </div>
-      `;
-    });
+      </div>
+    `;
   });
+});
 </script>
 
-<script src="/js/menu.js"></script>
-<script src="/js/player.js"></script>
 </body>
 </html>
