@@ -1,43 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Marketplace – ProdByBigi</title>
-
-  <link rel="stylesheet" href="/css/global.css" />
   <link rel="stylesheet" href="/css/marketplace.css" />
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header class="header">
-    <button id="menuBtn" class="menu-btn">☰</button>
-    <h1 class="logo">ProdByBigi</h1>
-  </header>
+<header>
+  <button class="menu-btn">☰</button>
+  <h1>ProdByBigi</h1>
+</header>
 
-  <!-- MOBILE MENU -->
-  <nav id="mobileMenu" class="mobile-menu">
-    <a href="/index.html">Home</a>
-    <a href="/marketplace.html">Marketplace</a>
-    <a href="/login.html">Sign In</a>
-    <a href="/register.html">Sign Up</a>
-  </nav>
+<nav class="mobile-menu">
+  <a href="/">Home</a>
+</nav>
 
-  <!-- MARKETPLACE -->
-  <main class="section">
-    <h2>All Beats</h2>
-    <div id="beatsGrid" class="beats-grid"></div>
-  </main>
+<h2 style="padding:16px">All Beats</h2>
+<div class="beats-grid" id="beatsGrid"></div>
 
-  <footer class="footer">
-    © 2026 ProdByBigi
-  </footer>
+<script type="module">
+  import { fetchBeats } from "/js/firebase.js";
 
-  <!-- SCRIPTS -->
-  <script type="module" src="/js/firebase.js"></script>
-  <script type="module" src="/js/menu.js"></script>
-  <script type="module" src="/js/player.js"></script>
+  const grid = document.getElementById("beatsGrid");
 
+  fetchBeats().then(beats => {
+    beats.forEach(b => {
+      grid.innerHTML += `
+        <div class="beat-card">
+          <img src="${b.artwork}" alt="">
+          <div class="beat-info">
+            <strong>${b.title}</strong><br>
+            <small>${b.producerName}</small><br>
+            <button class="play-btn" data-audio="${b.audioUrl}">▶ Play</button>
+          </div>
+        </div>
+      `;
+    });
+  });
+</script>
+
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
 </body>
 </html>
