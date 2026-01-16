@@ -1,13 +1,28 @@
 .hero {
   padding: 40px 16px;
   text-align: center;
-  background: radial-gradient(circle, #111, #000);
 }
 
-.hero input {
+.search {
   width: 100%;
   max-width: 420px;
   padding: 14px;
   border-radius: 30px;
   border: none;
+}
+
+.trending {
+  padding: 16px;
+}
+
+.trending-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 1024px) {
+  .trending-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
 }
