@@ -1,47 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Marketplace – ProdByBigi</title>
-  <link rel="stylesheet" href="/css/marketplace.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/marketplace.css">
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 </head>
+
 <body>
 
 <header>
   <button class="menu-btn">☰</button>
-  <h1>ProdByBigi</h1>
+  <h1>Marketplace</h1>
 </header>
 
 <nav class="mobile-menu">
   <a href="/">Home</a>
 </nav>
 
-<h2 style="padding:16px">All Beats</h2>
-<div class="beats-grid" id="beatsGrid"></div>
+<div class="beats-grid" id="beats"></div>
 
-<script type="module">
-  import { fetchBeats } from "/js/firebase.js";
+<footer>
+  © <span id="year"></span> ProdByBigi  
+  <div class="footer-icons">
+    <a href="#">IG</a>
+    <a href="#">X</a>
+    <a href="#">YT</a>
+  </div>
+</footer>
 
-  const grid = document.getElementById("beatsGrid");
+<script src="/js/firebase.js"></script>
+<script src="/js/player.js"></script>
+<script src="/js/menu.js"></script>
 
-  fetchBeats().then(beats => {
-    beats.forEach(b => {
-      grid.innerHTML += `
-        <div class="beat-card">
-          <img src="${b.artwork}" alt="">
-          <div class="beat-info">
-            <strong>${b.title}</strong><br>
-            <small>${b.producerName}</small><br>
-            <button class="play-btn" data-audio="${b.audioUrl}">▶ Play</button>
-          </div>
+<script>
+document.getElementById("year").textContent = new Date().getFullYear();
+
+fetchBeats().then(beats => {
+  const grid = document.getElementById("beats");
+  beats.forEach(b => {
+    grid.innerHTML += `
+      <div class="beat-card">
+        <img src="${b.artwork}">
+        <div class="beat-info">
+          <strong>${b.title}</strong><br>
+          <small>${b.producerName}</small><br>
+          <button data-audio="${b.audioUrl}">▶ Play</button>
         </div>
-      `;
-    });
+      </div>
+    `;
   });
+});
 </script>
 
-<script src="/js/menu.js"></script>
-<script src="/js/player.js"></script>
 </body>
 </html>
