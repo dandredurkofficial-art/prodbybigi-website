@@ -1,28 +1,21 @@
-// /js/firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+/* Firebase compat – stable everywhere */
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
+  apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_DOMAIN",
   projectId: "YOUR_PROJECT_ID",
 };
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-export async function fetchBeats(limit = null) {
-  const beatsRef = collection(db, "beats");
-  let q = query(beatsRef, where("published", "==", true), orderBy("createdAt", "desc"));
+/* Global fetch function */
+window.fetchBeats = async function (limit = null) {
+  let query = db
+    .collection("beats")
+    .where("published", "==", true)
+    .orderBy("createdAt", "desc");
 
-  const snap = await getDocs(q);
+  const snap = await query.get();
   let beats = [];
 
   snap.forEach(doc => {
@@ -30,4 +23,4 @@ export async function fetchBeats(limit = null) {
   });
 
   return limit ? beats.slice(0, limit) : beats;
-}
+};
