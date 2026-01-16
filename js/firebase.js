@@ -1,16 +1,33 @@
+// /js/firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export const db = getFirestore(app);
 
-export { db };
+export async function fetchBeats(limit = null) {
+  const beatsRef = collection(db, "beats");
+  let q = query(beatsRef, where("published", "==", true), orderBy("createdAt", "desc"));
+
+  const snap = await getDocs(q);
+  let beats = [];
+
+  snap.forEach(doc => {
+    beats.push({ id: doc.id, ...doc.data() });
+  });
+
+  return limit ? beats.slice(0, limit) : beats;
+}
