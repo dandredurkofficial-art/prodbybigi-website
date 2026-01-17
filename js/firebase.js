@@ -1,15 +1,53 @@
-// /js/firebase.js
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+/* /js/firebase.js
+   ✅ This file MUST:
+   1) initialize Firebase + Firestore
+   2) expose helpers on window.FB (your index/marketplace scripts use this)
+   3) dispatch "firebase-ready" so pages can load beats
+
+   IMPORTANT:
+   - Replace firebaseConfig with YOUR real config from Firebase Console
+   - Do NOT paste this into DevTools console — save it as /js/firebase.js
+*/
+
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
 import {
   getFirestore,
   collection,
+  doc,
+  addDoc,
+  setDoc,
+  getDoc,
   getDocs,
+  updateDoc,
+  deleteDoc,
   query,
+  where,
   orderBy,
-  limit
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  limit,
+  serverTimestamp,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/** ✅ Your Firebase config (same as you used before) */
+/* =========================
+   1) YOUR FIREBASE CONFIG
+   =========================
+   Replace this whole object with your real config.
+   Firebase Console → Project settings → Your apps → Firebase SDK snippet → Config
+*/
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
@@ -19,186 +57,108 @@ const firebaseConfig = {
   appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-/**
- * ✅ Beat document normalizer (supports BOTH your old & new field names)
- * Your docs can be:
- * - artwork OR coverurl OR coverUrl
- * - previewAudio OR audiourl OR audioUrl
- * - price OR licenses.basic.price etc
- */
-function normalizeBeat(docId, data) {
-  const artwork =
-    data.artwork ||
-    data.coverurl ||
-    data.coverUrl ||
-    data.coverURL ||
-    "";
-
-  const previewAudio =
-    data.previewAudio ||
-    data.previewAudioUrl ||
-    data.audiourl ||
-    data.audioUrl ||
-    data.audioURL ||
-    "";
-
-  // Price priority:
-  // 1) direct "price"
-  // 2) licenses.basic.price (if enabled)
-  // 3) fallback 29.99
-  let price = data.price;
-  if (price == null && data.licenses?.basic?.price != null) price = data.licenses.basic.price;
-  if (price == null) price = 29.99;
-
-  const producerId = data.producerId || data.producerID || "";
-  const producerName = data.producerName || data.producer || data.producerDisplayName || "";
-
-  return {
-    id: docId,
-    title: data.title || "Untitled Beat",
-    artwork,
-    previewAudio,
-    producerId,
-    producerName,
-    price: Number(price) || 0,
-    published: data.published === true,
-    createdAt: data.createdAt || 0
-  };
+/* =========================
+   2) INIT (safe, no double init)
+   ========================= */
+let app;
+try {
+  app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+} catch (e) {
+  console.error("[firebase.js] Failed to initialize Firebase. Check firebaseConfig.", e);
 }
 
-/**
- * ✅ Get beats without requiring a composite index.
- * We DO NOT use: where(published==true) + orderBy(createdAt)
- * Instead we:
- * - orderBy(createdAt desc)
- * - limit(60)
- * - filter published on the client
- */
-export async function fetchBeats({ max = 60 } = {}) {
-  const beatsRef = collection(db, "beats");
-  const q = query(beatsRef, orderBy("createdAt", "desc"), limit(max));
+/* =========================
+   3) AUTH + DB
+   ========================= */
+const auth = app ? getAuth(app) : null;
+const db = app ? getFirestore(app) : null;
 
-  const snap = await getDocs(q);
-  const beats = [];
+// Optional: keep users logged in (helps dashboards)
+async function enableAuthPersistence(mode = "local") {
+  if (!auth) return;
+  try {
+    const persistence = mode === "session" ? browserSessionPersistence : browserLocalPersistence;
+    await setPersistence(auth, persistence);
+  } catch (e) {
+    // Not fatal (some browsers block in private mode)
+    console.warn("[firebase.js] Auth persistence not set:", e?.message || e);
+  }
+}
+enableAuthPersistence("local");
 
-  snap.forEach((d) => {
-    const beat = normalizeBeat(d.id, d.data());
-    if (beat.published) beats.push(beat);
-  });
+/* =========================
+   4) EXPOSE HELPERS (your pages expect window.FB)
+   ========================= */
+window.FB = {
+  // core
+  app,
+  db,
+  auth,
 
-  return beats;
+  // firestore helpers used by your pages
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+
+  // extra firestore helpers (for dashboard/upload/edit/delete)
+  doc,
+  addDoc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+  onSnapshot
+};
+
+// Auth helpers (handy for login/register pages)
+window.AUTH = {
+  auth,
+  onAuthStateChanged,
+  signOut,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup
+};
+
+/* =========================
+   5) READY EVENT (your pages wait for this)
+   ========================= */
+function fireReady() {
+  try {
+    window.dispatchEvent(new Event("firebase-ready"));
+  } catch (e) {
+    console.warn("[firebase.js] Could not dispatch firebase-ready:", e);
+  }
 }
 
-/**
- * ✅ Render beats into ANY of these containers (whichever exists):
- * - #beatsGrid
- * - .beats-grid
- * - [data-beats-grid]
- * - #trendingGrid
- * - #marketGrid
- *
- * It will NOT break your layout — it only fills the grid.
- */
-export function renderBeats(beats) {
-  const grid =
-    document.querySelector("#beatsGrid") ||
-    document.querySelector("#trendingGrid") ||
-    document.querySelector("#marketGrid") ||
-    document.querySelector("[data-beats-grid]") ||
-    document.querySelector(".beats-grid");
-
-  if (!grid) return;
-
-  // Clear loading card if you have one inside
-  grid.innerHTML = "";
-
-  if (!beats.length) {
-    grid.innerHTML = `<div class="empty-state">No beats yet.</div>`;
+/* =========================
+   6) QUICK SANITY CHECK (helps debug “Could not load beats”)
+   ========================= */
+(async function sanityCheck() {
+  if (!db) {
+    console.error("[firebase.js] Firestore not available. Check firebaseConfig/projectId.");
+    fireReady();
     return;
   }
 
-  const safeText = (s) =>
-    String(s || "").replace(/[&<>"']/g, (m) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#039;"
-    }[m]));
-
-  const producerLabel = (b) => {
-    if (b.producerName) return b.producerName;
-    if (!b.producerId) return "Unknown producer";
-    // short uid display (cleaner than "undefined")
-    return "Prod. " + b.producerId.slice(0, 8);
-  };
-
-  const priceLabel = (b) => {
-    const p = Number(b.price || 0);
-    if (!p) return "$0.00";
-    return "$" + p.toFixed(2);
-  };
-
-  grid.innerHTML = beats.map((b) => `
-    <div class="beat-card">
-      <div class="beat-cover">
-        <img class="beat-art" src="${b.artwork}" alt="${safeText(b.title)}" loading="lazy" />
-        <button class="play-btn"
-          data-audio="${b.previewAudio}"
-          aria-label="Play preview"
-          type="button">▶</button>
-      </div>
-
-      <div class="beat-meta">
-        <div class="beat-left">
-          <h3 class="beat-title">${safeText(b.title)}</h3>
-          <div class="beat-producer">${safeText(producerLabel(b))}</div>
-        </div>
-        <button class="price-btn" type="button">${priceLabel(b)}</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-/**
- * ✅ Boot: auto-load beats on any page that includes this file.
- * It looks for common “loading” placeholders and updates them.
- */
-async function boot() {
-  const loadingBox =
-    document.querySelector("#loadingBeats") ||
-    document.querySelector("[data-loading-beats]") ||
-    document.querySelector(".loading-beats");
-
+  // We only READ one beat doc to verify permissions + connection.
+  // Your rules allow read: if true; so this should work even signed out.
   try {
-    const beats = await fetchBeats({ max: 60 });
-    if (loadingBox) loadingBox.remove();
-    renderBeats(beats);
-
-    // Hook player to new buttons (player.js listens to clicks globally too)
-    window.__LATEST_BEATS__ = beats;
-  } catch (err) {
-    console.error("Beats load failed:", err);
-
-    const grid =
-      document.querySelector("#beatsGrid") ||
-      document.querySelector("#trendingGrid") ||
-      document.querySelector("#marketGrid") ||
-      document.querySelector("[data-beats-grid]") ||
-      document.querySelector(".beats-grid");
-
-    if (grid) {
-      grid.innerHTML = `
-        <div class="empty-state">
-          Failed to load beats.<br/>
-          <small>${(err && err.message) ? err.message : "Unknown error"}</small>
-        </div>
-      `;
-    }
+    const q = query(collection(db, "beats"), limit(1));
+    await getDocs(q);
+    // If this succeeds, your index/marketplace should be able to load beats.
+  } catch (e) {
+    console.error(
+      "[firebase.js] Firestore read failed. This causes 'Could not load beats'. " +
+      "Most common causes: wrong firebaseConfig (wrong projectId) OR rules not deployed.",
+      e
+    );
+  } finally {
+    fireReady();
   }
-}
-
-document.addEventListener("DOMContentLoaded", boot);
+})();
