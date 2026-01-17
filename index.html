@@ -1,64 +1,106 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="/css/global.css">
-<link rel="stylesheet" href="/css/home.css">
-<link rel="stylesheet" href="/css/marketplace.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ProdByBigi | Buy & Sell Beats</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="stylesheet" href="css/marketplace.css">
 </head>
-
 <body>
 
-<header>
-  <button class="menu-btn">☰</button>
-  <h1>ProdByBigi</h1>
+<header class="header">
+  <div class="container header-inner">
+    <div class="logo">ProdBy<span class="dot">Bigi</span></div>
+
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="marketplace.html">Marketplace</a>
+      <a href="login.html">Login</a>
+      <a class="cta" href="register.html">Start Selling</a>
+    </nav>
+
+    <div class="hamburger" id="hamburger" aria-label="Menu" role="button" tabindex="0">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Home</a>
+    <a href="marketplace.html">Marketplace</a>
+    <a href="login.html">Login</a>
+    <a class="cta" href="register.html">Start Selling</a>
+  </div>
 </header>
 
-<nav class="mobile-menu">
-  <a href="/marketplace.html">Marketplace</a>
-</nav>
+<main class="container">
 
-<section class="hero">
-  <h2>Your first hit starts here</h2>
-  <input placeholder="Explore new sounds…">
-</section>
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="hero-card hero">
+        <h1>Sell your beats. Get paid fast. Build your brand.</h1>
+        <p>
+          ProdByBigi is your modern marketplace for beats, soundkits, and services.
+          Upload, license, and reach buyers worldwide.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="register.html">Start Selling</a>
+          <a class="btn" href="marketplace.html">Browse Marketplace</a>
+        </div>
+      </div>
 
-<h3 style="padding:16px;">Trending Beats</h3>
-<div class="beats-grid" id="trending"></div>
+      <aside class="hero-side">
+        <h3>Why producers choose us</h3>
+        <div class="feature"><div class="badge">⚡</div><div><strong>Fast uploads</strong><br><span style="color:var(--muted)">Artwork + audio preview</span></div></div>
+        <div class="feature"><div class="badge">💳</div><div><strong>Simple pricing</strong><br><span style="color:var(--muted)">Sell licenses your way</span></div></div>
+        <div class="feature"><div class="badge">📈</div><div><strong>Grow</strong><br><span style="color:var(--muted)">Analytics & upgrades</span></div></div>
+      </aside>
+    </div>
+  </section>
 
-<footer>
-  © <span id="year"></span> ProdByBigi  
-  <div class="footer-icons">
-    <a href="#">IG</a>
-    <a href="#">X</a>
-    <a href="#">YT</a>
+  <section class="section">
+    <div class="section-head">
+      <h2>Trending Beats</h2>
+      <a href="marketplace.html">See all →</a>
+    </div>
+
+    <section class="beats-grid" id="homeBeats"></section>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <p>© 2026 ProdByBigi</p>
+
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms</a>
+      <a href="#">Cookies</a>
+      <a href="#">Cookie Settings</a>
+    </div>
+
+    <div class="social">
+      <a href="#" aria-label="Instagram"><span class="icon-sm">⌁</span></a>
+      <a href="#" aria-label="X"><span class="icon-sm">𝕏</span></a>
+      <a href="#" aria-label="YouTube"><span class="icon-sm">▶</span></a>
+    </div>
   </div>
 </footer>
 
-<script src="/js/firebase.js"></script>
-<script src="/js/player.js"></script>
-<script src="/js/menu.js"></script>
+<script type="module">
+  import { wireMenu } from "./js/menu.js";
+  import { wirePlayers } from "./js/player.js";
+  import { loadTrendingBeats } from "./js/firebase.js";
 
-<script>
-document.getElementById("year").textContent = new Date().getFullYear();
+  wireMenu();
 
-fetchBeats(5).then(beats => {
-  const grid = document.getElementById("trending");
-  beats.forEach(b => {
-    grid.innerHTML += `
-      <div class="beat-card">
-        <img src="${b.artwork}">
-        <div class="beat-info">
-          <strong>${b.title}</strong><br>
-          <button data-audio="${b.audioUrl}">▶ Play</button>
-        </div>
-      </div>
-    `;
-  });
-});
+  const homeGrid = document.getElementById("homeBeats");
+  await loadTrendingBeats(homeGrid, { max: 10 });
+
+  wirePlayers(document);
 </script>
 
 </body>
