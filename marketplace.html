@@ -5,73 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Marketplace | ProdByBigi</title>
 
-  <link rel="stylesheet" href="css/global.css">
-  <link rel="stylesheet" href="css/marketplace.css">
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/marketplace.css">
 </head>
 <body>
 
 <header class="header">
-  <div class="container header-inner">
-    <div class="logo">ProdBy<span class="dot">Bigi</span></div>
-
-    <nav class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="marketplace.html">Marketplace</a>
-      <a href="login.html">Login</a>
-      <a class="cta" href="register.html">Start Selling</a>
-    </nav>
-
-    <div class="hamburger" id="hamburger" aria-label="Menu" role="button" tabindex="0">
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="index.html">Home</a>
-    <a href="marketplace.html">Marketplace</a>
-    <a href="login.html">Login</a>
-    <a class="cta" href="register.html">Start Selling</a>
+  <div class="header-inner container">
+    <button class="hamburger" id="hamburger" type="button" aria-label="Menu">☰</button>
+    <div class="logo">ProdByBigi</div>
   </div>
 </header>
 
-<main class="container market">
-  <h1>Trending Beats</h1>
-  <p class="sub">Fresh uploads from producers — tap play to preview.</p>
+<nav class="mobile-menu" id="mobileMenu">
+  <a href="/marketplace.html">Feed</a>
+  <a href="/marketplace.html">Tracks</a>
+  <a href="/soundkits.html">Sound Kits</a>
+  <a href="/producers.html">Producers</a>
+  <a class="cta" href="/register.html">Start Selling</a>
+  <a href="/login.html">Sign in</a>
+</nav>
 
-  <section class="beats-grid" id="beatsGrid"></section>
+<main class="container marketplace">
+  <div class="market-head">
+    <h1>Trending Beats</h1>
+    <p class="muted">Fresh uploads from producers — tap play to preview.</p>
+  </div>
+
+  <div class="loading-beats" id="loadingBeats">Loading marketplace...</div>
+
+  <!-- ✅ firebase.js will render here -->
+  <div class="beats-grid" id="beatsGrid"></div>
 </main>
 
-<footer class="footer">
+<footer class="site-footer">
   <div class="container footer-row">
-    <p>© 2026 ProdByBigi</p>
+    <div>© 2026 ProdByBigi</div>
 
     <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms</a>
-      <a href="#">Cookies</a>
-      <a href="#">Cookie Settings</a>
+      <a href="/privacy.html">Privacy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/cookies.html">Cookies</a>
+      <a href="/cookie-settings.html">Cookie Settings</a>
     </div>
 
-    <div class="social">
-      <a href="#" aria-label="Instagram"><span class="icon-sm">⌁</span></a>
-      <a href="#" aria-label="X"><span class="icon-sm">𝕏</span></a>
-      <a href="#" aria-label="YouTube"><span class="icon-sm">▶</span></a>
+    <div class="socials">
+      <a href="#" aria-label="TikTok">♪</a>
+      <a href="#" aria-label="Instagram">◎</a>
+      <a href="#" aria-label="YouTube">▶</a>
+      <a href="#" aria-label="X">X</a>
     </div>
   </div>
 </footer>
 
-<script type="module">
-  import { wireMenu } from "./js/menu.js";
-  import { wirePlayers } from "./js/player.js";
-  import { loadMarketplaceBeats } from "./js/firebase.js";
-
-  wireMenu();
-
-  const grid = document.getElementById("beatsGrid");
-  await loadMarketplaceBeats(grid, { max: 40 });
-
-  wirePlayers(document);
-</script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
+<script type="module" src="/js/firebase.js"></script>
 
 </body>
 </html>
