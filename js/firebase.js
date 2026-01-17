@@ -21,14 +21,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// expose basic firestore helpers
+// expose basic firestore helpers (keep)
 window.FB = { db, collection, getDocs, query, orderBy, limit };
 
-// tell pages firebase is ready
-window.dispatchEvent(new Event("firebase-ready"));
-
 function normalizeBeat(docId, data) {
-  const artwork = data.artwork || data.coverurl || data.coverUrl || data.coverURL || "";
+  const artwork =
+    data.artwork ||
+    data.coverurl ||
+    data.coverUrl ||
+    data.coverURL ||
+    "";
+
   const audio =
     data.previewAudio ||
     data.previewAudioUrl ||
@@ -42,8 +45,17 @@ function normalizeBeat(docId, data) {
   if (price == null && data.licenses?.basic?.price != null) price = data.licenses.basic.price;
   if (price == null) price = 29.99;
 
-  const producerId = data.producerId || data.producerid || data.producerID || "";
-  const producerName = data.producerName || data.producer || data.producerDisplayName || "";
+  const producerId =
+    data.producerId ||
+    data.producerid ||
+    data.producerID ||
+    "";
+
+  const producerName =
+    data.producerName ||
+    data.producer ||
+    data.producerDisplayName ||
+    "";
 
   return {
     id: docId,
@@ -61,8 +73,10 @@ function normalizeBeat(docId, data) {
 // ✅ important: no composite index needed
 async function fetchBeats({ max = 60 } = {}) {
   const beatsRef = collection(db, "beats");
-  const q = query(beatsRef, orderBy("createdAt", "desc"), limit(max));
-  const snap = await getDocs(q);
+
+  // NOTE: We order by createdAt. Missing createdAt won't crash; it just sorts lower.
+  const qy = query(beatsRef, orderBy("createdAt", "desc"), limit(max));
+  const snap = await getDocs(qy);
 
   const beats = [];
   snap.forEach((d) => {
@@ -76,6 +90,9 @@ async function fetchBeats({ max = 60 } = {}) {
 // expose it so index/marketplace can use it safely
 window.FB.fetchBeats = fetchBeats;
 
+// ✅ NOW we tell pages firebase is ready (AFTER fetchBeats exists)
+window.dispatchEvent(new Event("firebase-ready"));
+
 // marketplace auto-render (ONLY if a beats grid exists)
 function renderMarketplaceBeats(beats) {
   const grid = document.querySelector("#beatsGrid") || document.querySelector(".beats-grid");
@@ -88,7 +105,11 @@ function renderMarketplaceBeats(beats) {
     card.className = "card beat-card";
     card.innerHTML = `
       <div class="beat-cover">
-        ${b.artwork ? `<img src="${b.artwork}" alt="${b.title}" loading="lazy" />` : ""}
+        ${
+          b.artwork
+            ? `<img src="${b.artwork}" alt="${b.title}" loading="lazy" />`
+            : `<div style="height:100%;display:grid;place-items:center;font-weight:900;color:rgba(255,255,255,.7)">NO ART</div>`
+        }
         <button class="play-fab" data-play-btn data-audio-url="${b.audio || ""}">
           <span class="playIcon">▶</span>
         </button>
