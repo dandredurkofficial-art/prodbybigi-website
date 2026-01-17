@@ -226,3 +226,15 @@ a:hover{opacity:.9}
 
 /* helper */
 .hidden{ display:none !important; }
+
+/* =========================
+   Utility helpers
+========================= */
+.hidden {
+  display: none !important;
+}
+
+.loading-box.hidden {
+  display: none !important;
+}
+
