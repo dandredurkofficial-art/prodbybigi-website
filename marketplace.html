@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- Topbar -->
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="brand">
@@ -20,7 +19,6 @@
   </div>
 </header>
 
-<!-- Mobile Menu -->
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="menu-head">
@@ -48,33 +46,16 @@
 <footer class="footer">
   <div class="container footer-row">
     <div>© 2026 ProdByBigi</div>
-
     <div class="footer-links">
       <a href="/privacy.html">Privacy Policy</a>
       <a href="/terms.html">Terms</a>
       <a href="/cookies.html">Cookies</a>
       <a href="/cookie-settings.html">Cookie Settings</a>
     </div>
-
     <div class="social">
-      <a href="#" aria-label="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-      </a>
-      <a href="#" aria-label="X">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-      <a href="#" aria-label="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M22 12s0-3.4-.4-5a3 3 0 0 0-2.1-2.1C17.9 4.5 12 4.5 12 4.5s-5.9 0-7.5.4A3 3 0 0 0 2.4 7C2 8.6 2 12 2 12s0 3.4.4 5a3 3 0 0 0 2.1 2.1c1.6.4 7.5.4 7.5.4s5.9 0 7.5-.4a3 3 0 0 0 2.1-2.1c.4-1.6.4-5 .4-5Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M10 15V9l5 3-5 3Z" fill="currentColor"/>
-        </svg>
-      </a>
+      <a href="#" aria-label="Instagram">…</a>
+      <a href="#" aria-label="X">…</a>
+      <a href="#" aria-label="YouTube">…</a>
     </div>
   </div>
 </footer>
@@ -84,124 +65,69 @@
 <script src="/js/player.js"></script>
 
 <script>
-  // ✅ supports both schemas:
-  // A) title, artwork, previewAudio/fullAudio, licenses.basic.price
-  // B) Title, coverurl, audiourl, price, producerid
-  function normalizeBeat(b) {
-    const title = b.title || b.Title || "Untitled";
-    const cover = b.artwork || b.coverurl || b.coverUrl || "";
-    const audio = b.previewAudio || b.audiourl || b.audioUrl || b.fullAudio || "";
-    const producerId = b.producerId || b.producerid || "";
-    const producerName = b.producerName || b.producer || ""; // if you add later
-    const basicPrice =
-      (b.licenses && b.licenses.basic && typeof b.licenses.basic.price === "number")
-        ? b.licenses.basic.price
-        : (typeof b.price === "number" ? b.price : Number(b.price || 0) || 0);
-
-    return {
-      title,
-      cover,
-      audio,
-      producerId,
-      producerName,
-      price: basicPrice
-    };
+  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function prettyProducerName(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
   }
-
-  function prettyProducerName(beat) {
-    if (beat.producerName && beat.producerName.trim()) return beat.producerName.trim();
-    if (!beat.producerId) return "Prod. Unknown";
-    const short = beat.producerId.length > 10 ? beat.producerId.slice(0, 8) : beat.producerId;
-    return "Prod. " + short;
-  }
-
-  function money(n) {
-    const v = Number(n || 0);
-    return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
-  }
-
-  function coverHTML(url, title) {
-    if (url) {
-      return `<img src="${url}" alt="${title}" loading="lazy" />`;
-    }
-    const initials = (title || "B").trim().slice(0,2).toUpperCase();
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
+    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
     return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
-  async function loadMarketplace() {
+  async function loadMarketplace(){
     const status = document.getElementById("marketStatus");
-    const grid = document.getElementById("beatsGrid");
+    const grid   = document.getElementById("beatsGrid");
 
-    try {
+    try{
       status.textContent = "Loading marketplace…";
       status.classList.remove("hidden");
 
-      const { db, collection, getDocs, query, where, orderBy, limit } = window.FB;
-
-      // ✅ only published beats
-      // if you don't have indexes yet, this still works for many cases.
-      let q;
-      try {
-        q = query(
-          collection(db, "beats"),
-          where("published", "==", true),
-          orderBy("createdAt", "desc"),
-          limit(60)
-        );
-      } catch (e) {
-        // fallback if orderBy/index complains
-        q = query(
-          collection(db, "beats"),
-          where("published", "==", true),
-          limit(60)
-        );
-      }
-
-      const snap = await getDocs(q);
-
-      const beats = [];
-      snap.forEach(doc => beats.push(doc.data()));
+      const beats = await window.FB.fetchBeats({ max: 60 });
 
       grid.innerHTML = "";
 
-      if (!beats.length) {
+      if(!beats.length){
         status.textContent = "No beats yet. Upload from Producer Studio.";
         return;
       }
 
       status.classList.add("hidden");
 
-      beats.map(normalizeBeat).forEach((beat) => {
+      beats.forEach((b)=>{
         const card = document.createElement("div");
         card.className = "card beat-card";
         card.innerHTML = `
           <div class="beat-cover">
-            ${coverHTML(beat.cover, beat.title)}
-            <button class="play-fab" data-play-btn data-audio-url="${beat.audio || ""}" aria-label="Play">
+            ${coverHTML(b.artwork, b.title)}
+            <button class="play-fab" data-play-btn data-audio-url="${b.audio||""}" aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
-
           <div class="beat-meta">
             <div>
-              <h3>${beat.title}</h3>
-              <a class="producer" href="/producer-profile.html?producerId=${encodeURIComponent(beat.producerId || "")}">
-                ${prettyProducerName(beat)}
+              <h3>${b.title}</h3>
+              <a class="producer" href="/producer-profile.html?producerId=${encodeURIComponent(b.producerId||"")}">
+                ${prettyProducerName(b)}
               </a>
             </div>
-            <div class="price-pill">${money(beat.price)}</div>
+            <div class="price-pill">${money(b.price)}</div>
           </div>
         `;
         grid.appendChild(card);
       });
 
-    } catch (err) {
+    }catch(err){
       console.error("[marketplace] load error:", err);
       status.textContent = "Could not load beats. Check Firestore rules & console.";
     }
   }
 
-  window.addEventListener("firebase-ready", loadMarketplace);
+  window.addEventListener("firebase-ready", () => {
+    if (window.FB && typeof window.FB.fetchBeats === "function") loadMarketplace();
+  });
 </script>
 
 </body>
