@@ -1,94 +1,199 @@
 /* /css/home.css */
 .hero{
-  padding:44px 0 18px;
+  margin-top:18px;
+  padding: 22px 0 8px;
 }
-.hero-grid{
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap:18px;
-  align-items:stretch;
-}
-@media (max-width: 900px){
-  .hero-grid{grid-template-columns:1fr}
-}
-
 .hero-card{
-  background:linear-gradient(135deg, rgba(59,130,246,.18), rgba(139,92,246,.12));
-  border:1px solid var(--border);
-  border-radius:22px;
-  padding:26px;
+  padding: 18px;
+  border-radius: 22px;
+  overflow:hidden;
+  background:
+    radial-gradient(600px 240px at 20% 10%, rgba(59,130,246,.22), transparent 60%),
+    radial-gradient(500px 260px at 80% 60%, rgba(16,185,129,.14), transparent 60%),
+    rgba(11,18,32,.78);
 }
-.hero h1{
-  margin:0 0 10px;
-  font-size:40px;
-  line-height:1.05;
+.hero-title{
+  font-size:34px;
+  line-height:1.1;
+  margin: 2px 0 12px;
 }
-@media (max-width: 640px){
-  .hero h1{font-size:32px}
-}
-
-.hero p{
-  margin:0 0 16px;
-  color:var(--muted);
-  max-width:56ch;
-}
-.hero-actions{
+.hero-search{
   display:flex;
-  gap:12px;
-  flex-wrap:wrap;
-}
-.btn{
-  display:inline-flex;
+  gap:10px;
   align-items:center;
-  justify-content:center;
-  gap:10px;
-  padding:12px 14px;
-  border-radius:14px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,.05);
-  color:var(--text);
-  font-weight:800;
 }
-.btn.primary{
-  border:none;
-  background:linear-gradient(135deg,var(--brand),#8b5cf6);
+.hero-search input{
+  flex:1;
+  height:48px;
+  border-radius: 999px;
+  border:1px solid rgba(31,41,55,.85);
+  background: rgba(0,0,0,.35);
   color:#fff;
+  padding: 0 16px;
+  outline:none;
 }
-.btn:hover{transform:translateY(-1px)}
-
-.hero-side{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:22px;
-  padding:18px;
-}
-.hero-side h3{margin:0 0 10px}
-.feature{
-  display:flex;
-  gap:10px;
-  padding:10px 0;
-  border-top:1px solid rgba(255,255,255,.06);
-}
-.feature:first-of-type{border-top:none}
-.badge{
-  width:34px;height:34px;border-radius:12px;
-  background:rgba(34,197,94,.12);
-  border:1px solid rgba(34,197,94,.25);
-  display:flex;align-items:center;justify-content:center;
-  font-weight:900;
-  color:#bbf7d0;
+.hero-search button{
+  height:48px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border:1px solid rgba(31,41,55,.85);
+  background: rgba(17,24,39,.55);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
 }
 
-.section{
-  padding:18px 0;
-}
-.section-head{
+.home-row{
   display:flex;
-  align-items:flex-end;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top: 18px;
+}
+.see-all{
+  color: var(--muted);
+  font-weight:700;
+}
+
+/* ✅ BeatStars-like small trending tiles (horizontal scroll) */
+.trending-strip{
+  display:grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 168px;
+  gap:14px;
+  overflow-x:auto;
+  padding: 14px 2px 8px;
+  scroll-snap-type: x mandatory;
+}
+.trending-strip::-webkit-scrollbar{ height:6px; }
+.trending-strip::-webkit-scrollbar-thumb{ background: rgba(255,255,255,.12); border-radius:999px; }
+
+.trend-card{
+  scroll-snap-align: start;
+  padding:12px;
+  border-radius: 20px;
+}
+.trend-card .beat-cover{
+  aspect-ratio: 1 / 1;
+}
+.trend-meta{
+  margin-top:10px;
+}
+.trend-meta .t{
+  margin:0;
+  font-size:13px;
+  font-weight:800;
+  line-height:1.2;
+}
+.trend-meta .p{
+  margin:4px 0 0;
+  font-size:12px;
+  color: var(--muted);
+}
+.trend-actions{
+  display:flex;
+  align-items:center;
   justify-content:space-between;
   gap:10px;
-  margin-bottom:12px;
+  margin-top:10px;
 }
-.section-head h2{margin:0;font-size:22px}
-.section-head a{color:var(--muted)}
-.section-head a:hover{color:var(--text)}
+.trend-actions .price-pill{
+  border:1px solid rgba(59,130,246,.35);
+  background: rgba(59,130,246,.12);
+  padding:8px 10px;
+  border-radius: 14px;
+  font-weight:800;
+  white-space:nowrap;
+}
+
+/* Genres */
+.genres-grid{
+  display:grid;
+  gap:12px;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  margin-top:12px;
+}
+@media (min-width: 900px){
+  .genres-grid{ grid-template-columns: repeat(6, minmax(0,1fr)); }
+}
+.genre{
+  padding:12px;
+  border-radius: 18px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.genre img{
+  width:44px;
+  height:44px;
+  border-radius: 14px;
+  object-fit:cover;
+  border:1px solid rgba(31,41,55,.8);
+}
+.genre .gname{
+  font-weight:800;
+  font-size:14px;
+}
+
+/* Top charting (grid like marketplace but smaller on home) */
+.chart-grid{
+  display:grid;
+  gap:14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top:12px;
+}
+@media (min-width: 900px){
+  .chart-grid{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+/* BeatStars-like producer promo section */
+.producers-promo{
+  padding:18px;
+  border-radius: 22px;
+  background:
+    radial-gradient(600px 260px at 20% 10%, rgba(59,130,246,.18), transparent 60%),
+    radial-gradient(520px 280px at 90% 80%, rgba(168,85,247,.14), transparent 60%),
+    rgba(11,18,32,.78);
+}
+.producers-promo .kicker{
+  color: var(--muted);
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  font-size:12px;
+}
+.producers-promo h3{
+  margin:8px 0 12px;
+  font-size:28px;
+}
+.promo-list{
+  display:grid;
+  gap:12px;
+}
+.promo-item{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding:12px;
+  border-radius:18px;
+  border:1px solid rgba(31,41,55,.85);
+  background: rgba(17,24,39,.35);
+}
+.promo-icon{
+  height:42px;
+  width:42px;
+  border-radius: 16px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(31,41,55,.85);
+  background: rgba(0,0,0,.25);
+}
+.promo-item h4{
+  margin:0;
+  font-size:16px;
+}
+.promo-item p{
+  margin:4px 0 0;
+  color: var(--muted);
+  font-size:13px;
+}
