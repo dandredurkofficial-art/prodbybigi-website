@@ -1,29 +1,43 @@
 // /js/menu.js
-document.addEventListener("DOMContentLoaded", () => {
-  const hamburger =
-    document.getElementById("hamburger") ||
-    document.querySelector(".hamburger") ||
-    document.querySelector("[data-hamburger]");
+(function () {
+  function qs(sel) { return document.querySelector(sel); }
 
-  const mobileMenu =
-    document.getElementById("mobileMenu") ||
-    document.querySelector(".mobile-menu") ||
-    document.querySelector("[data-mobile-menu]");
+  function closeMenu() {
+    const drawer = qs("#mobileMenu");
+    const backdrop = qs("#menuBackdrop");
+    if (!drawer || !backdrop) return;
+    drawer.classList.remove("open");
+    backdrop.classList.remove("open");
+    document.body.classList.remove("no-scroll");
+  }
 
-  if (!hamburger || !mobileMenu) return;
+  function openMenu() {
+    const drawer = qs("#mobileMenu");
+    const backdrop = qs("#menuBackdrop");
+    if (!drawer || !backdrop) return;
+    drawer.classList.add("open");
+    backdrop.classList.add("open");
+    document.body.classList.add("no-scroll");
+  }
 
-  hamburger.style.cursor = "pointer";
+  function toggleMenu() {
+    const drawer = qs("#mobileMenu");
+    if (!drawer) return;
+    if (drawer.classList.contains("open")) closeMenu();
+    else openMenu();
+  }
 
-  hamburger.addEventListener("click", () => {
-    hamburger.classList.toggle("active");
-    mobileMenu.classList.toggle("open");
+  window.Menu = { openMenu, closeMenu, toggleMenu };
+
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("#hamburgerBtn");
+    const closeBtn = e.target.closest("#menuCloseBtn");
+    const backdrop = e.target.closest("#menuBackdrop");
+    const link = e.target.closest("#mobileMenu a");
+
+    if (btn) toggleMenu();
+    if (closeBtn) closeMenu();
+    if (backdrop) closeMenu();
+    if (link) closeMenu();
   });
-
-  // close menu on link click
-  mobileMenu.addEventListener("click", (e) => {
-    const a = e.target.closest("a");
-    if (!a) return;
-    hamburger.classList.remove("active");
-    mobileMenu.classList.remove("open");
-  });
-});
+})();
