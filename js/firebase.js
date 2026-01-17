@@ -3,139 +3,202 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import {
   getFirestore,
   collection,
+  getDocs,
   query,
-  where,
   orderBy,
-  limit,
-  getDocs
+  limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+/** ✅ Your Firebase config (same as you used before) */
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
   projectId: "prodbybigi",
   storageBucket: "prodbybigi.firebasestorage.app",
   messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef",
-  measurementId: "G-7HR862H9L7"
+  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ------- helpers -------
-function safeText(v, fallback = "") {
-  if (v === null || v === undefined) return fallback;
-  return String(v);
+/**
+ * ✅ Beat document normalizer (supports BOTH your old & new field names)
+ * Your docs can be:
+ * - artwork OR coverurl OR coverUrl
+ * - previewAudio OR audiourl OR audioUrl
+ * - price OR licenses.basic.price etc
+ */
+function normalizeBeat(docId, data) {
+  const artwork =
+    data.artwork ||
+    data.coverurl ||
+    data.coverUrl ||
+    data.coverURL ||
+    "";
+
+  const previewAudio =
+    data.previewAudio ||
+    data.previewAudioUrl ||
+    data.audiourl ||
+    data.audioUrl ||
+    data.audioURL ||
+    "";
+
+  // Price priority:
+  // 1) direct "price"
+  // 2) licenses.basic.price (if enabled)
+  // 3) fallback 29.99
+  let price = data.price;
+  if (price == null && data.licenses?.basic?.price != null) price = data.licenses.basic.price;
+  if (price == null) price = 29.99;
+
+  const producerId = data.producerId || data.producerID || "";
+  const producerName = data.producerName || data.producer || data.producerDisplayName || "";
+
+  return {
+    id: docId,
+    title: data.title || "Untitled Beat",
+    artwork,
+    previewAudio,
+    producerId,
+    producerName,
+    price: Number(price) || 0,
+    published: data.published === true,
+    createdAt: data.createdAt || 0
+  };
 }
 
-function pickAudio(beat) {
-  return (
-    beat.previewAudio ||
-    beat.previewUrl ||
-    beat.audioUrl ||
-    beat.audioURL ||
-    beat.audio ||
-    ""
-  );
+/**
+ * ✅ Get beats without requiring a composite index.
+ * We DO NOT use: where(published==true) + orderBy(createdAt)
+ * Instead we:
+ * - orderBy(createdAt desc)
+ * - limit(60)
+ * - filter published on the client
+ */
+export async function fetchBeats({ max = 60 } = {}) {
+  const beatsRef = collection(db, "beats");
+  const q = query(beatsRef, orderBy("createdAt", "desc"), limit(max));
+
+  const snap = await getDocs(q);
+  const beats = [];
+
+  snap.forEach((d) => {
+    const beat = normalizeBeat(d.id, d.data());
+    if (beat.published) beats.push(beat);
+  });
+
+  return beats;
 }
 
-function pickCover(beat) {
-  return (
-    beat.coverUrl ||
-    beat.coverURL ||
-    beat.artwork ||
-    beat.artworkUrl ||
-    beat.artworkURL ||
-    ""
-  );
-}
+/**
+ * ✅ Render beats into ANY of these containers (whichever exists):
+ * - #beatsGrid
+ * - .beats-grid
+ * - [data-beats-grid]
+ * - #trendingGrid
+ * - #marketGrid
+ *
+ * It will NOT break your layout — it only fills the grid.
+ */
+export function renderBeats(beats) {
+  const grid =
+    document.querySelector("#beatsGrid") ||
+    document.querySelector("#trendingGrid") ||
+    document.querySelector("#marketGrid") ||
+    document.querySelector("[data-beats-grid]") ||
+    document.querySelector(".beats-grid");
 
-function pickProducerName(beat) {
-  return (
-    beat.producerName ||
-    beat.producerDisplayName ||
-    beat.displayName ||
-    beat.username ||
-    "Producer"
-  );
-}
+  if (!grid) return;
 
-function formatPrice(p) {
-  const n = Number(p);
-  if (!Number.isFinite(n) || n <= 0) return "—";
-  return n.toFixed(0);
-}
+  // Clear loading card if you have one inside
+  grid.innerHTML = "";
 
-function beatCardHTML(beatDoc) {
-  const beat = beatDoc;
-  const title = safeText(beat.title, "Untitled Beat");
-  const cover = pickCover(beat);
-  const audio = pickAudio(beat);
-  const producerId = safeText(beat.producerId, "");
-  const producerName = pickProducerName(beat);
-  const price = formatPrice(beat.price);
+  if (!beats.length) {
+    grid.innerHTML = `<div class="empty-state">No beats yet.</div>`;
+    return;
+  }
 
-  return `
-  <article class="beat-card">
-    <div class="beat-cover">
-      ${cover ? `<img src="${cover}" alt="${title} cover">` : `<div class="cover-fallback">No Artwork</div>`}
-      <button class="play-btn" type="button" aria-label="Play preview" data-audio="${audio}">
-        <span class="icon">▶</span>
-      </button>
-    </div>
+  const safeText = (s) =>
+    String(s || "").replace(/[&<>"']/g, (m) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m]));
 
-    <div class="beat-meta">
-      <div class="meta-left">
-        <h3 class="beat-title">${title}</h3>
-        <a class="producer-link" href="producer-profile.html?producerId=${encodeURIComponent(producerId)}">
-          ${producerName}
-        </a>
+  const producerLabel = (b) => {
+    if (b.producerName) return b.producerName;
+    if (!b.producerId) return "Unknown producer";
+    // short uid display (cleaner than "undefined")
+    return "Prod. " + b.producerId.slice(0, 8);
+  };
+
+  const priceLabel = (b) => {
+    const p = Number(b.price || 0);
+    if (!p) return "$0.00";
+    return "$" + p.toFixed(2);
+  };
+
+  grid.innerHTML = beats.map((b) => `
+    <div class="beat-card">
+      <div class="beat-cover">
+        <img class="beat-art" src="${b.artwork}" alt="${safeText(b.title)}" loading="lazy" />
+        <button class="play-btn"
+          data-audio="${b.previewAudio}"
+          aria-label="Play preview"
+          type="button">▶</button>
       </div>
-      <button class="price-btn" type="button">$${price}</button>
+
+      <div class="beat-meta">
+        <div class="beat-left">
+          <h3 class="beat-title">${safeText(b.title)}</h3>
+          <div class="beat-producer">${safeText(producerLabel(b))}</div>
+        </div>
+        <button class="price-btn" type="button">${priceLabel(b)}</button>
+      </div>
     </div>
-  </article>`;
+  `).join("");
 }
 
-// ------- public loaders -------
-export async function loadTrendingBeats(containerEl, { max = 10 } = {}) {
-  containerEl.innerHTML = `<div class="loading">Loading beats…</div>`;
+/**
+ * ✅ Boot: auto-load beats on any page that includes this file.
+ * It looks for common “loading” placeholders and updates them.
+ */
+async function boot() {
+  const loadingBox =
+    document.querySelector("#loadingBeats") ||
+    document.querySelector("[data-loading-beats]") ||
+    document.querySelector(".loading-beats");
 
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true),
-    orderBy("createdAt", "desc"),
-    limit(max)
-  );
+  try {
+    const beats = await fetchBeats({ max: 60 });
+    if (loadingBox) loadingBox.remove();
+    renderBeats(beats);
 
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    containerEl.innerHTML = `<div class="empty">No beats yet. Upload your first beat in the Producer Dashboard.</div>`;
-    return;
+    // Hook player to new buttons (player.js listens to clicks globally too)
+    window.__LATEST_BEATS__ = beats;
+  } catch (err) {
+    console.error("Beats load failed:", err);
+
+    const grid =
+      document.querySelector("#beatsGrid") ||
+      document.querySelector("#trendingGrid") ||
+      document.querySelector("#marketGrid") ||
+      document.querySelector("[data-beats-grid]") ||
+      document.querySelector(".beats-grid");
+
+    if (grid) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          Failed to load beats.<br/>
+          <small>${(err && err.message) ? err.message : "Unknown error"}</small>
+        </div>
+      `;
+    }
   }
-
-  const html = [];
-  snap.forEach((d) => html.push(beatCardHTML(d.data())));
-  containerEl.innerHTML = html.join("");
 }
 
-export async function loadMarketplaceBeats(containerEl, { max = 40 } = {}) {
-  containerEl.innerHTML = `<div class="loading">Loading marketplace…</div>`;
-
-  const q = query(
-    collection(db, "beats"),
-    where("published", "==", true),
-    orderBy("createdAt", "desc"),
-    limit(max)
-  );
-
-  const snap = await getDocs(q);
-  if (snap.empty) {
-    containerEl.innerHTML = `<div class="empty">No beats published yet.</div>`;
-    return;
-  }
-
-  const html = [];
-  snap.forEach((d) => html.push(beatCardHTML(d.data())));
-  containerEl.innerHTML = html.join("");
-}
+document.addEventListener("DOMContentLoaded", boot);
