@@ -308,7 +308,8 @@
     }
   }
 
-  window.addEventListener("firebase-ready", loadHomeBeats);
+  if (window.FB_READY) loadHomeBeats();
+else window.addEventListener("firebase-ready", loadHomeBeats);
 </script>
 
 </body>
