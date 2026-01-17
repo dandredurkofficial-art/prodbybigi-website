@@ -1,101 +1,65 @@
 /* /css/marketplace.css */
-.market{
-  padding:22px 0 6px;
+.market-head{
+  padding: 22px 0 10px;
 }
-.market h1{
-  margin:0 0 14px;
-  font-size:28px;
+.market-title{
+  font-size:34px;
+  margin: 0 0 6px;
 }
-.sub{
-  color:var(--muted);
-  margin:0 0 18px;
-}
+.market-sub{ color: var(--muted); margin:0; }
 
 .beats-grid{
   display:grid;
   gap:14px;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top:16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr)); /* ✅ mobile: 2 per row */
 }
 
-/* 2 per row on mobile */
-@media (max-width: 640px){
-  .beats-grid{grid-template-columns: repeat(2, minmax(0, 1fr));}
-}
-@media (min-width: 641px) and (max-width: 900px){
-  .beats-grid{grid-template-columns: repeat(3, minmax(0, 1fr));}
+@media (min-width: 900px){
+  .beats-grid{
+    grid-template-columns: repeat(5, minmax(0, 1fr)); /* ✅ desktop: 5 per row */
+    gap:16px;
+  }
 }
 
 .beat-card{
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:16px;
-  overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  min-height: 220px;
-}
-
-.beat-cover{
-  position:relative;
-  width:100%;
-  aspect-ratio: 1 / 1;
-  background:rgba(255,255,255,.04);
-}
-.beat-cover img{
-  width:100%;
-  height:100%;
-  object-fit: contain; /* ✅ show original image, not zoom */
-  background:#05070c;
-}
-.cover-fallback{
-  width:100%;
-  height:100%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:var(--muted);
-  font-weight:600;
-}
-
-.play-btn{
-  position:absolute;
-  inset:auto 12px 12px auto;
-  width:46px;height:46px;
-  border-radius:14px;
-  border:1px solid rgba(255,255,255,.18);
-  background:rgba(0,0,0,.35);
-  color:#fff;
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-}
-.play-btn:hover{background:rgba(0,0,0,.5)}
-.play-btn .icon{font-size:18px;font-weight:900}
-
-.beat-meta{
   padding:12px;
+  border-radius: 20px;
+}
+.beat-cover{
+  aspect-ratio: 1 / 1; /* BeatStars-style square covers */
+}
+.beat-meta{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:10px;
+  margin-top:10px;
 }
-.beat-title{
-  margin:0 0 4px;
+.beat-meta h3{
   font-size:14px;
+  margin:0;
   line-height:1.2;
 }
-.producer-link{
-  color:var(--muted);
-  font-size:13px;
+.producer{
+  display:block;
+  font-size:12px;
+  color: var(--muted);
+  margin-top:4px;
 }
-.producer-link:hover{color:var(--text);text-decoration:underline}
-
-.price-btn{
-  border:none;
-  background:rgba(59,130,246,.15);
-  color:#cfe3ff;
-  border:1px solid rgba(59,130,246,.3);
+.price-pill{
+  border:1px solid rgba(59,130,246,.35);
+  background: rgba(59,130,246,.12);
   padding:8px 10px;
-  border-radius:12px;
-  font-weight:800;
-  cursor:pointer;
+  border-radius: 14px;
+  font-weight:700;
+  white-space:nowrap;
+}
+
+.loading-box{
+  padding:16px;
+  border-radius: 18px;
+  border:1px solid rgba(31,41,55,.85);
+  background: rgba(17,24,39,.35);
+  color: var(--muted);
 }
