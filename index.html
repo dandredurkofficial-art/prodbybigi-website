@@ -308,8 +308,10 @@
     }
   }
 
-  if (window.FB_READY) loadHomeBeats();
-else window.addEventListener("firebase-ready", loadHomeBeats);
+  window.addEventListener("firebase-ready", () => {
+  // wait until FB.fetchBeats is available
+  if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats();
+});
 </script>
 
 </body>
