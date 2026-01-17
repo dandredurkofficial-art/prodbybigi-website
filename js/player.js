@@ -1,56 +1,99 @@
 // /js/player.js
 let currentAudio = null;
-let currentButton = null;
+let currentBtn = null;
 
-function setButtonState(btn, playing) {
-  const icon = btn?.querySelector(".icon");
-  if (!icon) return;
-  icon.textContent = playing ? "⏸" : "▶";
-  btn.setAttribute("aria-label", playing ? "Pause preview" : "Play preview");
+function setBtn(btn, state) {
+  // states: idle, loading, playing, paused
+  if (!btn) return;
+
+  btn.classList.remove("is-loading", "is-playing", "is-paused");
+
+  if (state === "loading") {
+    btn.classList.add("is-loading");
+    btn.textContent = "…";
+    return;
+  }
+
+  if (state === "playing") {
+    btn.classList.add("is-playing");
+    btn.textContent = "❚❚";
+    return;
+  }
+
+  if (state === "paused") {
+    btn.classList.add("is-paused");
+    btn.textContent = "▶";
+    return;
+  }
+
+  btn.textContent = "▶";
 }
 
-export function wirePlayers(root = document) {
-  root.addEventListener("click", (e) => {
-    const btn = e.target.closest(".play-btn");
-    if (!btn) return;
+async function playFromButton(btn) {
+  const url = btn?.dataset?.audio;
+  if (!url) return;
 
-    const url = btn.dataset.audio || "";
-    if (!url) return;
-
-    // Toggle same track
-    if (currentAudio && currentButton === btn) {
-      if (currentAudio.paused) {
-        currentAudio.play();
-        setButtonState(btn, true);
-      } else {
-        currentAudio.pause();
-        setButtonState(btn, false);
-      }
-      return;
-    }
-
-    // Stop previous track
-    if (currentAudio) {
+  // If clicking same button, toggle play/pause
+  if (currentBtn === btn && currentAudio) {
+    if (currentAudio.paused) {
+      currentAudio.play();
+      setBtn(btn, "playing");
+    } else {
       currentAudio.pause();
-      currentAudio.currentTime = 0;
+      setBtn(btn, "paused");
     }
-    if (currentButton) setButtonState(currentButton, false);
+    return;
+  }
 
-    // Start new
-    currentAudio = new Audio(url);
-    currentButton = btn;
-    setButtonState(btn, true);
+  // Stop previous
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio = null;
+  }
+  if (currentBtn) setBtn(currentBtn, "idle");
 
-    currentAudio.play().catch(() => {
-      setButtonState(btn, false);
-      currentAudio = null;
-      currentButton = null;
-    });
+  // Start new
+  currentBtn = btn;
+  setBtn(btn, "loading");
 
-    currentAudio.addEventListener("ended", () => {
-      setButtonState(btn, false);
-      if (currentButton === btn) currentButton = null;
-      currentAudio = null;
-    });
+  const audio = new Audio(url);
+  currentAudio = audio;
+
+  audio.addEventListener("canplay", () => {
+    // canplay = faster start
+    if (currentBtn === btn) setBtn(btn, "playing");
   });
+
+  audio.addEventListener("ended", () => {
+    if (currentBtn === btn) setBtn(btn, "idle");
+  });
+
+  audio.addEventListener("pause", () => {
+    if (currentBtn === btn) setBtn(btn, "paused");
+  });
+
+  audio.addEventListener("play", () => {
+    if (currentBtn === btn) setBtn(btn, "playing");
+  });
+
+  audio.addEventListener("error", () => {
+    if (currentBtn === btn) setBtn(btn, "idle");
+    console.error("Audio failed:", url);
+    alert("Audio failed to play.");
+  });
+
+  try {
+    await audio.play();
+  } catch (e) {
+    setBtn(btn, "idle");
+    console.error(e);
+    alert("Tap again to play (browser blocked autoplay).");
+  }
 }
+
+// Global click handler (works even after beats render)
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest(".play-btn");
+  if (!btn) return;
+  playFromButton(btn);
+});
