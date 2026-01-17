@@ -1,99 +1,87 @@
 // /js/player.js
-let currentAudio = null;
-let currentBtn = null;
+(function () {
+  const audio = new Audio();
+  audio.preload = "metadata";
 
-function setBtn(btn, state) {
-  // states: idle, loading, playing, paused
-  if (!btn) return;
+  let currentBtn = null;
+  let currentUrl = null;
 
-  btn.classList.remove("is-loading", "is-playing", "is-paused");
+  function setBtnState(btn, state) {
+    // states: idle | loading | playing | paused
+    if (!btn) return;
+    btn.dataset.state = state;
 
-  if (state === "loading") {
-    btn.classList.add("is-loading");
-    btn.textContent = "…";
-    return;
-  }
+    const icon = btn.querySelector(".playIcon");
+    const text = btn.querySelector(".playText");
 
-  if (state === "playing") {
-    btn.classList.add("is-playing");
-    btn.textContent = "❚❚";
-    return;
-  }
-
-  if (state === "paused") {
-    btn.classList.add("is-paused");
-    btn.textContent = "▶";
-    return;
-  }
-
-  btn.textContent = "▶";
-}
-
-async function playFromButton(btn) {
-  const url = btn?.dataset?.audio;
-  if (!url) return;
-
-  // If clicking same button, toggle play/pause
-  if (currentBtn === btn && currentAudio) {
-    if (currentAudio.paused) {
-      currentAudio.play();
-      setBtn(btn, "playing");
-    } else {
-      currentAudio.pause();
-      setBtn(btn, "paused");
+    if (state === "loading") {
+      if (icon) icon.textContent = "…";
+      if (text) text.textContent = "Loading";
+      btn.classList.add("is-loading");
+      return;
     }
-    return;
+
+    btn.classList.remove("is-loading");
+
+    if (state === "playing") {
+      if (icon) icon.textContent = "❚❚";
+      if (text) text.textContent = "Pause";
+    } else {
+      if (icon) icon.textContent = "▶";
+      if (text) text.textContent = "Play";
+    }
   }
 
-  // Stop previous
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio = null;
+  async function playToggle(btn, url) {
+    try {
+      if (!url) return;
+
+      // toggle same track
+      if (currentUrl === url) {
+        if (!audio.paused) {
+          audio.pause();
+          setBtnState(currentBtn, "paused");
+          return;
+        } else {
+          setBtnState(btn, "loading");
+          await audio.play();
+          setBtnState(btn, "playing");
+          return;
+        }
+      }
+
+      // switch track
+      if (currentBtn) setBtnState(currentBtn, "paused");
+
+      currentBtn = btn;
+      currentUrl = url;
+
+      setBtnState(btn, "loading");
+      audio.src = url;
+
+      // wait a tiny bit so mobile Safari starts quicker
+      await audio.play();
+      setBtnState(btn, "playing");
+    } catch (e) {
+      console.error("[player] play error:", e);
+      if (btn) setBtnState(btn, "paused");
+      alert("Audio could not play. Try again.");
+    }
   }
-  if (currentBtn) setBtn(currentBtn, "idle");
 
-  // Start new
-  currentBtn = btn;
-  setBtn(btn, "loading");
-
-  const audio = new Audio(url);
-  currentAudio = audio;
-
-  audio.addEventListener("canplay", () => {
-    // canplay = faster start
-    if (currentBtn === btn) setBtn(btn, "playing");
-  });
-
+  // when audio ends, reset button
   audio.addEventListener("ended", () => {
-    if (currentBtn === btn) setBtn(btn, "idle");
+    if (currentBtn) setBtnState(currentBtn, "paused");
   });
 
-  audio.addEventListener("pause", () => {
-    if (currentBtn === btn) setBtn(btn, "paused");
+  // attach click handler
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-play-btn]");
+    if (!btn) return;
+    const url = btn.getAttribute("data-audio-url");
+    playToggle(btn, url);
   });
 
-  audio.addEventListener("play", () => {
-    if (currentBtn === btn) setBtn(btn, "playing");
-  });
-
-  audio.addEventListener("error", () => {
-    if (currentBtn === btn) setBtn(btn, "idle");
-    console.error("Audio failed:", url);
-    alert("Audio failed to play.");
-  });
-
-  try {
-    await audio.play();
-  } catch (e) {
-    setBtn(btn, "idle");
-    console.error(e);
-    alert("Tap again to play (browser blocked autoplay).");
-  }
-}
-
-// Global click handler (works even after beats render)
-document.addEventListener("click", (e) => {
-  const btn = e.target.closest(".play-btn");
-  if (!btn) return;
-  playFromButton(btn);
-});
+  // expose
+  window.Player = { playToggle };
+})();
