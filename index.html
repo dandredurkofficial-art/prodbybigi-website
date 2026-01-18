@@ -213,6 +213,10 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script>
   function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
   function prettyProducerName(b){
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
