@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8" /><title>Payment Successful</title></head>
+<body>
+  <h2>Finalizing payment…</h2>
+
+  <script>
+    window.API_BASE = "https://prodbybigi-api.onrender.com";
+
+    async function capture() {
+      const orderId = localStorage.getItem("pb_last_order_id");
+      if (!orderId) {
+        document.body.innerHTML = "<h2>Missing order id.</h2>";
+        return;
+      }
+
+      const r = await fetch(`${window.API_BASE}/api/capture-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId })
+      });
+
+      const data = await r.json();
+      if (!r.ok) {
+        document.body.innerHTML = `<h2>Capture failed:</h2><pre>${data.error || "Unknown error"}</pre>`;
+        return;
+      }
+
+      document.body.innerHTML = "<h2>Payment successful 🎉</h2><p>You can now download your beat.</p>";
+    }
+
+    capture();
+  </script>
+</body>
+</html>
