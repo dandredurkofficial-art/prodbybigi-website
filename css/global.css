@@ -238,3 +238,37 @@ a:hover{opacity:.9}
   display: none !important;
 }
 
+/* ===== Desktop Nav (hide on mobile) ===== */
+.desktop-nav{
+  display:none;
+  align-items:center;
+  gap:16px;
+}
+
+.desktop-nav a{
+  color:var(--text, #e5e7eb);
+  text-decoration:none;
+  font-weight:700;
+  font-size:14px;
+  opacity:.9;
+}
+
+.desktop-nav a:hover{ opacity:1; }
+
+.desktop-nav a.ghost{
+  opacity:.85;
+}
+
+.desktop-nav a.cta{
+  background: rgba(59,130,246,.18);
+  border: 1px solid rgba(59,130,246,.35);
+  padding:10px 14px;
+  border-radius:14px;
+  opacity:1;
+}
+
+/* ===== Breakpoint: Desktop ===== */
+@media (min-width: 900px){
+  #hamburgerBtn{ display:none !important; }
+  .desktop-nav{ display:flex; }
+}
