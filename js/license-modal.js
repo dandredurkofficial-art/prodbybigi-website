@@ -23,6 +23,29 @@
     return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
   };
 
+    async function createPaypalOrder({ beatId, licenseKey }) {
+    if (!window.API_BASE) throw new Error("Missing API_BASE");
+
+    const r = await fetch(`${window.API_BASE}/api/create-order`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ beatId, licenseKey })
+    });
+
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || "Create order failed");
+
+    // Save orderId for capture step later
+    localStorage.setItem("pb_last_order_id", data.orderId);
+
+    // Find PayPal approve link
+    const approve = (data.approveLinks || []).find((l) => l.rel === "approve");
+    if (!approve?.href) throw new Error("No PayPal approve link returned");
+
+    // Redirect buyer to PayPal
+    window.location.href = approve.href;
+  }
+
   // Default licenses if beat doesn't have licenses object
   function buildDefaultLicenses(beat) {
     const base = Number(beat?.price || 29.99) || 29.99;
@@ -131,15 +154,30 @@
   }
 
   // Buttons (for now we just show alerts / redirect placeholder)
-  buyBtn.addEventListener("click", () => {
+    buyBtn.addEventListener("click", async () => {
     if (!currentBeat || !selectedLicense) return;
 
-    // ✅ You can replace this later with your PayPal/Stripe checkout URL.
-    // Example:
-    // location.href = `/checkout.html?beatId=${encodeURIComponent(currentBeat.id)}&license=${encodeURIComponent(selectedLicense.key)}`;
+    // IMPORTANT: beatId must exist (Firestore doc id)
+    if (!currentBeat.id) {
+      alert("Missing beat id. Please refresh the page.");
+      return;
+    }
 
-    alert(`Buy now:\n${currentBeat.title}\nLicense: ${selectedLicense.name}\nTotal: ${money(selectedLicense.price)}`);
-    closeModal();
+    buyBtn.disabled = true;
+    buyBtn.textContent = "Redirecting…";
+
+    try {
+      await createPaypalOrder({
+        beatId: currentBeat.id,
+        licenseKey: selectedLicense.key
+      });
+      // no closeModal here because we're leaving the page
+    } catch (err) {
+      console.error(err);
+      alert(err.message || "Checkout failed");
+      buyBtn.disabled = false;
+      buyBtn.textContent = "Buy now";
+    }
   });
 
   cartBtn.addEventListener("click", () => {
