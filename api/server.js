@@ -11,20 +11,25 @@ app.use(cors({ origin: true }));
 app.use(express.json());
 
 // ---------- Firebase Admin ----------
+// ✅ Recommended on Render: use Secret File + GOOGLE_APPLICATION_CREDENTIALS
+// Render Secret File path example: /etc/secrets/firebase-service-account.json
 if (!admin.apps.length) {
   admin.initializeApp({
-    credential: admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON))
+    credential: admin.credential.applicationDefault()
   });
 }
 const db = admin.firestore();
 
 // ---------- PayPal helpers ----------
 async function paypalAccessToken() {
+  const base = process.env.PAYPAL_BASE;
+  if (!base) throw new Error("Missing PAYPAL_BASE");
+
   const auth = Buffer.from(
     `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
   ).toString("base64");
 
-  const r = await fetch(`${process.env.PAYPAL_BASE}/v1/oauth2/token`, {
+  const r = await fetch(`${base}/v1/oauth2/token`, {
     method: "POST",
     headers: {
       Authorization: `Basic ${auth}`,
@@ -33,8 +38,11 @@ async function paypalAccessToken() {
     body: "grant_type=client_credentials"
   });
 
-  if (!r.ok) throw new Error("PayPal token failed");
-  const data = await r.json();
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    throw new Error(data?.error_description || data?.message || "PayPal token failed");
+  }
+
   return data.access_token;
 }
 
@@ -50,7 +58,9 @@ function fromCents(c) {
 app.post("/api/create-order", async (req, res) => {
   try {
     const { beatId, licenseKey } = req.body;
-    if (!beatId || !licenseKey) return res.status(400).json({ error: "Missing beatId/licenseKey" });
+    if (!beatId || !licenseKey) {
+      return res.status(400).json({ error: "Missing beatId/licenseKey" });
+    }
 
     // 1) Read beat from Firestore (source of truth)
     const beatSnap = await db.collection("beats").doc(beatId).get();
@@ -62,6 +72,7 @@ app.post("/api/create-order", async (req, res) => {
     const producerId = beat.producerId || beat.producerid;
     if (!producerId) return res.status(400).json({ error: "Beat missing producerId" });
 
+    // Option B pricing: beat.licenses[licenseKey].price
     const license = beat.licenses?.[licenseKey];
     const price = license?.price;
     if (price == null) return res.status(400).json({ error: "Invalid licenseKey" });
@@ -82,17 +93,19 @@ app.post("/api/create-order", async (req, res) => {
         purchase_units: [
           {
             amount: { currency_code: "USD", value: fromCents(amountCents) },
-            description: `${beat.title || "Beat"} - ${license.name || licenseKey}`
+            description: `${beat.title || "Beat"} - ${license?.name || licenseKey}`
           }
         ]
       })
     });
 
-    const payData = await create.json();
-    if (!create.ok) throw new Error(payData?.message || "PayPal order create failed");
+    const payData = await create.json().catch(() => ({}));
+    if (!create.ok) {
+      throw new Error(payData?.message || payData?.details?.[0]?.description || "PayPal order create failed");
+    }
 
     // 3) Store order in Firestore
-    const feeCents = Math.round(amountCents * 0.10);
+    const feeCents = Math.round(amountCents * 0.10); // 10%
     const producerNetCents = amountCents - feeCents;
 
     const orderRef = db.collection("orders").doc();
@@ -133,41 +146,56 @@ app.post("/api/capture-order", async (req, res) => {
     if (order.status === "CAPTURED") return res.json({ ok: true, status: "CAPTURED" });
 
     const token = await paypalAccessToken();
-    const cap = await fetch(`${process.env.PAYPAL_BASE}/v2/checkout/orders/${order.paypalOrderId}/capture`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-    });
+    const cap = await fetch(
+      `${process.env.PAYPAL_BASE}/v2/checkout/orders/${order.paypalOrderId}/capture`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+      }
+    );
 
-    const capData = await cap.json();
-    if (!cap.ok) throw new Error(capData?.message || "PayPal capture failed");
+    const capData = await cap.json().catch(() => ({}));
+    if (!cap.ok) {
+      throw new Error(capData?.message || capData?.details?.[0]?.description || "PayPal capture failed");
+    }
 
-    // 1) Credit producer wallet (net after 10%)
+    // (Optional) verify status from PayPal response
+    const ppStatus = capData?.status;
+    if (ppStatus && ppStatus !== "COMPLETED" && ppStatus !== "APPROVED") {
+      throw new Error(`PayPal not completed: ${ppStatus}`);
+    }
+
+    // 1) Credit producer wallet (net after 10%) + ledger + mark order CAPTURED
     await db.runTransaction(async (tx) => {
-      // refresh inside txn
       const fresh = await tx.get(orderRef);
       const o = fresh.data();
-      if (o.status === "CAPTURED") return;
+      if (!o || o.status === "CAPTURED") return;
 
       const walletRef = db.collection("wallets").doc(o.producerId);
       const walletSnap = await tx.get(walletRef);
+      const prev = walletSnap.exists
+        ? walletSnap.data()
+        : { availableCents: 0, lifetimeEarnedCents: 0 };
 
-      const prev = walletSnap.exists ? walletSnap.data() : { availableCents: 0, lifetimeEarnedCents: 0 };
+      tx.set(
+        walletRef,
+        {
+          availableCents: (prev.availableCents || 0) + o.producerNetCents,
+          lifetimeEarnedCents: (prev.lifetimeEarnedCents || 0) + o.producerNetCents,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        },
+        { merge: true }
+      );
 
-      tx.set(walletRef, {
-        availableCents: (prev.availableCents || 0) + o.producerNetCents,
-        lifetimeEarnedCents: (prev.lifetimeEarnedCents || 0) + o.producerNetCents,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-
-      const ledgerRef = db.collection("walletLedger").doc();
-      tx.set(ledgerRef, {
+      tx.set(db.collection("walletLedger").doc(), {
         producerId: o.producerId,
         type: "SALE",
         amountCents: o.producerNetCents,
         feeCents: o.feeCents,
-        orderId: orderId,
+        orderId,
         beatId: o.beatId,
         licenseKey: o.licenseKey,
+        paypalCaptureStatus: capData?.status || null,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
 
@@ -185,4 +213,6 @@ app.post("/api/capture-order", async (req, res) => {
 });
 
 app.get("/", (_, res) => res.send("API OK"));
+app.get("/healthz", (_, res) => res.status(200).send("ok"));
+
 app.listen(process.env.PORT || 8080, () => console.log("API running"));
