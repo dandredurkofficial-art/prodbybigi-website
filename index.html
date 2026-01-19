@@ -18,7 +18,7 @@
       <div class="logo">ProdBy<span>Bigi</span></div>
     </div>
 
-    <!-- ✅ DESKTOP NAV GOES HERE -->
+    <!-- ✅ DESKTOP NAV -->
     <nav class="desktop-nav" aria-label="Main">
       <a href="/index.html">Feed</a>
       <a href="/marketplace.html">Tracks</a>
@@ -27,16 +27,14 @@
       <a class="cta" href="/register.html">Start Selling</a>
       <a class="ghost" href="/login.html">Sign in</a>
     </nav>
-  </div>
-</header>
 
-  <!-- ✅ Cart Icon (inside header) -->
+    <!-- ✅ Cart Icon (inside header) -->
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
       <span class="cart-ic">🛒</span>
       <span class="cart-count" id="pbCartCount">0</span>
     </button>
   </div>
-</header
+</header>
 
 <!-- Mobile Menu -->
 <div class="menu-backdrop" id="menuBackdrop"></div>
@@ -66,7 +64,7 @@
     </div>
   </section>
 
-  <!-- TRENDING (small tiles like BeatStars) -->
+  <!-- TRENDING -->
   <section class="section">
     <div class="home-row">
       <h2 class="h2">Trending Beats</h2>
@@ -111,7 +109,7 @@
     </div>
   </section>
 
-  <!-- TOP CHARTING (grid) -->
+  <!-- TOP CHARTING -->
   <section class="section">
     <div class="home-row">
       <h2 class="h2">Top Charting Beats</h2>
@@ -181,7 +179,7 @@
   </div>
 </footer>
 
-  <!-- License / Checkout Modal (paste once per page) -->
+<!-- License / Checkout Modal -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
@@ -216,7 +214,7 @@
   </div>
 </div>
 
-  <!-- Cart Drawer -->
+<!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
@@ -276,8 +274,10 @@
       status.textContent = "Loading beats…";
       status.classList.remove("hidden");
 
-      // ✅ SINGLE SOURCE OF TRUTH (no where/orderBy error)
       const beats = await window.FB.fetchBeats({ max: 30 });
+
+      // ✅ make latest beats accessible to license-modal.js
+      window.__LATEST_BEATS__ = beats;
 
       strip.innerHTML = "";
       chart.innerHTML = "";
@@ -289,11 +289,10 @@
 
       status.classList.add("hidden");
 
-      // Trending strip
       beats.slice(0,12).forEach((b)=>{
         const el = document.createElement("div");
-        el.className = "card trend-card";          // ✅ ADD (don’t remove)
-        el.setAttribute("data-beat-id", b.id);     // ✅ KEEP
+        el.className = "card trend-card";
+        el.setAttribute("data-beat-id", b.id);
         el.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
@@ -315,11 +314,10 @@
         strip.appendChild(el);
       });
 
-      // Top charting
       beats.slice(0,10).forEach((b)=>{
         const el = document.createElement("div");
-        el.className = "card beat-card";           // ✅ ADD (don’t remove)
-        el.setAttribute("data-beat-id", b.id);     // ✅ KEEP
+        el.className = "card beat-card";
+        el.setAttribute("data-beat-id", b.id);
         el.style.padding = "12px";
         el.style.borderRadius = "20px";
         el.innerHTML = `
