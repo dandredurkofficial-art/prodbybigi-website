@@ -1,3 +1,4 @@
+// /api/server.js
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
@@ -7,12 +8,20 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: true }));
+
+/**
+ * CORS
+ * - Set FRONTEND_ORIGIN in Render to: https://prodby.officialbigi.shop
+ * - For testing you can allow all, but production should be strict.
+ */
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || true;
+app.use(cors({ origin: FRONTEND_ORIGIN }));
 app.use(express.json());
 
 // ---------- Firebase Admin ----------
-// ✅ Recommended on Render: use Secret File + GOOGLE_APPLICATION_CREDENTIALS
-// Render Secret File path example: /etc/secrets/firebase-service-account.json
+// Render Secret File method:
+// - Upload secret file named: firebase-service-account.json
+// - Set env var: GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/firebase-service-account.json
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.applicationDefault()
@@ -20,14 +29,33 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
-// ---------- PayPal helpers ----------
-async function paypalAccessToken() {
-  const base = process.env.PAYPAL_BASE;
-  if (!base) throw new Error("Missing PAYPAL_BASE");
+// ---------- Helpers ----------
+function toCents(n) {
+  const v = Number(n || 0);
+  return Math.round(v * 100);
+}
+function fromCents(c) {
+  return (Number(c || 0) / 100).toFixed(2);
+}
 
-  const auth = Buffer.from(
-    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
-  ).toString("base64");
+function getPaypalBase() {
+  // support both names so you don't get "Missing PAYPAL_BASE"
+  return (
+    process.env.PAYPAL_BASE ||
+    process.env.PAYPAL_BASE_URL ||
+    ""
+  );
+}
+
+async function paypalAccessToken() {
+  const base = getPaypalBase();
+  if (!base) throw new Error("Missing PAYPAL_BASE (or PAYPAL_BASE_URL)");
+
+  const id = process.env.PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_SECRET;
+  if (!id || !secret) throw new Error("Missing PAYPAL_CLIENT_ID or PAYPAL_SECRET");
+
+  const auth = Buffer.from(`${id}:${secret}`).toString("base64");
 
   const r = await fetch(`${base}/v1/oauth2/token`, {
     method: "POST",
@@ -46,27 +74,34 @@ async function paypalAccessToken() {
   return data.access_token;
 }
 
-function toCents(n) {
-  const v = Number(n || 0);
-  return Math.round(v * 100);
-}
-function fromCents(c) {
-  return (Number(c || 0) / 100).toFixed(2);
-}
+// ---------- ROUTES ----------
 
-// ---------- API: Create Order ----------
+app.get("/", (_, res) => res.send("API OK"));
+app.get("/healthz", (_, res) => res.status(200).send("ok"));
+
+/**
+ * POST /api/create-order
+ * Body: { beatId, licenseKey }
+ *
+ * - Reads beat from Firestore
+ * - Gets price from beat.licenses[licenseKey].price   (Option B)
+ * - Creates PayPal order
+ * - Saves order doc in Firestore
+ * - Returns PayPal approve link
+ */
 app.post("/api/create-order", async (req, res) => {
   try {
-    const { beatId, licenseKey } = req.body;
+    const { beatId, licenseKey } = req.body || {};
     if (!beatId || !licenseKey) {
       return res.status(400).json({ error: "Missing beatId/licenseKey" });
     }
 
-    // 1) Read beat from Firestore (source of truth)
-    const beatSnap = await db.collection("beats").doc(beatId).get();
+    // 1) Read beat (source of truth)
+    const beatRef = db.collection("beats").doc(String(beatId));
+    const beatSnap = await beatRef.get();
     if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
 
-    const beat = beatSnap.data();
+    const beat = beatSnap.data() || {};
     if (beat.published !== true) return res.status(403).json({ error: "Beat not published" });
 
     const producerId = beat.producerId || beat.producerid;
@@ -80,9 +115,16 @@ app.post("/api/create-order", async (req, res) => {
     const amountCents = toCents(price);
     if (amountCents < 50) return res.status(400).json({ error: "Price too low" });
 
-    // 2) Create PayPal order (platform receives money)
+    // 2) Create PayPal order
     const token = await paypalAccessToken();
-    const create = await fetch(`${process.env.PAYPAL_BASE}/v2/checkout/orders`, {
+    const base = getPaypalBase();
+
+    // IMPORTANT: set SITE_URL in Render (your frontend domain)
+    // Example: https://prodby.officialbigi.shop
+    const site = process.env.SITE_URL;
+    if (!site) throw new Error("Missing SITE_URL env var (your frontend domain)");
+
+    const create = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -95,7 +137,11 @@ app.post("/api/create-order", async (req, res) => {
             amount: { currency_code: "USD", value: fromCents(amountCents) },
             description: `${beat.title || "Beat"} - ${license?.name || licenseKey}`
           }
-        ]
+        ],
+        application_context: {
+          return_url: `${site}/paypal-return.html`,
+          cancel_url: `${site}/paypal-cancel.html`
+        }
       })
     });
 
@@ -110,9 +156,9 @@ app.post("/api/create-order", async (req, res) => {
 
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
-      beatId,
-      producerId,
-      licenseKey,
+      beatId: String(beatId),
+      producerId: String(producerId),
+      licenseKey: String(licenseKey),
       amountCents,
       feeCents,
       producerNetCents,
@@ -127,52 +173,54 @@ app.post("/api/create-order", async (req, res) => {
       approveLinks: payData.links || []
     });
   } catch (e) {
-    console.error(e);
+    console.error("[create-order]", e);
     res.status(500).json({ error: e.message || "Server error" });
   }
 });
 
-// ---------- API: Capture Order ----------
+/**
+ * POST /api/capture-order
+ * Body: { orderId }
+ *
+ * - Captures PayPal order
+ * - Credits producer wallet (net after fee)
+ * - Writes wallet ledger
+ * - Marks order CAPTURED
+ */
 app.post("/api/capture-order", async (req, res) => {
   try {
-    const { orderId } = req.body;
+    const { orderId } = req.body || {};
     if (!orderId) return res.status(400).json({ error: "Missing orderId" });
 
-    const orderRef = db.collection("orders").doc(orderId);
+    const orderRef = db.collection("orders").doc(String(orderId));
     const orderSnap = await orderRef.get();
     if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
 
-    const order = orderSnap.data();
+    const order = orderSnap.data() || {};
     if (order.status === "CAPTURED") return res.json({ ok: true, status: "CAPTURED" });
 
     const token = await paypalAccessToken();
-    const cap = await fetch(
-      `${process.env.PAYPAL_BASE}/v2/checkout/orders/${order.paypalOrderId}/capture`,
-      {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
-      }
-    );
+    const base = getPaypalBase();
+
+    const cap = await fetch(`${base}/v2/checkout/orders/${order.paypalOrderId}/capture`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }
+    });
 
     const capData = await cap.json().catch(() => ({}));
     if (!cap.ok) {
       throw new Error(capData?.message || capData?.details?.[0]?.description || "PayPal capture failed");
     }
 
-    // (Optional) verify status from PayPal response
-    const ppStatus = capData?.status;
-    if (ppStatus && ppStatus !== "COMPLETED" && ppStatus !== "APPROVED") {
-      throw new Error(`PayPal not completed: ${ppStatus}`);
-    }
-
-    // 1) Credit producer wallet (net after 10%) + ledger + mark order CAPTURED
+    // Credit wallet + ledger + mark order captured (transaction)
     await db.runTransaction(async (tx) => {
       const fresh = await tx.get(orderRef);
       const o = fresh.data();
       if (!o || o.status === "CAPTURED") return;
 
-      const walletRef = db.collection("wallets").doc(o.producerId);
+      const walletRef = db.collection("wallets").doc(String(o.producerId));
       const walletSnap = await tx.get(walletRef);
+
       const prev = walletSnap.exists
         ? walletSnap.data()
         : { availableCents: 0, lifetimeEarnedCents: 0 };
@@ -180,21 +228,21 @@ app.post("/api/capture-order", async (req, res) => {
       tx.set(
         walletRef,
         {
-          availableCents: (prev.availableCents || 0) + o.producerNetCents,
-          lifetimeEarnedCents: (prev.lifetimeEarnedCents || 0) + o.producerNetCents,
+          availableCents: (prev.availableCents || 0) + (o.producerNetCents || 0),
+          lifetimeEarnedCents: (prev.lifetimeEarnedCents || 0) + (o.producerNetCents || 0),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         },
         { merge: true }
       );
 
       tx.set(db.collection("walletLedger").doc(), {
-        producerId: o.producerId,
+        producerId: String(o.producerId),
         type: "SALE",
-        amountCents: o.producerNetCents,
-        feeCents: o.feeCents,
-        orderId,
-        beatId: o.beatId,
-        licenseKey: o.licenseKey,
+        amountCents: o.producerNetCents || 0,
+        feeCents: o.feeCents || 0,
+        orderId: String(orderId),
+        beatId: String(o.beatId),
+        licenseKey: String(o.licenseKey),
         paypalCaptureStatus: capData?.status || null,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
@@ -207,12 +255,9 @@ app.post("/api/capture-order", async (req, res) => {
 
     res.json({ ok: true, status: "CAPTURED" });
   } catch (e) {
-    console.error(e);
+    console.error("[capture-order]", e);
     res.status(500).json({ error: e.message || "Server error" });
   }
 });
-
-app.get("/", (_, res) => res.send("API OK"));
-app.get("/healthz", (_, res) => res.status(200).send("ok"));
 
 app.listen(process.env.PORT || 8080, () => console.log("API running"));
