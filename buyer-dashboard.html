@@ -41,23 +41,87 @@ button{
 }
 h2{margin:0 0 10px}
 .small{color:#a9b1c7;font-size:13px}
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+
+.orders{
+  display:grid;
   gap:12px;
-  padding:12px 0;
-  border-top:1px solid #1d2230;
 }
-.row:first-child{border-top:none}
+
+.order{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border-radius:16px;
+  border:1px solid #1d2230;
+  background:#0f1424;
+}
+
+.cover{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  overflow:hidden;
+  flex:0 0 auto;
+  background:#111827;
+  border:1px solid rgba(255,255,255,.06);
+  display:grid;
+  place-items:center;
+}
+.cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.meta{
+  min-width:0;
+  flex:1;
+}
+.title{
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sub{
+  margin-top:4px;
+  color:#a9b1c7;
+  font-size:13px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(43,108,255,.14);
+  border:1px solid rgba(43,108,255,.25);
+  font-weight:800;
+  color:#dbe7ff;
+  font-size:13px;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex:0 0 auto;
+}
+
 a.dl{
   display:inline-block;
   padding:10px 14px;
-  border-radius:10px;
+  border-radius:12px;
   background:#2b6cff;
   color:#fff;
   text-decoration:none;
-  font-weight:700;
+  font-weight:800;
+  white-space:nowrap;
 }
 a.dl:active{opacity:.85}
 </style>
@@ -79,7 +143,7 @@ a.dl:active{opacity:.85}
   <div class="card">
     <h2>Purchased Beats</h2>
     <p class="small" id="ordersStatus">Loading your orders…</p>
-    <div id="ordersList"></div>
+    <div id="ordersList" class="orders"></div>
   </div>
 </div>
 
