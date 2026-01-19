@@ -1,9 +1,5 @@
-// /js/license-modal.js (FAST PAYPAL REDIRECT + CART SAFE)
-// ✅ Uses window.API_BASE
-// ✅ Uses window.FB.getIdToken() (FAST, no dynamic imports)
-// ✅ BeatId always resolved from currentBeat or DOM
-// ✅ Licenses come from beat.licenses (consistent across pages)
-// ✅ Add-to-cart never "invalid cart item"
+// /js/license-modal.js
+// Fixes: play/pause triggering modal, consistent licenses, safe cart add.
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -36,15 +32,9 @@
 
   function resolveBeatId() {
     if (!currentBeat) return "";
-    return String(
-      currentBeat.id ||
-      currentBeat.beatId ||
-      currentBeat.docId ||
-      ""
-    );
+    return String(currentBeat.id || currentBeat.beatId || currentBeat.docId || "");
   }
 
-  // ✅ FAST token getter (from /js/firebase.js)
   async function getBuyerIdTokenFast() {
     try {
       if (window.FB?.getIdToken) return await window.FB.getIdToken();
@@ -79,75 +69,41 @@
     window.location.href = approve.href;
   }
 
-  // Default licenses if beat doesn't have licenses object
-  function buildDefaultLicenses(beat) {
-    const base = Number(beat?.price || 29.99) || 29.99;
+  // ✅ Force same licenses everywhere
+  function fixedLicenses() {
     return [
       {
         key: "basic",
         name: "Basic",
-        price: base,
+        price: 29.99,
         meta: "MP3",
         badge: "Popular",
-        terms: ["MP3 download", "Non-exclusive license", "Use in 1 project"]
+        terms: ["MP3 download", "Non-exclusive", "1 song/project", "Streaming allowed"]
       },
       {
         key: "premium",
         name: "Premium",
-        price: Math.max(base * 2, 59.99),
-        meta: "WAV + MP3",
-        terms: ["WAV + MP3", "More usage", "Better quality"]
-      },
-      {
-        key: "unlimited",
-        name: "Unlimited",
-        price: Math.max(base * 3, 99.99),
-        meta: "WAV + MP3",
-        terms: ["Unlimited streams", "Monetization", "Wide distribution"]
+        price: 79.99,
+        meta: "MP3",
+        terms: ["MP3 download", "Non-exclusive", "More usage", "Monetization allowed"]
       },
       {
         key: "exclusive",
         name: "Exclusive",
-        price: Math.max(base * 6, 199.99),
-        meta: "STEMS + WAV",
-        terms: ["Exclusive rights", "Stems included", "Remove from store"]
+        price: 299.99,
+        meta: "MP3",
+        terms: ["MP3 download", "Exclusive rights", "Beat removed from store", "Full monetization"]
       }
     ];
-  }
-
-  function buildLicensesFromBeat(beat) {
-    const lic = beat?.licenses;
-    if (!lic || typeof lic !== "object") return buildDefaultLicenses(beat);
-
-    const out = [];
-    Object.keys(lic).forEach((k) => {
-      const item = lic[k] || {};
-      const enabled = item.enabled !== false;
-      if (!enabled) return;
-
-      const price = Number(item.price ?? item.amount ?? 0) || 0;
-
-      out.push({
-        key: k,
-        name: item.name || k.toUpperCase(),
-        price: price || Number(beat?.price || 0) || 29.99,
-        meta: item.format || item.files || "MP3",
-        badge: item.badge || "",
-        terms: Array.isArray(item.terms) ? item.terms : []
-      });
-    });
-
-    return out.length ? out : buildDefaultLicenses(beat);
   }
 
   function renderTerms(license) {
     if (!termsGrid) return;
     termsGrid.innerHTML = "";
 
-    const terms =
-      license?.terms && license.terms.length
-        ? license.terms
-        : ["Instant download", "License proof included", "Producer credited"];
+    const terms = (license?.terms && license.terms.length)
+      ? license.terms
+      : ["Instant download", "License proof included", "Producer credited"];
 
     terms.slice(0, 6).forEach((t) => {
       const el = document.createElement("div");
@@ -164,7 +120,7 @@
     titleEl.textContent = beat?.title || "Beat";
     subEl.textContent = "Select a license to continue.";
 
-    const licenses = buildLicensesFromBeat(beat);
+    const licenses = fixedLicenses();
     selectedLicense = licenses[0];
 
     grid.innerHTML = "";
@@ -212,13 +168,12 @@
     resetBuyBtn();
   }
 
-  // BUY NOW
   buyBtn.addEventListener("click", async () => {
     if (!currentBeat || !selectedLicense) return;
 
     const beatId = resolveBeatId();
     if (!beatId) {
-      alert("Missing beat id. Please refresh the page.");
+      alert("Missing beat id. Please refresh.");
       return;
     }
 
@@ -226,10 +181,7 @@
     buyBtn.textContent = "Redirecting…";
 
     try {
-      await createPaypalOrder({
-        beatId,
-        licenseKey: selectedLicense.key
-      });
+      await createPaypalOrder({ beatId, licenseKey: selectedLicense.key });
     } catch (err) {
       console.error(err);
       alert(err.message || "Checkout failed");
@@ -237,7 +189,6 @@
     }
   });
 
-  // ADD TO CART
   cartBtn?.addEventListener("click", () => {
     if (!currentBeat || !selectedLicense) return;
 
@@ -248,7 +199,7 @@
     }
 
     if (!window.PB_CART) {
-      alert("Cart not loaded. Make sure /js/cart.js is included.");
+      alert("Cart not loaded. Ensure /js/cart.js is included.");
       return;
     }
 
@@ -256,7 +207,7 @@
       beatId,
       title: currentBeat.title || "Beat",
       artwork: currentBeat.artwork || "",
-      price: Number(selectedLicense.price || currentBeat.price || 0),
+      price: Number(selectedLicense.price || 0),
       licenseKey: selectedLicense.key,
       licenseName: selectedLicense.name || selectedLicense.key
     });
@@ -270,13 +221,16 @@
     if (e.key === "Escape") closeModal();
   });
 
-  // ✅ Open modal when user clicks price-pill OR card
+  // ✅ Only open modal when clicking price-pill / buy area — NOT the whole card.
+  // ✅ Also ignore clicks on play buttons/controls.
   document.addEventListener("click", (e) => {
-    const pill = e.target.closest(".price-pill, .price-btn");
-    const card = e.target.closest(".beat-card, .trend-card");
-    if (!pill && !card) return;
+    // ignore play controls
+    if (e.target.closest("[data-play-btn], .play-btn, .play-fab")) return;
 
-    const wrap = (pill ? pill.closest(".beat-card, .trend-card") : card);
+    const pill = e.target.closest(".price-pill, .price-btn, [data-open-license]");
+    if (!pill) return;
+
+    const wrap = pill.closest(".beat-card, .trend-card");
     if (!wrap) return;
 
     const beatId = wrap.getAttribute("data-beat-id") || "";
@@ -288,16 +242,12 @@
     }
 
     if (!beat) {
-      // last fallback (still includes id)
       const title =
-        (wrap.querySelector("h3")?.textContent || wrap.querySelector(".t")?.textContent || "Beat").trim();
+        (wrap.querySelector("h3")?.textContent ||
+          wrap.querySelector(".t")?.textContent ||
+          "Beat").trim();
 
-      beat = {
-        id: beatId,
-        title,
-        price: 29.99,
-        licenses: null
-      };
+      beat = { id: beatId, title, artwork: "", price: 29.99 };
     }
 
     openModal(beat);
