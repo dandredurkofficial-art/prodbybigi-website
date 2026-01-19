@@ -1,9 +1,9 @@
-// /js/license-modal.js (FULL + CART + AUTH TOKEN)
+// /js/license-modal.js (FAST PAYPAL REDIRECT + CART SAFE)
 // ✅ Uses window.API_BASE
-// ✅ Sends Firebase buyer ID token (if logged in)
-// ✅ Price pills ALWAYS clickable
-// ✅ Add to cart stores valid item in localStorage via PB_CART
-// ✅ Supports beatArtwork field too
+// ✅ Uses window.FB.getIdToken() (FAST, no dynamic imports)
+// ✅ BeatId always resolved from currentBeat or DOM
+// ✅ Licenses come from beat.licenses (consistent across pages)
+// ✅ Add-to-cart never "invalid cart item"
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -34,49 +34,28 @@
     buyBtn.textContent = "Buy now";
   }
 
-  function beatArtwork(beat) {
-    return (
-      beat?.artwork ||
-      beat?.beatArtwork ||
-      beat?.coverurl ||
-      beat?.coverUrl ||
-      beat?.coverURL ||
+  function resolveBeatId() {
+    if (!currentBeat) return "";
+    return String(
+      currentBeat.id ||
+      currentBeat.beatId ||
+      currentBeat.docId ||
       ""
     );
   }
 
-  // ---- Firebase Auth token (client) ----
-  async function getBuyerIdToken() {
+  // ✅ FAST token getter (from /js/firebase.js)
+  async function getBuyerIdTokenFast() {
     try {
-      const { initializeApp, getApps } = await import(
-        "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"
-      );
-      const { getAuth } = await import(
-        "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"
-      );
-
-      const firebaseConfig = {
-        apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-        authDomain: "prodbybigi.firebaseapp.com",
-        projectId: "prodbybigi"
-      };
-
-      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      const user = auth.currentUser;
-      if (!user) return null;
-
-      return await user.getIdToken();
-    } catch {
-      return null;
-    }
+      if (window.FB?.getIdToken) return await window.FB.getIdToken();
+    } catch {}
+    return null;
   }
 
   async function createPaypalOrder({ beatId, licenseKey }) {
     if (!window.API_BASE) throw new Error("Missing API_BASE");
 
-    const token = await getBuyerIdToken();
+    const token = await getBuyerIdTokenFast();
 
     const r = await fetch(`${window.API_BASE}/api/create-order`, {
       method: "POST",
@@ -84,10 +63,7 @@
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({
-        beatId: String(beatId || ""),
-        licenseKey: String(licenseKey || "").toLowerCase()
-      })
+      body: JSON.stringify({ beatId, licenseKey })
     });
 
     const data = await r.json().catch(() => ({}));
@@ -103,17 +79,39 @@
     window.location.href = approve.href;
   }
 
+  // Default licenses if beat doesn't have licenses object
   function buildDefaultLicenses(beat) {
     const base = Number(beat?.price || 29.99) || 29.99;
     return [
-      { key: "basic", name: "Basic", price: base, meta: "MP3", badge: "Popular",
-        terms: ["MP3 download", "Non-exclusive license", "Use in 1 project"] },
-      { key: "premium", name: "Premium", price: Math.max(base * 2, 59.99), meta: "WAV + MP3",
-        terms: ["WAV + MP3", "More usage", "Better quality"] },
-      { key: "unlimited", name: "Unlimited", price: Math.max(base * 3, 99.99), meta: "WAV + MP3",
-        terms: ["Unlimited streams", "Monetization", "Wide distribution"] },
-      { key: "exclusive", name: "Exclusive", price: Math.max(base * 6, 199.99), meta: "STEMS + WAV",
-        terms: ["Exclusive rights", "Stems included", "Remove from store"] }
+      {
+        key: "basic",
+        name: "Basic",
+        price: base,
+        meta: "MP3",
+        badge: "Popular",
+        terms: ["MP3 download", "Non-exclusive license", "Use in 1 project"]
+      },
+      {
+        key: "premium",
+        name: "Premium",
+        price: Math.max(base * 2, 59.99),
+        meta: "WAV + MP3",
+        terms: ["WAV + MP3", "More usage", "Better quality"]
+      },
+      {
+        key: "unlimited",
+        name: "Unlimited",
+        price: Math.max(base * 3, 99.99),
+        meta: "WAV + MP3",
+        terms: ["Unlimited streams", "Monetization", "Wide distribution"]
+      },
+      {
+        key: "exclusive",
+        name: "Exclusive",
+        price: Math.max(base * 6, 199.99),
+        meta: "STEMS + WAV",
+        terms: ["Exclusive rights", "Stems included", "Remove from store"]
+      }
     ];
   }
 
@@ -130,8 +128,8 @@
       const price = Number(item.price ?? item.amount ?? 0) || 0;
 
       out.push({
-        key: String(k || "").toLowerCase(),
-        name: item.name || String(k).toUpperCase(),
+        key: k,
+        name: item.name || k.toUpperCase(),
         price: price || Number(beat?.price || 0) || 29.99,
         meta: item.format || item.files || "MP3",
         badge: item.badge || "",
@@ -163,7 +161,7 @@
     currentBeat = beat;
     resetBuyBtn();
 
-    titleEl.textContent = beat?.title || beat?.beatTitle || "Beat";
+    titleEl.textContent = beat?.title || "Beat";
     subEl.textContent = "Select a license to continue.";
 
     const licenses = buildLicensesFromBeat(beat);
@@ -214,10 +212,12 @@
     resetBuyBtn();
   }
 
+  // BUY NOW
   buyBtn.addEventListener("click", async () => {
     if (!currentBeat || !selectedLicense) return;
 
-    if (!currentBeat.id) {
+    const beatId = resolveBeatId();
+    if (!beatId) {
       alert("Missing beat id. Please refresh the page.");
       return;
     }
@@ -227,7 +227,7 @@
 
     try {
       await createPaypalOrder({
-        beatId: currentBeat.id,
+        beatId,
         licenseKey: selectedLicense.key
       });
     } catch (err) {
@@ -237,36 +237,32 @@
     }
   });
 
+  // ADD TO CART
   cartBtn?.addEventListener("click", () => {
-  if (!currentBeat || !selectedLicense) return;
+    if (!currentBeat || !selectedLicense) return;
 
-  const beatId =
-    currentBeat.id ||
-    currentBeat.beatId ||
-    currentBeat.docId ||
-    "";
+    const beatId = resolveBeatId();
+    if (!beatId || !selectedLicense.key) {
+      alert("Invalid cart item (missing beatId/license key)");
+      return;
+    }
 
-  if (!beatId || !selectedLicense.key) {
-    alert("Invalid cart item (missing beatId/license key)");
-    return;
-  }
+    if (!window.PB_CART) {
+      alert("Cart not loaded. Make sure /js/cart.js is included.");
+      return;
+    }
 
-  if (!window.PB_CART) {
-    alert("Cart not loaded. Make sure /js/cart.js is included.");
-    return;
-  }
+    window.PB_CART.add({
+      beatId,
+      title: currentBeat.title || "Beat",
+      artwork: currentBeat.artwork || "",
+      price: Number(selectedLicense.price || currentBeat.price || 0),
+      licenseKey: selectedLicense.key,
+      licenseName: selectedLicense.name || selectedLicense.key
+    });
 
-  window.PB_CART.add({
-    beatId,
-    title: currentBeat.title || "Beat",
-    artwork: currentBeat.artwork || currentBeat.beatArtwork || "",
-    price: Number(selectedLicense.price || currentBeat.price || 0),
-    licenseKey: selectedLicense.key,
-    licenseName: selectedLicense.name || selectedLicense.key
+    alert("Added to cart ✅");
   });
-
-  alert("Added to cart ✅");
-});
 
   closeBtn?.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);
@@ -274,7 +270,7 @@
     if (e.key === "Escape") closeModal();
   });
 
-  // ✅ Price pill click (and card click as backup)
+  // ✅ Open modal when user clicks price-pill OR card
   document.addEventListener("click", (e) => {
     const pill = e.target.closest(".price-pill, .price-btn");
     const card = e.target.closest(".beat-card, .trend-card");
@@ -284,19 +280,23 @@
     if (!wrap) return;
 
     const beatId = wrap.getAttribute("data-beat-id") || "";
-    const h3 = wrap.querySelector("h3");
-    const t = wrap.querySelector(".t");
-    const domTitle = (h3?.textContent || t?.textContent || "").trim();
-
-    let beat = null;
     const list = window.__LATEST_BEATS__ || [];
-    if (beatId && Array.isArray(list)) beat = list.find((b) => b.id === beatId) || null;
+    let beat = null;
+
+    if (beatId && Array.isArray(list)) {
+      beat = list.find((b) => String(b.id) === String(beatId)) || null;
+    }
 
     if (!beat) {
+      // last fallback (still includes id)
+      const title =
+        (wrap.querySelector("h3")?.textContent || wrap.querySelector(".t")?.textContent || "Beat").trim();
+
       beat = {
         id: beatId,
-        title: domTitle || "Beat",
-        price: 29.99
+        title,
+        price: 29.99,
+        licenses: null
       };
     }
 
