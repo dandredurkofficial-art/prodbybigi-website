@@ -29,6 +29,17 @@ async function apiGet(path) {
   return data;
 }
 
+function moneyFromCents(cents) {
+  const v = Number(cents || 0) / 100;
+  return `$${v.toFixed(2)}`;
+}
+
+function prettyLicense(k) {
+  const s = String(k || "").toLowerCase();
+  if (!s) return "License";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function renderOrders(orders) {
   const list = $("ordersList");
   const status = $("ordersStatus");
@@ -43,18 +54,32 @@ function renderOrders(orders) {
 
   orders.forEach((o) => {
     const title = o.beatTitle || o.beatName || o.title || o.beatId || "Beat";
-    const dateText = o.capturedAt?.seconds
-      ? new Date(o.capturedAt.seconds * 1000).toLocaleString()
-      : "";
+    const artwork = o.beatArtwork || "";
+    const price = moneyFromCents(o.amountCents);
+    const license = prettyLicense(o.licenseKey);
 
     const row = document.createElement("div");
-    row.className = "row";
+    row.className = "order";
     row.innerHTML = `
-      <div style="min-width:0">
-        <div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
-        <div class="small">License: ${o.licenseKey || "-"} • ${dateText}</div>
+      <div class="cover">
+        ${
+          artwork
+            ? `<img src="${artwork}" alt="${title}" loading="lazy" />`
+            : `<div style="font-weight:900;color:rgba(255,255,255,.65)">PB</div>`
+        }
       </div>
-      <a class="dl" href="#" data-order-id="${o.id}">Download</a>
+
+      <div class="meta">
+        <div class="title">${title}</div>
+        <div class="sub">
+          <span class="pill">${license}</span>
+          <span class="pill">${price}</span>
+        </div>
+      </div>
+
+      <div class="right">
+        <a class="dl" href="#" data-order-id="${o.id}">Download</a>
+      </div>
     `;
     list.appendChild(row);
   });
