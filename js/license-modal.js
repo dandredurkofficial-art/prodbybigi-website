@@ -209,10 +209,12 @@
 
     // Try to match with latest beats if available
     let beat = null;
-    const list = window.__LATEST_BEATS__ || [];
-    if (domTitle && Array.isArray(list)) {
-      beat = list.find(b => String(b.title || "").trim() === domTitle) || null;
-    }
+const list = window.__LATEST_BEATS__ || [];
+if (beatId && Array.isArray(list)) {
+  beat = list.find(b => b.id === beatId) || null;
+} else if (domTitle && Array.isArray(list)) {
+  beat = list.find(b => String(b.title || "").trim() === domTitle) || null;
+}
 
     // Fallback minimal beat object
     if (!beat) {
