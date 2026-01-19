@@ -115,12 +115,48 @@
     render();
   });
 
-  checkoutBtn?.addEventListener("click", () => {
-    // For now: send user to marketplace and show modal per item later
-    // (Next step: multi-item checkout endpoint)
-    alert("Checkout coming next. For now, use Buy Now on a beat ✅");
-    close();
-  });
+  checkoutBtn?.addEventListener("click", async () => {
+  try {
+    if (!window.API_BASE) throw new Error("Missing API_BASE");
+    const items = window.PB_CART?.list ? window.PB_CART.list() : [];
+    if (!items.length) return;
+
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = "Redirecting…";
+
+    const payload = {
+      items: items.map(x => ({
+        beatId: x.beatId,
+        licenseKey: x.licenseKey,
+        qty: x.qty || 1
+      }))
+    };
+
+    const r = await fetch(`${window.API_BASE}/api/cart-checkout`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Cart checkout failed");
+
+    if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
+
+    const approve =
+      (data.approveLinks || []).find(l => l.rel === "approve") ||
+      (data.approveLinks || []).find(l => l.rel === "payer-action");
+
+    if (!approve?.href) throw new Error("No PayPal approve link returned");
+
+    window.location.href = approve.href;
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Checkout failed");
+    checkoutBtn.disabled = false;
+    checkoutBtn.textContent = "Checkout";
+  }
+});
 
   // Keep cart badge updated everywhere
   window.addEventListener("pb-cart-updated", render);
