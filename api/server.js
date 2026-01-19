@@ -162,6 +162,10 @@ app.post("/api/create-order", async (req, res) => {
       beatId: String(beatId),
       producerId: String(producerId),
       licenseKey: String(licenseKey),
+
+      beatTitle: beat.title || null,
+      beatArtwork: beat.artwork || beat.coverurl || beat.coverUrl || beat.coverURL || null,
+      
       amountCents,
       feeCents,
       producerNetCents,
