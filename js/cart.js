@@ -1,5 +1,5 @@
 // /js/cart.js (simple cart using localStorage)
-// Exposes window.PB_CART with add/remove/list/clear/count
+// Exposes window.PB_CART with add/remove/list/clear/count/total
 
 (function () {
   const KEY = "pb_cart_v1";
@@ -19,16 +19,23 @@
     window.dispatchEvent(new Event("pb-cart-updated"));
   }
 
+  function toKey(x) {
+    return String(x || "basic").trim().toLowerCase();
+  }
+
   function normalize(item) {
+    const beatId = String(item.beatId || "").trim();
+    const licenseKey = toKey(item.licenseKey || "basic");
+
     return {
-      id: item.id || `${item.beatId}:${item.licenseKey}`,
-      beatId: String(item.beatId || ""),
+      id: item.id || `${beatId}:${licenseKey}`,
+      beatId,
       title: String(item.title || "Beat"),
       artwork: String(item.artwork || ""),
-      licenseKey: String(item.licenseKey || "basic"),
+      licenseKey, // ✅ always lowercase
       licenseName: String(item.licenseName || item.licenseKey || "basic"),
       price: Number(item.price || 0),
-      qty: 1
+      qty: Math.max(1, Number(item.qty || 1))
     };
   }
 
@@ -46,17 +53,23 @@
       const cart = read();
       const x = normalize(item);
 
-      const idx = cart.findIndex((c) => c.beatId === x.beatId && c.licenseKey === x.licenseKey);
+      // ✅ reject empty beatId (prevents invalid cart items)
+      if (!x.beatId) return cart;
+
+      const idx = cart.findIndex((c) => c.beatId === x.beatId && toKey(c.licenseKey) === x.licenseKey);
       if (idx >= 0) {
         cart[idx].qty = (Number(cart[idx].qty) || 1) + 1;
       } else {
         cart.push(x);
       }
+
       write(cart);
       return cart;
     },
     remove(beatId, licenseKey) {
-      const cart = read().filter((c) => !(c.beatId === String(beatId) && c.licenseKey === String(licenseKey)));
+      const bid = String(beatId || "").trim();
+      const lk = toKey(licenseKey || "basic");
+      const cart = read().filter((c) => !(String(c.beatId) === bid && toKey(c.licenseKey) === lk));
       write(cart);
       return cart;
     },
