@@ -9,12 +9,27 @@ dotenv.config();
 
 const app = express();
 
-/**
- * CORS
- * Set FRONTEND_ORIGIN in Render to: https://prodby.officialbigi.shop
- */
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || true;
-app.use(cors({ origin: FRONTEND_ORIGIN }));
+// ✅ strict origins (NO trailing slash)
+const ALLOWED_ORIGINS = [
+  "https://prodby.officialbigi.shop",
+  "http://localhost:5173",
+  "http://localhost:3000"
+];
+
+app.use(cors({
+  origin: function (origin, cb) {
+    // allow server-to-server / curl (no origin)
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    return cb(new Error("CORS blocked origin: " + origin));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// ✅ IMPORTANT: answer preflight
+app.options("*", cors());
+
 app.use(express.json());
 
 // ---------- Firebase Admin ----------
