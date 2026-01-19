@@ -1,7 +1,10 @@
-// /js/license-modal.js  (UPDATED + FIXED)
-// - Uses window.API_BASE
-// - Reads beatId from DOM via data-beat-id (so Buy Now always works)
-// - Redirects to PayPal approve link after /api/create-order
+// /js/license-modal.js  (FULL UPDATED + WORKING)
+//
+// ✅ Uses window.API_BASE
+// ✅ Reads beatId from DOM: data-beat-id (so Buy Now works)
+// ✅ Redirects to PayPal approve link after /api/create-order
+// ✅ Includes openModal + closeModal (resets button on close)
+// ✅ Prevents "stuck redirecting" by resetting UI on modal open/close
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -26,6 +29,11 @@
     return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
   };
 
+  function resetBuyBtn() {
+    buyBtn.disabled = false;
+    buyBtn.textContent = "Buy now";
+  }
+
   async function createPaypalOrder({ beatId, licenseKey }) {
     if (!window.API_BASE) throw new Error("Missing API_BASE");
 
@@ -35,17 +43,16 @@
       body: JSON.stringify({ beatId, licenseKey })
     });
 
-    const data = await r.json();
+    const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || "Create order failed");
 
     // Save for capture step later
-    localStorage.setItem("pb_last_order_id", data.orderId);
+    if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
 
     // Find PayPal approve link
     const approve = (data.approveLinks || []).find((l) => l.rel === "approve");
     if (!approve?.href) throw new Error("No PayPal approve link returned");
 
-    // Redirect buyer to PayPal
     window.location.href = approve.href;
   }
 
@@ -85,7 +92,7 @@
     ];
   }
 
-  // Supports beat.licenses.* if you add later
+  // Supports beat.licenses.* (Option B)
   function buildLicensesFromBeat(beat) {
     const lic = beat?.licenses;
     if (!lic || typeof lic !== "object") return buildDefaultLicenses(beat);
@@ -110,6 +117,8 @@
   }
 
   function renderTerms(license) {
+    if (!termsGrid) return;
+
     termsGrid.innerHTML = "";
     const terms =
       license?.terms && license.terms.length
@@ -126,6 +135,10 @@
 
   function openModal(beat) {
     currentBeat = beat;
+    selectedLicense = null;
+
+    // Always reset button UI when opening (fix stuck "Redirecting…")
+    resetBuyBtn();
 
     const beatTitle = beat?.title || "Beat";
     titleEl.textContent = beatTitle;
@@ -135,7 +148,7 @@
     selectedLicense = licenses[0];
 
     grid.innerHTML = "";
-    termsGrid.innerHTML = "";
+    if (termsGrid) termsGrid.innerHTML = "";
 
     licenses.forEach((l, idx) => {
       const card = document.createElement("button");
@@ -156,14 +169,14 @@
         );
         card.classList.add("selected");
         selectedLicense = l;
-        totalEl.textContent = money(l.price);
+        if (totalEl) totalEl.textContent = money(l.price);
         renderTerms(l);
       });
 
       grid.appendChild(card);
     });
 
-    totalEl.textContent = money(selectedLicense.price);
+    if (totalEl) totalEl.textContent = money(selectedLicense.price);
     renderTerms(selectedLicense);
 
     backdrop.classList.add("open");
@@ -175,12 +188,11 @@
     backdrop.classList.remove("open");
     modal.classList.remove("open");
     document.body.classList.remove("no-scroll");
+
     currentBeat = null;
     selectedLicense = null;
 
-    // Reset buy button UI
-    buyBtn.disabled = false;
-    buyBtn.textContent = "Buy now";
+    resetBuyBtn();
   }
 
   // BUY NOW -> Create PayPal order -> redirect
@@ -200,12 +212,11 @@
         beatId: currentBeat.id,
         licenseKey: selectedLicense.key
       });
-      // we redirect, so no closeModal()
+      // Redirect happens, so no closeModal()
     } catch (err) {
       console.error(err);
       alert(err.message || "Checkout failed");
-      buyBtn.disabled = false;
-      buyBtn.textContent = "Buy now";
+      resetBuyBtn();
     }
   });
 
@@ -230,7 +241,7 @@
     const card = price.closest(".beat-card, .trend-card");
     if (!card) return;
 
-    // ✅ IMPORTANT: get Firestore id from the DOM
+    // ✅ Firestore id from DOM
     const beatId = card.getAttribute("data-beat-id") || "";
 
     // Title from DOM
@@ -261,4 +272,5 @@
 
   // Expose manual open
   window.PB_OPEN_LICENSE_MODAL = openModal;
+  window.PB_CLOSE_LICENSE_MODAL = closeModal;
 })();
