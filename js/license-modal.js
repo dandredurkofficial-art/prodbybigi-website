@@ -1,4 +1,8 @@
-// /js/license-modal.js (FULL UPDATED - sends Firebase token to backend)
+// /js/license-modal.js (FULL UPDATED)
+// ✅ Sends buyer Firebase ID token to API
+// ✅ Uses window.API_BASE
+// ✅ Reads beatId from DOM: data-beat-id
+// ✅ openModal + closeModal included + resets redirect UI
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -28,40 +32,48 @@
     buyBtn.textContent = "Buy now";
   }
 
-  // --- Firebase ID token helper (works even if this file is NOT type="module") ---
-  async function getFirebaseIdTokenOrThrow() {
-    // Uses your same firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-      authDomain: "prodbybigi.firebaseapp.com",
-      projectId: "prodbybigi"
-    };
+  // ---- Firebase Auth token (client) ----
+  async function getBuyerIdToken() {
+    try {
+      const { initializeApp, getApps } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"
+      );
+      const { getAuth } = await import(
+        "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"
+      );
 
-    const [{ initializeApp, getApps }, { getAuth }] = await Promise.all([
-      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"),
-      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js")
-    ]);
+      const firebaseConfig = {
+        apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+        authDomain: "prodbybigi.firebaseapp.com",
+        projectId: "prodbybigi"
+      };
 
-    const apps = getApps();
-    const app = apps.length ? apps[0] : initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+      // Reuse existing app if already initialized elsewhere
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const auth = getAuth(app);
 
-    const user = auth.currentUser;
-    if (!user) throw new Error("Please sign in first to buy beats.");
+      const user = auth.currentUser;
+      if (!user) return null;
 
-    return await user.getIdToken();
+      return await user.getIdToken();
+    } catch (e) {
+      return null;
+    }
   }
 
   async function createPaypalOrder({ beatId, licenseKey }) {
     if (!window.API_BASE) throw new Error("Missing API_BASE");
 
-    const idToken = await getFirebaseIdTokenOrThrow();
+    const token = await getBuyerIdToken();
+
+    // If you WANT to force login before buying, uncomment:
+    // if (!token) throw new Error("Please sign in before buying.");
 
     const r = await fetch(`${window.API_BASE}/api/create-order`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${idToken}`
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
       body: JSON.stringify({ beatId, licenseKey })
     });
@@ -77,6 +89,7 @@
     window.location.href = approve.href;
   }
 
+  // Default licenses if beat doesn't have licenses object
   function buildDefaultLicenses(beat) {
     const base = Number(beat?.price || 29.99) || 29.99;
     return [
@@ -98,7 +111,11 @@
     const out = [];
     Object.keys(lic).forEach((k) => {
       const item = lic[k] || {};
+      const enabled = item.enabled !== false; // if missing, treat as enabled
+      if (!enabled) return;
+
       const price = Number(item.price ?? item.amount ?? 0) || 0;
+
       out.push({
         key: k,
         name: item.name || k.toUpperCase(),
@@ -109,12 +126,13 @@
       });
     });
 
-    if (out.length < 2) return buildDefaultLicenses(beat);
+    if (out.length < 1) return buildDefaultLicenses(beat);
     return out;
   }
 
   function renderTerms(license) {
     if (!termsGrid) return;
+
     termsGrid.innerHTML = "";
     const terms = (license?.terms && license.terms.length)
       ? license.terms
@@ -134,8 +152,7 @@
 
     resetBuyBtn();
 
-    const beatTitle = beat?.title || "Beat";
-    titleEl.textContent = beatTitle;
+    titleEl.textContent = beat?.title || "Beat";
     subEl.textContent = "Select a license to continue.";
 
     const licenses = buildLicensesFromBeat(beat);
@@ -163,6 +180,7 @@
         selectedLicense = l;
         if (totalEl) totalEl.textContent = money(l.price);
         renderTerms(l);
+        resetBuyBtn();
       });
 
       grid.appendChild(card);
@@ -180,8 +198,10 @@
     backdrop.classList.remove("open");
     modal.classList.remove("open");
     document.body.classList.remove("no-scroll");
+
     currentBeat = null;
     selectedLicense = null;
+
     resetBuyBtn();
   }
 
@@ -197,7 +217,10 @@
     buyBtn.textContent = "Redirecting…";
 
     try {
-      await createPaypalOrder({ beatId: currentBeat.id, licenseKey: selectedLicense.key });
+      await createPaypalOrder({
+        beatId: currentBeat.id,
+        licenseKey: selectedLicense.key
+      });
     } catch (err) {
       console.error(err);
       alert(err.message || "Checkout failed");
@@ -212,8 +235,11 @@
 
   closeBtn?.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);
-  window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
 
+  // Click price-pill -> open modal
   document.addEventListener("click", (e) => {
     const price = e.target.closest(".price-pill, .price-btn");
     if (!price) return;
@@ -229,11 +255,18 @@
 
     let beat = null;
     const list = window.__LATEST_BEATS__ || [];
-    if (beatId && Array.isArray(list)) beat = list.find((b) => b.id === beatId) || null;
-    if (!beat && domTitle && Array.isArray(list)) beat = list.find((b) => String(b.title || "").trim() === domTitle) || null;
+    if (beatId && Array.isArray(list)) {
+      beat = list.find((b) => b.id === beatId) || null;
+    } else if (domTitle && Array.isArray(list)) {
+      beat = list.find((b) => String(b.title || "").trim() === domTitle) || null;
+    }
 
     if (!beat) {
-      beat = { id: beatId, title: domTitle || "Beat", price: Number(String(price.textContent).replace(/[^0-9.]/g, "")) || 29.99 };
+      beat = {
+        id: beatId,
+        title: domTitle || "Beat",
+        price: Number(String(price.textContent).replace(/[^0-9.]/g, "")) || 29.99
+      };
     }
 
     openModal(beat);
