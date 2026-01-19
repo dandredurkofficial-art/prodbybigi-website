@@ -9,6 +9,12 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// ✅ ADD AUTH IMPORTS
+import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
   authDomain: "prodbybigi.firebaseapp.com",
@@ -20,6 +26,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// ✅ INIT AUTH + expose current user globally (for checkout token)
+const auth = getAuth(app);
+window.FB_AUTH_USER = null;
+onAuthStateChanged(auth, (user) => {
+  window.FB_AUTH_USER = user || null;
+});
 
 // expose basic firestore helpers (keep)
 window.FB = { db, collection, getDocs, query, orderBy, limit };
@@ -66,7 +79,10 @@ function normalizeBeat(docId, data) {
     producerName,
     price: Number(price) || 0,
     published: data.published === true,
-    createdAt: data.createdAt || data.createdat || 0
+    createdAt: data.createdAt || data.createdat || 0,
+
+    // ✅ OPTIONAL: include licenses so modal can show real prices if present
+    licenses: data.licenses || null
   };
 }
 
