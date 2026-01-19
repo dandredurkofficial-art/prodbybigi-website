@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment cancelled</title>
+</head>
+<body>
+  <script>
+    // clear saved order
+    localStorage.removeItem("pb_last_order_id");
+
+    // go back to marketplace (or index)
+    window.location.href = "/marketplace.html?cancelled=1";
+  </script>
+</body>
+</html>
