@@ -7,6 +7,7 @@
 
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/cart.css">
 </head>
 <body>
 
@@ -28,6 +29,12 @@
     </nav>
   </div>
 </header>
+
+  <!-- Cart Icon -->
+<button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+  <span class="cart-ic">🛒</span>
+  <span class="cart-count" id="pbCartCount">0</span>
+</button>
 
 <!-- Mobile Menu -->
 <div class="menu-backdrop" id="menuBackdrop"></div>
@@ -207,6 +214,33 @@
   </div>
 </div>
 
+  <!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
@@ -215,6 +249,7 @@
 <script src="/js/menu.js"></script>
 <script src="/js/player.js"></script>
 <script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
 <script src="/js/license-modal.js"></script>
 
 <script>
