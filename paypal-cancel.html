@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Payment cancelled</title>
+  <title>Payment canceled</title>
 </head>
 <body>
+  <p style="font-family:system-ui;padding:20px;">Payment canceled. Returning…</p>
   <script>
-    // clear saved order
-    localStorage.removeItem("pb_last_order_id");
-
-    // go back to marketplace (or index)
-    window.location.href = "/marketplace.html?cancelled=1";
+    // Keep the order id if you want, OR remove it:
+    // localStorage.removeItem("pb_last_order_id");
+    window.location.href = "/marketplace.html?canceled=1";
   </script>
 </body>
 </html>
