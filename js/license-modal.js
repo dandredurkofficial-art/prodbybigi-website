@@ -35,26 +35,45 @@
   }
 
   async function createPaypalOrder({ beatId, licenseKey }) {
-    if (!window.API_BASE) throw new Error("Missing API_BASE");
+  if (!window.API_BASE) throw new Error("Missing API_BASE");
 
-    const r = await fetch(`${window.API_BASE}/api/create-order`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ beatId, licenseKey })
-    });
+  // ✅ Require login before checkout
+  let token = "";
+  try {
+    const u = window.FB_AUTH_USER || null;
+    if (u && typeof u.getIdToken === "function") {
+      token = await u.getIdToken(true);
+    }
+  } catch {}
 
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || "Create order failed");
-
-    // Save for capture step later
-    if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
-
-    // Find PayPal approve link
-    const approve = (data.approveLinks || []).find((l) => l.rel === "approve");
-    if (!approve?.href) throw new Error("No PayPal approve link returned");
-
-    window.location.href = approve.href;
+  // If you didn’t expose auth, we fallback to importing Firebase Auth quickly
+  if (!token) {
+    // If not logged in → send to login
+    alert("Please sign in to buy this beat.");
+    window.location.href = "/login.html";
+    throw new Error("Not signed in");
   }
+
+  const r = await fetch(`${window.API_BASE}/api/create-order`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ beatId, licenseKey })
+  });
+
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || "Create order failed");
+
+  // Save for capture step later
+  if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
+
+  const approve = (data.approveLinks || []).find((l) => l.rel === "approve");
+  if (!approve?.href) throw new Error("No PayPal approve link returned");
+
+  window.location.href = approve.href;
+}
 
   // Default licenses if beat doesn't have licenses object
   function buildDefaultLicenses(beat) {
