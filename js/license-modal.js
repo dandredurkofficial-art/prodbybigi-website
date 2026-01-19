@@ -238,32 +238,35 @@
   });
 
   cartBtn?.addEventListener("click", () => {
-    if (!currentBeat || !selectedLicense) return;
+  if (!currentBeat || !selectedLicense) return;
 
-    if (!window.PB_CART) {
-      alert("Cart not loaded. Make sure /js/cart.js is included.");
-      return;
-    }
+  const beatId =
+    currentBeat.id ||
+    currentBeat.beatId ||
+    currentBeat.docId ||
+    "";
 
-    const beatId = String(currentBeat.id || "").trim();
-    const licenseKey = String(selectedLicense.key || "").trim().toLowerCase();
+  if (!beatId || !selectedLicense.key) {
+    alert("Invalid cart item (missing beatId/license key)");
+    return;
+  }
 
-    if (!beatId || !licenseKey) {
-      alert("Invalid cart item (missing beatId/licenseKey)");
-      return;
-    }
+  if (!window.PB_CART) {
+    alert("Cart not loaded. Make sure /js/cart.js is included.");
+    return;
+  }
 
-    window.PB_CART.add({
-      beatId,
-      title: currentBeat.title || currentBeat.beatTitle || "Beat",
-      artwork: beatArtwork(currentBeat),
-      price: Number(selectedLicense.price || 0),
-      licenseKey,
-      licenseName: selectedLicense.name || licenseKey
-    });
-
-    alert("Added to cart ✅");
+  window.PB_CART.add({
+    beatId,
+    title: currentBeat.title || "Beat",
+    artwork: currentBeat.artwork || currentBeat.beatArtwork || "",
+    price: Number(selectedLicense.price || currentBeat.price || 0),
+    licenseKey: selectedLicense.key,
+    licenseName: selectedLicense.name || selectedLicense.key
   });
+
+  alert("Added to cart ✅");
+});
 
   closeBtn?.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);
