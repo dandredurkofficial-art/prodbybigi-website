@@ -83,11 +83,12 @@
 
     if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
 
-    const approve = (data.approveLinks || []).find((l) => l.rel === "approve");
-    if (!approve?.href) throw new Error("No PayPal approve link returned");
+    const approve =
+      (data.approveLinks || []).find(l => l.rel === "approve") ||
+      (data.approveLinks || []).find(l => l.rel === "payer-action");
 
+    if (!approve?.href) throw new Error("No PayPal approve link returned");
     window.location.href = approve.href;
-  }
 
   // Default licenses if beat doesn't have licenses object
   function buildDefaultLicenses(beat) {
@@ -217,16 +218,16 @@
     buyBtn.textContent = "Redirecting…";
 
     try {
-      await createPaypalOrder({
-        beatId: currentBeat.id,
-        licenseKey: selectedLicense.key
-      });
+      await createPaypalOrder({ beatId: currentBeat.id, licenseKey: selectedLicense.key });
     } catch (err) {
       console.error(err);
       alert(err.message || "Checkout failed");
-      resetBuyBtn();
-    }
-  });
+    } finally {
+  // ✅ Always reset if we didn't leave the page
+    buyBtn.disabled = false;
+    buyBtn.textContent = "Buy now";
+  }
+
 
   cartBtn?.addEventListener("click", () => {
     if (!currentBeat || !selectedLicense) return;
