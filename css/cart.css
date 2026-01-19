@@ -1,0 +1,195 @@
+/* /css/cart.css */
+
+.cart-btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  cursor:pointer;
+}
+.cart-btn:hover{ background:rgba(255,255,255,.09); }
+.cart-ic{ font-size:18px; line-height:1; }
+.cart-count{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  min-width:18px;
+  height:18px;
+  padding:0 6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  background:#2b6cff;
+  color:#fff;
+  border:2px solid #0f1219;
+}
+
+.pb-cart-backdrop{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.55);
+  opacity:0; pointer-events:none;
+  transition:opacity .18s ease;
+  z-index:9998;
+}
+.pb-cart-backdrop.open{ opacity:1; pointer-events:auto; }
+
+.pb-cart{
+  position:fixed;
+  top:0; right:0;
+  width:min(420px, 92vw);
+  height:100vh;
+  background:#0f1219;
+  border-left:1px solid rgba(255,255,255,.08);
+  transform:translateX(105%);
+  transition:transform .22s ease;
+  z-index:9999;
+  display:flex;
+  flex-direction:column;
+}
+.pb-cart.open{ transform:translateX(0); }
+
+.pb-cart-head{
+  padding:16px 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.pb-cart-title{ font-weight:900; font-size:16px; }
+.pb-cart-sub{ color:rgba(255,255,255,.65); font-size:12px; margin-top:3px; }
+.pb-cart-close{
+  width:40px;height:40px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  cursor:pointer;
+}
+
+.pb-cart-body{
+  padding:14px 16px;
+  overflow:auto;
+  flex:1;
+}
+.pb-cart-empty{
+  padding:22px 8px;
+  color:rgba(255,255,255,.65);
+  text-align:center;
+}
+
+.pb-cart-item{
+  display:flex;
+  gap:12px;
+  padding:12px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.pb-cart-item:last-child{ border-bottom:none; }
+
+.pb-cart-img{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  overflow:hidden;
+  background:rgba(255,255,255,.06);
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  color:rgba(255,255,255,.7);
+  font-weight:900;
+}
+.pb-cart-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.pb-cart-meta{ flex:1; min-width:0; }
+.pb-cart-name{
+  font-weight:900;
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.pb-cart-line{
+  color:rgba(255,255,255,.65);
+  font-size:12px;
+  margin-top:4px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.pb-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.pb-cart-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:8px;
+}
+.pb-cart-price{ font-weight:900; }
+.pb-cart-remove{
+  padding:6px 10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  cursor:pointer;
+  font-size:12px;
+}
+.pb-cart-remove:hover{ background:rgba(255,255,255,.09); }
+
+.pb-cart-foot{
+  padding:14px 16px;
+  border-top:1px solid rgba(255,255,255,.08);
+  background:#0f1219;
+}
+.pb-cart-totals{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:12px;
+}
+.pb-cart-total{ font-weight:1000; font-size:18px; }
+.muted{ color:rgba(255,255,255,.65); font-size:12px; }
+
+.pb-cart-actions{
+  display:flex;
+  gap:10px;
+}
+.pb-cart-clear{
+  flex:1;
+  padding:12px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+.pb-cart-checkout{
+  flex:2;
+  padding:12px 12px;
+  border-radius:14px;
+  border:none;
+  background:#2b6cff;
+  color:#fff;
+  font-weight:1000;
+  cursor:pointer;
+}
+.pb-cart-checkout:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
