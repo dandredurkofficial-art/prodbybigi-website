@@ -4,6 +4,7 @@ import cors from "cors";
 import fetch from "node-fetch";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
+import { getAuth } from "firebase-admin/auth";
 
 dotenv.config();
 
@@ -74,8 +75,17 @@ async function paypalAccessToken() {
   return data.access_token;
 }
 
-// ---------- ROUTES ----------
+// ---------- Auth (Firebase ID Token) ----------
+async function requireUser(req) {
+  const hdr = req.headers.authorization || "";
+  const token = hdr.startsWith("Bearer ") ? hdr.slice(7) : "";
+  if (!token) throw new Error("Missing auth token");
 
+  const decoded = await getAuth().verifyIdToken(token);
+  return decoded; // { uid, email, ... }
+}
+
+// ---------- ROUTES ----------
 app.get("/", (_, res) => res.send("API OK"));
 app.get("/healthz", (_, res) => res.status(200).send("ok"));
 
@@ -83,14 +93,18 @@ app.get("/healthz", (_, res) => res.status(200).send("ok"));
  * POST /api/create-order
  * Body: { beatId, licenseKey }
  *
+ * Requires Authorization: Bearer <FIREBASE_ID_TOKEN>
+ *
  * - Reads beat from Firestore
- * - Gets price from beat.licenses[licenseKey].price   (Option B)
+ * - Gets price from beat.licenses[licenseKey].price  (Option B)
  * - Creates PayPal order
- * - Saves order doc in Firestore
+ * - Saves order doc in Firestore INCLUDING buyerId
  * - Returns PayPal approve link
  */
 app.post("/api/create-order", async (req, res) => {
   try {
+    const user = await requireUser(req);
+
     const { beatId, licenseKey } = req.body || {};
     if (!beatId || !licenseKey) {
       return res.status(400).json({ error: "Missing beatId/licenseKey" });
@@ -147,7 +161,11 @@ app.post("/api/create-order", async (req, res) => {
 
     const payData = await create.json().catch(() => ({}));
     if (!create.ok) {
-      throw new Error(payData?.message || payData?.details?.[0]?.description || "PayPal order create failed");
+      throw new Error(
+        payData?.message ||
+        payData?.details?.[0]?.description ||
+        "PayPal order create failed"
+      );
     }
 
     // 3) Store order in Firestore
@@ -156,14 +174,29 @@ app.post("/api/create-order", async (req, res) => {
 
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
+      orderId: orderRef.id,
+
+      // buyer
+      buyerId: String(user.uid),
+      buyerEmail: String(user.email || ""),
+
+      // beat
       beatId: String(beatId),
+      beatTitle: String(beat.title || "Beat"),
+
+      // producer
       producerId: String(producerId),
+
+      // pricing
       licenseKey: String(licenseKey),
       amountCents,
       feeCents,
       producerNetCents,
+
+      // paypal
       paypalOrderId: payData.id,
       status: "CREATED",
+
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
@@ -174,7 +207,9 @@ app.post("/api/create-order", async (req, res) => {
     });
   } catch (e) {
     console.error("[create-order]", e);
-    res.status(500).json({ error: e.message || "Server error" });
+    const msg = String(e?.message || "Server error");
+    const code = msg.toLowerCase().includes("auth token") ? 401 : 500;
+    res.status(code).json({ error: msg });
   }
 });
 
@@ -249,6 +284,7 @@ app.post("/api/capture-order", async (req, res) => {
 
       tx.update(orderRef, {
         status: "CAPTURED",
+        paypalCaptureStatus: capData?.status || null,
         capturedAt: admin.firestore.FieldValue.serverTimestamp()
       });
     });
@@ -257,6 +293,105 @@ app.post("/api/capture-order", async (req, res) => {
   } catch (e) {
     console.error("[capture-order]", e);
     res.status(500).json({ error: e.message || "Server error" });
+  }
+});
+
+/**
+ * GET /api/my-orders
+ * Requires Authorization: Bearer <FIREBASE_ID_TOKEN>
+ * Returns the buyer's orders (purchases)
+ */
+app.get("/api/my-orders", async (req, res) => {
+  try {
+    const user = await requireUser(req);
+
+    // NOTE: orderBy requires index if you add more where clauses, but here it's safe
+    const snap = await db.collection("orders")
+      .where("buyerId", "==", user.uid)
+      .orderBy("createdAt", "desc")
+      .limit(100)
+      .get();
+
+    const orders = [];
+    snap.forEach((d) => orders.push({ orderId: d.id, ...d.data() }));
+
+    res.json({ orders });
+  } catch (e) {
+    console.error("[my-orders]", e);
+    const msg = String(e?.message || "Unauthorized");
+    const code = msg.toLowerCase().includes("auth token") ? 401 : 500;
+    res.status(code).json({ error: msg });
+  }
+});
+
+/**
+ * POST /api/order-download
+ * Requires Authorization: Bearer <FIREBASE_ID_TOKEN>
+ * Body: { orderId }
+ *
+ * Returns: { url }
+ *
+ * ⚠️ You must decide where the download URL comes from.
+ * For now:
+ *  - If the order has downloadUrl -> return it
+ *  - Else try to read beat.downloadUrl or beat.files[licenseKey].url if present
+ *  - If none exists -> tell you what to add
+ */
+app.post("/api/order-download", async (req, res) => {
+  try {
+    const user = await requireUser(req);
+    const { orderId } = req.body || {};
+    if (!orderId) return res.status(400).json({ error: "Missing orderId" });
+
+    const orderRef = db.collection("orders").doc(String(orderId));
+    const orderSnap = await orderRef.get();
+    if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
+
+    const order = orderSnap.data() || {};
+
+    // buyer must own it
+    if (String(order.buyerId || "") !== String(user.uid)) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    // must be completed
+    if (order.status !== "CAPTURED") {
+      return res.status(400).json({ error: "Order not completed" });
+    }
+
+    // 1) if already stored on order
+    let url = order.downloadUrl || "";
+
+    // 2) try beat document (if you store it there)
+    if (!url) {
+      const beatSnap = await db.collection("beats").doc(String(order.beatId)).get();
+      if (beatSnap.exists) {
+        const beat = beatSnap.data() || {};
+
+        // common places you might store the file:
+        // beat.downloadUrl OR beat.zipUrl OR beat.files[licenseKey].url
+        url =
+          beat.downloadUrl ||
+          beat.zipUrl ||
+          beat.fileUrl ||
+          beat.files?.[order.licenseKey]?.url ||
+          "";
+      }
+    }
+
+    if (!url) {
+      return res.status(501).json({
+        error:
+          "No download URL found. Add beat.downloadUrl (or beat.files[licenseKey].url) in Firestore."
+      });
+    }
+
+    res.json({ url });
+  } catch (e) {
+    console.error("[order-download]", e);
+    const msg = String(e?.message || "Unauthorized");
+    const code = msg.toLowerCase().includes("auth token") ? 401 : 500;
+    res.status(code).json({ error: msg });
   }
 });
 
