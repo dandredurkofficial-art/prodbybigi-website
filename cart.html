@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cart</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    body{background:#0b0d12;color:#fff;font-family:system-ui;margin:0}
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    .row{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #1d2230;border-radius:14px;background:#0f1424;margin-top:12px}
+    .img{width:56px;height:56px;border-radius:14px;overflow:hidden;background:#111827;border:1px solid rgba(255,255,255,.06)}
+    .img img{width:100%;height:100%;object-fit:cover}
+    .meta{flex:1;min-width:0}
+    .t{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .s{color:#a9b1c7;font-size:13px;margin-top:4px}
+    .btn{padding:10px 14px;border-radius:12px;border:0;font-weight:800;cursor:pointer}
+    .primary{background:#2b6cff;color:#fff}
+    .danger{background:#ff5c5c;color:#fff}
+    .muted{opacity:.8}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 style="margin:6px 0 12px">Your Cart</h1>
+    <div id="list"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn danger" id="clearBtn">Clear cart</button>
+      <a class="btn primary" href="/marketplace.html" style="text-decoration:none;display:inline-flex;align-items:center">Continue shopping</a>
+    </div>
+  </div>
+
+  <script>window.API_BASE="https://prodbybigi-api.onrender.com";</script>
+  <script src="/js/cart.js"></script>
+
+  <script>
+    const list = document.getElementById("list");
+    const clearBtn = document.getElementById("clearBtn");
+
+    function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+
+    function render(){
+      const items = window.PB_CART.load();
+      list.innerHTML = "";
+
+      if (!items.length){
+        list.innerHTML = `<p class="muted">Cart is empty.</p>`;
+        return;
+      }
+
+      items.forEach((it) => {
+        const el = document.createElement("div");
+        el.className = "row";
+        el.innerHTML = `
+          <div class="img">${it.artwork ? `<img src="${it.artwork}" alt="">` : ""}</div>
+          <div class="meta">
+            <div class="t">${it.title || it.beatId}</div>
+            <div class="s">License: ${it.licenseKey} • ${money(it.price)}</div>
+          </div>
+          <button class="btn danger" data-remove="1">Remove</button>
+        `;
+        el.querySelector('[data-remove="1"]').onclick = () => {
+          window.PB_CART.remove(it.beatId, it.licenseKey);
+          render();
+        };
+        list.appendChild(el);
+      });
+    }
+
+    clearBtn.onclick = () => { window.PB_CART.clear(); render(); };
+    render();
+  </script>
+</body>
+</html>
