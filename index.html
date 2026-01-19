@@ -210,11 +210,12 @@
 <script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/player.js"></script>
-<script src="/js/license-modal.js"></script>
 
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
+
+<script src="/js/license-modal.js"></script>
 
 <script>
   function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
@@ -254,7 +255,8 @@
       // Trending strip
       beats.slice(0,12).forEach((b)=>{
         const el = document.createElement("div");
-        el.setAttribute("data-beat-id", b.id);
+        el.className = "card trend-card";          // ✅ ADD (don’t remove)
+        el.setAttribute("data-beat-id", b.id);     // ✅ KEEP
         el.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
@@ -279,7 +281,8 @@
       // Top charting
       beats.slice(0,10).forEach((b)=>{
         const el = document.createElement("div");
-        el.setAttribute("data-beat-id", b.id);
+        el.className = "card beat-card";           // ✅ ADD (don’t remove)
+        el.setAttribute("data-beat-id", b.id);     // ✅ KEEP
         el.style.padding = "12px";
         el.style.borderRadius = "20px";
         el.innerHTML = `
