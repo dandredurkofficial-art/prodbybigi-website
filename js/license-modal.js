@@ -230,9 +230,18 @@
 
 
   cartBtn?.addEventListener("click", () => {
-    if (!currentBeat || !selectedLicense) return;
-    alert(`Added to cart:\n${currentBeat.title}\n${selectedLicense.name}`);
+  if (!currentBeat || !selectedLicense) return;
+
+  window.PB_CART?.add({
+    beatId: currentBeat.id,
+    title: currentBeat.title || "Beat",
+    artwork: currentBeat.artwork || "",
+    price: Number(selectedLicense.price || currentBeat.price || 0),
+    licenseKey: selectedLicense.key
   });
+
+  alert("Added to cart ✅");
+});
 
   closeBtn?.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);
