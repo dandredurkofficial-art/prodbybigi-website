@@ -2,7 +2,8 @@
 // ✅ Uses window.API_BASE
 // ✅ Sends Firebase buyer ID token (if logged in)
 // ✅ Price pills ALWAYS clickable
-// ✅ Add to cart stores item in localStorage via PB_CART
+// ✅ Add to cart stores valid item in localStorage via PB_CART
+// ✅ Supports beatArtwork field too
 
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -31,6 +32,17 @@
   function resetBuyBtn() {
     buyBtn.disabled = false;
     buyBtn.textContent = "Buy now";
+  }
+
+  function beatArtwork(beat) {
+    return (
+      beat?.artwork ||
+      beat?.beatArtwork ||
+      beat?.coverurl ||
+      beat?.coverUrl ||
+      beat?.coverURL ||
+      ""
+    );
   }
 
   // ---- Firebase Auth token (client) ----
@@ -72,7 +84,10 @@
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
-      body: JSON.stringify({ beatId, licenseKey })
+      body: JSON.stringify({
+        beatId: String(beatId || ""),
+        licenseKey: String(licenseKey || "").toLowerCase()
+      })
     });
 
     const data = await r.json().catch(() => ({}));
@@ -115,8 +130,8 @@
       const price = Number(item.price ?? item.amount ?? 0) || 0;
 
       out.push({
-        key: k,
-        name: item.name || k.toUpperCase(),
+        key: String(k || "").toLowerCase(),
+        name: item.name || String(k).toUpperCase(),
         price: price || Number(beat?.price || 0) || 29.99,
         meta: item.format || item.files || "MP3",
         badge: item.badge || "",
@@ -148,7 +163,7 @@
     currentBeat = beat;
     resetBuyBtn();
 
-    titleEl.textContent = beat?.title || "Beat";
+    titleEl.textContent = beat?.title || beat?.beatTitle || "Beat";
     subEl.textContent = "Select a license to continue.";
 
     const licenses = buildLicensesFromBeat(beat);
@@ -230,13 +245,21 @@
       return;
     }
 
+    const beatId = String(currentBeat.id || "").trim();
+    const licenseKey = String(selectedLicense.key || "").trim().toLowerCase();
+
+    if (!beatId || !licenseKey) {
+      alert("Invalid cart item (missing beatId/licenseKey)");
+      return;
+    }
+
     window.PB_CART.add({
-      beatId: currentBeat.id,
-      title: currentBeat.title || "Beat",
-      artwork: currentBeat.artwork || "",
-      price: Number(selectedLicense.price || currentBeat.price || 0),
-      licenseKey: selectedLicense.key,
-      licenseName: selectedLicense.name || selectedLicense.key
+      beatId,
+      title: currentBeat.title || currentBeat.beatTitle || "Beat",
+      artwork: beatArtwork(currentBeat),
+      price: Number(selectedLicense.price || 0),
+      licenseKey,
+      licenseName: selectedLicense.name || licenseKey
     });
 
     alert("Added to cart ✅");
@@ -252,8 +275,6 @@
   document.addEventListener("click", (e) => {
     const pill = e.target.closest(".price-pill, .price-btn");
     const card = e.target.closest(".beat-card, .trend-card");
-
-    // if user clicked either pill OR card, open modal
     if (!pill && !card) return;
 
     const wrap = (pill ? pill.closest(".beat-card, .trend-card") : card);
