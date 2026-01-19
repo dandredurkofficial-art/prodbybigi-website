@@ -18,7 +18,7 @@
       <div class="logo">ProdBy<span>Bigi</span></div>
     </div>
 
-    <!-- ✅ DESKTOP NAV GOES HERE -->
+    <!-- ✅ DESKTOP NAV -->
     <nav class="desktop-nav" aria-label="Main">
       <a href="/index.html">Feed</a>
       <a href="/marketplace.html">Tracks</a>
@@ -27,16 +27,14 @@
       <a class="cta" href="/register.html">Start Selling</a>
       <a class="ghost" href="/login.html">Sign in</a>
     </nav>
-  </div>
-</header>
 
-  <!-- ✅ Cart Icon (inside header) -->
+    <!-- ✅ Cart Icon (inside header) -->
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
       <span class="cart-ic">🛒</span>
       <span class="cart-count" id="pbCartCount">0</span>
     </button>
   </div>
-</header
+</header>
 
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
@@ -79,7 +77,7 @@
   </div>
 </footer>
 
-  <!-- License / Checkout Modal (paste once per page) -->
+<!-- License / Checkout Modal -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
@@ -114,7 +112,7 @@
   </div>
 </div>
 
-  <!-- Cart Drawer -->
+<!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
@@ -174,6 +172,9 @@
       status.classList.remove("hidden");
 
       const beats = await window.FB.fetchBeats({ max: 60 });
+
+      // ✅ make latest beats accessible to license-modal.js
+      window.__LATEST_BEATS__ = beats;
 
       grid.innerHTML = "";
 
