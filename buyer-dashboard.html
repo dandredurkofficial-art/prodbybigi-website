@@ -12,7 +12,7 @@ body{
   margin:0;
   background:#0b0d12;
   color:#fff;
-  font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font-family:Inter;
 }
 header{
   display:flex;
@@ -31,11 +31,7 @@ button{
   font-weight:600;
   cursor:pointer;
 }
-.container{
-  padding:24px;
-  max-width:1100px;
-  margin:0 auto;
-}
+.container{ padding:24px; }
 .card{
   background:#121726;
   border:1px solid #1d2230;
@@ -44,80 +40,26 @@ button{
   margin-bottom:18px;
 }
 h2{margin:0 0 10px}
-.muted{ color:#aab2c5; font-size:13px; }
-
-.list{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-top:12px;
-}
-
-.order{
+.small{color:#a9b1c7;font-size:13px}
+.row{
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  padding:14px;
-  border-radius:14px;
-  border:1px solid #1d2230;
-  background:#0f1422;
-}
-.order-left{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:0;
-}
-.order-title{
-  font-weight:800;
-  font-size:14px;
-  line-height:1.2;
-  word-break:break-word;
-}
-.order-meta{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  font-size:12px;
-  color:#aab2c5;
-}
-.pill{
-  display:inline-flex;
   align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid #1d2230;
-  background:#0b0f1a;
+  gap:12px;
+  padding:12px 0;
+  border-top:1px solid #1d2230;
 }
-.order-right{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  align-items:flex-end;
-}
-.price{
-  font-weight:900;
-  font-size:14px;
-}
-.btn{
+.row:first-child{border-top:none}
+a.dl{
+  display:inline-block;
   padding:10px 14px;
-  border-radius:12px;
-  border:1px solid #1d2230;
-  background:#111a2b;
+  border-radius:10px;
+  background:#2b6cff;
   color:#fff;
-  font-weight:800;
-  cursor:pointer;
+  text-decoration:none;
+  font-weight:700;
 }
-.btn.primary{
-  background:#3b82f6;
-  border-color:#3b82f6;
-}
-.btn:disabled{
-  opacity:.7;
-  cursor:not-allowed;
-}
+a.dl:active{opacity:.85}
 </style>
 </head>
 
@@ -125,28 +67,28 @@ h2{margin:0 0 10px}
 
 <header>
   <strong>Buyer Dashboard</strong>
-  <button onclick="logout()">Logout</button>
+  <button onclick="logoutUser()">Logout</button>
 </header>
 
 <div class="container">
   <div class="card">
     <h2>Your Profile</h2>
     <p>Email: <span id="buyerEmail">Loading...</span></p>
-    <p class="muted">Signed in buyers can view orders & download purchased files here.</p>
   </div>
 
   <div class="card">
     <h2>Purchased Beats</h2>
-    <p class="muted" id="ordersHint">Loading your orders…</p>
-    <div class="list" id="ordersList"></div>
+    <p class="small" id="ordersStatus">Loading your orders…</p>
+    <div id="ordersList"></div>
   </div>
 </div>
 
-<!-- ✅ Set API_BASE BEFORE loading JS -->
 <script>
+  // Your API base (same as your other pages)
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 
+<!-- Logic -->
 <script type="module" src="/js/buyer-dashboard.js"></script>
 
 </body>
