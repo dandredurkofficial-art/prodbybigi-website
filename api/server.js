@@ -205,6 +205,150 @@ app.post("/api/create-order", async (req, res) => {
 });
 
 /**
+ * POST /api/cart-checkout
+ * Body: { items: [{ beatId, licenseKey, qty? }] }
+ *
+ * Creates ONE PayPal order for the whole cart.
+ * Stores ONE Firestore order with items[].
+ */
+app.post("/api/cart-checkout", async (req, res) => {
+  try {
+    const { items } = req.body || {};
+    if (!Array.isArray(items) || items.length < 1) {
+      return res.status(400).json({ error: "Cart is empty" });
+    }
+
+    // Limit cart size (safety)
+    if (items.length > 20) {
+      return res.status(400).json({ error: "Too many items in cart" });
+    }
+
+    // Optional buyer auth (if you want)
+    // const authHeader = req.headers.authorization || "";
+    // const idToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+    // let buyerId = null;
+    // if (idToken) {
+    //   const decoded = await admin.auth().verifyIdToken(idToken);
+    //   buyerId = decoded.uid;
+    // }
+
+    // Build normalized items list
+    const cleanItems = items.map((x) => ({
+      beatId: String(x.beatId || ""),
+      licenseKey: String(x.licenseKey || ""),
+      qty: Math.max(1, Math.min(10, Number(x.qty || 1)))
+    })).filter(x => x.beatId && x.licenseKey);
+
+    if (cleanItems.length < 1) {
+      return res.status(400).json({ error: "Invalid cart items" });
+    }
+
+    // Load beats and compute total from Firestore
+    let totalCents = 0;
+    let producerId = null; // single producer store assumed
+    const enriched = [];
+
+    for (const it of cleanItems) {
+      const beatSnap = await db.collection("beats").doc(it.beatId).get();
+      if (!beatSnap.exists) return res.status(404).json({ error: `Beat not found: ${it.beatId}` });
+
+      const beat = beatSnap.data() || {};
+      if (beat.published !== true) return res.status(403).json({ error: `Beat not published: ${it.beatId}` });
+
+      const pId = String(beat.producerId || beat.producerid || "");
+      if (!pId) return res.status(400).json({ error: `Beat missing producerId: ${it.beatId}` });
+
+      // This store currently looks like one producer. If you allow multiple producers later,
+      // you’ll need split payouts. For now we enforce same producer.
+      if (!producerId) producerId = pId;
+      if (producerId !== pId) {
+        return res.status(400).json({ error: "Cart contains multiple producers (not supported yet)" });
+      }
+
+      const license = beat.licenses?.[it.licenseKey];
+      const price = license?.price;
+      if (price == null) return res.status(400).json({ error: `Invalid licenseKey: ${it.licenseKey}` });
+
+      const amountCents = toCents(price) * it.qty;
+      if (amountCents < 50) return res.status(400).json({ error: "Price too low" });
+
+      totalCents += amountCents;
+
+      enriched.push({
+        beatId: it.beatId,
+        licenseKey: it.licenseKey,
+        qty: it.qty,
+        unitPriceCents: toCents(price),
+        title: beat.title || null,
+        artwork: beat.artwork || beat.coverurl || beat.coverUrl || null
+      });
+    }
+
+    if (totalCents < 50) return res.status(400).json({ error: "Total too low" });
+
+    // Create PayPal order
+    const token = await paypalAccessToken();
+    const base = getPaypalBase();
+
+    const site = process.env.SITE_URL;
+    if (!site) throw new Error("Missing SITE_URL env var (your frontend domain)");
+
+    const create = await fetch(`${base}/v2/checkout/orders`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            amount: { currency_code: "USD", value: fromCents(totalCents) },
+            description: `ProdByBigi Cart (${enriched.length} item${enriched.length === 1 ? "" : "s"})`
+          }
+        ],
+        application_context: {
+          return_url: `${site}/paypal-return.html`,
+          cancel_url: `${site}/paypal-cancel.html`
+        }
+      })
+    });
+
+    const payData = await create.json().catch(() => ({}));
+    if (!create.ok) {
+      throw new Error(payData?.message || payData?.details?.[0]?.description || "PayPal order create failed");
+    }
+
+    // Store one Firestore order
+    const feeCents = Math.round(totalCents * 0.10);
+    const producerNetCents = totalCents - feeCents;
+
+    const orderRef = db.collection("orders").doc();
+    await orderRef.set({
+      type: "CART",
+      producerId: String(producerId),
+      items: enriched,
+      amountCents: totalCents,
+      feeCents,
+      producerNetCents,
+      paypalOrderId: payData.id,
+      status: "CREATED",
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+      // buyerId: buyerId || null
+    });
+
+    res.json({
+      orderId: orderRef.id,
+      paypalOrderId: payData.id,
+      approveLinks: payData.links || []
+    });
+  } catch (e) {
+    console.error("[cart-checkout]", e);
+    res.status(500).json({ error: e.message || "Server error" });
+  }
+});
+
+/**
  * POST /api/capture-order
  * Body: { orderId }
  * Auth: OPTIONAL, but recommended
