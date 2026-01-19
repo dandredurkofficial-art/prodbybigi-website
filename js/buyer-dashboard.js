@@ -12,7 +12,7 @@ const auth = getAuth(app);
 
 const $ = (id) => document.getElementById(id);
 
-async function apiFetch(path) {
+async function apiGet(path) {
   if (!window.API_BASE) throw new Error("Missing API_BASE");
   const user = auth.currentUser;
   if (!user) throw new Error("Not signed in");
@@ -42,43 +42,59 @@ function renderOrders(orders) {
   status.textContent = "";
 
   orders.forEach((o) => {
+    const title = o.beatTitle || o.beatName || o.title || o.beatId || "Beat";
+    const dateText = o.capturedAt?.seconds
+      ? new Date(o.capturedAt.seconds * 1000).toLocaleString()
+      : "";
+
     const row = document.createElement("div");
     row.className = "row";
     row.innerHTML = `
-      <div>
-        <div style="font-weight:800">${o.beatId}</div>
-        <div class="small">License: ${o.licenseKey} • Status: ${o.status}</div>
+      <div style="min-width:0">
+        <div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
+        <div class="small">License: ${o.licenseKey || "-"} • ${dateText}</div>
       </div>
       <a class="dl" href="#" data-order-id="${o.id}">Download</a>
     `;
     list.appendChild(row);
   });
-
-  list.addEventListener("click", async (e) => {
-    const a = e.target.closest("a.dl");
-    if (!a) return;
-    e.preventDefault();
-
-    const orderId = a.getAttribute("data-order-id");
-    if (!orderId) return;
-
-    a.textContent = "Loading…";
-    a.style.pointerEvents = "none";
-
-    try {
-      const data = await apiFetch(`/api/order-download?orderId=${encodeURIComponent(orderId)}`);
-      // Open the cloudinary file in a new tab (or trigger download)
-      window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
-      a.textContent = "Download";
-      a.style.pointerEvents = "auto";
-    } catch (err) {
-      console.error(err);
-      alert(err.message || "Download failed");
-      a.textContent = "Download";
-      a.style.pointerEvents = "auto";
-    }
-  }, { once: true });
 }
+
+// Download click (works for all items always)
+document.addEventListener("click", async (e) => {
+  const a = e.target.closest("a.dl");
+  if (!a) return;
+
+  const list = $("ordersList");
+  if (!list || !list.contains(a)) return; // only handle inside dashboard list
+
+  e.preventDefault();
+
+  const orderId = a.getAttribute("data-order-id");
+  if (!orderId) return;
+
+  const oldText = a.textContent;
+  a.textContent = "Loading…";
+  a.style.pointerEvents = "none";
+
+  try {
+    const data = await apiGet(`/api/order-download?orderId=${encodeURIComponent(orderId)}`);
+
+    // API returns: { ok: true, url: "https://..." }
+    const url = data.url;
+    if (!url) throw new Error("No download url returned");
+
+    window.open(url, "_blank", "noopener,noreferrer");
+
+    a.textContent = oldText;
+    a.style.pointerEvents = "auto";
+  } catch (err) {
+    console.error(err);
+    alert(err.message || "Download failed");
+    a.textContent = oldText;
+    a.style.pointerEvents = "auto";
+  }
+});
 
 // Logout (global for button)
 window.logoutUser = async () => {
@@ -96,8 +112,9 @@ onAuthStateChanged(auth, async (user) => {
   $("buyerEmail").textContent = user.email || "(no email)";
 
   try {
-    const data = await apiFetch("/api/my-orders");
-    renderOrders((data.orders || []).filter(o => o.status === "CAPTURED"));
+    const data = await apiGet("/api/my-orders");
+    const orders = (data.orders || []).filter((o) => o.status === "CAPTURED");
+    renderOrders(orders);
   } catch (err) {
     console.error(err);
     $("ordersStatus").textContent = err.message || "Failed to load orders.";
