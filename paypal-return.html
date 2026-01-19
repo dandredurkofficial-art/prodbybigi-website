@@ -10,6 +10,21 @@
 
   <script>
     window.API_BASE = "https://prodbybigi-api.onrender.com";
+  </script>
+
+  <script type="module">
+    // Firebase config (same project)
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
+      authDomain: "prodbybigi.firebaseapp.com",
+      projectId: "prodbybigi"
+    };
+
+    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
     async function capture() {
       const orderId = localStorage.getItem("pb_last_order_id");
@@ -18,9 +33,22 @@
         return;
       }
 
+      // Buyer must be logged in so we can send token
+      const user = auth.currentUser;
+      if (!user) {
+        // force login then user can come back
+        window.location.href = "/login.html?next=/paypal-return.html";
+        return;
+      }
+
+      const token = await user.getIdToken();
+
       const r = await fetch(`${window.API_BASE}/api/capture-order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify({ orderId })
       });
 
@@ -33,7 +61,9 @@
 
       // success
       localStorage.removeItem("pb_last_order_id");
-      window.location.href = "/marketplace.html?paid=1";
+
+      // ✅ send them to dashboard after payment
+      window.location.href = "/buyer-dashboard.html?paid=1";
     }
 
     capture();
