@@ -34,13 +34,7 @@ function fromCents(c) {
   return (Number(c || 0) / 100).toFixed(2);
 }
 function getPaypalBase() {
-  return process.env.PAYPAL_BASE || process.env.PAYPAL_BASE_URL || "";
-}
-function getSiteUrl() {
-  // Prefer SITE_URL, fallback FRONTEND_ORIGIN if it's a string
-  if (process.env.SITE_URL) return process.env.SITE_URL;
-  if (typeof process.env.FRONTEND_ORIGIN === "string") return process.env.FRONTEND_ORIGIN;
-  return "";
+  return (process.env.PAYPAL_BASE || process.env.PAYPAL_BASE_URL || "").trim();
 }
 
 async function paypalAccessToken() {
@@ -63,28 +57,26 @@ async function paypalAccessToken() {
   });
 
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data?.error_description || data?.message || "PayPal token failed");
+  if (!r.ok) {
+    throw new Error(data?.error_description || data?.message || "PayPal token failed");
+  }
   return data.access_token;
 }
 
-// ---------- Auth middleware (Firebase ID token) ----------
-async function requireAuth(req, res, next) {
+// --- Auth helper (Firebase ID token) ---
+async function getUserFromAuthHeader(req) {
+  const h = req.headers.authorization || "";
+  const m = h.match(/^Bearer\s+(.+)$/i);
+  if (!m) return null;
+
   try {
-    const h = req.headers.authorization || "";
-    const m = h.match(/^Bearer (.+)$/i);
-    if (!m) return res.status(401).json({ error: "Missing Authorization Bearer token" });
-
-    const idToken = m[1];
-    const decoded = await admin.auth().verifyIdToken(idToken);
-
-    req.user = {
+    const decoded = await admin.auth().verifyIdToken(m[1]);
+    return {
       uid: decoded.uid,
       email: decoded.email || null
     };
-    next();
   } catch (e) {
-    console.error("[auth]", e);
-    res.status(401).json({ error: "Invalid/expired token" });
+    return null;
   }
 }
 
@@ -95,18 +87,18 @@ app.get("/healthz", (_, res) => res.status(200).send("ok"));
 /**
  * POST /api/create-order
  * Body: { beatId, licenseKey }
- * Auth: Bearer Firebase ID token
+ * Auth: Authorization: Bearer <firebaseIdToken>   (recommended)
  */
-app.post("/api/create-order", requireAuth, async (req, res) => {
+app.post("/api/create-order", async (req, res) => {
   try {
     const { beatId, licenseKey } = req.body || {};
-    if (!beatId || !licenseKey) return res.status(400).json({ error: "Missing beatId/licenseKey" });
+    if (!beatId || !licenseKey) {
+      return res.status(400).json({ error: "Missing beatId/licenseKey" });
+    }
 
-    // Buyer
-    const buyerId = req.user.uid;
-    const buyerEmail = req.user.email;
+    const user = await getUserFromAuthHeader(req); // may be null if not logged in
 
-    // Beat
+    // 1) Read beat (source of truth)
     const beatRef = db.collection("beats").doc(String(beatId));
     const beatSnap = await beatRef.get();
     if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
@@ -125,12 +117,13 @@ app.post("/api/create-order", requireAuth, async (req, res) => {
     const amountCents = toCents(price);
     if (amountCents < 50) return res.status(400).json({ error: "Price too low" });
 
-    // PayPal create order
+    // 2) Create PayPal order
     const token = await paypalAccessToken();
     const base = getPaypalBase();
 
-    const site = getSiteUrl();
-    if (!site) throw new Error("Missing SITE_URL (or FRONTEND_ORIGIN as a string)");
+    // IMPORTANT: set SITE_URL in Render: https://prodby.officialbigi.shop
+    const site = process.env.SITE_URL;
+    if (!site) throw new Error("Missing SITE_URL env var (your frontend domain)");
 
     const create = await fetch(`${base}/v2/checkout/orders`, {
       method: "POST",
@@ -155,23 +148,27 @@ app.post("/api/create-order", requireAuth, async (req, res) => {
 
     const payData = await create.json().catch(() => ({}));
     if (!create.ok) {
-      throw new Error(payData?.message || payData?.details?.[0]?.description || "PayPal order create failed");
+      throw new Error(
+        payData?.message || payData?.details?.[0]?.description || "PayPal order create failed"
+      );
     }
 
-    // Store order
-    const feeCents = Math.round(amountCents * 0.10);
+    // 3) Store order in Firestore
+    const feeCents = Math.round(amountCents * 0.10); // 10%
     const producerNetCents = amountCents - feeCents;
 
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
       beatId: String(beatId),
       producerId: String(producerId),
-      buyerId: String(buyerId),
-      buyerEmail: buyerEmail || null,
       licenseKey: String(licenseKey),
       amountCents,
       feeCents,
       producerNetCents,
+
+      buyerId: user?.uid || null,
+      buyerEmail: user?.email || null,
+
       paypalOrderId: payData.id,
       status: "CREATED",
       createdAt: admin.firestore.FieldValue.serverTimestamp()
@@ -191,24 +188,23 @@ app.post("/api/create-order", requireAuth, async (req, res) => {
 /**
  * POST /api/capture-order
  * Body: { orderId }
- * Auth: Bearer Firebase ID token
+ * Auth: OPTIONAL, but recommended
+ * - Captures PayPal order
+ * - Credits producer wallet
+ * - Marks order CAPTURED
  */
-app.post("/api/capture-order", requireAuth, async (req, res) => {
+app.post("/api/capture-order", async (req, res) => {
   try {
     const { orderId } = req.body || {};
     if (!orderId) return res.status(400).json({ error: "Missing orderId" });
+
+    const user = await getUserFromAuthHeader(req); // may be null
 
     const orderRef = db.collection("orders").doc(String(orderId));
     const orderSnap = await orderRef.get();
     if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
 
     const order = orderSnap.data() || {};
-
-    // Buyer can only capture their own order
-    if (order.buyerId && order.buyerId !== req.user.uid) {
-      return res.status(403).json({ error: "Not allowed" });
-    }
-
     if (order.status === "CAPTURED") return res.json({ ok: true, status: "CAPTURED" });
 
     const token = await paypalAccessToken();
@@ -224,16 +220,20 @@ app.post("/api/capture-order", requireAuth, async (req, res) => {
       throw new Error(capData?.message || capData?.details?.[0]?.description || "PayPal capture failed");
     }
 
-    // Credit producer wallet + ledger + mark order captured (transaction)
     await db.runTransaction(async (tx) => {
       const fresh = await tx.get(orderRef);
       const o = fresh.data();
       if (!o || o.status === "CAPTURED") return;
 
+      // If buyer logs in later, still save buyer on capture if missing
+      const buyerId = o.buyerId || user?.uid || null;
+      const buyerEmail = o.buyerEmail || user?.email || null;
+
       const walletRef = db.collection("wallets").doc(String(o.producerId));
       const walletSnap = await tx.get(walletRef);
-
-      const prev = walletSnap.exists ? walletSnap.data() : { availableCents: 0, lifetimeEarnedCents: 0 };
+      const prev = walletSnap.exists
+        ? walletSnap.data()
+        : { availableCents: 0, lifetimeEarnedCents: 0 };
 
       tx.set(
         walletRef,
@@ -247,7 +247,6 @@ app.post("/api/capture-order", requireAuth, async (req, res) => {
 
       tx.set(db.collection("walletLedger").doc(), {
         producerId: String(o.producerId),
-        buyerId: String(o.buyerId || req.user.uid),
         type: "SALE",
         amountCents: o.producerNetCents || 0,
         feeCents: o.feeCents || 0,
@@ -261,8 +260,8 @@ app.post("/api/capture-order", requireAuth, async (req, res) => {
       tx.update(orderRef, {
         status: "CAPTURED",
         capturedAt: admin.firestore.FieldValue.serverTimestamp(),
-        buyerId: String(o.buyerId || req.user.uid), // ensure stored
-        buyerEmail: o.buyerEmail || req.user.email || null
+        buyerId,
+        buyerEmail
       });
     });
 
@@ -275,34 +274,26 @@ app.post("/api/capture-order", requireAuth, async (req, res) => {
 
 /**
  * GET /api/my-orders
- * Auth: Bearer Firebase ID token
- * Returns buyer's CAPTURED orders
+ * Auth REQUIRED: Authorization: Bearer <firebaseIdToken>
+ * Returns buyer orders (CAPTURED)
  */
-app.get("/api/my-orders", requireAuth, async (req, res) => {
+app.get("/api/my-orders", async (req, res) => {
   try {
-    const uid = req.user.uid;
+    const user = await getUserFromAuthHeader(req);
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
 
     const snap = await db
       .collection("orders")
-      .where("buyerId", "==", uid)
-      .orderBy("createdAt", "desc")
-      .limit(100)
+      .where("buyerId", "==", user.uid)
+      .where("status", "==", "CAPTURED")
+      .orderBy("capturedAt", "desc")
+      .limit(50)
       .get();
 
-    const out = [];
-    snap.forEach((d) => {
-      const o = d.data() || {};
-      out.push({
-        id: d.id,
-        beatId: o.beatId,
-        licenseKey: o.licenseKey,
-        amountCents: o.amountCents,
-        status: o.status,
-        createdAt: o.createdAt || null
-      });
-    });
+    const rows = [];
+    snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
 
-    res.json({ orders: out });
+    res.json({ ok: true, orders: rows });
   } catch (e) {
     console.error("[my-orders]", e);
     res.status(500).json({ error: e.message || "Server error" });
@@ -310,36 +301,50 @@ app.get("/api/my-orders", requireAuth, async (req, res) => {
 });
 
 /**
- * GET /api/order-download?orderId=XXX
- * Auth: Bearer Firebase ID token
- * Returns the purchased beat download URL (Cloudinary fullAudio) if CAPTURED
+ * GET /api/order-download?orderId=...
+ * Auth REQUIRED
+ * Returns the Cloudinary fullAudio url from beat doc
  */
-app.get("/api/order-download", requireAuth, async (req, res) => {
+app.get("/api/order-download", async (req, res) => {
   try {
+    const user = await getUserFromAuthHeader(req);
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
+
     const orderId = String(req.query.orderId || "");
     if (!orderId) return res.status(400).json({ error: "Missing orderId" });
 
-    const orderSnap = await db.collection("orders").doc(orderId).get();
+    const orderRef = db.collection("orders").doc(orderId);
+    const orderSnap = await orderRef.get();
     if (!orderSnap.exists) return res.status(404).json({ error: "Order not found" });
 
-    const o = orderSnap.data() || {};
-    if (o.buyerId !== req.user.uid) return res.status(403).json({ error: "Not allowed" });
-    if (o.status !== "CAPTURED") return res.status(403).json({ error: "Order not captured" });
+    const order = orderSnap.data() || {};
+    if (order.status !== "CAPTURED") return res.status(403).json({ error: "Order not captured" });
 
-    const beatSnap = await db.collection("beats").doc(String(o.beatId)).get();
+    if (order.buyerId !== user.uid) return res.status(403).json({ error: "Not your order" });
+
+    const beatRef = db.collection("beats").doc(String(order.beatId));
+    const beatSnap = await beatRef.get();
     if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
 
     const beat = beatSnap.data() || {};
-    const url = beat.fullAudio || beat.audioUrl || beat.audioURL || null;
 
-    if (!url) return res.status(404).json({ error: "No download url found on beat (fullAudio)" });
+    // Your beat doc shows: fullAudio: "https://res.cloudinary.com/...."
+    const url =
+      beat.fullAudio ||
+      beat.fullAudioUrl ||
+      beat.audioFull ||
+      beat.audioURL ||
+      "";
 
+    if (!url) return res.status(404).json({ error: "No downloadable file found (missing fullAudio)" });
+
+    // Return JSON (frontend can open it)
     res.json({
       ok: true,
-      beatId: String(o.beatId),
+      beatId: String(order.beatId),
       orderId,
-      title: beat.title || "Beat",
-      downloadUrl: url
+      licenseKey: order.licenseKey || null,
+      url
     });
   } catch (e) {
     console.error("[order-download]", e);
