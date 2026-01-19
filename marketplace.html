@@ -149,6 +149,7 @@
       beats.forEach((b)=>{
         const card = document.createElement("div");
         card.className = "card beat-card";
+        card.setAttribute("data-beat-id", b.id);
         card.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
