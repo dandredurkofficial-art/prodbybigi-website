@@ -1,26 +1,354 @@
+<!-- /producer-profile.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Producer</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Producer Profile | ProdByBigi</title>
+
   <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    .profile-head{padding:18px 0 8px}
+    .profile-card{padding:16px;border-radius:22px}
+    .top{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+    .avatar{width:72px;height:72px;border-radius:20px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .name{font-weight:950;font-size:18px;margin:0}
+    .sub{color:var(--muted);margin-top:4px;font-size:13px}
+    .stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .stat{padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);min-width:120px}
+    .stat .k{color:var(--muted);font-size:12px}
+    .stat .v{font-weight:950;font-size:14px;margin-top:2px}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:inherit;font-weight:900;font-size:13px;text-decoration:none;cursor:pointer}
+    .btn.primary{background:rgba(255,255,255,.12)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 28px}
+    @media (max-width: 900px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width: 520px){ .grid{grid-template-columns:1fr;} }
+
+    .beat-card{padding:12px;border-radius:20px}
+    .cover{aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);position:relative}
+    .cover img{width:100%;height:100%;object-fit:cover;display:block}
+    .play-fab{
+      position:absolute;right:10px;bottom:10px;
+      width:42px;height:42px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);
+      display:grid;place-items:center;color:#fff;cursor:pointer
+    }
+    .title{font-weight:950;margin:10px 0 0;font-size:13px}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+    .price-pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-weight:950}
+    .muted{color:var(--muted)}
+    .hidden{display:none !important}
+
+    /* footer social svg */
+    .social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+    .social svg{width:18px;height:18px;fill:currentColor}
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="menu-btn">☰</div>
-  <div class="logo">ProdByBigi</div>
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">ProdBy<span>Bigi</span></div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace.html">Tracks</a>
+      <a href="/soundkits.html">Sound Kits</a>
+      <a href="/producers.html">Producers</a>
+      <a class="cta" href="/register.html">Start Selling</a>
+      <a class="ghost" href="/login.html">Sign in</a>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
 </header>
 
-<h1 style="padding:20px">Producer Beats</h1>
-<div id="beatsGrid" class="beats-grid"></div>
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace.html">Tracks</a>
+  <a href="/soundkits.html">Sound Kits</a>
+  <a href="/producers.html">Producers</a>
+  <a class="cta" href="/register.html">Start Selling</a>
+  <a href="/login.html">Sign in</a>
+</nav>
 
-<footer>© 2026 ProdByBigi</footer>
+<main class="container">
+  <section class="profile-head">
+    <div class="card profile-card">
+      <div class="top">
+        <div class="avatar" id="prodAvatar">PB</div>
+        <div style="flex:1;min-width:220px;">
+          <h1 class="name" id="prodName">Producer</h1>
+          <div class="sub" id="prodSub">Loading producer…</div>
+        </div>
+      </div>
 
-<script type="module">
-  import { loadBeats } from "/js/firebase.js";
-  loadBeats("beatsGrid");
+      <div class="stats">
+        <div class="stat">
+          <div class="k">Beats</div>
+          <div class="v" id="statBeats">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Genres</div>
+          <div class="v" id="statGenres">—</div>
+        </div>
+        <div class="stat">
+          <div class="k">Latest Upload</div>
+          <div class="v" id="statLatest">—</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="/marketplace.html">Browse Marketplace</a>
+        <a class="btn primary" href="/register.html">Start Selling</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+      <div>
+        <div style="font-weight:950;font-size:18px;">Beats by this producer</div>
+        <div class="muted" style="margin-top:4px;">Tap price to choose license • Tap play to preview</div>
+      </div>
+      <div class="muted" id="beatsCount">0 items</div>
+    </div>
+
+    <div id="status" class="loading-box" style="margin-top:12px;">Loading beats…</div>
+    <div id="grid" class="grid"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 ProdByBigi</div>
+
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/cookies.html">Cookies</a>
+      <a href="/cookie-settings.html">Cookie Settings</a>
+    </div>
+
+    <div class="social" aria-label="Social links">
+      <a href="#" aria-label="Instagram" title="Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="X" title="X">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.9 2H22l-6.8 7.8L23 22h-6.5l-5.1-6.7L5.5 22H2.4l7.3-8.4L1 2h6.7l4.6 6.1L18.9 2zm-1.1 18h1.7L6.7 3.9H4.9L17.8 20z"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="YouTube" title="YouTube">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.8 4.6 12 4.6 12 4.6s-5.8 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.7.5 7.5.5 7.5.5s5.8 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- License / Checkout Modal (same ids your existing license-modal.js expects) -->
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+  <div class="pb-cart-body" id="pbCartItems"></div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
+
+<script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/player.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
+    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;width:100%;display:grid;place-items:center;font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function getProducerIdFromURL(){
+    const u = new URL(location.href);
+    return (u.searchParams.get("producerId") || "").trim();
+  }
+
+  function prettyProducerNameFromBeat(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function setAvatar(name){
+    const el = document.getElementById("prodAvatar");
+    const initials = String(name||"PB").trim().slice(0,2).toUpperCase();
+    el.innerHTML = `<div style="font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function formatDate(ts){
+    const n = Number(ts||0);
+    if (!n) return "—";
+    const d = new Date(n);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  }
+
+  async function loadProducerProfile(){
+    const pid = getProducerIdFromURL();
+    const status = document.getElementById("status");
+    const grid = document.getElementById("grid");
+    const beatsCount = document.getElementById("beatsCount");
+
+    if (!pid){
+      document.getElementById("prodName").textContent = "Producer";
+      document.getElementById("prodSub").textContent = "Missing producerId in URL.";
+      setAvatar("PB");
+      status.textContent = "Open a producer from Marketplace (click producer name).";
+      return;
+    }
+
+    try{
+      status.textContent = "Loading beats…";
+      status.classList.remove("hidden");
+
+      const beats = await window.FB.fetchBeats({ max: 200 });
+      const mine = beats.filter(b => String(b.producerId||"") === String(pid));
+
+      // For license-modal lookup
+      window.__LATEST_BEATS__ = mine;
+
+      grid.innerHTML = "";
+      beatsCount.textContent = `${mine.length} item${mine.length===1?"":"s"}`;
+
+      const displayName = mine[0] ? prettyProducerNameFromBeat(mine[0]) : ("Prod. " + pid.slice(0,8));
+      document.getElementById("prodName").textContent = displayName;
+      document.getElementById("prodSub").textContent = `Producer ID: ${pid}`;
+      setAvatar(displayName);
+
+      document.getElementById("statBeats").textContent = String(mine.length);
+
+      const genres = Array.from(new Set(mine.map(b => (b.genre||"").trim()).filter(Boolean)));
+      document.getElementById("statGenres").textContent = genres.length ? genres.slice(0,3).join(", ") : "—";
+
+      const latest = mine.length ? mine[0].createdAt : 0;
+      document.getElementById("statLatest").textContent = formatDate(latest);
+
+      if (!mine.length){
+        status.textContent = "No beats from this producer yet.";
+        return;
+      }
+
+      status.classList.add("hidden");
+
+      mine.forEach((b)=>{
+        const card = document.createElement("div");
+        card.className = "card beat-card";
+        card.setAttribute("data-beat-id", b.id);
+
+        card.innerHTML = `
+          <div class="cover">
+            ${coverHTML(b.artwork, b.title)}
+            <button class="play-fab" type="button" data-play-btn data-audio-url="${b.audio||""}" aria-label="Play">
+              <span class="playIcon">▶</span>
+            </button>
+          </div>
+          <div class="title">${b.title}</div>
+          <div class="row">
+            <div class="muted" style="font-size:12px;">${(b.genre||"").trim() || "Genre"}</div>
+            <div class="price-pill">${money(b.price)}</div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+    }catch(err){
+      console.error(err);
+      status.textContent = "Could not load producer profile. Check console + Firestore rules.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", () => {
+    if (window.FB && typeof window.FB.fetchBeats === "function") loadProducerProfile();
+  });
+</script>
+
 </body>
 </html>
