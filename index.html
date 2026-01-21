@@ -375,11 +375,14 @@
               <div style="font-weight:900;font-size:13px;line-height:1.2;">${b.title}</div>
               <div style="color:var(--muted);font-size:12px;margin-top:4px;">${prettyProducerName(b)}</div>
             </div>
-            <!-- ✅ price opens license -->
-            <button class="price-pill" type="button" aria-label="Choose license">${money(b.price || 29.99)}</button>
-          </div>
-        `;
-        chart.appendChild(el);
+            <!-- ✅ FIXED PRICE PILL -->
+          <button class="price-pill" type="button"
+            style="flex:0 0 auto; white-space:nowrap;">
+            ${money(b.price || 29.99)}
+          </button>
+        </div>
+      `;
+      chart.appendChild(el);
       });
 
     }catch(err){
