@@ -535,6 +535,7 @@ async function publishBeat(){
       fullAudio,
       previewAudio,
       producerId: auth.currentUser.uid,
+      producerName: auth.currentUser.displayName || "",
       published:true,
       licenses:{
         basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
