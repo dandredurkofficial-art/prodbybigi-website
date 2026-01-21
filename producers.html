@@ -1,0 +1,266 @@
+<!-- /producers.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Producers | ProdByBigi</title>
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    .page-head{padding:20px 0 10px}
+    .page-title{font-size:26px;font-weight:900;margin:0}
+    .page-sub{color:var(--muted);margin:6px 0 0}
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .search{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);padding:10px 12px;border-radius:14px}
+    .search input{flex:1;background:transparent;border:0;outline:0;color:inherit}
+    .pill{padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:inherit;font-weight:800;font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 28px}
+    @media (max-width: 900px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width: 520px){ .grid{grid-template-columns:1fr;} }
+
+    .producer-card{padding:14px;border-radius:20px}
+    .producer-top{display:flex;gap:12px;align-items:center}
+    .avatar{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);display:grid;place-items:center;font-weight:900}
+    .pname{font-weight:900;margin:0}
+    .pmeta{color:var(--muted);font-size:12px;margin:4px 0 0}
+    .producer-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:inherit;font-weight:900;font-size:13px;text-decoration:none}
+    .btn.primary{background:rgba(255,255,255,.12)}
+    .loading-box{margin-top:14px}
+    .hidden{display:none !important}
+
+    /* footer social svg */
+    .social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+    .social svg{width:18px;height:18px;fill:currentColor}
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">ProdBy<span>Bigi</span></div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace.html">Tracks</a>
+      <a href="/soundkits.html">Sound Kits</a>
+      <a href="/producers.html">Producers</a>
+      <a class="cta" href="/register.html">Start Selling</a>
+      <a class="ghost" href="/login.html">Sign in</a>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace.html">Tracks</a>
+  <a href="/soundkits.html">Sound Kits</a>
+  <a href="/producers.html">Producers</a>
+  <a class="cta" href="/register.html">Start Selling</a>
+  <a href="/login.html">Sign in</a>
+</nav>
+
+<main class="container">
+  <section class="page-head">
+    <h1 class="page-title">Producers</h1>
+    <p class="page-sub">Discover producers and their latest beats.</p>
+
+    <div class="tools">
+      <div class="search">
+        <span aria-hidden="true">🔎</span>
+        <input id="producerSearch" placeholder="Search producers…" autocomplete="off" />
+      </div>
+      <div class="pill" id="producerCount">0 producers</div>
+    </div>
+  </section>
+
+  <div id="producerStatus" class="loading-box">Loading producers…</div>
+  <div id="producerGrid" class="grid"></div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 ProdByBigi</div>
+
+    <div class="footer-links">
+      <a href="/privacy.html">Privacy Policy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/cookies.html">Cookies</a>
+      <a href="/cookie-settings.html">Cookie Settings</a>
+    </div>
+
+    <div class="social" aria-label="Social links">
+      <a href="#" aria-label="Instagram" title="Instagram">
+        <!-- Instagram SVG -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="X" title="X">
+        <!-- X/Twitter SVG -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.9 2H22l-6.8 7.8L23 22h-6.5l-5.1-6.7L5.5 22H2.4l7.3-8.4L1 2h6.7l4.6 6.1L18.9 2zm-1.1 18h1.7L6.7 3.9H4.9L17.8 20z"/>
+        </svg>
+      </a>
+      <a href="#" aria-label="YouTube" title="YouTube">
+        <!-- YouTube SVG -->
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.8 4.6 12 4.6 12 4.6s-5.8 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.7.5 7.5.5 7.5.5s5.8 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+  <div class="pb-cart-body" id="pbCartItems"></div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+
+<script>
+  function initials(name){
+    const s = String(name||"P").trim();
+    const parts = s.split(/\s+/).filter(Boolean);
+    const a = (parts[0]||"P").slice(0,1);
+    const b = (parts[1]||"").slice(0,1);
+    return (a+b).toUpperCase();
+  }
+
+  function safeNameFromBeat(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (b.producerId) return "Producer " + String(b.producerId).slice(0,6);
+    return "Producer";
+  }
+
+  function renderProducers(list){
+    const grid = document.getElementById("producerGrid");
+    const count = document.getElementById("producerCount");
+    grid.innerHTML = "";
+
+    count.textContent = `${list.length} producer${list.length===1?"":"s"}`;
+
+    list.forEach((p)=>{
+      const el = document.createElement("div");
+      el.className = "card producer-card";
+      el.innerHTML = `
+        <div class="producer-top">
+          <div class="avatar" aria-hidden="true">${initials(p.name)}</div>
+          <div>
+            <p class="pname">${p.name}</p>
+            <p class="pmeta">${p.beatCount} beat${p.beatCount===1?"":"s"}</p>
+          </div>
+        </div>
+
+        <div class="producer-actions">
+          <a class="btn primary" href="/producer-profile.html?producerId=${encodeURIComponent(p.id)}">View Profile</a>
+          <a class="btn" href="/marketplace.html?producerId=${encodeURIComponent(p.id)}">View Beats</a>
+        </div>
+      `;
+      grid.appendChild(el);
+    });
+  }
+
+  function applySearch(all){
+    const q = String(document.getElementById("producerSearch").value||"").trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(p => p.name.toLowerCase().includes(q));
+  }
+
+  async function loadProducers(){
+    const status = document.getElementById("producerStatus");
+    try{
+      status.textContent = "Loading producers…";
+      status.classList.remove("hidden");
+
+      // We use beats to build producers list (safe + doesn’t touch dashboard)
+      const beats = await window.FB.fetchBeats({ max: 200 });
+
+      const map = new Map();
+      beats.forEach((b)=>{
+        const pid = String(b.producerId||"").trim();
+        if (!pid) return;
+        const name = safeNameFromBeat(b);
+
+        if (!map.has(pid)){
+          map.set(pid, { id: pid, name, beatCount: 1 });
+        } else {
+          const x = map.get(pid);
+          x.beatCount += 1;
+          // prefer a real name if later beats have it
+          if ((!x.name || x.name.startsWith("Producer ")) && name && !name.startsWith("Producer ")) x.name = name;
+        }
+      });
+
+      const all = Array.from(map.values())
+        .sort((a,b)=> (b.beatCount - a.beatCount) || a.name.localeCompare(b.name));
+
+      if (!all.length){
+        status.textContent = "No producers yet.";
+        return;
+      }
+
+      status.classList.add("hidden");
+      renderProducers(all);
+
+      const input = document.getElementById("producerSearch");
+      input.addEventListener("input", ()=>{
+        renderProducers(applySearch(all));
+      });
+
+    }catch(err){
+      console.error("[producers] load error:", err);
+      status.textContent = "Could not load producers. Check console.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", ()=>{
+    if (window.FB && typeof window.FB.fetchBeats === "function") loadProducers();
+  });
+</script>
+
+</body>
+</html>
