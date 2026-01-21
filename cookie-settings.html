@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cookie Settings | ProdByBigi</title>
+  <link rel="stylesheet" href="/css/global.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="logo">ProdBy<span>Bigi</span></div>
+    <a href="/index.html">← Back</a>
+  </div>
+</header>
+
+<main class="container section card">
+  <h1 class="h1">Cookie Settings</h1>
+
+  <p>
+    Choose which cookies you allow. Essential cookies cannot be disabled.
+  </p>
+
+  <div class="card" style="padding:16px;margin-top:12px;">
+    <label>
+      <input type="checkbox" checked disabled>
+      Essential Cookies
+    </label>
+  </div>
+
+  <div class="card" style="padding:16px;margin-top:12px;">
+    <label>
+      <input type="checkbox" id="analyticsCookies">
+      Analytics Cookies
+    </label>
+  </div>
+
+  <div class="card" style="padding:16px;margin-top:12px;">
+    <label>
+      <input type="checkbox" id="preferenceCookies">
+      Preference Cookies
+    </label>
+  </div>
+
+  <button class="pb-btn primary" style="margin-top:16px;" onclick="saveCookies()">
+    Save Preferences
+  </button>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 ProdByBigi</div>
+  </div>
+</footer>
+
+<script>
+  function saveCookies(){
+    localStorage.setItem("pb_cookie_settings", JSON.stringify({
+      analytics: document.getElementById("analyticsCookies").checked,
+      preferences: document.getElementById("preferenceCookies").checked
+    }));
+    alert("Cookie preferences saved ✅");
+  }
+</script>
+
+</body>
+</html>
