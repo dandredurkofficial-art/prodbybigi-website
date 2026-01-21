@@ -270,7 +270,7 @@ button.primary[disabled]{
         <div id="statKits" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
       </div>
     </div>
-    <div style="margin-top:12px;color:#9ca3af;font-size:13px;">
+    <div id="walletNote" style="margin-top:12px;color:#9ca3af;font-size:13px;">
       (Sales + wallet become fully real after your PayPal order webhook/API writes earnings to Firestore.)
     </div>
   </div>
@@ -452,6 +452,9 @@ let kitsData=[];
 
 let profilePic=null;
 
+/* ✅ FIX: editing should UPDATE not create duplicates */
+let editingBeatId = null;
+
 function toggleMenu(){ sidebar.classList.toggle("open"); }
 
 /* ✅ FIX: allow showPage to be called without relying on global `event` */
@@ -465,6 +468,30 @@ function showPage(id, el){
   if (id === "settings") fillSettingsForm();
   if (id === "soundkits") loadKits();
   if (id === "finance") loadPayoutUI();
+}
+
+/* ✅ helper: consistent producer name (used for new + old beats) */
+function getProducerDisplayName(){
+  const prof = window.currentProfile || {};
+  const name =
+    (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+    : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
+  return name || ("Prod. " + String(auth.currentUser?.uid || "").slice(0,8));
+}
+
+/* ✅ helper: wallet/balance from Firestore profile (real when you write it) */
+function getWalletBalance(){
+  const prof = window.currentProfile || {};
+  const v =
+    prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? prof.earnings ?? 0;
+  const n = Number(v || 0);
+  return isFinite(n) ? n : 0;
+}
+
+/* ✅ helper: money formatting */
+function money(n){
+  const v = Number(n || 0);
+  return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
 }
 
 function uploadArtwork(){
@@ -518,13 +545,9 @@ async function publishBeat(){
 
   try{
     // ✅ producer name: use profile displayName/first+last; fallback to uid short
-    const prof = window.currentProfile || {};
-    const name =
-      (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
-      : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
-    const producerName = name || ("Prod. " + String(auth.currentUser.uid).slice(0,8));
+    const producerName = getProducerDisplayName();
 
-    await addDoc(collection(db,"beats"),{
+    const payload = {
       title:title.value || "Untitled Beat",
       desc:desc.value || "",
       bpm:bpm.value || "",
@@ -535,7 +558,10 @@ async function publishBeat(){
       fullAudio,
       previewAudio,
       producerId: auth.currentUser.uid,
-      producerName: auth.currentUser.displayName || "",
+
+      // ✅ keep this key (you had it before), but make it NOT empty:
+      producerName: producerName,
+
       published:true,
       licenses:{
         basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
@@ -544,8 +570,22 @@ async function publishBeat(){
       },
       freeDownload:freeDownload.checked,
       bulkDiscount:bulkDiscount.checked,
-      createdAt:Date.now()
-    });
+
+      // ✅ only set createdAt on NEW beats
+      ...(editingBeatId ? {} : { createdAt: Date.now() }),
+
+      // ✅ updated timestamp for both
+      updatedAt: Date.now()
+    };
+
+    if (editingBeatId){
+      // ✅ UPDATE existing beat (no duplicates)
+      await updateDoc(doc(db,"beats",editingBeatId), payload);
+      editingBeatId = null; // ✅ stop edit mode after save
+    } else {
+      // ✅ create new beat
+      await addDoc(collection(db,"beats"), payload);
+    }
 
     resetUploadForm();
     loadBeats();
@@ -582,6 +622,18 @@ async function loadBeats(){
   const snap = await getDocs(q);
   snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
 
+  // ✅ FIX OLD BEATS: backfill producerName if missing (so homepage/marketplace show name)
+  try{
+    const name = getProducerDisplayName();
+    const toFix = beatsData.filter(b => !b.producerName || String(b.producerName).trim() === "");
+    if (toFix.length){
+      // update Firestore in background (fast enough for small lists)
+      await Promise.all(toFix.map(b => updateDoc(doc(db,"beats",b.id), { producerName: name })));
+      // update local copy too
+      beatsData = beatsData.map(b => ({...b, producerName: (b.producerName && String(b.producerName).trim()) ? b.producerName : name }));
+    }
+  }catch(e){}
+
   renderTracks();
   loadDashboardStats();
 }
@@ -602,7 +654,7 @@ function renderTracks(){
 
 function editBeat(i){
   const b=beatsData[i];
-  editingBeatId=b.id;
+  editingBeatId=b.id; // ✅ this is what prevents duplicates
   title.value=b.title;
   desc.value=b.desc;
   bpm.value=b.bpm;
@@ -642,7 +694,7 @@ async function deleteBeat(i){
 }
 
 /* ===========================
-   DASHBOARD STATS (simple real)
+   DASHBOARD STATS (real if data exists)
 =========================== */
 async function loadDashboardStats(){
   try{
@@ -660,6 +712,39 @@ async function loadDashboardStats(){
       const ksnap = await getDocs(qk);
       const statKitsEl = document.getElementById("statKits");
       if (statKitsEl) statKitsEl.textContent = String(ksnap.size || 0);
+    }
+
+    // ✅ total sales: sum from orders if you store producerId on orders
+    let sales = 0;
+    try{
+      const qo = query(collection(db,"orders"), where("producerId","==",window.currentUser.uid));
+      const osnap = await getDocs(qo);
+      osnap.forEach(d=>{
+        const o = d.data() || {};
+        // accept different fields names safely
+        const amt = Number(o.amount ?? o.total ?? o.price ?? 0) || 0;
+        const status = String(o.status ?? o.state ?? "").toLowerCase();
+        // count paid/completed only if status exists, otherwise count all
+        if (!status || status.includes("completed") || status.includes("paid")) sales += amt;
+      });
+    }catch(e){
+      // if no producerId on orders yet, sales stays 0 (real)
+    }
+
+    const totalSalesEl = document.getElementById("totalSales");
+    if (totalSalesEl) totalSalesEl.textContent = money(sales);
+
+    const bal = getWalletBalance();
+    const availableEl = document.getElementById("availableBalance");
+    if (availableEl) availableEl.textContent = money(bal);
+
+    const payoutBalEl = document.getElementById("payoutBalance");
+    if (payoutBalEl) payoutBalEl.textContent = money(bal);
+
+    // ✅ update note text (keep element, but make it clearer)
+    const note = document.getElementById("walletNote");
+    if (note){
+      note.textContent = "Wallet updates when your sales/earnings are written to Firestore (orders/earnings).";
     }
   }catch(e){}
 }
@@ -686,9 +771,16 @@ function loadPayoutUI(){
     if (mpesaOption) mpesaOption.disabled = !isKenya;
     if (!isKenya) method.value = "paypal";
   }
+
+  // keep balance in sync
+  try{
+    const bal = getWalletBalance();
+    const payoutBalEl = document.getElementById("payoutBalance");
+    if (payoutBalEl) payoutBalEl.textContent = money(bal);
+  }catch(e){}
 }
 
-/* Withdraw button (placeholder – wire to your API later) */
+/* Withdraw button (real “insufficient balance” using wallet value from Firestore profile) */
 document.addEventListener("click", async (e)=>{
   const btn = e.target.closest("#withdrawBtn");
   if (!btn) return;
@@ -701,6 +793,18 @@ document.addEventListener("click", async (e)=>{
   if (!amount || amount <= 0) return alert("Enter a valid amount");
   if (!dest) return alert("Enter PayPal email or M-Pesa phone");
 
+  const bal = getWalletBalance();
+  if (bal <= 0){
+    if (status) status.style.color = "#ef4444";
+    if (status) status.textContent = "❌ Insufficient balance.";
+    return;
+  }
+  if (amount > bal){
+    if (status) status.style.color = "#ef4444";
+    if (status) status.textContent = "❌ Insufficient balance for this withdrawal.";
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = "Processing...";
 
@@ -708,6 +812,7 @@ document.addEventListener("click", async (e)=>{
     // TODO: Replace with your real API endpoint (secure)
     // await fetch("/api/payout-request", { method:"POST", headers:{...}, body: JSON.stringify(...) })
 
+    if (status) status.style.color = "#22c55e";
     if (status) status.textContent = "✅ Payout request submitted (connect to API next).";
   }catch(err){
     alert("Withdraw failed: " + (err?.message || err));
@@ -758,11 +863,7 @@ async function publishKit(){
   publishKitBtn.textContent = "Publishing...";
 
   try{
-    const prof = window.currentProfile || {};
-    const name =
-      (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
-      : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
-    const producerName = name || ("Prod. " + String(window.currentUser.uid).slice(0,8));
+    const producerName = getProducerDisplayName();
 
     await addDoc(collection(db,"soundkits"),{
       title: (kitTitle.value || "Untitled Kit").trim(),
@@ -897,6 +998,12 @@ async function saveProfile(){
     window.currentProfile = { ...(window.currentProfile||{}), ...data };
     saveProfileStatus.textContent = "✅ Profile updated";
     loadPayoutUI();
+    loadDashboardStats();
+
+    // ✅ also backfill old beats name immediately after profile change
+    try{
+      await loadBeats();
+    }catch(e){}
   }catch(err){
     alert("Save failed: " + (err?.message || err));
   }
