@@ -12,10 +12,10 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, getDocs, query, where, updateDoc, deleteDoc
+  getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import {
-  getAuth, onAuthStateChanged
+  getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -35,20 +35,48 @@ window.auth = getAuth(app);
 window.addDoc = addDoc;
 window.collection = collection;
 window.getDocs = getDocs;
+window.getDoc = getDoc;
+window.doc = doc;
 window.query = query;
 window.where = where;
 window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 
 window.currentUser = null;
+window.currentProfile = null;
 
 /* 🔐 WAIT FOR AUTH */
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async user => {
   if (user) {
     window.currentUser = user;
+
+    // load profile (producerName, country, etc.)
+    try{
+      const uref = doc(window.db, "users", user.uid);
+      const usnap = await getDoc(uref);
+      window.currentProfile = usnap.exists() ? usnap.data() : null;
+    }catch(e){
+      window.currentProfile = null;
+    }
+
     loadBeats(); // ✅ LOAD ONLY AFTER AUTH
+    loadDashboardStats();
+    loadPayoutUI();
+  } else {
+    window.currentUser = null;
+    window.currentProfile = null;
   }
 });
+
+// expose logout
+window.PB_LOGOUT = async () => {
+  try{
+    await signOut(window.auth);
+    location.href = "/login.html";
+  }catch(err){
+    alert("Logout failed: " + (err?.message || err));
+  }
+};
 </script>
 
 <style>
@@ -103,7 +131,7 @@ main {flex:1;padding:24px;}
   margin-bottom:20px;
 }
 
-input,textarea {
+input,textarea,select {
   width:100%;
   background:#05070c;
   border:1px solid #1f2937;
@@ -206,22 +234,46 @@ button.primary[disabled]{
 <header>
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
   <strong>Producer Studio</strong>
-  <button class="logout">Logout</button>
+  <button class="logout" id="logoutBtn" type="button">Logout</button>
 </header>
 
 <div class="layout">
 <nav id="sidebar">
-  <a onclick="showPage('dashboard')" class="active">Dashboard</a>
-  <a onclick="showPage('upload')">Upload Beat</a>
-  <a onclick="showPage('tracks')">Tracks</a>
-  <a onclick="showPage('finance')">Finance</a>
+  <a onclick="showPage('dashboard', this)" class="active">Dashboard</a>
+  <a onclick="showPage('upload', this)">Upload Beat</a>
+  <a onclick="showPage('tracks', this)">Tracks</a>
+  <a onclick="showPage('finance', this)">Finance</a>
+  <a onclick="showPage('soundkits', this)">Sound Kits</a>
+  <a onclick="showPage('settings', this)">Account Settings</a>
 </nav>
 
 <main>
 
 <section id="dashboard" class="page active">
-  <div class="card"><h2>Total Sales</h2><h1>$0.00</h1></div>
-  <div class="card"><h2>Available Balance</h2><h1>$0.00</h1></div>
+  <div class="card"><h2>Total Sales</h2><h1 id="totalSales">$0.00</h1></div>
+  <div class="card"><h2>Available Balance</h2><h1 id="availableBalance">$0.00</h1></div>
+
+  <!-- analytics (real from your data later; for now uses beats/orders if present) -->
+  <div class="card">
+    <h2>Analytics</h2>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Beats Uploaded</div>
+        <div id="statBeats" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Published Beats</div>
+        <div id="statPublished" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Sound Kits</div>
+        <div id="statKits" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;color:#9ca3af;font-size:13px;">
+      (Sales + wallet become fully real after your PayPal order webhook/API writes earnings to Firestore.)
+    </div>
+  </div>
 </section>
 
 <section id="upload" class="page">
@@ -239,6 +291,17 @@ button.primary[disabled]{
 <textarea id="desc" placeholder="Description"></textarea>
 <input id="bpm" placeholder="BPM">
 <input id="key" placeholder="Key">
+
+<!-- ✅ Genre added (does not remove anything) -->
+<select id="genre">
+  <option value="">Select genre</option>
+  <option value="Afrobeats">Afrobeats</option>
+  <option value="Trap">Trap</option>
+  <option value="Drill">Drill</option>
+  <option value="Amapiano">Amapiano</option>
+  <option value="R&B">R&B</option>
+  <option value="Hip Hop">Hip Hop</option>
+</select>
 
 <div id="fullStatus"></div>
 <button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
@@ -293,8 +356,87 @@ button.primary[disabled]{
 <section id="finance" class="page">
   <div class="card">
     <h2>Payouts</h2>
-    <p>$0.00</p>
-    <button class="primary">Withdraw</button>
+    <p id="payoutBalance">$0.00</p>
+
+    <div id="payoutNotice" style="color:#9ca3af;font-size:13px;margin:8px 0 12px;"></div>
+
+    <select id="withdrawMethod">
+      <option value="paypal">PayPal</option>
+      <option value="mpesa">M-Pesa (Kenya only)</option>
+    </select>
+
+    <input id="withdrawAmount" placeholder="Amount (USD)">
+    <input id="withdrawDestination" placeholder="PayPal email or M-Pesa phone (2547...)">
+
+    <button class="primary" id="withdrawBtn" type="button">Withdraw</button>
+
+    <div id="withdrawStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+  </div>
+</section>
+
+<!-- ✅ SOUND KITS UPLOAD (added, does not remove anything) -->
+<section id="soundkits" class="page">
+  <div class="card">
+    <h2>Upload Sound Kit</h2>
+
+    <div class="artwork-preview" id="kitCoverBox">
+      <span>Cover Preview</span>
+    </div>
+    <div id="kitCoverStatus"></div>
+    <button class="primary" type="button" onclick="uploadKitCover()">Upload Cover</button>
+
+    <input id="kitTitle" placeholder="Kit title">
+    <textarea id="kitDesc" placeholder="Description"></textarea>
+
+    <select id="kitCategory">
+      <option value="">Select category</option>
+      <option value="drums">Drums</option>
+      <option value="loops">Loops</option>
+      <option value="midi">MIDI</option>
+      <option value="one-shots">One-shots</option>
+      <option value="fx">FX</option>
+    </select>
+
+    <input id="kitPrice" placeholder="Price (0 for Free)" value="0">
+
+    <div id="kitFileStatus"></div>
+    <button class="primary" type="button" onclick="uploadKitFile()">Upload Kit File (ZIP)</button>
+
+    <input id="kitDownloadUrl" placeholder="Download URL (auto-filled after upload OR paste link)">
+
+    <div class="toggle">
+      <label>Published</label>
+      <input type="checkbox" id="kitPublished" checked>
+    </div>
+
+    <button class="primary" id="publishKitBtn" type="button" onclick="publishKit()">Publish Sound Kit</button>
+  </div>
+
+  <div class="card">
+    <h2>Your Sound Kits</h2>
+    <div id="kitsList"></div>
+  </div>
+</section>
+
+<!-- ✅ ACCOUNT SETTINGS (added, does not remove anything) -->
+<section id="settings" class="page">
+  <div class="card">
+    <h2>Account Settings</h2>
+
+    <div class="artwork-preview" id="profilePicBox">
+      <span>Profile Picture</span>
+    </div>
+    <div id="profilePicStatus"></div>
+    <button class="primary" type="button" onclick="uploadProfilePic()">Upload Profile Picture</button>
+
+    <input id="firstName" placeholder="First name">
+    <input id="lastName" placeholder="Last name">
+    <input id="displayName" placeholder="Display name">
+    <input id="location" placeholder="Location (Country / City)">
+    <textarea id="bio" placeholder="Biography"></textarea>
+
+    <button class="primary" id="saveProfileBtn" type="button" onclick="saveProfile()">Save Profile</button>
+    <div id="saveProfileStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
   </div>
 </section>
 
@@ -305,14 +447,24 @@ button.primary[disabled]{
 let uploadedArtwork=null, fullAudio=null, previewAudio=null;
 let beatsData=[], currentAudio=null;
 
+let kitCover=null, kitFile=null;
+let kitsData=[];
+
+let profilePic=null;
+
 function toggleMenu(){ sidebar.classList.toggle("open"); }
 
-function showPage(id){
+/* ✅ FIX: allow showPage to be called without relying on global `event` */
+function showPage(id, el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.target.classList.add('active');
+  if (el) el.classList.add('active');
   sidebar.classList.remove("open");
+
+  if (id === "settings") fillSettingsForm();
+  if (id === "soundkits") loadKits();
+  if (id === "finance") loadPayoutUI();
 }
 
 function uploadArtwork(){
@@ -365,11 +517,20 @@ async function publishBeat(){
   publishBtn.innerText="Publishing...";
 
   try{
+    // ✅ producer name: use profile displayName/first+last; fallback to uid short
+    const prof = window.currentProfile || {};
+    const name =
+      (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+      : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
+    const producerName = name || ("Prod. " + String(auth.currentUser.uid).slice(0,8));
+
     await addDoc(collection(db,"beats"),{
       title:title.value || "Untitled Beat",
       desc:desc.value || "",
       bpm:bpm.value || "",
       key:key.value || "",
+      genre: (genre.value || "").trim(),                 // ✅ added
+      producerName,                                     // ✅ added
       artwork:uploadedArtwork || "",
       fullAudio,
       previewAudio,
@@ -387,6 +548,7 @@ async function publishBeat(){
 
     resetUploadForm();
     loadBeats();
+    loadDashboardStats();
     alert("✅ Beat published");
 
   }catch(err){
@@ -399,6 +561,7 @@ async function publishBeat(){
 
 function resetUploadForm(){
   title.value=desc.value=bpm.value=key.value="";
+  genre.value=""; // ✅ added
   uploadedArtwork=fullAudio=previewAudio=null;
   artworkBox.innerHTML="<span>Artwork Preview</span>";
   artworkStatus.innerHTML=fullStatus.innerHTML=previewStatus.innerHTML="";
@@ -419,6 +582,7 @@ async function loadBeats(){
   snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
 
   renderTracks();
+  loadDashboardStats();
 }
 
 function renderTracks(){
@@ -442,6 +606,7 @@ function editBeat(i){
   desc.value=b.desc;
   bpm.value=b.bpm;
   key.value=b.key;
+  genre.value=b.genre || ""; // ✅ added
   uploadedArtwork=b.artwork;
   fullAudio=b.fullAudio;
   previewAudio=b.previewAudio;
@@ -454,7 +619,7 @@ function editBeat(i){
   exclusivePrice.value=b.licenses.exclusive.price;
   freeDownload.checked=b.freeDownload;
   bulkDiscount.checked=b.bulkDiscount;
-  showPage('upload');
+  showPage('upload'); // ✅ now safe (showPage no longer relies on event)
 }
 
 function playPreview(i){
@@ -474,6 +639,284 @@ async function deleteBeat(i){
     alert("Delete failed: "+err.message);
   }
 }
+
+/* ===========================
+   DASHBOARD STATS (simple real)
+=========================== */
+async function loadDashboardStats(){
+  try{
+    const total = beatsData.length || 0;
+    const published = beatsData.filter(b=>b.published===true).length;
+
+    const statBeatsEl = document.getElementById("statBeats");
+    const statPublishedEl = document.getElementById("statPublished");
+    if (statBeatsEl) statBeatsEl.textContent = String(total);
+    if (statPublishedEl) statPublishedEl.textContent = String(published);
+
+    // kits count (fetch lightweight)
+    if (window.currentUser){
+      const qk = query(collection(db,"soundkits"), where("producerId","==",window.currentUser.uid));
+      const ksnap = await getDocs(qk);
+      const statKitsEl = document.getElementById("statKits");
+      if (statKitsEl) statKitsEl.textContent = String(ksnap.size || 0);
+    }
+  }catch(e){}
+}
+
+/* ===========================
+   FINANCE (Kenya logic)
+=========================== */
+function loadPayoutUI(){
+  const prof = window.currentProfile || {};
+  const loc = String(prof.location || "").toLowerCase();
+  const isKenya = loc.includes("kenya") || loc.includes("ke") || loc.includes("nairobi") || loc.includes("mombasa");
+
+  const notice = document.getElementById("payoutNotice");
+  const method = document.getElementById("withdrawMethod");
+
+  if (notice){
+    notice.textContent = isKenya
+      ? "Kenya detected: You can withdraw via M-Pesa or PayPal."
+      : "Non-Kenya: Withdrawals available via PayPal only.";
+  }
+
+  if (method){
+    const mpesaOption = [...method.options].find(o => o.value === "mpesa");
+    if (mpesaOption) mpesaOption.disabled = !isKenya;
+    if (!isKenya) method.value = "paypal";
+  }
+}
+
+/* Withdraw button (placeholder – wire to your API later) */
+document.addEventListener("click", async (e)=>{
+  const btn = e.target.closest("#withdrawBtn");
+  if (!btn) return;
+
+  const amount = Number((document.getElementById("withdrawAmount").value || "").trim());
+  const method = (document.getElementById("withdrawMethod").value || "paypal").trim();
+  const dest = (document.getElementById("withdrawDestination").value || "").trim();
+  const status = document.getElementById("withdrawStatus");
+
+  if (!amount || amount <= 0) return alert("Enter a valid amount");
+  if (!dest) return alert("Enter PayPal email or M-Pesa phone");
+
+  btn.disabled = true;
+  btn.textContent = "Processing...";
+
+  try{
+    // TODO: Replace with your real API endpoint (secure)
+    // await fetch("/api/payout-request", { method:"POST", headers:{...}, body: JSON.stringify(...) })
+
+    if (status) status.textContent = "✅ Payout request submitted (connect to API next).";
+  }catch(err){
+    alert("Withdraw failed: " + (err?.message || err));
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Withdraw";
+});
+
+/* ===========================
+   SOUND KITS
+=========================== */
+function uploadKitCover(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      kitCover=res.info.secure_url;
+      kitCoverBox.innerHTML=`<img src="${kitCover}">`;
+      kitCoverStatus.innerHTML=`<div class="upload-status">✔ Cover uploaded</div>`;
+    }
+  });
+}
+
+function uploadKitFile(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_audio",
+    resourceType:"raw"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      kitFile=res.info.secure_url;
+      kitFileStatus.innerHTML=`<div class="upload-status">✔ Kit file uploaded</div>`;
+      kitDownloadUrl.value = kitFile;
+    }
+  });
+}
+
+async function publishKit(){
+  if(!window.currentUser){
+    alert("Please login again.");
+    return;
+  }
+
+  publishKitBtn.disabled = true;
+  publishKitBtn.textContent = "Publishing...";
+
+  try{
+    const prof = window.currentProfile || {};
+    const name =
+      (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+      : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
+    const producerName = name || ("Prod. " + String(window.currentUser.uid).slice(0,8));
+
+    await addDoc(collection(db,"soundkits"),{
+      title: (kitTitle.value || "Untitled Kit").trim(),
+      description: (kitDesc.value || "").trim(),
+      category: (kitCategory.value || "").trim(),
+      price: Number(kitPrice.value || 0) || 0,
+      cover: kitCover || "",
+      downloadUrl: (kitDownloadUrl.value || kitFile || "").trim(),
+      producerId: window.currentUser.uid,
+      producerName,
+      published: kitPublished.checked === true,
+      createdAt: Date.now()
+    });
+
+    kitTitle.value = "";
+    kitDesc.value = "";
+    kitCategory.value = "";
+    kitPrice.value = "0";
+    kitDownloadUrl.value = "";
+    kitCover = null;
+    kitFile = null;
+    kitCoverBox.innerHTML = "<span>Cover Preview</span>";
+    kitCoverStatus.innerHTML = "";
+    kitFileStatus.innerHTML = "";
+
+    alert("✅ Sound kit published");
+    loadKits();
+    loadDashboardStats();
+  }catch(err){
+    alert("Publish failed: " + (err?.message || err));
+  }
+
+  publishKitBtn.disabled = false;
+  publishKitBtn.textContent = "Publish Sound Kit";
+}
+
+async function loadKits(){
+  if(!window.currentUser) return;
+
+  const list = document.getElementById("kitsList");
+  if (!list) return;
+
+  kitsData = [];
+  list.innerHTML = "";
+
+  try{
+    const qk = query(collection(db,"soundkits"), where("producerId","==",window.currentUser.uid));
+    const snap = await getDocs(qk);
+    snap.forEach(d => kitsData.push({ id:d.id, ...d.data() }));
+
+    if(!kitsData.length){
+      list.innerHTML = `<div style="color:#9ca3af;">No sound kits yet.</div>`;
+      return;
+    }
+
+    kitsData.forEach(k=>{
+      list.innerHTML += `
+        <div class="track">
+          <img src="${k.cover||''}">
+          <div style="flex:1"><strong>${k.title}</strong><br>${k.category||"—"} • ${k.price ? "$"+Number(k.price).toFixed(2) : "Free"}</div>
+          <button onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')">Link</button>
+        </div>
+      `;
+    });
+
+  }catch(err){
+    list.innerHTML = `<div style="color:#ef4444;">Could not load kits: ${err?.message||err}</div>`;
+  }
+}
+
+function copyKitLink(url){
+  if(!url) return alert("No downloadUrl set yet.");
+  navigator.clipboard?.writeText(url);
+  alert("✅ Link copied");
+}
+
+/* ===========================
+   ACCOUNT SETTINGS
+=========================== */
+function uploadProfilePic(){
+  cloudinary.openUploadWidget({
+    cloudName:"djd8vkI8s",
+    uploadPreset:"unsigned_images",
+    resourceType:"image"
+  },(_,res)=>{
+    if(res?.event==="success"){
+      profilePic=res.info.secure_url;
+      profilePicBox.innerHTML=`<img src="${profilePic}">`;
+      profilePicStatus.innerHTML=`<div class="upload-status">✔ Profile picture uploaded</div>`;
+    }
+  });
+}
+
+function fillSettingsForm(){
+  const prof = window.currentProfile || {};
+  firstName.value = prof.firstName || "";
+  lastName.value = prof.lastName || "";
+  displayName.value = prof.displayName || "";
+  location.value = prof.location || "";
+  bio.value = prof.bio || "";
+
+  const pic = prof.photoURL || prof.photoUrl || prof.photo || "";
+  if (pic){
+    profilePic = pic;
+    profilePicBox.innerHTML = `<img src="${pic}">`;
+  } else if (profilePic){
+    profilePicBox.innerHTML = `<img src="${profilePic}">`;
+  } else {
+    profilePicBox.innerHTML = `<span>Profile Picture</span>`;
+  }
+}
+
+async function saveProfile(){
+  if(!window.currentUser) return alert("Please login again.");
+
+  saveProfileBtn.disabled = true;
+  saveProfileBtn.textContent = "Saving...";
+
+  try{
+    const data = {
+      firstName: (firstName.value || "").trim(),
+      lastName: (lastName.value || "").trim(),
+      displayName: (displayName.value || "").trim(),
+      location: (location.value || "").trim(),
+      bio: (bio.value || "").trim(),
+      photoURL: profilePic || ""
+    };
+
+    await updateDoc(doc(db,"users",window.currentUser.uid), data);
+
+    // refresh local profile + UI logic
+    window.currentProfile = { ...(window.currentProfile||{}), ...data };
+    saveProfileStatus.textContent = "✅ Profile updated";
+    loadPayoutUI();
+  }catch(err){
+    alert("Save failed: " + (err?.message || err));
+  }
+
+  saveProfileBtn.disabled = false;
+  saveProfileBtn.textContent = "Save Profile";
+}
+
+/* ===========================
+   LOGOUT FIX (unclickable)
+=========================== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  const btn = document.getElementById("logoutBtn");
+  if (btn){
+    btn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      window.PB_LOGOUT();
+    });
+  }
+});
 
 loadBeats();
 </script>
