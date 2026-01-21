@@ -224,17 +224,41 @@
     };
   }
 
+  // ✅ FIX: collection fallback + no orderBy crash
   async function fetchSoundKits(){
-    const { collection, getDocs, query, orderBy, limit } = window.FB;
-    const ref = collection(window.FB.db, "soundkits");
-    const qy = query(ref, orderBy("createdAt", "desc"), limit(120));
-    const snap = await getDocs(qy);
-    const kits = [];
-    snap.forEach(d=>{
-      const k = normalizeKit(d.id, d.data());
-      if (k.published) kits.push(k);
-    });
-    return kits;
+    const { collection, getDocs, query, limit } = window.FB;
+
+    const names = ["soundkits", "soundKits", "sound_kits", "kits"];
+    let lastErr = null;
+
+    for (const name of names){
+      try{
+        const ref = collection(window.FB.db, name);
+
+        // ✅ no orderBy => won’t break if createdAt missing
+        const qy = query(ref, limit(120));
+        const snap = await getDocs(qy);
+
+        // if empty, try next collection name
+        if (snap.empty) continue;
+
+        const kits = [];
+        snap.forEach(d=>{
+          const k = normalizeKit(d.id, d.data());
+          if (k.published) kits.push(k);
+        });
+
+        // ✅ client-side sort (safe)
+        kits.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
+
+        return kits;
+      }catch(err){
+        lastErr = err;
+        continue;
+      }
+    }
+
+    throw lastErr || new Error("No sound kits collection found");
   }
 
   let ALL_KITS = [];
@@ -312,7 +336,6 @@
     if (!kit) return;
 
     if (buy){
-      // If you have a downloadUrl, open it. Otherwise show message.
       if (kit.downloadUrl){
         window.open(kit.downloadUrl, "_blank");
       } else {
@@ -321,7 +344,6 @@
       return;
     }
 
-    // Details
     alert(`${kit.title}\n\n${kit.description || "No description."}\n\nCategory: ${kit.category || "—"}\nPrice: ${kit.price ? money(kit.price) : "Free"}`);
   });
 
