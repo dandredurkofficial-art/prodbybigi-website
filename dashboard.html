@@ -21,9 +21,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 import {
-  getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL
+  getStorage, ref, uploadBytesResumable, getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-w.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
@@ -37,17 +36,16 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-window.db = getFirestore(app);
-window.auth = getAuth(app);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-// ✅ Firebase Storage (new)
-window.storage = getStorage(app);
+// expose to window (your Part 2 uses these)
+window.db = db;
+window.auth = auth;
+window.storage = storage;
 
-// expose storage helpers (we'll use in Patch 2)
-window.storageRef = storageRef;
-window.uploadBytesResumable = uploadBytesResumable;
-window.getDownloadURL = getDownloadURL;
-
+// expose firestore helpers
 window.addDoc = addDoc;
 window.collection = collection;
 window.getDocs = getDocs;
@@ -58,38 +56,41 @@ window.where = where;
 window.updateDoc = updateDoc;
 window.deleteDoc = deleteDoc;
 
+// expose storage helpers
+window.ref = ref;
+window.uploadBytesResumable = uploadBytesResumable;
+window.getDownloadURL = getDownloadURL;
+
 window.currentUser = null;
 window.currentProfile = null;
 
-/* 🔐 WAIT FOR AUTH */
-onAuthStateChanged(auth, async user => {
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     window.currentUser = user;
 
-    // load profile (producerName, country, etc.)
-    try{
-      const uref = doc(window.db, "users", user.uid);
+    try {
+      const uref = doc(db, "users", user.uid);
       const usnap = await getDoc(uref);
       window.currentProfile = usnap.exists() ? usnap.data() : null;
-    }catch(e){
+    } catch (e) {
       window.currentProfile = null;
     }
 
-    loadBeats(); // ✅ LOAD ONLY AFTER AUTH
-    loadDashboardStats();
-    loadPayoutUI();
+    // only call these after Part 2 loads (Part 2 defines them)
+    if (typeof window.loadBeats === "function") window.loadBeats();
+    if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
+    if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
   } else {
     window.currentUser = null;
     window.currentProfile = null;
   }
 });
 
-// expose logout
 window.PB_LOGOUT = async () => {
-  try{
-    await signOut(window.auth);
+  try {
+    await signOut(auth);
     location.href = "/login.html";
-  }catch(err){
+  } catch (err) {
     alert("Logout failed: " + (err?.message || err));
   }
 };
