@@ -11,26 +11,42 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
 import {
   getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 import {
   getAuth, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+import {
+  getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+w.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi",
-  storageBucket: "prodbybigi.firebasestorage.app",
-  messagingSenderId: "1040553526206",
-  appId: "1:1040553526206:web:38216a9f75eabfe556efef"
+  apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+  authDomain: "audiory-beat-store.firebaseapp.com",
+  projectId: "audiory-beat-store",
+  storageBucket: "audiory-beat-store.firebasestorage.app",
+  messagingSenderId: "688272560511",
+  appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+  measurementId: "G-GLYGWQGS26"
 };
 
 const app = initializeApp(firebaseConfig);
 
 window.db = getFirestore(app);
 window.auth = getAuth(app);
+
+// ✅ Firebase Storage (new)
+window.storage = getStorage(app);
+
+// expose storage helpers (we'll use in Patch 2)
+window.storageRef = storageRef;
+window.uploadBytesResumable = uploadBytesResumable;
+window.getDownloadURL = getDownloadURL;
 
 window.addDoc = addDoc;
 window.collection = collection;
@@ -310,6 +326,9 @@ button.primary[disabled]{
 <button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 </div>
 
+<div id="stemsStatus"></div>
+<button class="primary" type="button" onclick="uploadStemsZip()">Upload Stems (ZIP) — Exclusive Only</button>
+
 <div class="card">
 <h2>Licenses & Pricing</h2>
 
@@ -446,11 +465,44 @@ button.primary[disabled]{
 <script>
 let uploadedArtwork=null, fullAudio=null, previewAudio=null;
 let beatsData=[], currentAudio=null;
+let stemsZipUrl = null;
 
 let kitCover=null, kitFile=null;
 let kitsData=[];
 
 let profilePic=null;
+
+function pickFile(accept) {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept || "*/*";
+    input.onchange = () => resolve(input.files?.[0] || null);
+    input.click();
+  });
+}
+
+function extFromName(name) {
+  const dot = String(name || "").lastIndexOf(".");
+  return dot >= 0 ? String(name).slice(dot).toLowerCase() : "";
+}
+
+async function uploadToStorage({ file, path, onProgress }) {
+  const storageRef = ref(window.storage, path);
+  const task = uploadBytesResumable(storageRef, file, { contentType: file.type || undefined });
+
+  return await new Promise((resolve, reject) => {
+    task.on(
+      "state_changed",
+      (snap) => {
+        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+        if (onProgress) onProgress(pct);
+      },
+      reject,
+      async () => resolve(await getDownloadURL(task.snapshot.ref))
+    );
+  });
+}
 
 /* ✅ FIX: editing should UPDATE not create duplicates */
 let editingBeatId = null;
@@ -494,44 +546,173 @@ function money(n){
   return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
 }
 
-function uploadArtwork(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_images",
-    resourceType:"image"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      uploadedArtwork=res.info.secure_url;
-      artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
-      artworkStatus.innerHTML=`<div class="upload-status">✔ Artwork uploaded</div>`;
-    }
+/* ======================================================
+   ✅ ADD: Firebase Storage uploader (NO HTML changes)
+   - uses a hidden file picker
+   - returns a public download URL
+====================================================== */
+function pickFile(accept){
+  return new Promise((resolve)=>{
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept || "*/*";
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const f = input.files && input.files[0] ? input.files[0] : null;
+      input.remove();
+      resolve(f);
+    };
+    input.click();
   });
 }
 
-function uploadFullAudio(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_audio",
-    resourceType:"video"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      fullAudio=res.info.secure_url;
-      fullStatus.innerHTML=`<div class="upload-status">✔ Full beat uploaded</div>`;
-    }
+function extFromName(name){
+  const s = String(name||"");
+  const i = s.lastIndexOf(".");
+  return i >= 0 ? s.slice(i).toLowerCase() : "";
+}
+
+async function uploadToStorage({ file, path, onProgress }){
+  if (!window.storage || !window.storageRef || !window.uploadBytesResumable || !window.getDownloadURL){
+    throw new Error("Firebase Storage is not initialized on window. Add getStorage/ref/uploadBytesResumable/getDownloadURL in your module script.");
+  }
+
+  const ref = window.storageRef(window.storage, path);
+  const task = window.uploadBytesResumable(ref, file);
+
+  return await new Promise((resolve, reject)=>{
+    task.on("state_changed",
+      (snap)=>{
+        const pct = snap.totalBytes ? Math.round((snap.bytesTransferred/snap.totalBytes)*100) : 0;
+        if (onProgress) onProgress(pct);
+      },
+      (err)=>reject(err),
+      async ()=>{
+        const url = await window.getDownloadURL(task.snapshot.ref);
+        resolve(url);
+      }
+    );
   });
 }
 
-function uploadPreviewAudio(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_audio",
-    resourceType:"video"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      previewAudio=res.info.secure_url;
-      previewStatus.innerHTML=`<div class="upload-status">✔ Preview uploaded</div>`;
+/* ===========================
+   ✅ REPLACED: Cloudinary -> Firebase Storage
+   (same function names so nothing breaks)
+=========================== */
+async function uploadArtwork(){
+  try{
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    artworkStatus.innerHTML = `<div class="upload-status">Uploading artwork…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/artwork/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> artworkStatus.innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
+    });
+
+    uploadedArtwork = url;
+    artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
+    artworkStatus.innerHTML=`<div class="upload-status">✔ Artwork uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Artwork upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadFullAudio(){
+  try{
+    const file = await pickFile("audio/*");
+    if(!file) return;
+
+    fullStatus.innerHTML=`<div class="upload-status">Uploading full beat…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".mp3";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/full/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> fullStatus.innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
+    });
+
+    fullAudio = url;
+    fullStatus.innerHTML=`<div class="upload-status">✔ Full beat uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Full beat upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadPreviewAudio(){
+  try{
+    const file = await pickFile("audio/*");
+    if(!file) return;
+
+    previewStatus.innerHTML=`<div class="upload-status">Uploading preview…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".mp3";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> previewStatus.innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
+    });
+
+    previewAudio = url;
+    previewStatus.innerHTML=`<div class="upload-status">✔ Preview uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Preview upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadStemsZip(){
+  try{
+
+    // ✅ ADD THIS EXACTLY HERE ⬇⬇⬇
+    if (!exclusiveEnabled.checked) {
+      alert("Stems are Exclusive-only. Turn ON the Exclusive license first.");
+      return;
     }
-  });
+    // ✅ STOP ADDING HERE ⬆⬆⬆
+
+    const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
+    if(!file) return;
+
+    if (window.stemsStatus)
+      stemsStatus.innerHTML = `<div class="upload-status">Uploading stems...</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".zip";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/stems/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=>{
+        if (window.stemsStatus)
+          stemsStatus.innerHTML = `<div class="upload-status">Uploading stems... ${p}%</div>`;
+      }
+    });
+
+    stemsZipUrl = url;
+
+    if (window.stemsStatus)
+      stemsStatus.innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
+
+    alert("✅ Stems ZIP uploaded");
+
+  }catch(err){
+    console.error(err);
+    alert("Stems upload failed: " + (err?.message || err));
+  }
 }
 
 async function publishBeat(){
@@ -540,8 +721,13 @@ async function publishBeat(){
     return;
   }
 
-  publishBtn.disabled=true;
-  publishBtn.innerText="Publishing...";
+  // 🔒 Stems are Exclusive-only
+  if (!exclusiveEnabled.checked) {
+    stemsZipUrl = null;
+  }
+
+  publishBtn.disabled = true;
+  publishBtn.innerText = "Publishing...";
 
   try{
     // ✅ producer name: use profile displayName/first+last; fallback to uid short
@@ -553,14 +739,13 @@ async function publishBeat(){
       bpm:bpm.value || "",
       key:key.value || "",
       genre: (genre.value || "").trim(),                 // ✅ added
-      producerName,                                     // ✅ added
+      producerName: producerName,                        // ✅ FIXED (no duplicate key)
       artwork:uploadedArtwork || "",
       fullAudio,
       previewAudio,
       producerId: auth.currentUser.uid,
 
-      // ✅ keep this key (you had it before), but make it NOT empty:
-      producerName: producerName,
+      stemsZipUrl: (exclusiveEnabled.checked ? (stemsZipUrl || null) : null),
 
       published:true,
       licenses:{
@@ -627,9 +812,7 @@ async function loadBeats(){
     const name = getProducerDisplayName();
     const toFix = beatsData.filter(b => !b.producerName || String(b.producerName).trim() === "");
     if (toFix.length){
-      // update Firestore in background (fast enough for small lists)
       await Promise.all(toFix.map(b => updateDoc(doc(db,"beats",b.id), { producerName: name })));
-      // update local copy too
       beatsData = beatsData.map(b => ({...b, producerName: (b.producerName && String(b.producerName).trim()) ? b.producerName : name }));
     }
   }catch(e){}
@@ -721,15 +904,11 @@ async function loadDashboardStats(){
       const osnap = await getDocs(qo);
       osnap.forEach(d=>{
         const o = d.data() || {};
-        // accept different fields names safely
         const amt = Number(o.amount ?? o.total ?? o.price ?? 0) || 0;
         const status = String(o.status ?? o.state ?? "").toLowerCase();
-        // count paid/completed only if status exists, otherwise count all
         if (!status || status.includes("completed") || status.includes("paid")) sales += amt;
       });
-    }catch(e){
-      // if no producerId on orders yet, sales stays 0 (real)
-    }
+    }catch(e){}
 
     const totalSalesEl = document.getElementById("totalSales");
     if (totalSalesEl) totalSalesEl.textContent = money(sales);
@@ -741,7 +920,6 @@ async function loadDashboardStats(){
     const payoutBalEl = document.getElementById("payoutBalance");
     if (payoutBalEl) payoutBalEl.textContent = money(bal);
 
-    // ✅ update note text (keep element, but make it clearer)
     const note = document.getElementById("walletNote");
     if (note){
       note.textContent = "Wallet updates when your sales/earnings are written to Firestore (orders/earnings).";
@@ -772,7 +950,6 @@ function loadPayoutUI(){
     if (!isKenya) method.value = "paypal";
   }
 
-  // keep balance in sync
   try{
     const bal = getWalletBalance();
     const payoutBalEl = document.getElementById("payoutBalance");
@@ -809,9 +986,6 @@ document.addEventListener("click", async (e)=>{
   btn.textContent = "Processing...";
 
   try{
-    // TODO: Replace with your real API endpoint (secure)
-    // await fetch("/api/payout-request", { method:"POST", headers:{...}, body: JSON.stringify(...) })
-
     if (status) status.style.color = "#22c55e";
     if (status) status.textContent = "✅ Payout request submitted (connect to API next).";
   }catch(err){
@@ -825,32 +999,54 @@ document.addEventListener("click", async (e)=>{
 /* ===========================
    SOUND KITS
 =========================== */
-function uploadKitCover(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_images",
-    resourceType:"image"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      kitCover=res.info.secure_url;
-      kitCoverBox.innerHTML=`<img src="${kitCover}">`;
-      kitCoverStatus.innerHTML=`<div class="upload-status">✔ Cover uploaded</div>`;
-    }
-  });
+async function uploadKitCover(){
+  try{
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    kitCoverStatus.innerHTML = `<div class="upload-status">Uploading cover…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/soundkits/covers/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> kitCoverStatus.innerHTML = `<div class="upload-status">Uploading cover… ${p}%</div>`
+    });
+
+    kitCover = url;
+    kitCoverBox.innerHTML=`<img src="${kitCover}">`;
+    kitCoverStatus.innerHTML=`<div class="upload-status">✔ Cover uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Cover upload failed: " + (err?.message || err));
+  }
 }
 
-function uploadKitFile(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_audio",
-    resourceType:"raw"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      kitFile=res.info.secure_url;
-      kitFileStatus.innerHTML=`<div class="upload-status">✔ Kit file uploaded</div>`;
-      kitDownloadUrl.value = kitFile;
-    }
-  });
+async function uploadKitFile(){
+  try{
+    const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
+    if(!file) return;
+
+    kitFileStatus.innerHTML = `<div class="upload-status">Uploading kit ZIP…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".zip";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/soundkits/files/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> kitFileStatus.innerHTML = `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
+    });
+
+    kitFile = url;
+    kitDownloadUrl.value = kitFile;
+    kitFileStatus.innerHTML = `<div class="upload-status">✔ Kit file uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Kit file upload failed: " + (err?.message || err));
+  }
 }
 
 async function publishKit(){
@@ -943,18 +1139,29 @@ function copyKitLink(url){
 /* ===========================
    ACCOUNT SETTINGS
 =========================== */
-function uploadProfilePic(){
-  cloudinary.openUploadWidget({
-    cloudName:"djd8vkI8s",
-    uploadPreset:"unsigned_images",
-    resourceType:"image"
-  },(_,res)=>{
-    if(res?.event==="success"){
-      profilePic=res.info.secure_url;
-      profilePicBox.innerHTML=`<img src="${profilePic}">`;
-      profilePicStatus.innerHTML=`<div class="upload-status">✔ Profile picture uploaded</div>`;
-    }
-  });
+async function uploadProfilePic(){
+  try{
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    profilePicStatus.innerHTML = `<div class="upload-status">Uploading profile photo…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/producers/profile/${uid}/photo${ext}`,
+      onProgress:(p)=> profilePicStatus.innerHTML = `<div class="upload-status">Uploading profile photo… ${p}%</div>`
+    });
+
+    profilePic = url;
+    profilePicBox.innerHTML=`<img src="${profilePic}">`;
+    profilePicStatus.innerHTML=`<div class="upload-status">✔ Profile picture uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    alert("Profile picture upload failed: " + (err?.message || err));
+  }
 }
 
 function fillSettingsForm(){
@@ -1027,7 +1234,3 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 loadBeats();
-</script>
-
-</body>
-</html>
