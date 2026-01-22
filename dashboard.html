@@ -464,109 +464,20 @@ button.primary[disabled]{
 </div>
 
 <script>
-let uploadedArtwork=null, fullAudio=null, previewAudio=null;
-let beatsData=[], currentAudio=null;
+let uploadedArtwork = null, fullAudio = null, previewAudio = null;
+let beatsData = [], currentAudio = null;
 let stemsZipUrl = null;
 
-let kitCover=null, kitFile=null;
-let kitsData=[];
+let kitCover = null, kitFile = null;
+let kitsData = [];
 
-let profilePic=null;
-
-function pickFile(accept) {
-  return new Promise((resolve) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = accept || "*/*";
-    input.onchange = () => resolve(input.files?.[0] || null);
-    input.click();
-  });
-}
-
-function extFromName(name) {
-  const dot = String(name || "").lastIndexOf(".");
-  return dot >= 0 ? String(name).slice(dot).toLowerCase() : "";
-}
-
-async function uploadToStorage({ file, path, onProgress }) {
-  const storageRef = ref(window.storage, path);
-  const task = uploadBytesResumable(storageRef, file, { contentType: file.type || undefined });
-
-  return await new Promise((resolve, reject) => {
-    task.on(
-      "state_changed",
-      (snap) => {
-        const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-        if (onProgress) onProgress(pct);
-      },
-      reject,
-      async () => resolve(await getDownloadURL(task.snapshot.ref))
-    );
-  });
-}
+let profilePic = null;
 
 /* ✅ FIX: editing should UPDATE not create duplicates */
 let editingBeatId = null;
 
-function toggleMenu(){
-  const sb = document.getElementById("sidebar");
-  if (!sb) return;
-  sb.classList.toggle("open");
-}
-
-/* ✅ FIX: allow showPage to be called without relying on global `event` */
-function showPage(id, el){
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
-
-  const page = document.getElementById(id);
-  if (page) page.classList.add("active");
-  if (el) el.classList.add("active");
-
-  const sb = document.getElementById("sidebar");
-  if (sb) sb.classList.remove("open");
-
-  if (id === "settings") fillSettingsForm?.();
-  if (id === "soundkits") loadKits?.();
-  if (id === "finance") loadPayoutUI?.();
-}
-
-  const sb = document.getElementById("sidebar");
-  if (sb) sb.classList.remove("open");
-
-  if (id === "settings") fillSettingsForm();
-  if (id === "soundkits") loadKits();
-  if (id === "finance") loadPayoutUI();
-}
-
-/* ✅ helper: consistent producer name (used for new + old beats) */
-function getProducerDisplayName(){
-  const prof = window.currentProfile || {};
-  const name =
-    (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
-    : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
-  return name || ("Prod. " + String(auth.currentUser?.uid || "").slice(0,8));
-}
-
-/* ✅ helper: wallet/balance from Firestore profile (real when you write it) */
-function getWalletBalance(){
-  const prof = window.currentProfile || {};
-  const v =
-    prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? prof.earnings ?? 0;
-  const n = Number(v || 0);
-  return isFinite(n) ? n : 0;
-}
-
-/* ✅ helper: money formatting */
-function money(n){
-  const v = Number(n || 0);
-  return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
-}
-
 /* ======================================================
-   ✅ ADD: Firebase Storage uploader (NO HTML changes)
-   - uses a hidden file picker
-   - returns a public download URL
+   ✅ Firebase Storage uploader helpers (single copy)
 ====================================================== */
 function pickFile(accept){
   return new Promise((resolve)=>{
@@ -586,18 +497,21 @@ function pickFile(accept){
 }
 
 function extFromName(name){
-  const s = String(name||"");
+  const s = String(name || "");
   const i = s.lastIndexOf(".");
   return i >= 0 ? s.slice(i).toLowerCase() : "";
 }
 
 async function uploadToStorage({ file, path, onProgress }){
-  if (!window.storage || !window.storageRef || !window.uploadBytesResumable || !window.getDownloadURL){
-    throw new Error("Firebase Storage is not initialized on window. Add getStorage/ref/uploadBytesResumable/getDownloadURL in your module script.");
+  // Part 1 exposes: window.storage, window.ref, window.uploadBytesResumable, window.getDownloadURL
+  if (!window.storage || !window.ref || !window.uploadBytesResumable || !window.getDownloadURL){
+    throw new Error("Firebase Storage not ready. Check Part 1 module: window.storage/window.ref/window.uploadBytesResumable/window.getDownloadURL.");
   }
 
-  const ref = window.storageRef(window.storage, path);
-  const task = window.uploadBytesResumable(ref, file);
+  const r = window.ref(window.storage, path);
+  const task = window.uploadBytesResumumable
+  ? window.uploadBytesResumumable(r, file)
+  : window.uploadBytesResumable(r, file);
 
   return await new Promise((resolve, reject)=>{
     task.on("state_changed",
@@ -614,9 +528,77 @@ async function uploadToStorage({ file, path, onProgress }){
   });
 }
 
+/* ======================================================
+   ✅ NAV + MENU FIX (must be global for onclick="")
+====================================================== */
+function toggleMenu(){
+  const sb = document.getElementById("sidebar");
+  if (!sb) return;
+  sb.classList.toggle("open");
+}
+
+function showPage(id, el){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
+
+  const page = document.getElementById(id);
+  if (page) page.classList.add("active");
+  if (el) el.classList.add("active");
+
+  const sb = document.getElementById("sidebar");
+  if (sb) sb.classList.remove("open");
+
+  if (id === "settings" && typeof fillSettingsForm === "function") fillSettingsForm();
+  if (id === "soundkits" && typeof loadKits === "function") loadKits();
+  if (id === "finance" && typeof loadPayoutUI === "function") loadPayoutUI();
+}
+
+/* ✅ IMPORTANT: expose to window so inline onclick works */
+window.toggleMenu = toggleMenu;
+window.showPage = showPage;
+window.uploadArtwork = uploadArtwork;
+window.uploadFullAudio = uploadFullAudio;
+window.uploadPreviewAudio = uploadPreviewAudio;
+window.uploadStemsZip = uploadStemsZip;
+window.publishBeat = publishBeat;
+window.editBeat = editBeat;
+window.playPreview = playPreview;
+window.deleteBeat = deleteBeat;
+window.loadBeats = loadBeats;
+window.loadDashboardStats = loadDashboardStats;
+window.loadPayoutUI = loadPayoutUI;
+window.uploadKitCover = uploadKitCover;
+window.uploadKitFile = uploadKitFile;
+window.publishKit = publishKit;
+window.loadKits = loadKits;
+window.copyKitLink = copyKitLink;
+window.uploadProfilePic = uploadProfilePic;
+window.fillSettingsForm = fillSettingsForm;
+window.saveProfile = saveProfile;
+
+/* ✅ helper: consistent producer name */
+function getProducerDisplayName(){
+  const prof = window.currentProfile || {};
+  const name =
+    (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+    : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
+  return name || ("Prod. " + String(window.auth?.currentUser?.uid || "").slice(0,8));
+}
+
+function getWalletBalance(){
+  const prof = window.currentProfile || {};
+  const v = prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? prof.earnings ?? 0;
+  const n = Number(v || 0);
+  return isFinite(n) ? n : 0;
+}
+
+function money(n){
+  const v = Number(n || 0);
+  return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
+}
+
 /* ===========================
-   ✅ REPLACED: Cloudinary -> Firebase Storage
-   (same function names so nothing breaks)
+   ✅ Uploads (Firebase Storage)
 =========================== */
 async function uploadArtwork(){
   try{
@@ -635,8 +617,8 @@ async function uploadArtwork(){
     });
 
     uploadedArtwork = url;
-    artworkBox.innerHTML=`<img src="${uploadedArtwork}">`;
-    artworkStatus.innerHTML=`<div class="upload-status">✔ Artwork uploaded</div>`;
+    artworkBox.innerHTML = `<img src="${uploadedArtwork}">`;
+    artworkStatus.innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
   }catch(err){
     console.error(err);
     alert("Artwork upload failed: " + (err?.message || err));
@@ -648,7 +630,7 @@ async function uploadFullAudio(){
     const file = await pickFile("audio/*");
     if(!file) return;
 
-    fullStatus.innerHTML=`<div class="upload-status">Uploading full beat…</div>`;
+    fullStatus.innerHTML = `<div class="upload-status">Uploading full beat…</div>`;
 
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
@@ -660,7 +642,7 @@ async function uploadFullAudio(){
     });
 
     fullAudio = url;
-    fullStatus.innerHTML=`<div class="upload-status">✔ Full beat uploaded</div>`;
+    fullStatus.innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
   }catch(err){
     console.error(err);
     alert("Full beat upload failed: " + (err?.message || err));
@@ -672,7 +654,7 @@ async function uploadPreviewAudio(){
     const file = await pickFile("audio/*");
     if(!file) return;
 
-    previewStatus.innerHTML=`<div class="upload-status">Uploading preview…</div>`;
+    previewStatus.innerHTML = `<div class="upload-status">Uploading preview…</div>`;
 
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
@@ -684,28 +666,25 @@ async function uploadPreviewAudio(){
     });
 
     previewAudio = url;
-    previewStatus.innerHTML=`<div class="upload-status">✔ Preview uploaded</div>`;
+    previewStatus.innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
   }catch(err){
     console.error(err);
     alert("Preview upload failed: " + (err?.message || err));
   }
 }
 
+/* ✅ Stems ZIP (Exclusive-only) */
 async function uploadStemsZip(){
   try{
-
-    // ✅ ADD THIS EXACTLY HERE ⬇⬇⬇
     if (!exclusiveEnabled.checked) {
       alert("Stems are Exclusive-only. Turn ON the Exclusive license first.");
       return;
     }
-    // ✅ STOP ADDING HERE ⬆⬆⬆
 
     const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
     if(!file) return;
 
-    if (window.stemsStatus)
-      stemsStatus.innerHTML = `<div class="upload-status">Uploading stems...</div>`;
+    if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">Uploading stems...</div>`;
 
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".zip";
@@ -714,18 +693,14 @@ async function uploadStemsZip(){
       file,
       path: `audiory/beats/stems/${uid}/${Date.now()}${ext}`,
       onProgress:(p)=>{
-        if (window.stemsStatus)
-          stemsStatus.innerHTML = `<div class="upload-status">Uploading stems... ${p}%</div>`;
+        if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">Uploading stems... ${p}%</div>`;
       }
     });
 
     stemsZipUrl = url;
 
-    if (window.stemsStatus)
-      stemsStatus.innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
-
+    if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
     alert("✅ Stems ZIP uploaded");
-
   }catch(err){
     console.error(err);
     alert("Stems upload failed: " + (err?.message || err));
@@ -739,53 +714,45 @@ async function publishBeat(){
   }
 
   // 🔒 Stems are Exclusive-only
-  if (!exclusiveEnabled.checked) {
-    stemsZipUrl = null;
-  }
+  if (!exclusiveEnabled.checked) stemsZipUrl = null;
 
   publishBtn.disabled = true;
   publishBtn.innerText = "Publishing...";
 
   try{
-    // ✅ producer name: use profile displayName/first+last; fallback to uid short
     const producerName = getProducerDisplayName();
 
     const payload = {
-      title:title.value || "Untitled Beat",
-      desc:desc.value || "",
-      bpm:bpm.value || "",
-      key:key.value || "",
-      genre: (genre.value || "").trim(),                 // ✅ added
-      producerName: producerName,                        // ✅ FIXED (no duplicate key)
-      artwork:uploadedArtwork || "",
+      title: title.value || "Untitled Beat",
+      desc: desc.value || "",
+      bpm: bpm.value || "",
+      key: key.value || "",
+      genre: (genre.value || "").trim(),
+      producerName: producerName,
+      artwork: uploadedArtwork || "",
       fullAudio,
       previewAudio,
-      producerId: auth.currentUser.uid,
+      producerId: window.auth.currentUser.uid,
 
       stemsZipUrl: (exclusiveEnabled.checked ? (stemsZipUrl || null) : null),
 
-      published:true,
-      licenses:{
-        basic:{enabled:basicEnabled.checked,price:Number(basicPrice.value||0)},
-        premium:{enabled:premiumEnabled.checked,price:Number(premiumPrice.value||0)},
-        exclusive:{enabled:exclusiveEnabled.checked,price:Number(exclusivePrice.value||0)}
+      published: true,
+      licenses: {
+        basic: { enabled: basicEnabled.checked, price: Number(basicPrice.value||0) },
+        premium: { enabled: premiumEnabled.checked, price: Number(premiumPrice.value||0) },
+        exclusive: { enabled: exclusiveEnabled.checked, price: Number(exclusivePrice.value||0) }
       },
-      freeDownload:freeDownload.checked,
-      bulkDiscount:bulkDiscount.checked,
+      freeDownload: freeDownload.checked,
+      bulkDiscount: bulkDiscount.checked,
 
-      // ✅ only set createdAt on NEW beats
       ...(editingBeatId ? {} : { createdAt: Date.now() }),
-
-      // ✅ updated timestamp for both
       updatedAt: Date.now()
     };
 
     if (editingBeatId){
-      // ✅ UPDATE existing beat (no duplicates)
       await updateDoc(doc(db,"beats",editingBeatId), payload);
-      editingBeatId = null; // ✅ stop edit mode after save
+      editingBeatId = null;
     } else {
-      // ✅ create new beat
       await addDoc(collection(db,"beats"), payload);
     }
 
@@ -793,21 +760,23 @@ async function publishBeat(){
     loadBeats();
     loadDashboardStats();
     alert("✅ Beat published");
-
   }catch(err){
-    alert("Publish failed: "+err.message);
+    alert("Publish failed: " + (err?.message || err));
   }
 
-  publishBtn.disabled=false;
-  publishBtn.innerText="Publish Beat";
+  publishBtn.disabled = false;
+  publishBtn.innerText = "Publish Beat";
 }
 
 function resetUploadForm(){
-  title.value=desc.value=bpm.value=key.value="";
-  genre.value=""; // ✅ added
-  uploadedArtwork=fullAudio=previewAudio=null;
-  artworkBox.innerHTML="<span>Artwork Preview</span>";
-  artworkStatus.innerHTML=fullStatus.innerHTML=previewStatus.innerHTML="";
+  title.value = desc.value = bpm.value = key.value = "";
+  genre.value = "";
+  uploadedArtwork = fullAudio = previewAudio = null;
+  stemsZipUrl = null;
+
+  artworkBox.innerHTML = "<span>Artwork Preview</span>";
+  artworkStatus.innerHTML = fullStatus.innerHTML = previewStatus.innerHTML = "";
+  if (window.stemsStatus) stemsStatus.innerHTML = "";
 }
 
 async function loadBeats(){
