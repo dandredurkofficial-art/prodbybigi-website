@@ -507,7 +507,11 @@ async function uploadToStorage({ file, path, onProgress }) {
 /* ✅ FIX: editing should UPDATE not create duplicates */
 let editingBeatId = null;
 
-function toggleMenu(){ sidebar.classList.toggle("open"); }
+function toggleMenu(){
+  const sb = document.getElementById("sidebar");
+  if (!sb) return;
+  sb.classList.toggle("open");
+}
 
 /* ✅ FIX: allow showPage to be called without relying on global `event` */
 function showPage(id, el){
@@ -515,7 +519,9 @@ function showPage(id, el){
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (el) el.classList.add('active');
-  sidebar.classList.remove("open");
+
+  const sb = document.getElementById("sidebar");
+  if (sb) sb.classList.remove("open");
 
   if (id === "settings") fillSettingsForm();
   if (id === "soundkits") loadKits();
