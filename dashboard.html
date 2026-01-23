@@ -45,6 +45,12 @@
   window.auth = auth;
   window.storage = storage;
 
+  window.PB_LOGOUT = async () => {
+    localStorage.setItem("justLoggedOut", "1");
+    await signOut(window.auth);
+    location.replace("/login.html");
+  };
+
   // expose firestore helpers
   window.addDoc = addDoc;
   window.collection = collection;
