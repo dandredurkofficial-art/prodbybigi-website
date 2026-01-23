@@ -5,6 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Login</title>
 <link rel="stylesheet" href="css/auth.css">
+<style>
+  .google-btn{
+    width:100%;
+    margin-top:10px;
+    padding:12px;
+    border-radius:12px;
+    border:1px solid #1d2230;
+    background:#0f1219;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .link-row{
+    margin-top:10px;
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    font-size:14px;
+  }
+  .link-row a{ color:#6cf; text-decoration:none; }
+</style>
 </head>
 <body>
 
@@ -16,10 +37,15 @@
 
   <button onclick="loginUser()">Login</button>
 
-  <p>
-    Don’t have an account?
-    <a href="register.html">Register</a>
-  </p>
+  <button class="google-btn" onclick="loginWithGoogle()">Continue with Google</button>
+
+  <div class="link-row">
+    <a href="#" onclick="resetPassword(); return false;">Forgot password?</a>
+    <span>
+      Don’t have an account?
+      <a href="register.html">Register</a>
+    </span>
+  </div>
 </div>
 
 <script type="module" src="auth-ui.js"></script>
