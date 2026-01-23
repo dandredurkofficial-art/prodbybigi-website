@@ -21,6 +21,118 @@
     .chips{display:flex;flex-wrap:wrap;gap:8px}
     .chip{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;font-weight:700;font-size:12px;cursor:pointer}
     .chip.active{outline:2px solid rgba(85,160,255,.55)}
+
+    /* ✅ BeatStars-like price pills */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-width:110px;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .08s ease, background .15s ease;
+    }
+    .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
+    .pb-pill:active{transform:translateY(0px)}
+    .pb-pill .ic{font-size:16px; line-height:1}
+    .pb-pill.free{
+      background:rgba(59,130,246,.16);
+      border-color:rgba(59,130,246,.35);
+    }
+
+    /* ✅ Free download modal (BeatStars style) */
+    .pb-free-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      z-index:9998;
+    }
+    .pb-free-modal{
+      position:fixed;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 24px));
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 20px 70px rgba(0,0,0,.45);
+      display:none;
+      z-index:9999;
+    }
+    .pb-free-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:10px;
+    }
+    .pb-free-title{
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+    }
+    .pb-free-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+    }
+    .pb-free-close:hover{background:rgba(255,255,255,.08)}
+    .pb-free-sub{
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+      margin:8px 0 14px;
+      line-height:1.4;
+    }
+    .pb-free-label{
+      font-size:13px;
+      font-weight:800;
+      margin:10px 0 6px;
+      color:rgba(255,255,255,.85);
+    }
+    .pb-free-input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+    }
+    .pb-free-input:focus{border-color:rgba(59,130,246,.55)}
+    .pb-free-btn{
+      width:100%;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      background:#3b82f6;
+      color:#fff;
+    }
+    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
+    .pb-free-note{
+      margin-top:10px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .pb-free-status{
+      margin-top:10px;
+      font-size:13px;
+      color:#22c55e;
+      min-height:18px;
+    }
   </style>
 </head>
 <body>
@@ -176,6 +288,33 @@
   </div>
 </aside>
 
+<!-- ✅ FREE DOWNLOAD POPUP (BeatStars style) -->
+<div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
+<div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
+  <div class="pb-free-head">
+    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
+    <button class="pb-free-close" id="pbFreeClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-free-sub" id="pbFreeSub">
+    Enter your email address and full name to unlock your free download.
+    We will send your free track to the email address.
+  </div>
+
+  <div class="pb-free-label">Full name</div>
+  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
+
+  <div class="pb-free-label">Email address</div>
+  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
+
+  <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
+  <div class="pb-free-status" id="pbFreeStatus"></div>
+
+  <div class="pb-free-note">
+    By continuing, you agree to our Terms & Privacy Policy.
+  </div>
+</div>
+
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
@@ -211,7 +350,6 @@
     const u = new URL(location.href);
     if (q) u.searchParams.set("q", q); else u.searchParams.delete("q");
     if (genre) u.searchParams.set("genre", genre); else u.searchParams.delete("genre");
-    // keep clean
     if (!u.searchParams.toString()) u.search = "";
     location.href = u.toString();
   }
@@ -268,10 +406,119 @@
       if (!okGenre) return false;
 
       if (!qn) return true;
-
-      // match q on title OR producer OR genre
       return title.includes(qn) || prod.includes(qn) || gen.includes(qn);
     });
+  }
+
+  /* ===========================
+     ✅ FREE DOWNLOAD (BeatStars style)
+  =========================== */
+  const FreeDL = (() => {
+    const $ = (id)=>document.getElementById(id);
+
+    const backdrop = $("pbFreeBackdrop");
+    const modal = $("pbFreeModal");
+    const closeBtn = $("pbFreeClose");
+    const sendBtn = $("pbFreeSend");
+    const nameEl = $("pbFreeName");
+    const emailEl = $("pbFreeEmail");
+    const titleEl = $("pbFreeTitle");
+    const statusEl = $("pbFreeStatus");
+
+    let currentBeat = null;
+
+    function open(beat){
+      currentBeat = beat || null;
+      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
+      statusEl.textContent = "";
+      nameEl.value = "";
+      emailEl.value = "";
+
+      backdrop.style.display = "block";
+      modal.style.display = "block";
+      backdrop.setAttribute("aria-hidden","false");
+      nameEl.focus();
+    }
+
+    function close(){
+      backdrop.style.display = "none";
+      modal.style.display = "none";
+      backdrop.setAttribute("aria-hidden","true");
+      currentBeat = null;
+    }
+
+    async function send(){
+      const fullName = (nameEl.value || "").trim();
+      const email = (emailEl.value || "").trim().toLowerCase();
+
+      if (!fullName) return alert("Enter your full name");
+      if (!email || !email.includes("@")) return alert("Enter a valid email");
+
+      if (!currentBeat?.id) return alert("Beat not found");
+
+      // prevent repeat popup spam for same beat+email
+      const key = `pb_free_${currentBeat.id}_${email}`;
+      if (localStorage.getItem(key) === "1"){
+        statusEl.textContent = "✅ Already sent. Check inbox/spam.";
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending...";
+
+      try{
+        // ✅ Hook for Firestore logging (we will add this in /js/firebase.js next)
+        if (window.FB && typeof window.FB.logFreeDownload === "function"){
+          await window.FB.logFreeDownload({
+            beatId: currentBeat.id,
+            beatTitle: currentBeat.title || "",
+            producerId: currentBeat.producerId || "",
+            producerName: currentBeat.producerName || "",
+            fullName,
+            email,
+            createdAt: Date.now()
+          });
+        }
+
+        localStorage.setItem(key, "1");
+        statusEl.textContent = "✅ Sent! Check inbox/spam.";
+
+        // optional: close after a short delay
+        setTimeout(close, 900);
+      }catch(err){
+        console.error(err);
+        alert("Failed: " + (err?.message || err));
+      }
+
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+    }
+
+    backdrop?.addEventListener("click", close);
+    closeBtn?.addEventListener("click", close);
+    sendBtn?.addEventListener("click", send);
+
+    return { open, close };
+  })();
+
+  function isFreeBeat(b){
+    // ✅ your beats have freeDownload checkbox in dashboard
+    if (b && b.freeDownload === true) return true;
+    const p = Number(b?.price ?? 0) || 0;
+    return p <= 0;
+  }
+
+  function pillHTML(b){
+    if (isFreeBeat(b)){
+      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
+        <span class="ic">⬇️</span>
+        <span>Free</span>
+      </button>`;
+    }
+    return `<button class="pb-pill" type="button" aria-label="Choose license">
+      <span class="ic">🔒</span>
+      <span>${money(b.price || 29.99)}</span>
+    </button>`;
   }
 
   async function loadMarketplace(){
@@ -284,7 +531,6 @@
     applyHeader(params);
     buildChips(params.genre);
 
-    // preload search input
     if (inp) inp.value = params.q || "";
 
     function goSearch(){
@@ -324,7 +570,7 @@
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
             <!-- ✅ play only (does NOT open license modal) -->
-            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${b.audio||""}" aria-label="Play">
+            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${b.previewAudio||b.audio||""}" aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
@@ -338,10 +584,21 @@
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
             </div>
 
-            <!-- ✅ price opens license -->
-            <button class="price-pill" type="button" aria-label="Choose license">${money(b.price || 29.99)}</button>
+            <!-- ✅ Paid = opens license modal (license-modal.js already handles it)
+                ✅ Free = opens free download popup -->
+            ${pillHTML(b)}
           </div>
         `;
+
+        // ✅ attach FREE click only
+        card.addEventListener("click", (e)=>{
+          const freeBtn = e.target.closest("[data-free-download='1']");
+          if (!freeBtn) return;
+          e.preventDefault();
+          e.stopPropagation();
+          FreeDL.open(b);
+        });
+
         grid.appendChild(card);
       });
 
