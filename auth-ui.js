@@ -1,5 +1,7 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+// auth-ui.js (FULL UPDATED) ✅ uses AUDIORY firebase + email/pass + Google login/register + better reset + logout fix
+// Don't remove anything else in your project—just replace this whole file.
 
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth,
   createUserWithEmailAndPassword,
@@ -20,7 +22,7 @@ import {
   getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ✅ AUDIORY FIREBASE CONFIG (your new firebase) */
+/* ✅ AUDIORY FIREBASE CONFIG (NEW firebase) */
 const firebaseConfig = {
   apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
   authDomain: "audiory-beat-store.firebaseapp.com",
@@ -41,8 +43,8 @@ window.db = db;
 
 const statusEl = () => document.getElementById("status");
 
-/* ✅ Put your live domain here (for reset links) */
-const APP_URL = "https://prodby.officialbigi.shop"; // you can change to https://officialbigi.shop if you want
+/* ✅ Put your live domain here (IMPORTANT for password reset links) */
+const APP_URL = "https://prodby.officialbigi.shop"; // you can also use https://officialbigi.shop if you prefer
 
 /* =========================
    REGISTER (email+password)
@@ -83,9 +85,8 @@ window.registerUser = async function () {
     }
 
     redirectByRole(role);
-
   } catch (err) {
-    alert(err.message);
+    alert(err?.message || err);
   }
 };
 
@@ -102,12 +103,14 @@ window.loginUser = async function () {
     await signInWithEmailAndPassword(auth, email, password);
     // redirect handled by auth listener
   } catch (err) {
-    alert(err.message);
+    alert(err?.message || err);
   }
 };
 
 /* =========================
-   RESET PASSWORD
+   RESET PASSWORD (better link)
+   NOTE: This will still show Firebase reset UI unless you build your own reset.html.
+   But it will RETURN to your site after completion.
 ========================= */
 window.resetPassword = async function () {
   const email = document.getElementById("email")?.value?.trim();
@@ -124,60 +127,81 @@ window.resetPassword = async function () {
     if (statusEl()) statusEl().textContent = "✅ Reset email sent. Check inbox/spam.";
   } catch (err) {
     if (statusEl()) statusEl().textContent = "";
-    alert(err.message);
+    alert(err?.message || err);
   }
 };
 
 /* =========================
-   GOOGLE SIGN IN (login)
+   GOOGLE SIGN IN/REGISTER
 ========================= */
 const googleProvider = new GoogleAuthProvider();
 
 async function googleSignInSmart() {
   try {
-    // Try popup first (best UX on desktop)
-    return await signInWithPopup(auth, googleProvider);
+    // ✅ Try popup first (desktop best)
+    const res = await signInWithPopup(auth, googleProvider);
+    if (res?.user) await ensureUserProfile(res.user); // ✅ IMPORTANT
+    return res;
   } catch (e) {
-    // Popup blocked / mobile -> redirect
-    await signInWithRedirect(auth, googleProvider);
-    return null;
+    // ✅ Fallback to redirect only for popup/mobile-related cases
+    const code = e?.code || "";
+    const popupRelated =
+      code.includes("popup") ||
+      code.includes("blocked") ||
+      code.includes("cancelled") ||
+      code.includes("closed-by-user") ||
+      /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (popupRelated) {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+
+    throw e;
   }
 }
 
+/* Google LOGIN button */
 window.googleLogin = async function () {
   try {
-    await googleSignInSmart();
-    // redirect handled by auth listener / redirect result
+    const res = await googleSignInSmart();
+    if (res?.user) {
+      const snap = await getDoc(doc(db, "users", res.user.uid));
+      if (snap.exists()) redirectByRole(snap.data().role);
+    }
   } catch (err) {
-    alert(err.message);
+    alert("Google login failed: " + (err?.message || err));
   }
 };
 
-/* =========================
-   GOOGLE REGISTER (needs role)
-========================= */
+/* Google REGISTER button (needs role selected first) */
 window.googleRegister = async function () {
   const role = document.querySelector("input[name='role']:checked")?.value;
   if (!role) return alert("Please select a role first (Producer or Buyer)");
 
-  // store role temporarily (so after redirect/popup we can create user doc)
   localStorage.setItem("pendingRole", role);
 
   try {
-    await googleSignInSmart();
+    const res = await googleSignInSmart();
+    if (res?.user) {
+      const snap = await getDoc(doc(db, "users", res.user.uid));
+      if (snap.exists()) redirectByRole(snap.data().role);
+    }
   } catch (err) {
-    alert(err.message);
+    alert("Google signup failed: " + (err?.message || err));
   }
 };
 
-/* Handle redirect result (when popup fails / mobile) */
+/* Handle redirect result (mobile / popup blocked) */
 (async function handleGoogleRedirectResult() {
   try {
     const res = await getRedirectResult(auth);
     if (!res || !res.user) return;
 
-    // user signed in via redirect; ensure profile exists
     await ensureUserProfile(res.user);
+
+    const snap = await getDoc(doc(db, "users", res.user.uid));
+    if (snap.exists()) redirectByRole(snap.data().role);
   } catch (e) {
     // ignore if none
   }
@@ -185,10 +209,10 @@ window.googleRegister = async function () {
 
 /* =========================
    AUTH STATE LISTENER
-   ✅ Fix: don't auto-login after logout
+   ✅ Fix: don't auto-redirect right after logout
 ========================= */
 onAuthStateChanged(auth, async (user) => {
-  // if just logged out, do nothing (prevents auto redirect loops)
+  // Prevent redirect loop after logout
   if (localStorage.getItem("justLoggedOut") === "1") {
     if (!user) localStorage.removeItem("justLoggedOut");
     return;
@@ -199,7 +223,10 @@ onAuthStateChanged(auth, async (user) => {
   await ensureUserProfile(user);
 
   const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) return alert("Profile not found");
+  if (!snap.exists()) {
+    alert("Profile not found");
+    return;
+  }
 
   const role = snap.data().role;
   redirectByRole(role);
@@ -270,6 +297,6 @@ window.logout = async function () {
     await signOut(auth);
     location.replace("login.html");
   } catch (err) {
-    alert(err.message);
+    alert(err?.message || err);
   }
 };
