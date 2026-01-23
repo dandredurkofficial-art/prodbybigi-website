@@ -1,4 +1,4 @@
-// /js/license-modal.js (CONSISTENT LICENSES + NO PLAY->MODAL + CART SAFE + FAST PAYPAL REDIRECT)
+// /js/license-modal.js (AUDIORY: REAL LICENSES + FREE DOWNLOAD FLOW + NO PLAY->MODAL + CART SAFE)
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -37,6 +37,13 @@
     return String(beat?.title || beat?.beatTitle || "Beat").trim();
   }
 
+  function isFreeBeat(beat) {
+    if (!beat) return false;
+    if (beat.freeDownload === true) return true;
+    // also treat price 0 as free (just in case)
+    return Number(beat.price || 0) === 0;
+  }
+
   // ✅ FAST token getter (from /js/firebase.js)
   async function getBuyerIdTokenFast() {
     try {
@@ -45,7 +52,7 @@
     return null;
   }
 
-  // ✅ FAST PayPal order creation (no extra imports)
+  // ✅ PayPal order create
   async function createPaypalOrder({ beatId, licenseKey }) {
     if (!window.API_BASE) throw new Error("Missing API_BASE");
 
@@ -73,14 +80,23 @@
     window.location.href = approve.href;
   }
 
-  // ✅ SINGLE SOURCE OF LICENSES (consistent everywhere)
-  // You asked EXACTLY: Basic $29.99, Premium $79.99, Exclusive $299.99
-  function buildFixedLicenses() {
-    return [
-      {
+  /* =========================
+     ✅ BUILD LICENSES FROM BEAT
+     Uses Firestore payload:
+     beat.licenses.basic.enabled/price etc
+  ========================= */
+  function buildLicensesFromBeat(beat) {
+    const b = beat || {};
+    const lic = b.licenses || {};
+    const stemsReady = !!b.stemsZipUrl;
+
+    const list = [];
+
+    if (lic.basic?.enabled) {
+      list.push({
         key: "basic",
         name: "Basic",
-        price: 29.99,
+        price: Number(lic.basic.price || 0) || 0,
         meta: "MP3",
         badge: "Popular",
         terms: [
@@ -91,11 +107,14 @@
           "Credit producer required",
           "No Content ID"
         ]
-      },
-      {
+      });
+    }
+
+    if (lic.premium?.enabled) {
+      list.push({
         key: "premium",
         name: "Premium",
-        price: 79.99,
+        price: Number(lic.premium.price || 0) || 0,
         meta: "WAV + MP3",
         terms: [
           "WAV + MP3 download",
@@ -105,39 +124,50 @@
           "Monetization allowed",
           "Credit producer required"
         ]
-      },
-      {
+      });
+    }
+
+    if (lic.exclusive?.enabled) {
+      list.push({
         key: "exclusive",
         name: "Exclusive",
-        price: 299.99,
-        meta: "STEMS + WAV",
+        price: Number(lic.exclusive.price || 0) || 0,
+        meta: stemsReady ? "STEMS + WAV" : "WAV",
         terms: [
-          "STEMS + WAV included",
+          stemsReady ? "STEMS included" : "STEMS not included (producer didn’t upload stems)",
           "Exclusive rights (producer stops selling this beat)",
           "Unlimited streams",
           "Monetization allowed",
           "Wide distribution",
           "Credit producer required"
         ]
-      }
-    ];
-  }
+      });
+    }
 
-  // If your Firestore beat has licenses, we can still use them,
-  // BUT you requested fixed prices everywhere, so we ALWAYS show fixed.
-  function getLicensesForBeat(_beat) {
-    return buildFixedLicenses();
+    // fallback: if nothing is enabled, show defaults (so UI never breaks)
+    if (!list.length) {
+      list.push(
+        { key: "basic", name: "Basic", price: 29.99, meta: "MP3", badge: "Popular", terms: ["MP3 download", "Non-exclusive license"] },
+        { key: "premium", name: "Premium", price: 79.99, meta: "WAV + MP3", terms: ["WAV + MP3 download", "Non-exclusive license"] },
+        { key: "exclusive", name: "Exclusive", price: 299.99, meta: "WAV", terms: ["Exclusive rights", "Unlimited use"] }
+      );
+    }
+
+    // ensure price numbers
+    list.forEach((l) => (l.price = Number(l.price || 0) || 0));
+    return list;
   }
 
   function renderTerms(license) {
     if (!termsGrid) return;
     termsGrid.innerHTML = "";
 
-    const terms = (license?.terms && license.terms.length)
-      ? license.terms
-      : ["Instant download", "License proof included", "Producer credited"];
+    const terms =
+      license?.terms && license.terms.length
+        ? license.terms
+        : ["Instant download", "License proof included", "Producer credited"];
 
-    terms.slice(0, 8).forEach((t) => {
+    terms.slice(0, 10).forEach((t) => {
       const el = document.createElement("div");
       el.className = "pb-term";
       el.innerHTML = `<b>•</b> ${t}`;
@@ -150,9 +180,29 @@
     resetBuyBtn();
 
     titleEl.textContent = safeTitle(beat);
-    subEl.textContent = "Select a license to continue.";
 
-    const licenses = getLicensesForBeat(beat);
+    // ✅ If FREE beat, we don't show paid licenses
+    if (isFreeBeat(beat)) {
+      subEl.textContent = "This beat is FREE. Enter your details to download.";
+      grid.innerHTML = "";
+      if (termsGrid) termsGrid.innerHTML = "";
+      if (totalEl) totalEl.textContent = money(0);
+
+      // Hide cart/buy for free (optional)
+      buyBtn.textContent = "Download";
+      cartBtn && (cartBtn.style.display = "none");
+
+      backdrop.classList.add("open");
+      modal.classList.add("open");
+      document.body.classList.add("no-scroll");
+      return;
+    } else {
+      subEl.textContent = "Select a license to continue.";
+      cartBtn && (cartBtn.style.display = "");
+      buyBtn.textContent = "Buy now";
+    }
+
+    const licenses = buildLicensesFromBeat(beat);
     selectedLicense = licenses[0];
 
     grid.innerHTML = "";
@@ -198,17 +248,40 @@
     currentBeat = null;
     selectedLicense = null;
     resetBuyBtn();
+    if (cartBtn) cartBtn.style.display = "";
+    buyBtn.textContent = "Buy now";
   }
 
-  // ✅ BUY NOW
+  // ✅ BUY NOW (paid) / DOWNLOAD (free)
   buyBtn.addEventListener("click", async () => {
-    if (!currentBeat || !selectedLicense) return;
+    if (!currentBeat) return;
 
     const beatId = resolveBeatId(currentBeat);
     if (!beatId) {
       alert("Missing beat id. Please refresh the page.");
       return;
     }
+
+    // ✅ FREE: open your BeatStars-style free download popup
+    if (isFreeBeat(currentBeat)) {
+      // close modal then open popup
+      closeModal();
+
+      if (typeof window.PB_OPEN_FREE_DOWNLOAD === "function") {
+        window.PB_OPEN_FREE_DOWNLOAD({
+          beatId,
+          beatTitle: safeTitle(currentBeat),
+          producerId: String(currentBeat.producerId || ""),
+          producerName: String(currentBeat.producerName || ""),
+          downloadUrl: String(currentBeat.fullAudio || currentBeat.audio || "")
+        });
+      } else {
+        alert("Free download popup not found. Add the FREE download popup script to this page.");
+      }
+      return;
+    }
+
+    if (!selectedLicense) return;
 
     buyBtn.disabled = true;
     buyBtn.textContent = "Redirecting…";
@@ -225,7 +298,7 @@
     }
   });
 
-  // ✅ ADD TO CART (fixes marketplace invalid cart item)
+  // ✅ ADD TO CART
   cartBtn?.addEventListener("click", () => {
     if (!currentBeat || !selectedLicense) return;
 
@@ -242,14 +315,15 @@
       return;
     }
 
-    // SAFE payload: always include all expected fields
     window.PB_CART.add({
       beatId,
       title: safeTitle(currentBeat),
       artwork: String(currentBeat.artwork || ""),
       price: Number(selectedLicense.price || 0),
       licenseKey,
-      licenseName: String(selectedLicense.name || licenseKey)
+      licenseName: String(selectedLicense.name || licenseKey),
+      producerId: String(currentBeat.producerId || ""),
+      producerName: String(currentBeat.producerName || "")
     });
 
     alert("Added to cart ✅");
@@ -262,23 +336,20 @@
   });
 
   // ✅ CLICK HANDLER:
-  // - ONLY open license modal when clicking price-pill OR .open-license OR card (but NOT play buttons)
-  // - If the click came from a play button, do nothing here (player.js handles it)
+  // - NEVER open modal when clicking play button
+  // - Open modal when clicking price pill OR card (but not links/buttons)
   document.addEventListener("click", (e) => {
-    // If click is on play button or inside it -> NEVER open modal
+    // play button -> never open modal
     const playBtn = e.target.closest("[data-play-btn]");
     if (playBtn) return;
 
-    // extra safety: if an element explicitly says ignore license
+    // explicit ignore
     const ignore = e.target.closest("[data-ignore-license='1']");
     if (ignore) return;
 
     const pill = e.target.closest(".price-pill, .price-btn, .open-license");
     const card = e.target.closest(".beat-card, .trend-card");
 
-    // Only open when:
-    // 1) price pill clicked OR open-license clicked
-    // 2) OR clicked on card but NOT on links/buttons inside meta
     if (!pill && !card) return;
 
     // if clicked on a link or a button inside the card (except price-pill), don't open
@@ -298,24 +369,45 @@
       beat = list.find((b) => String(b.id) === String(beatId)) || null;
     }
 
-    // fallback (still requires beatId)
+    // fallback
     if (!beat) {
       const title =
         (wrap.querySelector("h3")?.textContent ||
-         wrap.querySelector(".t")?.textContent ||
-         "Beat").trim();
+          wrap.querySelector(".t")?.textContent ||
+          "Beat").trim();
 
       beat = {
         id: beatId,
         title,
         artwork: "",
         audio: "",
+        fullAudio: "",
+        previewAudio: "",
         genre: "",
-        price: 29.99
+        price: 29.99,
+        freeDownload: false,
+        licenses: {
+          basic: { enabled: true, price: 29.99 },
+          premium: { enabled: true, price: 79.99 },
+          exclusive: { enabled: true, price: 299.99 }
+        }
       };
     }
 
     if (!resolveBeatId(beat)) return;
+
+    // ✅ If FREE beat and the click was on pill, open FREE popup directly (BeatStars feel)
+    if (pill && isFreeBeat(beat) && typeof window.PB_OPEN_FREE_DOWNLOAD === "function") {
+      window.PB_OPEN_FREE_DOWNLOAD({
+        beatId: resolveBeatId(beat),
+        beatTitle: safeTitle(beat),
+        producerId: String(beat.producerId || ""),
+        producerName: String(beat.producerName || ""),
+        downloadUrl: String(beat.fullAudio || beat.audio || "")
+      });
+      return;
+    }
+
     openModal(beat);
   });
 
