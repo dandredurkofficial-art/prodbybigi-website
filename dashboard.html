@@ -1,255 +1,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Producer Studio</title>
 
-<!-- Cloudinary -->
+<!-- Cloudinary (kept, but NOT used anymore) -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
 
-<!-- Firebase -->
+<!-- Firebase (module) -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
-import {
-  getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-import {
-  getAuth, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import {
+    getAuth, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-import {
-  getStorage, ref, uploadBytesResumable, getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+  import {
+    getStorage, ref, uploadBytesResumable, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
-  authDomain: "audiory-beat-store.firebaseapp.com",
-  projectId: "audiory-beat-store",
-  storageBucket: "audiory-beat-store.firebasestorage.app",
-  messagingSenderId: "688272560511",
-  appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
-  measurementId: "G-GLYGWQGS26"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+    authDomain: "audiory-beat-store.firebaseapp.com",
+    projectId: "audiory-beat-store",
+    storageBucket: "audiory-beat-store.firebasestorage.app",
+    messagingSenderId: "688272560511",
+    appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+    measurementId: "G-GLYGWQGS26"
+  };
 
-const app = initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
 
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
 
-// expose to window (your Part 2 uses these)
-window.db = db;
-window.auth = auth;
-window.storage = storage;
+  // expose to window
+  window.db = db;
+  window.auth = auth;
+  window.storage = storage;
 
-// expose firestore helpers
-window.addDoc = addDoc;
-window.collection = collection;
-window.getDocs = getDocs;
-window.getDoc = getDoc;
-window.doc = doc;
-window.query = query;
-window.where = where;
-window.updateDoc = updateDoc;
-window.deleteDoc = deleteDoc;
+  // expose firestore helpers
+  window.addDoc = addDoc;
+  window.collection = collection;
+  window.getDocs = getDocs;
+  window.getDoc = getDoc;
+  window.doc = doc;
+  window.query = query;
+  window.where = where;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
 
-// expose storage helpers
-window.ref = ref;
-window.uploadBytesResumable = uploadBytesResumable;
-window.getDownloadURL = getDownloadURL;
+  // expose storage helpers
+  window.ref = ref;
+  window.uploadBytesResumable = uploadBytesResumable;
+  window.getDownloadURL = getDownloadURL;
 
-window.currentUser = null;
-window.currentProfile = null;
+  window.currentUser = null;
+  window.currentProfile = null;
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    window.currentUser = user;
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window.currentUser = user;
 
-    try {
-      const uref = doc(db, "users", user.uid);
-      const usnap = await getDoc(uref);
-      window.currentProfile = usnap.exists() ? usnap.data() : null;
-    } catch (e) {
+      try {
+        const uref = doc(db, "users", user.uid);
+        const usnap = await getDoc(uref);
+        window.currentProfile = usnap.exists() ? usnap.data() : null;
+      } catch (e) {
+        window.currentProfile = null;
+      }
+
+      // only call after functions exist (Part 2 script defines them)
+      if (typeof window.loadBeats === "function") window.loadBeats();
+      if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
+      if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
+    } else {
+      window.currentUser = null;
       window.currentProfile = null;
     }
+  });
 
-    // only call these after Part 2 loads (Part 2 defines them)
-    if (typeof window.loadBeats === "function") window.loadBeats();
-    if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
-    if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
-  } else {
-    window.currentUser = null;
-    window.currentProfile = null;
-  }
-});
-
-window.PB_LOGOUT = async () => {
-  try {
-    await signOut(auth);
-    location.href = "/login.html";
-  } catch (err) {
-    alert("Logout failed: " + (err?.message || err));
-  }
-};
+  window.PB_LOGOUT = async () => {
+    try {
+      await signOut(auth);
+      location.href = "/login.html";
+    } catch (err) {
+      alert("Logout failed: " + (err?.message || err));
+    }
+  };
 </script>
 
 <style>
-/* ===== BASE ===== */
-body {
-  margin:0;
-  font-family:Inter,system-ui;
-  background:#070a12;
-  color:#fff;
-}
-header {
-  height:64px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 16px;
-  border-bottom:1px solid #1f2937;
-}
-.menu-btn {font-size:22px;cursor:pointer;}
-.logout {
-  background:#ef4444;border:none;padding:8px 14px;border-radius:8px;color:#fff;
-}
-.layout {display:flex;min-height:calc(100vh - 64px);}
+  body { margin:0; font-family:Inter,system-ui; background:#070a12; color:#fff; }
+  header { height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid #1f2937; }
+  .menu-btn { font-size:22px; cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent; }
+  .logout { background:#ef4444; border:none; padding:8px 14px; border-radius:8px; color:#fff; cursor:pointer; }
+  .layout { display:flex; min-height:calc(100vh - 64px); }
 
-nav {
-  width:240px;
-  border-right:1px solid #1f2937;
-  padding:16px;
-}
-nav a {
-  display:block;
-  padding:12px;
-  margin-bottom:6px;
-  border-radius:10px;
-  color:#9ca3af;
-  cursor:pointer;
-}
-nav a.active {
-  background:#111827;
-  color:#fff;
-}
+  nav { width:240px; border-right:1px solid #1f2937; padding:16px; }
+  nav a { display:block; padding:12px; margin-bottom:6px; border-radius:10px; color:#9ca3af; cursor:pointer; user-select:none; }
+  nav a.active { background:#111827; color:#fff; }
 
-main {flex:1;padding:24px;}
-.page {display:none;}
-.page.active {display:block;}
+  main { flex:1; padding:24px; }
+  .page { display:none; }
+  .page.active { display:block; }
 
-.card {
-  background:#0b1220;
-  border:1px solid #1f2937;
-  border-radius:16px;
-  padding:20px;
-  margin-bottom:20px;
-}
+  .card { background:#0b1220; border:1px solid #1f2937; border-radius:16px; padding:20px; margin-bottom:20px; }
 
-input,textarea,select {
-  width:100%;
-  background:#05070c;
-  border:1px solid #1f2937;
-  border-radius:10px;
-  padding:12px;
-  color:#fff;
-  margin-bottom:12px;
-}
+  input,textarea,select { width:100%; background:#05070c; border:1px solid #1f2937; border-radius:10px; padding:12px; color:#fff; margin-bottom:12px; }
+  .toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; }
+  .price { width:120px; }
 
-.toggle {
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  margin:12px 0;
-}
-.price {width:120px;}
+  button.primary { background:#3b82f6; border:none; padding:14px; border-radius:10px; color:#fff; cursor:pointer; }
+  button.primary[disabled]{ opacity:.6; cursor:not-allowed; }
 
-button.primary {
-  background:#3b82f6;
-  border:none;
-  padding:14px;
-  border-radius:10px;
-  color:#fff;
-  cursor:pointer;
-}
+  .artwork-preview { width:100%; max-width:260px; aspect-ratio:1/1; border-radius:14px; background:#05070c; border:1px dashed #1f2937; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:14px; }
+  .artwork-preview img { width:100%; height:100%; object-fit:cover; }
 
-button.primary[disabled]{
-  opacity:.6;
-  cursor:not-allowed;
-}
+  .upload-status{ font-size:13px; color:#22c55e; margin-bottom:8px; }
+  .upload-status.err{ color:#ef4444; }
 
-.artwork-preview {
-  width:100%;
-  max-width:260px;
-  aspect-ratio:1/1;
-  border-radius:14px;
-  background:#05070c;
-  border:1px dashed #1f2937;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  margin-bottom:14px;
-}
-.artwork-preview img {
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+  .track { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .track img { width:64px; height:64px; border-radius:10px; object-fit:cover; }
+  .track button { background:#111827; border:1px solid #1f2937; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
 
-.upload-status{
-  font-size:13px;
-  color:#22c55e;
-  margin-bottom:8px;
-}
-
-.track {
-  display:flex;
-  align-items:center;
-  gap:14px;
-  margin-bottom:14px;
-}
-.track img {
-  width:64px;
-  height:64px;
-  border-radius:10px;
-  object-fit:cover;
-}
-.track button {
-  background:#111827;
-  border:1px solid #1f2937;
-  color:#fff;
-  padding:8px 12px;
-  border-radius:8px;
-}
-
-@media(max-width:900px){
-  nav {
-    display:none;
-    position:fixed;
-    top:64px;
-    left:0;
-    height:100%;
-    background:#070a12;
-    z-index:10;
+  @media(max-width:900px){
+    nav { display:none; position:fixed; top:64px; left:0; height:100%; background:#070a12; z-index:9999; pointer-events:auto; }
+    nav.open { display:block; }
   }
-  nav.open {display:block;}
-}
-@media(max-width:640px){
-  .toggle {flex-direction:column;align-items:flex-start;}
-  .price {width:100%;}
-  button.primary {width:100%;}
-}
+  @media(max-width:640px){
+    .toggle { flex-direction:column; align-items:flex-start; }
+    .price { width:100%; }
+    button.primary { width:100%; }
+  }
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+  <div class="menu-btn" id="hamburgerBtn">☰</div>
   <strong>Producer Studio</strong>
   <button class="logout" id="logoutBtn" type="button">Logout</button>
 </header>
@@ -270,7 +166,6 @@ button.primary[disabled]{
   <div class="card"><h2>Total Sales</h2><h1 id="totalSales">$0.00</h1></div>
   <div class="card"><h2>Available Balance</h2><h1 id="availableBalance">$0.00</h1></div>
 
-  <!-- analytics (real from your data later; for now uses beats/orders if present) -->
   <div class="card">
     <h2>Analytics</h2>
     <div style="display:flex;gap:12px;flex-wrap:wrap;">
@@ -294,76 +189,73 @@ button.primary[disabled]{
 </section>
 
 <section id="upload" class="page">
+  <div class="card">
+    <h2>Track Details</h2>
 
-<div class="card">
-<h2>Track Details</h2>
+    <div class="artwork-preview" id="artworkBox">
+      <span>Artwork Preview</span>
+    </div>
+    <div id="artworkStatus"></div>
+    <button class="primary" type="button" onclick="uploadArtwork()">Upload Artwork</button>
 
-<div class="artwork-preview" id="artworkBox">
-  <span>Artwork Preview</span>
-</div>
-<div id="artworkStatus"></div>
-<button class="primary" onclick="uploadArtwork()">Upload Artwork</button>
+    <input id="title" placeholder="Track title" />
+    <textarea id="desc" placeholder="Description"></textarea>
+    <input id="bpm" placeholder="BPM" />
+    <input id="key" placeholder="Key" />
 
-<input id="title" placeholder="Track title">
-<textarea id="desc" placeholder="Description"></textarea>
-<input id="bpm" placeholder="BPM">
-<input id="key" placeholder="Key">
+    <select id="genre">
+      <option value="">Select genre</option>
+      <option value="Afrobeats">Afrobeats</option>
+      <option value="Trap">Trap</option>
+      <option value="Drill">Drill</option>
+      <option value="Amapiano">Amapiano</option>
+      <option value="R&B">R&B</option>
+      <option value="Hip Hop">Hip Hop</option>
+    </select>
 
-<!-- ✅ Genre added (does not remove anything) -->
-<select id="genre">
-  <option value="">Select genre</option>
-  <option value="Afrobeats">Afrobeats</option>
-  <option value="Trap">Trap</option>
-  <option value="Drill">Drill</option>
-  <option value="Amapiano">Amapiano</option>
-  <option value="R&B">R&B</option>
-  <option value="Hip Hop">Hip Hop</option>
-</select>
+    <div id="fullStatus"></div>
+    <button class="primary" type="button" onclick="uploadFullAudio()">Upload Full Beat</button>
 
-<div id="fullStatus"></div>
-<button class="primary" onclick="uploadFullAudio()">Upload Full Beat</button>
+    <div id="previewStatus"></div>
+    <button class="primary" type="button" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
 
-<div id="previewStatus"></div>
-<button class="primary" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
-</div>
+    <div id="stemsStatus" style="margin-top:10px;"></div>
+    <button class="primary" type="button" onclick="uploadStemsZip()">Upload Stems (ZIP) — Exclusive Only</button>
+  </div>
 
-<div id="stemsStatus"></div>
-<button class="primary" type="button" onclick="uploadStemsZip()">Upload Stems (ZIP) — Exclusive Only</button>
+  <div class="card">
+    <h2>Licenses & Pricing</h2>
 
-<div class="card">
-<h2>Licenses & Pricing</h2>
+    <div class="toggle">
+      <label>Basic (MP3)</label>
+      <input type="checkbox" id="basicEnabled" checked />
+      <input class="price" id="basicPrice" value="29.99" />
+    </div>
 
-<div class="toggle">
-  <label>Basic (MP3)</label>
-  <input type="checkbox" id="basicEnabled" checked>
-  <input class="price" id="basicPrice" value="29.99">
-</div>
+    <div class="toggle">
+      <label>Premium (WAV)</label>
+      <input type="checkbox" id="premiumEnabled" />
+      <input class="price" id="premiumPrice" value="79.99" />
+    </div>
 
-<div class="toggle">
-  <label>Premium (WAV)</label>
-  <input type="checkbox" id="premiumEnabled">
-  <input class="price" id="premiumPrice" value="79.99">
-</div>
+    <div class="toggle">
+      <label>Exclusive</label>
+      <input type="checkbox" id="exclusiveEnabled" />
+      <input class="price" id="exclusivePrice" value="299.99" />
+    </div>
 
-<div class="toggle">
-  <label>Exclusive</label>
-  <input type="checkbox" id="exclusiveEnabled">
-  <input class="price" id="exclusivePrice" value="299.99">
-</div>
+    <div class="toggle">
+      <label>Free Download</label>
+      <input type="checkbox" id="freeDownload" />
+    </div>
 
-<div class="toggle">
-  <label>Free Download</label>
-  <input type="checkbox" id="freeDownload">
-</div>
+    <div class="toggle">
+      <label>Include in Bulk Discounts</label>
+      <input type="checkbox" id="bulkDiscount" />
+    </div>
 
-<div class="toggle">
-  <label>Include in Bulk Discounts</label>
-  <input type="checkbox" id="bulkDiscount">
-</div>
-
-<button class="primary" id="publishBtn" onclick="publishBeat()">Publish Beat</button>
-</div>
-
+    <button class="primary" id="publishBtn" type="button" onclick="publishBeat()">Publish Beat</button>
+  </div>
 </section>
 
 <section id="tracks" class="page">
@@ -385,8 +277,8 @@ button.primary[disabled]{
       <option value="mpesa">M-Pesa (Kenya only)</option>
     </select>
 
-    <input id="withdrawAmount" placeholder="Amount (USD)">
-    <input id="withdrawDestination" placeholder="PayPal email or M-Pesa phone (2547...)">
+    <input id="withdrawAmount" placeholder="Amount (USD)" />
+    <input id="withdrawDestination" placeholder="PayPal email or M-Pesa phone (2547...)" />
 
     <button class="primary" id="withdrawBtn" type="button">Withdraw</button>
 
@@ -394,7 +286,6 @@ button.primary[disabled]{
   </div>
 </section>
 
-<!-- ✅ SOUND KITS UPLOAD (added, does not remove anything) -->
 <section id="soundkits" class="page">
   <div class="card">
     <h2>Upload Sound Kit</h2>
@@ -405,7 +296,7 @@ button.primary[disabled]{
     <div id="kitCoverStatus"></div>
     <button class="primary" type="button" onclick="uploadKitCover()">Upload Cover</button>
 
-    <input id="kitTitle" placeholder="Kit title">
+    <input id="kitTitle" placeholder="Kit title" />
     <textarea id="kitDesc" placeholder="Description"></textarea>
 
     <select id="kitCategory">
@@ -417,16 +308,16 @@ button.primary[disabled]{
       <option value="fx">FX</option>
     </select>
 
-    <input id="kitPrice" placeholder="Price (0 for Free)" value="0">
+    <input id="kitPrice" placeholder="Price (0 for Free)" value="0" />
 
     <div id="kitFileStatus"></div>
     <button class="primary" type="button" onclick="uploadKitFile()">Upload Kit File (ZIP)</button>
 
-    <input id="kitDownloadUrl" placeholder="Download URL (auto-filled after upload OR paste link)">
+    <input id="kitDownloadUrl" placeholder="Download URL (auto-filled after upload OR paste link)" />
 
     <div class="toggle">
       <label>Published</label>
-      <input type="checkbox" id="kitPublished" checked>
+      <input type="checkbox" id="kitPublished" checked />
     </div>
 
     <button class="primary" id="publishKitBtn" type="button" onclick="publishKit()">Publish Sound Kit</button>
@@ -438,7 +329,6 @@ button.primary[disabled]{
   </div>
 </section>
 
-<!-- ✅ ACCOUNT SETTINGS (added, does not remove anything) -->
 <section id="settings" class="page">
   <div class="card">
     <h2>Account Settings</h2>
@@ -449,10 +339,10 @@ button.primary[disabled]{
     <div id="profilePicStatus"></div>
     <button class="primary" type="button" onclick="uploadProfilePic()">Upload Profile Picture</button>
 
-    <input id="firstName" placeholder="First name">
-    <input id="lastName" placeholder="Last name">
-    <input id="displayName" placeholder="Display name">
-    <input id="location" placeholder="Location (Country / City)">
+    <input id="firstName" placeholder="First name" />
+    <input id="lastName" placeholder="Last name" />
+    <input id="displayName" placeholder="Display name" />
+    <input id="location" placeholder="Location (Country / City)" />
     <textarea id="bio" placeholder="Biography"></textarea>
 
     <button class="primary" id="saveProfileBtn" type="button" onclick="saveProfile()">Save Profile</button>
@@ -464,6 +354,9 @@ button.primary[disabled]{
 </div>
 
 <script>
+/* ===========================
+   GLOBALS
+=========================== */
 let uploadedArtwork = null, fullAudio = null, previewAudio = null;
 let beatsData = [], currentAudio = null;
 let stemsZipUrl = null;
@@ -472,71 +365,41 @@ let kitCover = null, kitFile = null;
 let kitsData = [];
 
 let profilePic = null;
-
-/* ✅ FIX: editing should UPDATE not create duplicates */
 let editingBeatId = null;
 
-/* ======================================================
-   ✅ Firebase Storage uploader helpers (single copy)
-====================================================== */
-function pickFile(accept){
-  return new Promise((resolve)=>{
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = accept || "*/*";
-    input.style.position = "fixed";
-    input.style.left = "-9999px";
-    document.body.appendChild(input);
-    input.onchange = () => {
-      const f = input.files && input.files[0] ? input.files[0] : null;
-      input.remove();
-      resolve(f);
-    };
-    input.click();
-  });
-}
+function $(id){ return document.getElementById(id); }
 
-function extFromName(name){
-  const s = String(name || "");
-  const i = s.lastIndexOf(".");
-  return i >= 0 ? s.slice(i).toLowerCase() : "";
-}
-
-async function uploadToStorage({ file, path, onProgress }){
-  // Part 1 exposes: window.storage, window.ref, window.uploadBytesResumable, window.getDownloadURL
-  if (!window.storage || !window.ref || !window.uploadBytesResumable || !window.getDownloadURL){
-    throw new Error("Firebase Storage not ready. Check Part 1 module: window.storage/window.ref/window.uploadBytesResumable/window.getDownloadURL.");
-  }
-
-  const r = window.ref(window.storage, path);
-  const task = window.uploadBytesResumumable
-  ? window.uploadBytesResumumable(r, file)
-  : window.uploadBytesResumable(r, file);
-
-  return await new Promise((resolve, reject)=>{
-    task.on("state_changed",
-      (snap)=>{
-        const pct = snap.totalBytes ? Math.round((snap.bytesTransferred/snap.totalBytes)*100) : 0;
-        if (onProgress) onProgress(pct);
-      },
-      (err)=>reject(err),
-      async ()=>{
-        const url = await window.getDownloadURL(task.snapshot.ref);
-        resolve(url);
-      }
-    );
-  });
-}
-
-/* ======================================================
-   ✅ NAV + MENU FIX (must be global for onclick="")
-====================================================== */
+/* ===========================
+   CLICK FIXES (Hamburger + Logout)
+=========================== */
 function toggleMenu(){
-  const sb = document.getElementById("sidebar");
+  const sb = $("sidebar");
   if (!sb) return;
   sb.classList.toggle("open");
 }
+window.toggleMenu = toggleMenu;
 
+document.addEventListener("DOMContentLoaded", ()=>{
+  const hb = $("hamburgerBtn");
+  if (hb){
+    hb.addEventListener("click", (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      toggleMenu();
+    });
+  }
+
+  const btn = $("logoutBtn");
+  if (btn){
+    btn.addEventListener("click", (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      window.PB_LOGOUT && window.PB_LOGOUT();
+    });
+  }
+});
+
+/* ===========================
+   NAV
+=========================== */
 function showPage(id, el){
   document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
   document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
@@ -545,35 +408,18 @@ function showPage(id, el){
   if (page) page.classList.add("active");
   if (el) el.classList.add("active");
 
-  const sb = document.getElementById("sidebar");
+  const sb = $("sidebar");
   if (sb) sb.classList.remove("open");
 
-  if (id === "settings" && typeof fillSettingsForm === "function") fillSettingsForm();
-  if (id === "soundkits" && typeof loadKits === "function") loadKits();
-  if (id === "finance" && typeof loadPayoutUI === "function") loadPayoutUI();
+  if (id === "settings") fillSettingsForm();
+  if (id === "soundkits") loadKits();
+  if (id === "finance") loadPayoutUI();
 }
-
-/* ✅ IMPORTANT: expose to window so inline onclick works */
-window.toggleMenu = toggleMenu;
 window.showPage = showPage;
-window.uploadArtwork = uploadArtwork;
-window.uploadFullAudio = uploadFullAudio;
-window.uploadPreviewAudio = uploadPreviewAudio;
-window.uploadStemsZip = uploadStemsZip;
-window.publishBeat = publishBeat;
 
-window.playPreview = playPreview;
-window.editBeat = editBeat;
-window.deleteBeat = deleteBeat;
-
-window.copyKitLink = copyKitLink;
-window.publishKit = publishKit;
-window.uploadKitCover = uploadKitCover;
-window.uploadKitFile = uploadKitFile;
-window.uploadProfilePic = uploadProfilePic;
-window.saveProfile = saveProfile;
-
-/* ✅ helper: consistent producer name */
+/* ===========================
+   HELPERS
+=========================== */
 function getProducerDisplayName(){
   const prof = window.currentProfile || {};
   const name =
@@ -594,30 +440,76 @@ function money(n){
   return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
 }
 
+function pickFile(accept){
+  return new Promise((resolve)=>{
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept || "*/*";
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const f = input.files && input.files[0] ? input.files[0] : null;
+      input.remove();
+      resolve(f);
+    };
+    input.click();
+  });
+}
+
+function extFromName(name){
+  const s = String(name||"");
+  const i = s.lastIndexOf(".");
+  return i >= 0 ? s.slice(i).toLowerCase() : "";
+}
+
+async function uploadToStorage({ file, path, onProgress }){
+  if (!window.storage || !window.ref || !window.uploadBytesResumable || !window.getDownloadURL){
+    throw new Error("Firebase Storage not ready. (window.storage/ref/uploadBytesResumable/getDownloadURL missing)");
+  }
+
+  const r = window.ref(window.storage, path);
+  const task = window.uploadBytesResumable(r, file, { contentType: file.type || undefined });
+
+  return await new Promise((resolve, reject)=>{
+    task.on("state_changed",
+      (snap)=>{
+        const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
+        if (onProgress) onProgress(pct);
+      },
+      reject,
+      async ()=>{
+        const url = await window.getDownloadURL(task.snapshot.ref);
+        resolve(url);
+      }
+    );
+  });
+}
+
 /* ===========================
-   ✅ Uploads (Firebase Storage)
+   UPLOADS (Firebase Storage only)
 =========================== */
 async function uploadArtwork(){
   try{
     const file = await pickFile("image/*");
     if(!file) return;
 
-    artworkStatus.innerHTML = `<div class="upload-status">Uploading artwork…</div>`;
-
+    $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".jpg";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/artwork/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> artworkStatus.innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
+      onProgress:(p)=> $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
     });
 
     uploadedArtwork = url;
-    artworkBox.innerHTML = `<img src="${uploadedArtwork}">`;
-    artworkStatus.innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
+    $("artworkBox").innerHTML = `<img src="${uploadedArtwork}">`;
+    $("artworkStatus").innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("artworkStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Artwork upload failed: " + (err?.message || err));
   }
 }
@@ -627,21 +519,21 @@ async function uploadFullAudio(){
     const file = await pickFile("audio/*");
     if(!file) return;
 
-    fullStatus.innerHTML = `<div class="upload-status">Uploading full beat…</div>`;
-
+    $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/beats/full/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> fullStatus.innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
+      onProgress:(p)=> $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
     });
 
     fullAudio = url;
-    fullStatus.innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
+    $("fullStatus").innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("fullStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Full beat upload failed: " + (err?.message || err));
   }
 }
@@ -651,29 +543,29 @@ async function uploadPreviewAudio(){
     const file = await pickFile("audio/*");
     if(!file) return;
 
-    previewStatus.innerHTML = `<div class="upload-status">Uploading preview…</div>`;
-
+    $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> previewStatus.innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
+      onProgress:(p)=> $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
     });
 
     previewAudio = url;
-    previewStatus.innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
+    $("previewStatus").innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("previewStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Preview upload failed: " + (err?.message || err));
   }
 }
 
-/* ✅ Stems ZIP (Exclusive-only) */
 async function uploadStemsZip(){
   try{
-    if (!exclusiveEnabled.checked) {
+    // Exclusive-only check
+    if (!$("exclusiveEnabled").checked) {
       alert("Stems are Exclusive-only. Turn ON the Exclusive license first.");
       return;
     }
@@ -681,38 +573,39 @@ async function uploadStemsZip(){
     const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
     if(!file) return;
 
-    if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">Uploading stems...</div>`;
-
+    $("stemsStatus").innerHTML = `<div class="upload-status">Uploading stems…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".zip";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/beats/stems/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=>{
-        if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">Uploading stems... ${p}%</div>`;
-      }
+      onProgress:(p)=> $("stemsStatus").innerHTML = `<div class="upload-status">Uploading stems… ${p}%</div>`
     });
 
     stemsZipUrl = url;
-
-    if (window.stemsStatus) stemsStatus.innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
+    $("stemsStatus").innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
     alert("✅ Stems ZIP uploaded");
   }catch(err){
     console.error(err);
+    $("stemsStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Stems upload failed: " + (err?.message || err));
   }
 }
 
+/* ===========================
+   PUBLISH BEAT
+=========================== */
 async function publishBeat(){
   if(!fullAudio || !previewAudio){
     alert("Upload both audios first");
     return;
   }
 
-  // 🔒 Stems are Exclusive-only
-  if (!exclusiveEnabled.checked) stemsZipUrl = null;
+  // if Exclusive OFF, remove stems
+  if (!$("exclusiveEnabled").checked) stemsZipUrl = null;
 
+  const publishBtn = $("publishBtn");
   publishBtn.disabled = true;
   publishBtn.innerText = "Publishing...";
 
@@ -720,42 +613,42 @@ async function publishBeat(){
     const producerName = getProducerDisplayName();
 
     const payload = {
-      title: title.value || "Untitled Beat",
-      desc: desc.value || "",
-      bpm: bpm.value || "",
-      key: key.value || "",
-      genre: (genre.value || "").trim(),
+      title: $("title").value || "Untitled Beat",
+      desc: $("desc").value || "",
+      bpm: $("bpm").value || "",
+      key: $("key").value || "",
+      genre: ($("genre").value || "").trim(),
       producerName: producerName,
       artwork: uploadedArtwork || "",
       fullAudio,
       previewAudio,
       producerId: window.auth.currentUser.uid,
 
-      stemsZipUrl: (exclusiveEnabled.checked ? (stemsZipUrl || null) : null),
+      stemsZipUrl: ($("exclusiveEnabled").checked ? (stemsZipUrl || null) : null),
 
       published: true,
       licenses: {
-        basic: { enabled: basicEnabled.checked, price: Number(basicPrice.value||0) },
-        premium: { enabled: premiumEnabled.checked, price: Number(premiumPrice.value||0) },
-        exclusive: { enabled: exclusiveEnabled.checked, price: Number(exclusivePrice.value||0) }
+        basic: { enabled: $("basicEnabled").checked, price: Number($("basicPrice").value||0) },
+        premium: { enabled: $("premiumEnabled").checked, price: Number($("premiumPrice").value||0) },
+        exclusive: { enabled: $("exclusiveEnabled").checked, price: Number($("exclusivePrice").value||0) }
       },
-      freeDownload: freeDownload.checked,
-      bulkDiscount: bulkDiscount.checked,
+      freeDownload: $("freeDownload").checked,
+      bulkDiscount: $("bulkDiscount").checked,
 
       ...(editingBeatId ? {} : { createdAt: Date.now() }),
       updatedAt: Date.now()
     };
 
     if (editingBeatId){
-      await updateDoc(doc(db,"beats",editingBeatId), payload);
+      await window.updateDoc(window.doc(window.db,"beats",editingBeatId), payload);
       editingBeatId = null;
     } else {
-      await addDoc(collection(db,"beats"), payload);
+      await window.addDoc(window.collection(window.db,"beats"), payload);
     }
 
     resetUploadForm();
-    loadBeats();
-    loadDashboardStats();
+    await loadBeats();
+    await loadDashboardStats();
     alert("✅ Beat published");
   }catch(err){
     alert("Publish failed: " + (err?.message || err));
@@ -766,36 +659,47 @@ async function publishBeat(){
 }
 
 function resetUploadForm(){
-  title.value = desc.value = bpm.value = key.value = "";
-  genre.value = "";
-  uploadedArtwork = fullAudio = previewAudio = null;
+  $("title").value = "";
+  $("desc").value = "";
+  $("bpm").value = "";
+  $("key").value = "";
+  $("genre").value = "";
+
+  uploadedArtwork = null;
+  fullAudio = null;
+  previewAudio = null;
   stemsZipUrl = null;
 
-  artworkBox.innerHTML = "<span>Artwork Preview</span>";
-  artworkStatus.innerHTML = fullStatus.innerHTML = previewStatus.innerHTML = "";
-  if (window.stemsStatus) stemsStatus.innerHTML = "";
+  $("artworkBox").innerHTML = "<span>Artwork Preview</span>";
+  $("artworkStatus").innerHTML = "";
+  $("fullStatus").innerHTML = "";
+  $("previewStatus").innerHTML = "";
+  $("stemsStatus").innerHTML = "";
 }
 
+/* ===========================
+   LOAD / RENDER BEATS
+=========================== */
 async function loadBeats(){
-  if(!currentUser) return;
+  if(!window.currentUser) return;
 
-  beats.innerHTML="";
-  beatsData=[];
+  $("beats").innerHTML = "";
+  beatsData = [];
 
-  const q = query(
-    collection(db,"beats"),
-    where("producerId","==",currentUser.uid)
+  const q = window.query(
+    window.collection(window.db,"beats"),
+    window.where("producerId","==",window.currentUser.uid)
   );
 
-  const snap = await getDocs(q);
+  const snap = await window.getDocs(q);
   snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
 
-  // ✅ FIX OLD BEATS: backfill producerName if missing (so homepage/marketplace show name)
+  // backfill producerName if missing
   try{
     const name = getProducerDisplayName();
     const toFix = beatsData.filter(b => !b.producerName || String(b.producerName).trim() === "");
     if (toFix.length){
-      await Promise.all(toFix.map(b => updateDoc(doc(db,"beats",b.id), { producerName: name })));
+      await Promise.all(toFix.map(b => window.updateDoc(window.doc(window.db,"beats",b.id), { producerName: name })));
       beatsData = beatsData.map(b => ({...b, producerName: (b.producerName && String(b.producerName).trim()) ? b.producerName : name }));
     }
   }catch(e){}
@@ -805,12 +709,12 @@ async function loadBeats(){
 }
 
 function renderTracks(){
-  beats.innerHTML="";
+  $("beats").innerHTML = "";
   beatsData.forEach((b,i)=>{
-    beats.innerHTML+=`
+    $("beats").innerHTML += `
       <div class="track">
         <img src="${b.artwork||''}">
-        <div style="flex:1"><strong>${b.title}</strong><br>BPM ${b.bpm} • ${b.key}</div>
+        <div style="flex:1"><strong>${b.title||"Untitled"}</strong><br>BPM ${b.bpm||"—"} • ${b.key||"—"}</div>
         <button onclick="playPreview(${i})">▶</button>
         <button onclick="editBeat(${i})">Edit</button>
         <button onclick="deleteBeat(${i})">Delete</button>
@@ -819,31 +723,42 @@ function renderTracks(){
 }
 
 function editBeat(i){
-  const b=beatsData[i];
-  editingBeatId=b.id; // ✅ this is what prevents duplicates
-  title.value=b.title;
-  desc.value=b.desc;
-  bpm.value=b.bpm;
-  key.value=b.key;
-  genre.value=b.genre || ""; // ✅ added
-  uploadedArtwork=b.artwork;
-  fullAudio=b.fullAudio;
-  previewAudio=b.previewAudio;
-  artworkBox.innerHTML=b.artwork?`<img src="${b.artwork}">`:"<span>Artwork Preview</span>";
-  basicEnabled.checked=b.licenses.basic.enabled;
-  basicPrice.value=b.licenses.basic.price;
-  premiumEnabled.checked=b.licenses.premium.enabled;
-  premiumPrice.value=b.licenses.premium.price;
-  exclusiveEnabled.checked=b.licenses.exclusive.enabled;
-  exclusivePrice.value=b.licenses.exclusive.price;
-  freeDownload.checked=b.freeDownload;
-  bulkDiscount.checked=b.bulkDiscount;
-  showPage('upload'); // ✅ now safe (showPage no longer relies on event)
+  const b = beatsData[i];
+  editingBeatId = b.id;
+
+  $("title").value = b.title || "";
+  $("desc").value = b.desc || "";
+  $("bpm").value = b.bpm || "";
+  $("key").value = b.key || "";
+  $("genre").value = b.genre || "";
+
+  uploadedArtwork = b.artwork || null;
+  fullAudio = b.fullAudio || null;
+  previewAudio = b.previewAudio || null;
+  stemsZipUrl = b.stemsZipUrl || null;
+
+  $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
+
+  $("basicEnabled").checked = !!(b.licenses?.basic?.enabled);
+  $("basicPrice").value = (b.licenses?.basic?.price ?? 0);
+
+  $("premiumEnabled").checked = !!(b.licenses?.premium?.enabled);
+  $("premiumPrice").value = (b.licenses?.premium?.price ?? 0);
+
+  $("exclusiveEnabled").checked = !!(b.licenses?.exclusive?.enabled);
+  $("exclusivePrice").value = (b.licenses?.exclusive?.price ?? 0);
+
+  $("freeDownload").checked = !!b.freeDownload;
+  $("bulkDiscount").checked = !!b.bulkDiscount;
+
+  showPage("upload");
 }
 
 function playPreview(i){
   if(currentAudio) currentAudio.pause();
-  currentAudio=new Audio(beatsData[i].previewAudio);
+  const url = beatsData[i]?.previewAudio;
+  if (!url) return alert("No previewAudio for this beat yet.");
+  currentAudio = new Audio(url);
   currentAudio.play();
 }
 
@@ -851,40 +766,37 @@ async function deleteBeat(i){
   const beat = beatsData[i];
   if(!confirm(`Delete "${beat.title}"? This cannot be undone.`)) return;
   try{
-    await deleteDoc(doc(db,"beats",beat.id));
+    await window.deleteDoc(window.doc(window.db,"beats",beat.id));
     alert("Beat deleted");
     loadBeats();
   }catch(err){
-    alert("Delete failed: "+err.message);
+    alert("Delete failed: " + (err?.message || err));
   }
 }
 
 /* ===========================
-   DASHBOARD STATS (real if data exists)
+   DASHBOARD STATS
 =========================== */
 async function loadDashboardStats(){
   try{
     const total = beatsData.length || 0;
     const published = beatsData.filter(b=>b.published===true).length;
 
-    const statBeatsEl = document.getElementById("statBeats");
-    const statPublishedEl = document.getElementById("statPublished");
-    if (statBeatsEl) statBeatsEl.textContent = String(total);
-    if (statPublishedEl) statPublishedEl.textContent = String(published);
+    if ($("statBeats")) $("statBeats").textContent = String(total);
+    if ($("statPublished")) $("statPublished").textContent = String(published);
 
-    // kits count (fetch lightweight)
+    // kits count
     if (window.currentUser){
-      const qk = query(collection(db,"soundkits"), where("producerId","==",window.currentUser.uid));
-      const ksnap = await getDocs(qk);
-      const statKitsEl = document.getElementById("statKits");
-      if (statKitsEl) statKitsEl.textContent = String(ksnap.size || 0);
+      const qk = window.query(window.collection(window.db,"soundkits"), window.where("producerId","==",window.currentUser.uid));
+      const ksnap = await window.getDocs(qk);
+      if ($("statKits")) $("statKits").textContent = String(ksnap.size || 0);
     }
 
-    // ✅ total sales: sum from orders if you store producerId on orders
+    // sales from orders (if exists)
     let sales = 0;
     try{
-      const qo = query(collection(db,"orders"), where("producerId","==",window.currentUser.uid));
-      const osnap = await getDocs(qo);
+      const qo = window.query(window.collection(window.db,"orders"), window.where("producerId","==",window.currentUser.uid));
+      const osnap = await window.getDocs(qo);
       osnap.forEach(d=>{
         const o = d.data() || {};
         const amt = Number(o.amount ?? o.total ?? o.price ?? 0) || 0;
@@ -893,41 +805,32 @@ async function loadDashboardStats(){
       });
     }catch(e){}
 
-    const totalSalesEl = document.getElementById("totalSales");
-    if (totalSalesEl) totalSalesEl.textContent = money(sales);
+    if ($("totalSales")) $("totalSales").textContent = money(sales);
 
     const bal = getWalletBalance();
-    const availableEl = document.getElementById("availableBalance");
-    if (availableEl) availableEl.textContent = money(bal);
+    if ($("availableBalance")) $("availableBalance").textContent = money(bal);
+    if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
 
-    const payoutBalEl = document.getElementById("payoutBalance");
-    if (payoutBalEl) payoutBalEl.textContent = money(bal);
-
-    const note = document.getElementById("walletNote");
-    if (note){
-      note.textContent = "Wallet updates when your sales/earnings are written to Firestore (orders/earnings).";
-    }
+    if ($("walletNote")) $("walletNote").textContent = "Wallet updates when your sales/earnings are written to Firestore (orders/earnings).";
   }catch(e){}
 }
 
 /* ===========================
-   FINANCE (Kenya logic)
+   FINANCE UI
 =========================== */
 function loadPayoutUI(){
   const prof = window.currentProfile || {};
   const loc = String(prof.location || "").toLowerCase();
   const isKenya = loc.includes("kenya") || loc.includes("ke") || loc.includes("nairobi") || loc.includes("mombasa");
 
-  const notice = document.getElementById("payoutNotice");
-  const method = document.getElementById("withdrawMethod");
-
-  if (notice){
-    notice.textContent = isKenya
+  if ($("payoutNotice")){
+    $("payoutNotice").textContent = isKenya
       ? "Kenya detected: You can withdraw via M-Pesa or PayPal."
       : "Non-Kenya: Withdrawals available via PayPal only.";
   }
 
-  if (method){
+  if ($("withdrawMethod")){
+    const method = $("withdrawMethod");
     const mpesaOption = [...method.options].find(o => o.value === "mpesa");
     if (mpesaOption) mpesaOption.disabled = !isKenya;
     if (!isKenya) method.value = "paypal";
@@ -935,31 +838,23 @@ function loadPayoutUI(){
 
   try{
     const bal = getWalletBalance();
-    const payoutBalEl = document.getElementById("payoutBalance");
-    if (payoutBalEl) payoutBalEl.textContent = money(bal);
+    if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
   }catch(e){}
 }
 
-/* Withdraw button (real “insufficient balance” using wallet value from Firestore profile) */
 document.addEventListener("click", async (e)=>{
   const btn = e.target.closest("#withdrawBtn");
   if (!btn) return;
 
-  const amount = Number((document.getElementById("withdrawAmount").value || "").trim());
-  const method = (document.getElementById("withdrawMethod").value || "paypal").trim();
-  const dest = (document.getElementById("withdrawDestination").value || "").trim();
-  const status = document.getElementById("withdrawStatus");
+  const amount = Number(($("withdrawAmount").value || "").trim());
+  const dest = ($("withdrawDestination").value || "").trim();
+  const status = $("withdrawStatus");
 
   if (!amount || amount <= 0) return alert("Enter a valid amount");
   if (!dest) return alert("Enter PayPal email or M-Pesa phone");
 
   const bal = getWalletBalance();
-  if (bal <= 0){
-    if (status) status.style.color = "#ef4444";
-    if (status) status.textContent = "❌ Insufficient balance.";
-    return;
-  }
-  if (amount > bal){
+  if (bal <= 0 || amount > bal){
     if (status) status.style.color = "#ef4444";
     if (status) status.textContent = "❌ Insufficient balance for this withdrawal.";
     return;
@@ -980,29 +875,29 @@ document.addEventListener("click", async (e)=>{
 });
 
 /* ===========================
-   SOUND KITS
+   SOUND KITS (Firebase Storage)
 =========================== */
 async function uploadKitCover(){
   try{
     const file = await pickFile("image/*");
     if(!file) return;
 
-    kitCoverStatus.innerHTML = `<div class="upload-status">Uploading cover…</div>`;
-
+    $("kitCoverStatus").innerHTML = `<div class="upload-status">Uploading cover…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".jpg";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/soundkits/covers/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> kitCoverStatus.innerHTML = `<div class="upload-status">Uploading cover… ${p}%</div>`
+      onProgress:(p)=> $("kitCoverStatus").innerHTML = `<div class="upload-status">Uploading cover… ${p}%</div>`
     });
 
     kitCover = url;
-    kitCoverBox.innerHTML=`<img src="${kitCover}">`;
-    kitCoverStatus.innerHTML=`<div class="upload-status">✔ Cover uploaded</div>`;
+    $("kitCoverBox").innerHTML = `<img src="${kitCover}">`;
+    $("kitCoverStatus").innerHTML = `<div class="upload-status">✔ Cover uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("kitCoverStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Cover upload failed: " + (err?.message || err));
   }
 }
@@ -1012,22 +907,22 @@ async function uploadKitFile(){
     const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
     if(!file) return;
 
-    kitFileStatus.innerHTML = `<div class="upload-status">Uploading kit ZIP…</div>`;
-
+    $("kitFileStatus").innerHTML = `<div class="upload-status">Uploading kit ZIP…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".zip";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/soundkits/files/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> kitFileStatus.innerHTML = `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
+      onProgress:(p)=> $("kitFileStatus").innerHTML = `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
     });
 
     kitFile = url;
-    kitDownloadUrl.value = kitFile;
-    kitFileStatus.innerHTML = `<div class="upload-status">✔ Kit file uploaded</div>`;
+    $("kitDownloadUrl").value = kitFile;
+    $("kitFileStatus").innerHTML = `<div class="upload-status">✔ Kit file uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("kitFileStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Kit file upload failed: " + (err?.message || err));
   }
 }
@@ -1038,35 +933,36 @@ async function publishKit(){
     return;
   }
 
-  publishKitBtn.disabled = true;
-  publishKitBtn.textContent = "Publishing...";
+  const btn = $("publishKitBtn");
+  btn.disabled = true;
+  btn.textContent = "Publishing...";
 
   try{
     const producerName = getProducerDisplayName();
 
-    await addDoc(collection(db,"soundkits"),{
-      title: (kitTitle.value || "Untitled Kit").trim(),
-      description: (kitDesc.value || "").trim(),
-      category: (kitCategory.value || "").trim(),
-      price: Number(kitPrice.value || 0) || 0,
+    await window.addDoc(window.collection(window.db,"soundkits"),{
+      title: ($("kitTitle").value || "Untitled Kit").trim(),
+      description: ($("kitDesc").value || "").trim(),
+      category: ($("kitCategory").value || "").trim(),
+      price: Number($("kitPrice").value || 0) || 0,
       cover: kitCover || "",
-      downloadUrl: (kitDownloadUrl.value || kitFile || "").trim(),
+      downloadUrl: ($("kitDownloadUrl").value || kitFile || "").trim(),
       producerId: window.currentUser.uid,
       producerName,
-      published: kitPublished.checked === true,
+      published: $("kitPublished").checked === true,
       createdAt: Date.now()
     });
 
-    kitTitle.value = "";
-    kitDesc.value = "";
-    kitCategory.value = "";
-    kitPrice.value = "0";
-    kitDownloadUrl.value = "";
+    $("kitTitle").value = "";
+    $("kitDesc").value = "";
+    $("kitCategory").value = "";
+    $("kitPrice").value = "0";
+    $("kitDownloadUrl").value = "";
     kitCover = null;
     kitFile = null;
-    kitCoverBox.innerHTML = "<span>Cover Preview</span>";
-    kitCoverStatus.innerHTML = "";
-    kitFileStatus.innerHTML = "";
+    $("kitCoverBox").innerHTML = "<span>Cover Preview</span>";
+    $("kitCoverStatus").innerHTML = "";
+    $("kitFileStatus").innerHTML = "";
 
     alert("✅ Sound kit published");
     loadKits();
@@ -1075,22 +971,22 @@ async function publishKit(){
     alert("Publish failed: " + (err?.message || err));
   }
 
-  publishKitBtn.disabled = false;
-  publishKitBtn.textContent = "Publish Sound Kit";
+  btn.disabled = false;
+  btn.textContent = "Publish Sound Kit";
 }
 
 async function loadKits(){
   if(!window.currentUser) return;
 
-  const list = document.getElementById("kitsList");
+  const list = $("kitsList");
   if (!list) return;
 
   kitsData = [];
   list.innerHTML = "";
 
   try{
-    const qk = query(collection(db,"soundkits"), where("producerId","==",window.currentUser.uid));
-    const snap = await getDocs(qk);
+    const qk = window.query(window.collection(window.db,"soundkits"), window.where("producerId","==",window.currentUser.uid));
+    const snap = await window.getDocs(qk);
     snap.forEach(d => kitsData.push({ id:d.id, ...d.data() }));
 
     if(!kitsData.length){
@@ -1107,7 +1003,6 @@ async function loadKits(){
         </div>
       `;
     });
-
   }catch(err){
     list.innerHTML = `<div style="color:#ef4444;">Could not load kits: ${err?.message||err}</div>`;
   }
@@ -1120,98 +1015,112 @@ function copyKitLink(url){
 }
 
 /* ===========================
-   ACCOUNT SETTINGS
+   ACCOUNT SETTINGS (profile pic in Storage)
 =========================== */
 async function uploadProfilePic(){
   try{
     const file = await pickFile("image/*");
     if(!file) return;
 
-    profilePicStatus.innerHTML = `<div class="upload-status">Uploading profile photo…</div>`;
-
+    $("profilePicStatus").innerHTML = `<div class="upload-status">Uploading profile photo…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".jpg";
 
     const url = await uploadToStorage({
       file,
       path: `audiory/producers/profile/${uid}/photo${ext}`,
-      onProgress:(p)=> profilePicStatus.innerHTML = `<div class="upload-status">Uploading profile photo… ${p}%</div>`
+      onProgress:(p)=> $("profilePicStatus").innerHTML = `<div class="upload-status">Uploading profile photo… ${p}%</div>`
     });
 
     profilePic = url;
-    profilePicBox.innerHTML=`<img src="${profilePic}">`;
-    profilePicStatus.innerHTML=`<div class="upload-status">✔ Profile picture uploaded</div>`;
+    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
+    $("profilePicStatus").innerHTML = `<div class="upload-status">✔ Profile picture uploaded</div>`;
   }catch(err){
     console.error(err);
+    $("profilePicStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Profile picture upload failed: " + (err?.message || err));
   }
 }
 
 function fillSettingsForm(){
   const prof = window.currentProfile || {};
-  firstName.value = prof.firstName || "";
-  lastName.value = prof.lastName || "";
-  displayName.value = prof.displayName || "";
-  location.value = prof.location || "";
-  bio.value = prof.bio || "";
+  $("firstName").value = prof.firstName || "";
+  $("lastName").value = prof.lastName || "";
+  $("displayName").value = prof.displayName || "";
+  $("location").value = prof.location || "";
+  $("bio").value = prof.bio || "";
 
   const pic = prof.photoURL || prof.photoUrl || prof.photo || "";
   if (pic){
     profilePic = pic;
-    profilePicBox.innerHTML = `<img src="${pic}">`;
+    $("profilePicBox").innerHTML = `<img src="${pic}">`;
   } else if (profilePic){
-    profilePicBox.innerHTML = `<img src="${profilePic}">`;
+    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
   } else {
-    profilePicBox.innerHTML = `<span>Profile Picture</span>`;
+    $("profilePicBox").innerHTML = `<span>Profile Picture</span>`;
   }
 }
 
 async function saveProfile(){
   if(!window.currentUser) return alert("Please login again.");
 
-  saveProfileBtn.disabled = true;
-  saveProfileBtn.textContent = "Saving...";
+  const btn = $("saveProfileBtn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
 
   try{
     const data = {
-      firstName: (firstName.value || "").trim(),
-      lastName: (lastName.value || "").trim(),
-      displayName: (displayName.value || "").trim(),
-      location: (location.value || "").trim(),
-      bio: (bio.value || "").trim(),
+      firstName: ($("firstName").value || "").trim(),
+      lastName: ($("lastName").value || "").trim(),
+      displayName: ($("displayName").value || "").trim(),
+      location: ($("location").value || "").trim(),
+      bio: ($("bio").value || "").trim(),
       photoURL: profilePic || ""
     };
 
-    await updateDoc(doc(db,"users",window.currentUser.uid), data);
+    await window.updateDoc(window.doc(window.db,"users",window.currentUser.uid), data);
 
-    // refresh local profile + UI logic
     window.currentProfile = { ...(window.currentProfile||{}), ...data };
-    saveProfileStatus.textContent = "✅ Profile updated";
+    $("saveProfileStatus").textContent = "✅ Profile updated";
     loadPayoutUI();
     loadDashboardStats();
 
-    // ✅ also backfill old beats name immediately after profile change
-    try{
-      await loadBeats();
-    }catch(e){}
+    try{ await loadBeats(); }catch(e){}
   }catch(err){
     alert("Save failed: " + (err?.message || err));
   }
 
-  saveProfileBtn.disabled = false;
-  saveProfileBtn.textContent = "Save Profile";
+  btn.disabled = false;
+  btn.textContent = "Save Profile";
 }
 
 /* ===========================
-   LOGOUT FIX (unclickable)
+   EXPORT for onclick=""
 =========================== */
-document.addEventListener("DOMContentLoaded", ()=>{
-  const btn = document.getElementById("logoutBtn");
-  if (btn){
-    btn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-      window.PB_LOGOUT();
-    });
-  }
-});
+window.uploadArtwork = uploadArtwork;
+window.uploadFullAudio = uploadFullAudio;
+window.uploadPreviewAudio = uploadPreviewAudio;
+window.uploadStemsZip = uploadStemsZip;
+window.publishBeat = publishBeat;
+
+window.loadBeats = loadBeats;
+window.loadDashboardStats = loadDashboardStats;
+window.loadPayoutUI = loadPayoutUI;
+
+window.playPreview = playPreview;
+window.editBeat = editBeat;
+window.deleteBeat = deleteBeat;
+
+window.uploadKitCover = uploadKitCover;
+window.uploadKitFile = uploadKitFile;
+window.publishKit = publishKit;
+window.loadKits = loadKits;
+window.copyKitLink = copyKitLink;
+
+window.uploadProfilePic = uploadProfilePic;
+window.saveProfile = saveProfile;
+window.fillSettingsForm = fillSettingsForm;
+</script>
+
+</body>
+</html>
