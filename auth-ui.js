@@ -16,9 +16,13 @@ import {
 
 /* 🔥 FIREBASE CONFIG */
 const firebaseConfig = {
-  apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-  authDomain: "prodbybigi.firebaseapp.com",
-  projectId: "prodbybigi"
+  apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+  authDomain: "audiory-beat-store.firebaseapp.com",
+  projectId: "audiory-beat-store",
+  storageBucket: "audiory-beat-store.firebasestorage.app",
+  messagingSenderId: "688272560511",
+  appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+  measurementId: "G-GLYGWQGS26"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -65,6 +69,9 @@ window.registerUser = async function () {
       });
     }
 
+    // ✅ allow redirect after signup
+    localStorage.removeItem("justLoggedOut");
+
     redirectByRole(role);
 
   } catch (err) {
@@ -80,6 +87,9 @@ window.loginUser = async function () {
   const password = document.getElementById("password").value;
 
   try {
+    // ✅ user is intentionally logging in, so allow redirect
+    localStorage.removeItem("justLoggedOut");
+
     await signInWithEmailAndPassword(auth, email, password);
   } catch (err) {
     alert(err.message);
@@ -90,7 +100,16 @@ window.loginUser = async function () {
    AUTH STATE LISTENER
 ========================= */
 onAuthStateChanged(auth, async (user) => {
+  // ✅ if logged out, do nothing
   if (!user) return;
+
+  // ✅ FIX: If user JUST logged out, do NOT auto-redirect back to dashboards
+  // This stops the "logout then it logs in again automatically" problem.
+  const justLoggedOut = localStorage.getItem("justLoggedOut");
+  if (justLoggedOut === "1") {
+    // keep them on login page
+    return;
+  }
 
   const snap = await getDoc(doc(db, "users", user.uid));
 
@@ -130,6 +149,15 @@ function redirectByRole(role) {
    LOGOUT (GLOBAL)
 ========================= */
 window.logout = async function () {
-  await signOut(auth);
-  location.href = "login.html";
+  try {
+    // ✅ tell login page not to auto-redirect
+    localStorage.setItem("justLoggedOut", "1");
+
+    await signOut(auth);
+
+    // ✅ use replace to prevent back-button returning to dashboard
+    location.replace("login.html");
+  } catch (err) {
+    alert(err.message);
+  }
 };
