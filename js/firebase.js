@@ -121,21 +121,14 @@ function normalizeBeat(docId, data) {
     data.coverURL ||
     "";
 
-  const fullAudio =
-    data.fullAudio ||
-    data.fullAudioUrl ||
-    data.audioUrl ||
-    data.audioURL ||
-    data.audiourl ||
-    "";
-
-  const previewAudio =
+  const audio =
     data.previewAudio ||
     data.previewAudioUrl ||
+    data.audiourl ||
+    data.audioUrl ||
+    data.audioURL ||
+    data.fullAudio ||
     "";
-
-  // ✅ what player should use
-  const audio = previewAudio || fullAudio || "";
 
   const producerId =
     data.producerId ||
@@ -151,50 +144,48 @@ function normalizeBeat(docId, data) {
 
   const genre = (data.genre || data.Genre || "").toString().trim();
 
-  const createdAt = data.createdAt || data.createdat || data.timestamp || 0;
-  const updatedAt = data.updatedAt || data.updatedat || 0;
+  const createdAt =
+    data.createdAt || data.createdat || data.timestamp || 0;
 
-  const licenses = data.licenses || {
-    basic: { enabled: true, price: 29.99 },
-    premium: { enabled: false, price: 79.99 },
-    exclusive: { enabled: false, price: 299.99 }
-  };
+  // ✅ PRICE / LICENSE FIELDS (IMPORTANT)
+  // supports multiple possible field names from your dashboard
+  const priceRaw =
+    data.price ??
+    data.basicPrice ??
+    data.licensePrice ??
+    data.amount ??
+    null;
 
-  const freeDownload = data.freeDownload === true;
+  const price = priceRaw === null ? null : Number(priceRaw);
 
-  const price = pickMainPrice({ ...data, licenses, freeDownload });
+  // If your beat uses "isFree" or "free" toggle
+  const isFree = (data.isFree === true) || (data.free === true) || (Number(priceRaw) === 0);
 
-  // Optional stats (we’ll use later for “Top charting” sorting)
-  const likesCount = Number(data.likesCount ?? data.likes ?? 0) || 0;
-  const salesCount = Number(data.salesCount ?? data.sales ?? data.sold ?? 0) || 0;
+  // Optional ranking fields (for later “Top charting” sorting)
+  const likes = Number(data.likes ?? data.likeCount ?? 0);
+  const sales = Number(data.sales ?? data.sold ?? data.salesCount ?? 0);
+
+  // Optional: your per-license prices if you store them
+  const licenses = data.licenses || null;
 
   return {
     id: docId,
     title: data.title || data.beatTitle || data.Title || "Untitled Beat",
-    desc: data.desc || data.description || "",
     artwork,
-
-    // audio fields
-    audio,        // preview first
-    fullAudio,
-    previewAudio,
-
+    audio,
     genre,
     producerId,
     producerName,
-
-    stemsZipUrl: data.stemsZipUrl || null,
-
-    licenses,
-    freeDownload,
-    price,
-
-    likesCount,
-    salesCount,
-
     published: data.published === true,
     createdAt,
-    updatedAt
+    desc: data.desc || data.description || "",
+
+    // ✅ added
+    price: (Number.isFinite(price) ? price : null),
+    isFree,
+    likes,
+    sales,
+    licenses
   };
 }
 
