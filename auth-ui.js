@@ -149,7 +149,7 @@ window.resetPassword = async function () {
   try {
     const actionCodeSettings = {
       // ✅ This makes the email link go to YOUR site instead of the ugly firebase page
-      url: `${location.origin}/reset.html`,
+      url: "https://prodby.officialbigi.shop/reset.html",
       handleCodeInApp: false,
     };
 
