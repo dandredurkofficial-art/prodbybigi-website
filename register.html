@@ -58,24 +58,10 @@ button{
   background:#6cf;
   font-weight:700;
   cursor:pointer;
-}
-.google-btn{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-  border-radius:12px;
-  border:1px solid #1d2230;
-  background:#0f1219;
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
+  margin-top:8px;
 }
 a{color:#6cf;text-decoration:none}
-.small-note{
-  font-size:13px;
-  color:#9ca3af;
-  margin-top:10px;
-}
+.small{font-size:13px;color:#9ca3af;text-align:center;margin-top:12px;}
 </style>
 </head>
 
@@ -98,19 +84,15 @@ a{color:#6cf;text-decoration:none}
 
   <button onclick="registerUser()">Create Account</button>
 
-  <button class="google-btn" onclick="registerWithGoogle()">Sign up with Google</button>
+  <!-- ✅ Google Register -->
+  <button onclick="registerWithGoogle()">Continue with Google</button>
 
-  <div class="small-note">
-    Google signup will use the role you selected above.
-  </div>
-
-  <p style="text-align:center;margin-top:14px">
+  <p class="small">
     Already have an account?
     <a href="login.html">Login</a>
   </p>
 </div>
 
 <script type="module" src="auth-ui.js"></script>
-
 </body>
 </html>
