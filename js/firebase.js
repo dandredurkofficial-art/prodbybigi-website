@@ -1,4 +1,4 @@
-// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION
+// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION (FIXED)
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
@@ -61,7 +61,7 @@ onAuthStateChanged(auth, (u) => {
 // --------------------
 // ✅ FAST CACHE LAYER
 // --------------------
-const CACHE_KEY = "audiory_cached_beats_v2";
+const CACHE_KEY = "audiory_cached_beats_v3"; // ✅ bump to avoid old cached "free" beats
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
 let memCache = null;
 let memCacheAt = 0;
@@ -89,29 +89,61 @@ function writeLocalCache(beats) {
   } catch {}
 }
 
+// Optional helper (debug)
+window.FB.clearBeatsCache = function () {
+  try { localStorage.removeItem(CACHE_KEY); } catch {}
+  memCache = null;
+  memCacheAt = 0;
+};
+
 /* =========================
-   ✅ BEAT NORMALIZER (AUDIORY)
-   Works with your Producer Studio payload:
-   artwork, fullAudio, previewAudio, licenses, freeDownload, stemsZipUrl, etc.
+   ✅ PRICE PICKER (AUDIORY)
+   Priority:
+   - freeDownload / isFree / free true  -> 0
+   - licenses.basic.enabled -> basic.price
+   - licenses.premium.enabled -> premium.price
+   - licenses.exclusive.enabled -> exclusive.price
+   - fallback: data.price (if number)
 ========================= */
-function pickMainPrice(data) {
-  // Try to choose a “display price”:
-  // 1) if freeDownload -> 0
-  // 2) if basic enabled -> basic price
-  // 3) else premium -> premium price
-  // 4) else exclusive -> exclusive price
-  // 5) else data.price
-  const free = data.freeDownload === true || Number(data.price || 0) === 0;
-  if (free) return 0;
-
-  const lic = data.licenses || {};
-  if (lic.basic?.enabled) return Number(lic.basic.price || 0) || 0;
-  if (lic.premium?.enabled) return Number(lic.premium.price || 0) || 0;
-  if (lic.exclusive?.enabled) return Number(lic.exclusive.price || 0) || 0;
-
-  return Number(data.price || 0) || 0;
+function toNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }
 
+function isTruthyFree(data) {
+  return (
+    data?.freeDownload === true ||
+    data?.isFree === true ||
+    data?.free === true
+  );
+}
+
+function pickDisplayPrice(data) {
+  if (isTruthyFree(data)) return 0;
+
+  const lic = data?.licenses || {};
+  if (lic?.basic?.enabled === true) {
+    const p = toNum(lic.basic.price);
+    return p !== null ? p : 0;
+  }
+  if (lic?.premium?.enabled === true) {
+    const p = toNum(lic.premium.price);
+    return p !== null ? p : 0;
+  }
+  if (lic?.exclusive?.enabled === true) {
+    const p = toNum(lic.exclusive.price);
+    return p !== null ? p : 0;
+  }
+
+  const fallback = toNum(data?.price);
+  return fallback !== null ? fallback : 0; // if nothing exists, treat as free until producer sets licenses/price
+}
+
+/* =========================
+   ✅ BEAT NORMALIZER (FIXED)
+   - NO MORE Number(null) bug
+   - Computes price from licenses correctly
+========================= */
 function normalizeBeat(docId, data) {
   const artwork =
     data.artwork ||
@@ -147,26 +179,18 @@ function normalizeBeat(docId, data) {
   const createdAt =
     data.createdAt || data.createdat || data.timestamp || 0;
 
-  // ✅ PRICE / LICENSE FIELDS (IMPORTANT)
-  // supports multiple possible field names from your dashboard
-  const priceRaw =
-    data.price ??
-    data.basicPrice ??
-    data.licensePrice ??
-    data.amount ??
-    null;
+  // ranking fields (optional)
+  const likes = Number(data.likes ?? data.likeCount ?? 0) || 0;
+  const sales = Number(data.sales ?? data.sold ?? data.salesCount ?? 0) || 0;
 
-  const price = priceRaw === null ? null : Number(priceRaw);
-
-  // If your beat uses "isFree" or "free" toggle
-  const isFree = (data.isFree === true) || (data.free === true) || (Number(priceRaw) === 0);
-
-  // Optional ranking fields (for later “Top charting” sorting)
-  const likes = Number(data.likes ?? data.likeCount ?? 0);
-  const sales = Number(data.sales ?? data.sold ?? data.salesCount ?? 0);
-
-  // Optional: your per-license prices if you store them
   const licenses = data.licenses || null;
+
+  // ✅ display price computed from licenses/free toggles
+  const displayPrice = pickDisplayPrice(data);
+
+  // ✅ IMPORTANT FIX:
+  // isFree must NOT be based on Number(null) or missing field
+  const isFree = displayPrice === 0;
 
   return {
     id: docId,
@@ -180,12 +204,18 @@ function normalizeBeat(docId, data) {
     createdAt,
     desc: data.desc || data.description || "",
 
-    // ✅ added
-    price: (Number.isFinite(price) ? price : null),
+    // ✅ what your UI should use
+    price: displayPrice,
     isFree,
+
+    // optional extras
     likes,
     sales,
-    licenses
+    licenses,
+
+    // if you store these later
+    freeDownload: data.freeDownload === true,
+    downloadUrl: data.downloadUrl || data.freeDownloadUrl || ""
   };
 }
 
@@ -212,9 +242,6 @@ async function fetchBeats({ max = 60, force = false } = {}) {
   inflight = (async () => {
     try {
       const beatsRef = collection(db, "beats");
-
-      // ✅ Most dashboards write createdAt. If some docs miss it, Firestore orderBy can fail.
-      // So we do: orderBy("createdAt","desc") and rely on your createdAt existing.
       const qy = query(beatsRef, orderBy("createdAt", "desc"), limit(max));
       const snap = await getDocs(qy);
 
@@ -224,7 +251,6 @@ async function fetchBeats({ max = 60, force = false } = {}) {
         if (beat.published) beats.push(beat);
       });
 
-      // update caches
       memCache = beats;
       memCacheAt = now();
       writeLocalCache(beats);
@@ -233,7 +259,6 @@ async function fetchBeats({ max = 60, force = false } = {}) {
     } catch (err) {
       console.error("[FB.fetchBeats] network error:", err);
 
-      // fallback to local cache if exists
       if (local?.beats?.length) {
         memCache = local.beats;
         memCacheAt = now();
@@ -245,10 +270,7 @@ async function fetchBeats({ max = 60, force = false } = {}) {
     }
   })();
 
-  // If local cache is fresh, return it instantly while inflight updates in background
   if (!force && localFresh) return local.beats;
-
-  // Otherwise wait for network
   return await inflight;
 }
 
@@ -256,7 +278,6 @@ window.FB.fetchBeats = fetchBeats;
 
 /* =========================
    ✅ FREE DOWNLOAD LOG
-   Used by the FREE popup we added in index.html
    Saves a lead into Firestore collection: freeDownloads
 ========================= */
 window.FB.logFreeDownload = async function ({
