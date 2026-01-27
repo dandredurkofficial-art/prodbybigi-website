@@ -141,7 +141,7 @@
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</span></div>
+      <div class="logo">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -179,7 +179,6 @@
     <h1 class="market-title" id="marketTitle">Trending Beats</h1>
     <p class="market-sub" id="marketSub">Fresh uploads from producers — tap play to preview.</p>
 
-    <!-- ✅ Marketplace Search + Genre chips -->
     <div class="market-tools">
       <div class="market-search">
         <input id="marketSearchInput" placeholder="Search beats, producers, genres…" />
@@ -228,7 +227,6 @@
 
 <!-- License / Checkout Modal -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
-
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
   <div class="pb-modal-card">
     <div class="pb-modal-head">
@@ -263,7 +261,6 @@
 
 <!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
-
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
   <div class="pb-cart-head">
     <div>
@@ -288,7 +285,7 @@
   </div>
 </aside>
 
-<!-- ✅ FREE DOWNLOAD POPUP (BeatStars style) -->
+<!-- ✅ FREE DOWNLOAD POPUP -->
 <div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
 <div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
   <div class="pb-free-head">
@@ -327,12 +324,18 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
-  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
   function prettyProducerName(b){
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
     if (!b.producerId) return "Prod. Unknown";
     return "Prod. " + String(b.producerId).slice(0,8);
   }
+
   function coverHTML(url, title){
     if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
     const initials = String(title||"B").trim().slice(0,2).toUpperCase();
@@ -437,7 +440,7 @@
       backdrop.style.display = "block";
       modal.style.display = "block";
       backdrop.setAttribute("aria-hidden","false");
-      nameEl.focus();
+      setTimeout(()=>nameEl.focus(), 30);
     }
 
     function close(){
@@ -453,10 +456,8 @@
 
       if (!fullName) return alert("Enter your full name");
       if (!email || !email.includes("@")) return alert("Enter a valid email");
-
       if (!currentBeat?.id) return alert("Beat not found");
 
-      // prevent repeat popup spam for same beat+email
       const key = `pb_free_${currentBeat.id}_${email}`;
       if (localStorage.getItem(key) === "1"){
         statusEl.textContent = "✅ Already sent. Check inbox/spam.";
@@ -467,7 +468,6 @@
       sendBtn.textContent = "Sending...";
 
       try{
-        // ✅ Hook for Firestore logging (we will add this in /js/firebase.js next)
         if (window.FB && typeof window.FB.logFreeDownload === "function"){
           await window.FB.logFreeDownload({
             beatId: currentBeat.id,
@@ -482,8 +482,6 @@
 
         localStorage.setItem(key, "1");
         statusEl.textContent = "✅ Sent! Check inbox/spam.";
-
-        // optional: close after a short delay
         setTimeout(close, 900);
       }catch(err){
         console.error(err);
@@ -501,11 +499,28 @@
     return { open, close };
   })();
 
+  /* ✅ FIXED: Detect Free correctly */
   function isFreeBeat(b){
-    // ✅ your beats have freeDownload checkbox in dashboard
-    if (b && b.freeDownload === true) return true;
-    const p = Number(b?.price ?? 0) || 0;
-    return p <= 0;
+    if (!b) return true;
+
+    if (b.freeDownload === true || b.isFree === true) return true;
+
+    // If price exists and is a number, trust it
+    if (Number.isFinite(Number(b.price))) {
+      return Number(b.price) <= 0;
+    }
+
+    // If price missing, check licenses:
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    if (hasPaidLicense) return false;
+
+    // fallback
+    return true;
   }
 
   function pillHTML(b){
@@ -515,9 +530,9 @@
         <span>Free</span>
       </button>`;
     }
-    return `<button class="pb-pill" type="button" aria-label="Choose license">
+    return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
       <span class="ic">🔒</span>
-      <span>${money(b.price || 29.99)}</span>
+      <span>${money(b.price)}</span>
     </button>`;
   }
 
@@ -544,9 +559,9 @@
       status.textContent = "Loading marketplace…";
       status.classList.remove("hidden");
 
-      const beats = await window.FB.fetchBeats({ max: 60 });
+      // ✅ Force refresh once to avoid old cached “free”
+      const beats = await window.FB.fetchBeats({ max: 60, force: true });
 
-      // ✅ make latest beats accessible to license-modal.js
       window.__LATEST_BEATS__ = beats;
 
       const filtered = filterBeats(beats, params);
@@ -566,11 +581,12 @@
         card.className = "card beat-card";
         card.setAttribute("data-beat-id", b.id);
 
+        const audioUrl = b.audio || "";
+
         card.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
-            <!-- ✅ play only (does NOT open license modal) -->
-            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${b.previewAudio||b.audio||""}" aria-label="Play">
+            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
@@ -583,9 +599,6 @@
               </a>
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
             </div>
-
-            <!-- ✅ Paid = opens license modal (license-modal.js already handles it)
-                ✅ Free = opens free download popup -->
             ${pillHTML(b)}
           </div>
         `;
