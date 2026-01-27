@@ -39,6 +39,8 @@
       cursor:pointer;
       user-select:none;
       transition:transform .08s ease, background .15s ease;
+      white-space:nowrap;             /* ✅ prevents wrap */
+      flex-shrink:0;                  /* ✅ stops pill squeezing */
     }
     .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
     .pb-pill:active{transform:translateY(0px)}
@@ -46,6 +48,32 @@
     .pb-pill.free{
       background:rgba(59,130,246,.16);
       border-color:rgba(59,130,246,.35);
+    }
+
+    /* ✅ FIX: Align price pills perfectly (marketplace) */
+    .beat-meta{
+      align-items:stretch !important;        /* full height */
+    }
+    .beat-info{
+      flex:1;
+      min-width:0;                          /* stop overflow pushing pill */
+    }
+    .beat-actions{
+      display:flex;
+      align-items:flex-end;                  /* bottom align */
+      justify-content:flex-end;
+    }
+    .beat-info h3{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      display:-webkit-box;
+      -webkit-line-clamp:2;                 /* ✅ consistent height */
+      -webkit-box-orient:vertical;
+    }
+    .producer{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
     /* ✅ Free download modal (BeatStars style) */
@@ -583,6 +611,7 @@
 
         const audioUrl = b.audio || "";
 
+        /* ✅ ONLY CHANGE HERE: wrappers for alignment */
         card.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
@@ -592,14 +621,17 @@
           </div>
 
           <div class="beat-meta">
-            <div>
+            <div class="beat-info">
               <h3>${b.title}</h3>
               <a class="producer" href="/producer-profile.html?producerId=${encodeURIComponent(b.producerId||"")}">
                 ${prettyProducerName(b)}
               </a>
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
             </div>
-            ${pillHTML(b)}
+
+            <div class="beat-actions">
+              ${pillHTML(b)}
+            </div>
           </div>
         `;
 
