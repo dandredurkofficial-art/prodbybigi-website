@@ -435,3 +435,36 @@ a:hover{opacity:.9}
   font-size:12px;
 }
 .pb-term b{ color: var(--text); }
+
+/* =========================
+   PRICE PILL ALIGNMENT FIX
+========================= */
+
+/* Shared container for title + price */
+.beat-meta,
+.trend-actions,
+.chart-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Force pill size consistency */
+.pb-pill {
+  min-width: 96px;
+  height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  white-space: nowrap;
+}
+
+/* Lock icon + text alignment */
+.pb-pill .ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
