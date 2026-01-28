@@ -256,8 +256,24 @@
     return "Prod. " + String(b.producerId).slice(0,8);
   }
 
-  function setAvatar(name){
+  // ✅ NEW: set avatar image if url exists, otherwise initials
+  function setAvatar(name, photoUrl){
     const el = document.getElementById("prodAvatar");
+    if (!el) return;
+
+    // cache-bust so updated photo shows immediately
+    const withBust = (u)=>{
+      if (!u) return "";
+      const sep = u.includes("?") ? "&" : "?";
+      return u + sep + "v=" + Date.now();
+    };
+
+    if (photoUrl && String(photoUrl).trim()){
+      const safeUrl = withBust(String(photoUrl).trim());
+      el.innerHTML = `<img src="${safeUrl}" alt="${String(name||"Producer")}" loading="lazy" />`;
+      return;
+    }
+
     const initials = String(name||"PB").trim().slice(0,2).toUpperCase();
     el.innerHTML = `<div style="font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
@@ -270,6 +286,16 @@
     return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
   }
 
+  // ✅ NEW: try to get producer photo from beats if it exists
+  function getPhotoFromBeats(mine){
+    if (!Array.isArray(mine)) return "";
+    const b = mine.find(x =>
+      (x && (x.producerPhotoURL || x.producerAvatar || x.producerPhoto || x.photoURL))
+    );
+    if (!b) return "";
+    return b.producerPhotoURL || b.producerAvatar || b.producerPhoto || b.photoURL || "";
+  }
+
   async function loadProducerProfile(){
     const pid = getProducerIdFromURL();
     const status = document.getElementById("status");
@@ -279,7 +305,7 @@
     if (!pid){
       document.getElementById("prodName").textContent = "Producer";
       document.getElementById("prodSub").textContent = "Missing producerId in URL.";
-      setAvatar("PB");
+      setAvatar("PB", "");
       status.textContent = "Open a producer from Marketplace (click producer name).";
       return;
     }
@@ -300,7 +326,23 @@
       const displayName = mine[0] ? prettyProducerNameFromBeat(mine[0]) : ("Prod. " + pid.slice(0,8));
       document.getElementById("prodName").textContent = displayName;
       document.getElementById("prodSub").textContent = `Producer ID: ${pid}`;
-      setAvatar(displayName);
+
+      // ✅ NEW: fetch producer profile (photo) if available
+      let producerPhoto = "";
+      try{
+        if (window.FB && typeof window.FB.getProducerProfile === "function"){
+          const prof = await window.FB.getProducerProfile(pid);
+          producerPhoto = prof?.photoURL || prof?.avatarURL || prof?.profilePhoto || "";
+        } else if (window.FB && typeof window.FB.fetchProducerProfile === "function"){
+          const prof = await window.FB.fetchProducerProfile(pid);
+          producerPhoto = prof?.photoURL || prof?.avatarURL || prof?.profilePhoto || "";
+        }
+      }catch(e){
+        // ignore and fallback to beats photo
+      }
+
+      if (!producerPhoto) producerPhoto = getPhotoFromBeats(mine);
+      setAvatar(displayName, producerPhoto);
 
       document.getElementById("statBeats").textContent = String(mine.length);
 
