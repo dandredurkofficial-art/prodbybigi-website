@@ -39,8 +39,8 @@
       cursor:pointer;
       user-select:none;
       transition:transform .08s ease, background .15s ease;
-      white-space:nowrap;             /* ✅ prevents wrap */
-      flex-shrink:0;                  /* ✅ stops pill squeezing */
+      flex:0 0 auto;
+      white-space:nowrap;
     }
     .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
     .pb-pill:active{transform:translateY(0px)}
@@ -48,32 +48,6 @@
     .pb-pill.free{
       background:rgba(59,130,246,.16);
       border-color:rgba(59,130,246,.35);
-    }
-
-    /* ✅ FIX: Align price pills perfectly (marketplace) */
-    .beat-meta{
-      align-items:stretch !important;        /* full height */
-    }
-    .beat-info{
-      flex:1;
-      min-width:0;                          /* stop overflow pushing pill */
-    }
-    .beat-actions{
-      display:flex;
-      align-items:flex-end;                  /* bottom align */
-      justify-content:flex-end;
-    }
-    .beat-info h3{
-      overflow:hidden;
-      text-overflow:ellipsis;
-      display:-webkit-box;
-      -webkit-line-clamp:2;                 /* ✅ consistent height */
-      -webkit-box-orient:vertical;
-    }
-    .producer{
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
     }
 
     /* ✅ Free download modal (BeatStars style) */
@@ -160,6 +134,37 @@
       font-size:13px;
       color:#22c55e;
       min-height:18px;
+    }
+
+    /* =========================================
+       ✅ FIX: title + pill alignment (BeatStars feel)
+       - On small screens: stack (text full width, pill full width)
+       - Ensure title/prod can use the width and wrap nicely
+    ========================================= */
+    .beat-meta > div{ min-width:0; } /* allow text to size properly in flex */
+    .beat-meta h3{
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:2;   /* show up to 2 lines like BeatStars */
+      overflow:hidden;
+    }
+    .beat-meta .producer{
+      max-width:100%;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    @media (max-width: 520px){
+      .beat-meta{
+        flex-direction:column;
+        align-items:stretch;
+        gap:10px;
+      }
+      .pb-pill{
+        width:100%;
+        min-width:0;
+      }
     }
   </style>
 </head>
@@ -611,7 +616,6 @@
 
         const audioUrl = b.audio || "";
 
-        /* ✅ ONLY CHANGE HERE: wrappers for alignment */
         card.innerHTML = `
           <div class="beat-cover">
             ${coverHTML(b.artwork, b.title)}
@@ -621,17 +625,14 @@
           </div>
 
           <div class="beat-meta">
-            <div class="beat-info">
+            <div>
               <h3>${b.title}</h3>
               <a class="producer" href="/producer-profile.html?producerId=${encodeURIComponent(b.producerId||"")}">
                 ${prettyProducerName(b)}
               </a>
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
             </div>
-
-            <div class="beat-actions">
-              ${pillHTML(b)}
-            </div>
+            ${pillHTML(b)}
           </div>
         `;
 
