@@ -332,17 +332,24 @@
       try{
         if (window.FB && typeof window.FB.getProducerProfile === "function"){
           const prof = await window.FB.getProducerProfile(pid);
-          producerPhoto = prof?.photoURL || prof?.avatarURL || prof?.profilePhoto || "";
-        } else if (window.FB && typeof window.FB.fetchProducerProfile === "function"){
-          const prof = await window.FB.fetchProducerProfile(pid);
-          producerPhoto = prof?.photoURL || prof?.avatarURL || prof?.profilePhoto || "";
+          // ✅ use display name from profile if exists
+          const profName =
+            (prof?.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+            : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
+        
+          if (profName){
+            document.getElementById("prodName").textContent = profName;
+            // keep sub same
+          }
+
+          producerPhoto = prof?.photoURL || prof?.photoUrl || prof?.photo || "";
         }
       }catch(e){
-        // ignore and fallback to beats photo
+        // ignore and fallback
       }
-
+      
       if (!producerPhoto) producerPhoto = getPhotoFromBeats(mine);
-      setAvatar(displayName, producerPhoto);
+      setAvatar(document.getElementById("prodName").textContent, producerPhoto);
 
       document.getElementById("statBeats").textContent = String(mine.length);
 
