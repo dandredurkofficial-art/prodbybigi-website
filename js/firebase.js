@@ -277,6 +277,33 @@ async function fetchBeats({ max = 60, force = false } = {}) {
 window.FB.fetchBeats = fetchBeats;
 
 /* =========================
+   ✅ PRODUCER PROFILE FETCH
+   Reads users/{producerId} so profile picture updates everywhere
+========================= */
+window.FB.getProducerProfile = async function (producerId) {
+  const pid = String(producerId || "").trim();
+  if (!pid) return null;
+
+  try {
+    const ref = doc(db, "users", pid);
+    const snap = await getDoc(ref);
+    if (!snap.exists()) return null;
+
+    const data = snap.data() || {};
+    return {
+      id: snap.id,
+      displayName: data.displayName || "",
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
+      photoURL: data.photoURL || data.photoUrl || data.photo || ""
+    };
+  } catch (err) {
+    console.error("[FB.getProducerProfile] error:", err);
+    return null;
+  }
+};
+
+/* =========================
    ✅ FREE DOWNLOAD LOG
    Saves a lead into Firestore collection: freeDownloads
 ========================= */
