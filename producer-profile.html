@@ -257,20 +257,16 @@
   }
 
   // ✅ NEW: set avatar image if url exists, otherwise initials
-  function setAvatar(name, photoUrl){
+  function setAvatar(name, photoURL){
     const el = document.getElementById("prodAvatar");
     if (!el) return;
 
-    // cache-bust so updated photo shows immediately
-    const withBust = (u)=>{
-      if (!u) return "";
-      const sep = u.includes("?") ? "&" : "?";
-      return u + sep + "v=" + Date.now();
-    };
+    const pic = String(photoURL || "").trim();
 
-    if (photoUrl && String(photoUrl).trim()){
-      const safeUrl = withBust(String(photoUrl).trim());
-      el.innerHTML = `<img src="${safeUrl}" alt="${String(name||"Producer")}" loading="lazy" />`;
+    if (pic) {
+      // cache-bust so updated pic shows immediately
+      const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
+      el.innerHTML = `<img src="${pic + bust}" alt="${name || "Producer"}">`;
       return;
     }
 
