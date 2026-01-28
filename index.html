@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 
   <link rel="stylesheet" href="/css/global.css?v=6">
-<link rel="stylesheet" href="/css/home.css?v=6">
+  <link rel="stylesheet" href="/css/home.css?v=6">
   <link rel="stylesheet" href="/css/cart.css">
 
   <style>
@@ -30,6 +30,7 @@
       color:#fff;
       cursor:pointer;
       user-select:none;
+      white-space:nowrap; /* ✅ keeps icon + price on one line */
       transition:transform .08s ease, background .15s ease;
     }
     .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
@@ -38,6 +39,41 @@
     .pb-pill.free{
       background:rgba(59,130,246,.16);
       border-color:rgba(59,130,246,.35);
+    }
+
+    /* ✅ Make titles show like BeatStars (2 lines, not disappearing) */
+    .trend-meta .t,
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow:hidden;
+    }
+
+    /* ✅ Keep long producer names from breaking layout */
+    .trend-meta .p,
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* ✅ Chart card bottom row: text left, pill right, aligned clean */
+    .chart-meta-row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:10px;
+      align-items:flex-end; /* ✅ pill sits nicely */
+    }
+    .chart-text{
+      min-width:0;
+      flex:1;
+    }
+    .chart-pill{
+      flex:0 0 auto;
+      align-self:flex-end;
     }
 
     /* ✅ Free download modal (BeatStars style) */
@@ -559,7 +595,7 @@
 
     // Paid pill: keep class price-pill too so license-modal.js can open
     return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
-      <span class="ic"></span>
+      <span class="ic">🔒</span>
       <span>${money(b.price)}</span>
     </button>`;
   }
@@ -637,12 +673,15 @@
               <span class="playIcon">▶</span>
             </button>
           </div>
-          <div style="display:flex;justify-content:space-between;gap:10px;margin-top:10px;align-items:flex-start;">
-            <div>
-              <div style="font-weight:900;font-size:13px;line-height:1.2;">${b.title}</div>
-              <div style="color:var(--muted);font-size:12px;margin-top:4px;">${prettyProducerName(b)}</div>
+
+          <div class="chart-meta-row">
+            <div class="chart-text">
+              <div class="home-title-clamp" style="font-weight:900;font-size:13px;line-height:1.2;">${b.title}</div>
+              <div class="home-producer-clamp" style="color:var(--muted);font-size:12px;margin-top:4px;">${prettyProducerName(b)}</div>
             </div>
-            ${pillHTML(b)}
+            <div class="chart-pill">
+              ${pillHTML(b)}
+            </div>
           </div>
         `;
 
