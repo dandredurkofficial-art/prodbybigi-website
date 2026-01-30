@@ -1,4 +1,4 @@
-// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION (FIXED)
+// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION (PROFILE PHOTO FIX)
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
@@ -14,7 +14,14 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ✅ AUDIORY FIREBASE CONFIG (NEW) */
+// ✅ NEW: Storage (for profile pictures)
+import {
+  getStorage,
+  ref,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+/* ✅ AUDIORY FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
   authDomain: "audiory-beat-store.firebaseapp.com",
@@ -28,12 +35,14 @@ const firebaseConfig = {
 const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Expose helpers
 window.FB = window.FB || {};
 window.FB.app = app;
 window.FB.auth = auth;
 window.FB.db = db;
+window.FB.storage = storage;
 
 window.FB.collection = collection;
 window.FB.getDocs = getDocs;
@@ -45,7 +54,7 @@ window.FB.where = where;
 window.FB.orderBy = orderBy;
 window.FB.limit = limit;
 
-// ✅ FAST token getter (no dynamic import)
+// ✅ FAST token getter
 window.FB.getIdToken = async () => {
   const user = auth.currentUser;
   if (!user) return null;
@@ -58,10 +67,90 @@ onAuthStateChanged(auth, (u) => {
   window.FB.user = u || null;
 });
 
+/* =========================
+   ✅ PROFILE PHOTO RESOLVER
+   Fixes: Android shows but iPhone/PC doesn't (blob: URL saved)
+========================= */
+const __photoResolveCache = new Map();
+
+function looksLikeHttpUrl(u){
+  return /^https?:\/\//i.test(String(u || ""));
+}
+
+function looksLikeGsUrl(u){
+  return /^gs:\/\//i.test(String(u || ""));
+}
+
+// If you stored a storage path like "profilePics/UID.jpg"
+function looksLikeStoragePath(u){
+  const s = String(u || "");
+  if (!s) return false;
+  if (looksLikeHttpUrl(s) || looksLikeGsUrl(s)) return false;
+  // basic heuristic: has a folder + file-ish
+  return s.includes("/") && !s.startsWith("blob:");
+}
+
+window.FB.resolvePhotoURL = async function resolvePhotoURL(url, producerId = "") {
+  const raw = String(url || "").trim();
+  if (!raw) return "";
+
+  // ❌ blob urls work only on the same device/session
+  if (raw.startsWith("blob:")) return "";
+
+  // ✅ normal https link
+  if (looksLikeHttpUrl(raw)) return raw;
+
+  const cacheKey = `photo:${producerId}:${raw}`;
+  if (__photoResolveCache.has(cacheKey)) return __photoResolveCache.get(cacheKey);
+
+  try {
+    // ✅ gs://... link -> download URL
+    if (looksLikeGsUrl(raw)) {
+      const dl = await getDownloadURL(ref(storage, raw));
+      __photoResolveCache.set(cacheKey, dl);
+      return dl;
+    }
+
+    // ✅ storage path like "profilePics/<uid>.jpg" OR "users/<uid>/avatar.jpg"
+    if (looksLikeStoragePath(raw)) {
+      const dl = await getDownloadURL(ref(storage, raw));
+      __photoResolveCache.set(cacheKey, dl);
+      return dl;
+    }
+
+    return "";
+  } catch (e) {
+    // If the file doesn't exist or rules block it, fallback to initials
+    return "";
+  }
+};
+
+window.FB.getProducerProfile = async function getProducerProfile(producerId){
+  if (!producerId) throw new Error("Missing producerId");
+  const snap = await getDoc(doc(db, "users", String(producerId)));
+  if (!snap.exists()) return null;
+
+  const prof = snap.data() || {};
+  const raw =
+    prof.photoURL ||
+    prof.photoUrl ||
+    prof.photo ||
+    "";
+
+  const resolved = await window.FB.resolvePhotoURL(raw, producerId);
+
+  return {
+    id: producerId,
+    ...prof,
+    // Always prefer resolved HTTPS url
+    photoURL: resolved || ""
+  };
+};
+
 // --------------------
-// ✅ FAST CACHE LAYER
+// ✅ FAST CACHE LAYER (BEATS)
 // --------------------
-const CACHE_KEY = "audiory_cached_beats_v3"; // ✅ bump to avoid old cached "free" beats
+const CACHE_KEY = "audiory_cached_beats_v3";
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
 let memCache = null;
 let memCacheAt = 0;
@@ -89,7 +178,6 @@ function writeLocalCache(beats) {
   } catch {}
 }
 
-// Optional helper (debug)
 window.FB.clearBeatsCache = function () {
   try { localStorage.removeItem(CACHE_KEY); } catch {}
   memCache = null;
@@ -98,12 +186,6 @@ window.FB.clearBeatsCache = function () {
 
 /* =========================
    ✅ PRICE PICKER (AUDIORY)
-   Priority:
-   - freeDownload / isFree / free true  -> 0
-   - licenses.basic.enabled -> basic.price
-   - licenses.premium.enabled -> premium.price
-   - licenses.exclusive.enabled -> exclusive.price
-   - fallback: data.price (if number)
 ========================= */
 function toNum(v) {
   const n = Number(v);
@@ -136,14 +218,9 @@ function pickDisplayPrice(data) {
   }
 
   const fallback = toNum(data?.price);
-  return fallback !== null ? fallback : 0; // if nothing exists, treat as free until producer sets licenses/price
+  return fallback !== null ? fallback : 0;
 }
 
-/* =========================
-   ✅ BEAT NORMALIZER (FIXED)
-   - NO MORE Number(null) bug
-   - Computes price from licenses correctly
-========================= */
 function normalizeBeat(docId, data) {
   const artwork =
     data.artwork ||
@@ -179,17 +256,12 @@ function normalizeBeat(docId, data) {
   const createdAt =
     data.createdAt || data.createdat || data.timestamp || 0;
 
-  // ranking fields (optional)
   const likes = Number(data.likes ?? data.likeCount ?? 0) || 0;
   const sales = Number(data.sales ?? data.sold ?? data.salesCount ?? 0) || 0;
 
   const licenses = data.licenses || null;
 
-  // ✅ display price computed from licenses/free toggles
   const displayPrice = pickDisplayPrice(data);
-
-  // ✅ IMPORTANT FIX:
-  // isFree must NOT be based on Number(null) or missing field
   const isFree = displayPrice === 0;
 
   return {
@@ -204,16 +276,13 @@ function normalizeBeat(docId, data) {
     createdAt,
     desc: data.desc || data.description || "",
 
-    // ✅ what your UI should use
     price: displayPrice,
     isFree,
 
-    // optional extras
     likes,
     sales,
     licenses,
 
-    // if you store these later
     freeDownload: data.freeDownload === true,
     downloadUrl: data.downloadUrl || data.freeDownloadUrl || ""
   };
@@ -223,22 +292,18 @@ function normalizeBeat(docId, data) {
 // ✅ FAST FETCH (dedupe + fallback)
 // --------------------
 async function fetchBeats({ max = 60, force = false } = {}) {
-  // 1) in-memory cache
   if (!force && memCache && (now() - memCacheAt) < CACHE_TTL_MS) {
     return memCache;
   }
 
-  // 2) local cache (instant paint)
   const local = readLocalCache();
   const localFresh = local && (now() - local.ts) < CACHE_TTL_MS;
 
-  // 3) avoid duplicate network calls
   if (!force && inflight) {
     if (localFresh) return local.beats;
     return await inflight;
   }
 
-  // 4) start network request
   inflight = (async () => {
     try {
       const beatsRef = collection(db, "beats");
@@ -277,35 +342,7 @@ async function fetchBeats({ max = 60, force = false } = {}) {
 window.FB.fetchBeats = fetchBeats;
 
 /* =========================
-   ✅ PRODUCER PROFILE FETCH
-   Reads users/{producerId} so profile picture updates everywhere
-========================= */
-window.FB.getProducerProfile = async function (producerId) {
-  const pid = String(producerId || "").trim();
-  if (!pid) return null;
-
-  try {
-    const ref = doc(db, "users", pid);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-
-    const data = snap.data() || {};
-    return {
-      id: snap.id,
-      displayName: data.displayName || "",
-      firstName: data.firstName || "",
-      lastName: data.lastName || "",
-      photoURL: data.photoURL || data.photoUrl || data.photo || ""
-    };
-  } catch (err) {
-    console.error("[FB.getProducerProfile] error:", err);
-    return null;
-  }
-};
-
-/* =========================
    ✅ FREE DOWNLOAD LOG
-   Saves a lead into Firestore collection: freeDownloads
 ========================= */
 window.FB.logFreeDownload = async function ({
   beatId,
