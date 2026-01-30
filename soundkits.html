@@ -77,7 +77,16 @@
       color: #111;
       border: 1px solid rgba(255,255,255,.92);
     }
-    .loading-box{ margin: 14px 0; padding: 14px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.85); }
+    .loading-box{
+      margin: 14px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.85);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
     .hidden{ display:none !important; }
 
     /* Footer social icons (real icons) */
@@ -213,33 +222,29 @@
     return {
       id: docId,
       title: data.title || data.name || "Untitled Kit",
-      cover: data.cover || data.artwork || data.image || "",
+      cover: data.cover || data.coverUrl || data.image || data.artwork || "",
       description: data.description || data.desc || "",
       category: (data.category || "").toLowerCase(),
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      // optional
       downloadUrl: data.downloadUrl || data.downloadURL || ""
     };
   }
 
-  // ✅ FIX: collection fallback + no orderBy crash
-  async function fetchSoundKits(){
+  // Fallback fetcher (only used if FB.fetchSoundKits is not defined)
+  async function fallbackFetchSoundKits(){
     const { collection, getDocs, query, limit } = window.FB;
 
-    const names = ["soundkits", "soundKits", "sound_kits", "kits"];
+    const names = ["soundKits", "soundkits", "sound_kits", "kits"];
     let lastErr = null;
 
     for (const name of names){
       try{
         const ref = collection(window.FB.db, name);
-
-        // ✅ no orderBy => won’t break if createdAt missing
         const qy = query(ref, limit(120));
         const snap = await getDocs(qy);
 
-        // if empty, try next collection name
         if (snap.empty) continue;
 
         const kits = [];
@@ -248,13 +253,10 @@
           if (k.published) kits.push(k);
         });
 
-        // ✅ client-side sort (safe)
         kits.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
-
         return kits;
       }catch(err){
         lastErr = err;
-        continue;
       }
     }
 
@@ -312,17 +314,38 @@
     renderKits(filtered);
   }
 
+  function showFirebaseError(err){
+    const status = document.getElementById("kitStatus");
+    const code = err?.code ? String(err.code) : "";
+    const msg  = err?.message ? String(err.message) : String(err || "");
+    status.classList.remove("hidden");
+
+    // ✅ show exact problem
+    status.textContent =
+      "Could not load sound kits.\n\n" +
+      (code ? ("Error code: " + code + "\n") : "") +
+      (msg ? ("Message: " + msg + "\n\n") : "\n") +
+      "Fix:\n" +
+      "- If code is permission-denied → update Firestore rules to allow read.\n" +
+      "- If no collection found → create collection 'soundKits' or 'soundkits' in Firestore.\n";
+  }
+
   async function loadKits(){
     const status = document.getElementById("kitStatus");
     status.textContent = "Loading sound kits…";
     status.classList.remove("hidden");
 
     try{
-      ALL_KITS = await fetchSoundKits();
+      // ✅ prefer firebase.js helper if you added it
+      if (window.FB && typeof window.FB.fetchSoundKits === "function"){
+        ALL_KITS = await window.FB.fetchSoundKits({ max: 120 });
+      } else {
+        ALL_KITS = await fallbackFetchSoundKits();
+      }
       applyFilters();
     }catch(err){
       console.error(err);
-      status.textContent = "Could not load sound kits. Check Firestore rules/console.";
+      showFirebaseError(err);
     }
   }
 
@@ -344,7 +367,11 @@
       return;
     }
 
-    alert(`${kit.title}\n\n${kit.description || "No description."}\n\nCategory: ${kit.category || "—"}\nPrice: ${kit.price ? money(kit.price) : "Free"}`);
+    alert(
+      `${kit.title}\n\n${kit.description || "No description."}\n\n` +
+      `Category: ${kit.category || "—"}\n` +
+      `Price: ${kit.price ? money(kit.price) : "Free"}`
+    );
   });
 
   document.getElementById("kitSearch").addEventListener("input", applyFilters);
