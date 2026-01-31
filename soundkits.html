@@ -234,7 +234,7 @@
 
   // Fallback fetcher (only used if FB.fetchSoundKits is not defined)
   async function fallbackFetchSoundKits(){
-    const { collection, getDocs, query, limit } = window.FB;
+    const { collection, getDocs, query, limit, where } = window.FB; // ✅ added where
 
     const names = ["soundKits", "soundkits", "sound_kits", "kits"];
     let lastErr = null;
@@ -242,7 +242,10 @@
     for (const name of names){
       try{
         const ref = collection(window.FB.db, name);
-        const qy = query(ref, limit(120));
+
+        // ✅ FIX: only request published docs (matches your rules)
+        const qy = query(ref, where("published", "==", true), limit(120));
+
         const snap = await getDocs(qy);
 
         if (snap.empty) continue;
