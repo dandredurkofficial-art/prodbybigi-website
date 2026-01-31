@@ -362,6 +362,26 @@
     if (!kit) return;
 
     if (buy){
+      // ✅ Paid kit => DO NOT direct download
+      if (Number(kit.price || 0) > 0){
+        // If you already have cart logic, push this item into cart.
+        // Minimal: show message so you wire to your cart/checkout next.
+        alert("This kit is paid. Add it to cart / checkout instead of direct download.");
+
+        // OPTIONAL (if your cart.js supports adding custom items)
+        // window.PBCart?.addItem?.({
+        //   type: "soundkit",
+        //   id: kit.id,
+        //   title: kit.title,
+        //   price: Number(kit.price || 0),
+        //   cover: kit.cover,
+        //   downloadUrl: kit.downloadUrl || ""
+        // });
+
+        return;
+      }
+
+      // ✅ Free kit => allow download
       if (kit.downloadUrl){
         window.open(kit.downloadUrl, "_blank");
       } else {
