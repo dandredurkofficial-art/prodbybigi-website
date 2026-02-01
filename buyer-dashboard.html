@@ -147,8 +147,8 @@
       <a href="/marketplace.html">Tracks</a>
       <a href="/soundkits.html">Sound Kits</a>
       <a href="/producers.html">Producers</a>
-      <a class="cta" href="/register.html">Start Selling</a>
-      <a class="ghost" href="/login.html">Sign in</a>
+      <a class="cta" href="/register.html" id="navStartSelling">Start Selling</a>
+      <a class="ghost" href="/login.html" id="navSignIn">Sign in</a>
     </nav>
 
     <div style="display:flex; gap:10px; align-items:center;">
@@ -169,8 +169,8 @@
   <a href="/marketplace.html">Tracks</a>
   <a href="/soundkits.html">Sound Kits</a>
   <a href="/producers.html">Producers</a>
-  <a href="/register.html" class="cta">Start Selling</a>
-  <a href="/login.html">Sign in</a>
+  <a href="/register.html" class="cta" id="mNavStartSelling">Start Selling</a>
+  <a href="/login.html" id="mNavSignIn">Sign in</a>
 </nav>
 
 <main class="container page">
@@ -268,7 +268,7 @@
       <div style="font-weight:950; font-size:14px;">Account</div>
       <div class="sub" style="margin-top:8px;" id="profileInfo">—</div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-        <a class="btn" href="/login.html">Switch account</a>
+        <a class="btn" href="/login.html" id="switchAccountBtn">Switch account</a>
         <a class="btn primary" href="/marketplace.html">Go shopping</a>
       </div>
     </div>
@@ -327,6 +327,29 @@
       if (!v) return;
       v.classList.toggle("hidden", name !== tab);
     });
+  }
+
+  // ✅ NEW: hide/show nav auth links (desktop + mobile)
+  function updateNavAuthUI(user){
+    const isIn = !!user;
+
+    const navSignIn = document.getElementById("navSignIn");
+    const navStart  = document.getElementById("navStartSelling");
+    const mSignIn   = document.getElementById("mNavSignIn");
+    const mStart    = document.getElementById("mNavStartSelling");
+
+    // When signed in, don't show "Sign in" again
+    if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
+    if (mSignIn)   mSignIn.style.display   = isIn ? "none" : "";
+
+    // Optional: Buyers dashboard hides "Start Selling" while signed in.
+    // If you want it always visible, change isIn ? "none" : "" to "".
+    if (navStart) navStart.style.display = isIn ? "none" : "";
+    if (mStart)   mStart.style.display   = isIn ? "none" : "";
+
+    // Profile button label
+    const sw = document.getElementById("switchAccountBtn");
+    if (sw) sw.textContent = isIn ? "Switch account" : "Sign in";
   }
 
   // Accept multiple shapes (your order docs may differ)
@@ -455,6 +478,8 @@
     setStatus("Loading your orders…");
 
     const u = window.FB?.auth?.currentUser || window.FB?.user;
+    updateNavAuthUI(u);
+
     if (!u){
       setStatus("You must sign in.\n\nRedirecting to login…");
       setTimeout(()=>location.href="/login.html", 800);
@@ -554,6 +579,7 @@
   $("signOutBtn").addEventListener("click", async ()=>{
     try{
       await signOut(window.FB.auth);
+      updateNavAuthUI(null);
       location.href = "/login.html";
     }catch(e){
       alert("Sign out failed: " + (e?.message || e));
@@ -565,12 +591,15 @@
     const tick = ()=>{
       const u = window.FB?.auth?.currentUser || window.FB?.user || null;
       $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
+      updateNavAuthUI(u);
     };
     tick();
     setInterval(tick, 1000);
 
     // redirect if not signed in
     const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    updateNavAuthUI(u);
+
     if (!u){
       setStatus("You must sign in to use Buyer Dashboard.\n\nRedirecting to login…");
       setTimeout(()=>location.href="/login.html", 800);
