@@ -1,4 +1,4 @@
-// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION (PROFILE PHOTO FIX)
+// /js/firebase.js (FAST LOAD + CACHE + SINGLE SOURCE OF TRUTH) — AUDIORY VERSION (PROFILE PHOTO FIX + NAV AUTH UI)
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
@@ -14,12 +14,8 @@ import {
   limit
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ✅ NEW: Storage (for profile pictures)
-import {
-  getStorage,
-  ref,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+// ✅ Storage (for profile pictures)
+import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 /* ✅ AUDIORY FIREBASE CONFIG */
 const firebaseConfig = {
@@ -61,10 +57,51 @@ window.FB.getIdToken = async () => {
   return await user.getIdToken();
 };
 
-// Optional: keep current user reference
+/* =========================
+   ✅ NAV AUTH UI (GLOBAL)
+   Hides "Sign in" when logged in.
+   Optional: hides "Start Selling" when logged in (set to false if you want it visible).
+   Works if your HTML uses these IDs:
+   Desktop: #navSignIn, #navStartSelling
+   Mobile:  #mNavSignIn, #mNavStartSelling
+========================= */
+window.FB.NAV_HIDE_START_SELLING_WHEN_LOGGED_IN = true;
+
+window.FB.updateNavAuthUI = function updateNavAuthUI(user) {
+  const isIn = !!user;
+
+  const navSignIn = document.getElementById("navSignIn");
+  const navStart = document.getElementById("navStartSelling");
+  const mSignIn = document.getElementById("mNavSignIn");
+  const mStart = document.getElementById("mNavStartSelling");
+
+  if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
+  if (mSignIn) mSignIn.style.display = isIn ? "none" : "";
+
+  const hideStart = window.FB.NAV_HIDE_START_SELLING_WHEN_LOGGED_IN === true;
+  if (hideStart) {
+    if (navStart) navStart.style.display = isIn ? "none" : "";
+    if (mStart) mStart.style.display = isIn ? "none" : "";
+  } else {
+    if (navStart) navStart.style.display = "";
+    if (mStart) mStart.style.display = "";
+  }
+};
+
+// Optional: keep current user reference + update nav immediately
 window.FB.user = null;
 onAuthStateChanged(auth, (u) => {
   window.FB.user = u || null;
+
+  // ✅ global nav fix
+  try {
+    window.FB.updateNavAuthUI(window.FB.user);
+  } catch {}
+
+  // Optional event if pages want to react to auth changes
+  try {
+    window.dispatchEvent(new CustomEvent("firebase-auth-changed", { detail: { user: window.FB.user } }));
+  } catch {}
 });
 
 /* =========================
@@ -73,16 +110,16 @@ onAuthStateChanged(auth, (u) => {
 ========================= */
 const __photoResolveCache = new Map();
 
-function looksLikeHttpUrl(u){
+function looksLikeHttpUrl(u) {
   return /^https?:\/\//i.test(String(u || ""));
 }
 
-function looksLikeGsUrl(u){
+function looksLikeGsUrl(u) {
   return /^gs:\/\//i.test(String(u || ""));
 }
 
 // If you stored a storage path like "profilePics/UID.jpg"
-function looksLikeStoragePath(u){
+function looksLikeStoragePath(u) {
   const s = String(u || "");
   if (!s) return false;
   if (looksLikeHttpUrl(s) || looksLikeGsUrl(s)) return false;
@@ -125,18 +162,13 @@ window.FB.resolvePhotoURL = async function resolvePhotoURL(url, producerId = "")
   }
 };
 
-window.FB.getProducerProfile = async function getProducerProfile(producerId){
+window.FB.getProducerProfile = async function getProducerProfile(producerId) {
   if (!producerId) throw new Error("Missing producerId");
   const snap = await getDoc(doc(db, "users", String(producerId)));
   if (!snap.exists()) return null;
 
   const prof = snap.data() || {};
-  const raw =
-    prof.photoURL ||
-    prof.photoUrl ||
-    prof.photo ||
-    "";
-
+  const raw = prof.photoURL || prof.photoUrl || prof.photo || "";
   const resolved = await window.FB.resolvePhotoURL(raw, producerId);
 
   return {
@@ -179,7 +211,9 @@ function writeLocalCache(beats) {
 }
 
 window.FB.clearBeatsCache = function () {
-  try { localStorage.removeItem(CACHE_KEY); } catch {}
+  try {
+    localStorage.removeItem(CACHE_KEY);
+  } catch {}
   memCache = null;
   memCacheAt = 0;
 };
@@ -193,11 +227,7 @@ function toNum(v) {
 }
 
 function isTruthyFree(data) {
-  return (
-    data?.freeDownload === true ||
-    data?.isFree === true ||
-    data?.free === true
-  );
+  return data?.freeDownload === true || data?.isFree === true || data?.free === true;
 }
 
 function pickDisplayPrice(data) {
@@ -239,22 +269,14 @@ function normalizeBeat(docId, data) {
     data.fullAudio ||
     "";
 
-  const producerId =
-    data.producerId ||
-    data.producerid ||
-    data.producerID ||
-    "";
+  const producerId = data.producerId || data.producerid || data.producerID || "";
 
   const producerName =
-    data.producerName ||
-    data.producer ||
-    data.producerDisplayName ||
-    "";
+    data.producerName || data.producer || data.producerDisplayName || "";
 
   const genre = (data.genre || data.Genre || "").toString().trim();
 
-  const createdAt =
-    data.createdAt || data.createdat || data.timestamp || 0;
+  const createdAt = data.createdAt || data.createdat || data.timestamp || 0;
 
   const likes = Number(data.likes ?? data.likeCount ?? 0) || 0;
   const sales = Number(data.sales ?? data.sold ?? data.salesCount ?? 0) || 0;
@@ -292,12 +314,12 @@ function normalizeBeat(docId, data) {
 // ✅ FAST FETCH (dedupe + fallback)
 // --------------------
 async function fetchBeats({ max = 60, force = false } = {}) {
-  if (!force && memCache && (now() - memCacheAt) < CACHE_TTL_MS) {
+  if (!force && memCache && now() - memCacheAt < CACHE_TTL_MS) {
     return memCache;
   }
 
   const local = readLocalCache();
-  const localFresh = local && (now() - local.ts) < CACHE_TTL_MS;
+  const localFresh = local && now() - local.ts < CACHE_TTL_MS;
 
   if (!force && inflight) {
     if (localFresh) return local.beats;
