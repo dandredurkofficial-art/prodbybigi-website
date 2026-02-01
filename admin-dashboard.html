@@ -177,8 +177,8 @@
       <a href="/marketplace.html">Tracks</a>
       <a href="/soundkits.html">Sound Kits</a>
       <a href="/producers.html">Producers</a>
-      <a class="cta" href="/register.html">Start Selling</a>
-      <a class="ghost" href="/login.html">Sign in</a>
+      <a class="cta" href="/register.html" id="navStartSelling">Start Selling</a>
+      <a class="ghost" href="/login.html" id="navSignIn">Sign in</a>
     </nav>
 
     <div style="display:flex; gap:10px; align-items:center;">
@@ -199,8 +199,8 @@
   <a href="/marketplace.html">Tracks</a>
   <a href="/soundkits.html">Sound Kits</a>
   <a href="/producers.html">Producers</a>
-  <a href="/register.html" class="cta">Start Selling</a>
-  <a href="/login.html">Sign in</a>
+  <a href="/register.html" class="cta" id="mNavStartSelling">Start Selling</a>
+  <a href="/login.html" id="mNavSignIn">Sign in</a>
 </nav>
 
 <main class="container page">
@@ -444,6 +444,23 @@
     });
   }
 
+  // ✅ NEW: hide/show nav auth links (desktop + mobile)
+  function updateNavAuthUI(user){
+    const isIn = !!user;
+
+    const navSignIn = document.getElementById("navSignIn");
+    const navStart  = document.getElementById("navStartSelling");
+    const mSignIn   = document.getElementById("mNavSignIn");
+    const mStart    = document.getElementById("mNavStartSelling");
+
+    if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
+    if (mSignIn)   mSignIn.style.display   = isIn ? "none" : "";
+
+    // Optional: hide Start Selling while signed in on admin page
+    if (navStart)  navStart.style.display  = isIn ? "none" : "";
+    if (mStart)    mStart.style.display    = isIn ? "none" : "";
+  }
+
   function isAdminUser(user){
     if (!user) return false;
     if (!ADMIN_EMAILS.length) return true;
@@ -546,7 +563,6 @@
   function renderOverview(){
     const pubBeats = ALL_BEATS.filter(b=>b.published).length;
     const pubKits  = ALL_KITS.filter(k=>k.published).length;
-
     const payoutRequested = ALL_PAYOUTS.filter(p => String(p.status).toLowerCase() === "requested").length;
 
     $("statPublishedBeats").textContent = String(pubBeats);
@@ -824,11 +840,9 @@
     setStatus("Loading dashboard data…");
 
     try{
-      // Beats
       const beatsRes = await fetchCollectionSafe(["beats"], 400);
       ALL_BEATS = beatsRes.docs.map(normalizeBeat);
 
-      // Kits
       let kitsRes = null;
       try{
         kitsRes = await fetchCollectionSafe(["soundkits", "soundKits"], 400);
@@ -837,7 +851,6 @@
       }
       ALL_KITS = kitsRes.docs.map(normalizeKit);
 
-      // Users
       let usersRes = null;
       try{
         usersRes = await fetchCollectionSafe(["users"], 400);
@@ -846,7 +859,6 @@
       }
       ALL_USERS = usersRes.docs.map(normalizeUser);
 
-      // Orders
       let ordersRes = null;
       try{
         ordersRes = await fetchCollectionSafe(["orders"], 400);
@@ -855,7 +867,6 @@
       }
       ALL_ORDERS = ordersRes.docs.map(normalizeOrder);
 
-      // Payouts (admin-only by rules)
       let payoutsRes = null;
       try{
         payoutsRes = await fetchCollectionSafe(["payouts"], 400);
@@ -900,19 +911,13 @@
   async function saveBeatEdits(beatId){
     const price = Number(getInputValue("beatPrice", beatId) || 0);
     const downloadUrl = String(getInputValue("beatDownloadUrl", beatId) || "").trim();
-
     const ref = doc(window.FB.db, "beats", beatId);
-    await updateDoc(ref, {
-      price: isFinite(price) ? price : 0,
-      downloadUrl
-    });
+    await updateDoc(ref, { price: isFinite(price) ? price : 0, downloadUrl });
   }
 
   async function saveKitEdits(kitId){
     const price = Number(getInputValue("kitPrice", kitId) || 0);
     const downloadUrl = String(getInputValue("kitDownloadUrl", kitId) || "").trim();
-
-    // try both kit collections
     try{
       const ref = doc(window.FB.db, "soundkits", kitId);
       await updateDoc(ref, { price: isFinite(price) ? price : 0, downloadUrl });
@@ -925,33 +930,21 @@
   async function savePayoutMeta(payoutId){
     const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
     const note = String(getInputValue("payoutNote", payoutId) || "").trim();
-
     const ref = doc(window.FB.db, "payouts", payoutId);
-    await updateDoc(ref, {
-      txId,
-      note
-    });
+    await updateDoc(ref, { txId, note });
   }
 
   async function approvePayout(payoutId){
     const ref = doc(window.FB.db, "payouts", payoutId);
-    await updateDoc(ref, {
-      status: "approved",
-      approvedAt: Date.now()
-    });
+    await updateDoc(ref, { status: "approved", approvedAt: Date.now() });
   }
 
   async function markPaid(payoutId){
     const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
     const ref = doc(window.FB.db, "payouts", payoutId);
-    await updateDoc(ref, {
-      status: "paid",
-      paidAt: Date.now(),
-      txId: txId || ""
-    });
+    await updateDoc(ref, { status: "paid", paidAt: Date.now(), txId: txId || "" });
   }
 
-  // UI events
   document.addEventListener("click", async (e)=>{
     const tabBtn = e.target.closest(".tab");
     if (tabBtn){
@@ -1010,11 +1003,8 @@
         actionBtn.disabled = true;
         setStatus("Updating kit…");
         const to = actionBtn.getAttribute("data-to") === "1";
-        try{
-          await togglePublished("soundkits", id, to);
-        }catch{
-          await togglePublished("soundKits", id, to);
-        }
+        try{ await togglePublished("soundkits", id, to); }
+        catch{ await togglePublished("soundKits", id, to); }
         await loadAll();
         return;
       }
@@ -1023,11 +1013,8 @@
         if (!confirm("Delete this kit permanently?")) return;
         actionBtn.disabled = true;
         setStatus("Deleting kit…");
-        try{
-          await deleteDocFrom("soundkits", id);
-        }catch{
-          await deleteDocFrom("soundKits", id);
-        }
+        try{ await deleteDocFrom("soundkits", id); }
+        catch{ await deleteDocFrom("soundKits", id); }
         await loadAll();
         return;
       }
@@ -1105,6 +1092,7 @@
   $("signOutBtn").addEventListener("click", async ()=>{
     try{
       await signOut(window.FB.auth);
+      updateNavAuthUI(null);
       location.href = "/login.html";
     }catch(e){
       alert("Sign out failed: " + (e?.message || e));
@@ -1114,23 +1102,21 @@
   window.addEventListener("firebase-ready", async ()=>{
     const tick = ()=>{
       const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      if (!u){
-        $("authChip").textContent = "Auth: not signed in";
-        return;
-      }
-      $("authChip").textContent = "Signed in: " + (u.email || u.uid);
+      $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
+      updateNavAuthUI(u);
     };
     tick();
     setInterval(tick, 1000);
 
     const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    updateNavAuthUI(u);
+
     if (!u){
       setStatus("You must sign in to use Admin Dashboard.\n\nRedirecting to login…");
       setTimeout(()=>location.href="/login.html", 800);
       return;
     }
 
-    // optional front-end email gate
     if (!isAdminUser(u)){
       setStatus("Access denied.\n\nThis account is not in ADMIN_EMAILS list in admin-dashboard.html");
       return;
