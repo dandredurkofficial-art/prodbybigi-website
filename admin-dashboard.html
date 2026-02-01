@@ -60,9 +60,7 @@
     @media (max-width: 1000px){ .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
     @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; } }
 
-    .stat{
-      padding:14px; border-radius:18px;
-    }
+    .stat{ padding:14px; border-radius:18px; }
     .k{ color:var(--muted); font-size:12px; }
     .v{ margin-top:6px; font-size:22px; font-weight:950; }
     .mini{ margin-top:6px; color:var(--muted); font-size:12px; }
@@ -136,10 +134,30 @@
     }
     .pill.ok{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
     .pill.no{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
+    .pill.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.14); }
 
     .actions{
       display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
     }
+
+    .field{
+      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+      margin-top:8px;
+    }
+    .mini-input{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      padding: 10px 10px;
+      border-radius: 12px;
+      outline: none;
+      width: 160px;
+      font-weight: 800;
+      font-size: 12px;
+    }
+    .mini-input.wide{ width: min(520px, 100%); }
+
+    .hint{ color:var(--muted); font-size:12px; margin-top:6px; }
 
     .hidden{ display:none !important; }
   </style>
@@ -190,7 +208,7 @@
   <section class="head">
     <div>
       <h1 class="title">Admin Dashboard</h1>
-      <div class="sub">Manage Beats, Sound Kits, Users, Orders.</div>
+      <div class="sub">Manage Beats, Sound Kits, Users, Orders, Payouts.</div>
     </div>
 
     <div class="right-actions">
@@ -203,6 +221,7 @@
     <button class="tab active" data-tab="overview">Overview</button>
     <button class="tab" data-tab="beats">Beats</button>
     <button class="tab" data-tab="kits">Sound Kits</button>
+    <button class="tab" data-tab="payouts">Payouts</button>
     <button class="tab" data-tab="users">Users</button>
     <button class="tab" data-tab="orders">Orders</button>
   </section>
@@ -223,14 +242,14 @@
         <div class="mini" id="statKitsMini">—</div>
       </div>
       <div class="card stat">
+        <div class="k">Payout Requests</div>
+        <div class="v" id="statPayouts">0</div>
+        <div class="mini" id="statPayoutsMini">—</div>
+      </div>
+      <div class="card stat">
         <div class="k">Users</div>
         <div class="v" id="statUsers">0</div>
         <div class="mini" id="statUsersMini">—</div>
-      </div>
-      <div class="card stat">
-        <div class="k">Orders</div>
-        <div class="v" id="statOrders">0</div>
-        <div class="mini" id="statOrdersMini">—</div>
       </div>
     </div>
 
@@ -241,6 +260,7 @@
         <button class="btn" id="btnReloadAll" type="button">Reload all data</button>
         <button class="btn" id="btnShowUnpublished" type="button">Show unpublished items</button>
       </div>
+      <div class="hint">Admin access is checked from Firestore: <b>/users/&lt;uid&gt;.isAdmin === true</b></div>
     </div>
   </section>
 
@@ -289,6 +309,31 @@
         </tr>
       </thead>
       <tbody id="kitsTbody"></tbody>
+    </table>
+  </section>
+
+  <!-- PAYOUTS -->
+  <section id="view-payouts" class="hidden">
+    <div class="tools">
+      <input id="payoutsSearch" placeholder="Search payouts (producerId / email / status)..." />
+      <select id="payoutsFilter">
+        <option value="">All</option>
+        <option value="requested">Requested</option>
+        <option value="approved">Approved</option>
+        <option value="paid">Paid</option>
+      </select>
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Payout</th>
+          <th>Producer</th>
+          <th>Status</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="payoutsTbody"></tbody>
     </table>
   </section>
 
@@ -348,9 +393,8 @@
 <script src="/js/menu.js"></script>
 
 <script type="module">
-  // Admin dashboard logic
   import {
-    doc, getDoc, getDocs, collection, query, limit, orderBy,
+    doc, getDoc, getDocs, collection, query, limit,
     updateDoc, deleteDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -361,11 +405,14 @@
   let ALL_KITS  = [];
   let ALL_USERS = [];
   let ALL_ORDERS= [];
+  let ALL_PAYOUTS = [];
 
-  // 🔒 Put your admin emails here (simple front-end gate)
+  // Optional front-end gate
   const ADMIN_EMAILS = [
     // "you@example.com"
   ];
+
+  let IS_ADMIN = false;
 
   function setStatus(text){
     $("status").textContent = text || "";
@@ -381,11 +428,16 @@
     return d.toLocaleString();
   }
 
+  function money(n){
+    const v = Number(n||0);
+    return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
+  }
+
   function setTab(tab){
     document.querySelectorAll(".tab").forEach(b=>{
       b.classList.toggle("active", b.dataset.tab === tab);
     });
-    ["overview","beats","kits","users","orders"].forEach(name=>{
+    ["overview","beats","kits","payouts","users","orders"].forEach(name=>{
       const v = $("view-" + name);
       if (!v) return;
       v.classList.toggle("hidden", name !== tab);
@@ -394,8 +446,19 @@
 
   function isAdminUser(user){
     if (!user) return false;
-    if (!ADMIN_EMAILS.length) return true; // ✅ allow if you haven't set list yet
+    if (!ADMIN_EMAILS.length) return true;
     return ADMIN_EMAILS.includes(String(user.email||"").toLowerCase());
+  }
+
+  async function checkIsAdmin(u){
+    try{
+      const ref = doc(window.FB.db, "users", u.uid);
+      const snap = await getDoc(ref);
+      const data = snap.exists() ? snap.data() : {};
+      return data?.isAdmin === true;
+    }catch(e){
+      return false;
+    }
   }
 
   async function fetchCollectionSafe(names, max=200){
@@ -405,7 +468,6 @@
         const ref = collection(window.FB.db, name);
         const qy  = query(ref, limit(max));
         const snap= await getDocs(qy);
-        // Return even if empty (we found collection)
         const docs = [];
         snap.forEach(d=>docs.push({ id:d.id, ...d.data() }));
         return { name, docs };
@@ -424,7 +486,9 @@
       producerId: x.producerId || "—",
       genre: (x.genre || "").toString(),
       published: x.published === true,
-      createdAt: x.createdAt || x.timestamp || 0
+      createdAt: x.createdAt || x.timestamp || 0,
+      price: Number(x.price ?? 0) || 0,
+      downloadUrl: (x.downloadUrl || x.downloadURL || x.freeDownloadUrl || "").toString()
     };
   }
 
@@ -436,7 +500,8 @@
       price: Number(x.price ?? 0) || 0,
       published: x.published !== false,
       createdAt: x.createdAt || 0,
-      producerId: x.producerId || ""
+      producerId: (x.producerId || "").toString(),
+      downloadUrl: (x.downloadUrl || x.downloadURL || "").toString()
     };
   }
 
@@ -448,7 +513,8 @@
       id: x.id,
       email: (x.email || "").toString(),
       role: (x.role || x.userType || "").toString() || "—",
-      name: displayName || "—"
+      name: displayName || "—",
+      isAdmin: x.isAdmin === true
     };
   }
 
@@ -462,9 +528,26 @@
     };
   }
 
+  function normalizePayout(x){
+    return {
+      id: x.id,
+      producerId: (x.producerId || x.uid || "").toString(),
+      email: (x.email || x.producerEmail || "").toString(),
+      amount: Number(x.amount ?? x.total ?? 0) || 0,
+      status: (x.status || "requested").toString(),
+      createdAt: x.createdAt || 0,
+      approvedAt: x.approvedAt || 0,
+      paidAt: x.paidAt || 0,
+      txId: (x.txId || x.transactionId || "").toString(),
+      note: (x.note || x.adminNote || "").toString()
+    };
+  }
+
   function renderOverview(){
     const pubBeats = ALL_BEATS.filter(b=>b.published).length;
     const pubKits  = ALL_KITS.filter(k=>k.published).length;
+
+    const payoutRequested = ALL_PAYOUTS.filter(p => String(p.status).toLowerCase() === "requested").length;
 
     $("statPublishedBeats").textContent = String(pubBeats);
     $("statBeatsMini").textContent = `Total beats: ${ALL_BEATS.length}`;
@@ -472,11 +555,11 @@
     $("statPublishedKits").textContent = String(pubKits);
     $("statKitsMini").textContent = `Total kits: ${ALL_KITS.length}`;
 
+    $("statPayouts").textContent = String(payoutRequested);
+    $("statPayoutsMini").textContent = `Total payouts: ${ALL_PAYOUTS.length}`;
+
     $("statUsers").textContent = String(ALL_USERS.length);
     $("statUsersMini").textContent = `Profiles in /users`;
-
-    $("statOrders").textContent = String(ALL_ORDERS.length);
-    $("statOrdersMini").textContent = `Orders in /orders`;
   }
 
   function renderBeats(){
@@ -501,6 +584,22 @@
           <div style="font-weight:950;">${b.title}</div>
           <div class="sub">${b.genre || "—"} • ${fmtDate(b.createdAt)}</div>
           <div class="sub" style="margin-top:4px;">id: ${b.id}</div>
+
+          <div class="field">
+            <input class="mini-input" type="number" step="0.01" min="0"
+              data-field="beatPrice" data-id="${b.id}" value="${Number(b.price||0)}" />
+            <span class="pill">Price</span>
+          </div>
+
+          <div class="field">
+            <input class="mini-input wide" type="text"
+              data-field="beatDownloadUrl" data-id="${b.id}"
+              placeholder="downloadUrl (optional)"
+              value="${(b.downloadUrl||"").replace(/"/g,'&quot;')}" />
+            <span class="pill">downloadUrl</span>
+          </div>
+
+          <div class="hint">Save to apply changes. If your store shows “Free”, it’s usually because price is missing/0 or your UI is using licenses.</div>
         </td>
         <td>
           <div style="font-weight:900;">${b.producerName}</div>
@@ -511,6 +610,7 @@
         </td>
         <td>
           <div class="actions">
+            <button class="btn" data-action="saveBeat" data-id="${b.id}">Save</button>
             <button class="btn" data-action="toggleBeat" data-id="${b.id}" data-to="${b.published ? "0":"1"}">
               ${b.published ? "Unpublish" : "Publish"}
             </button>
@@ -542,19 +642,99 @@
       tr.innerHTML = `
         <td>
           <div style="font-weight:950;">${k.title}</div>
-          <div class="sub">Price: ${Number(k.price||0) ? ("$"+Number(k.price).toFixed(2)) : "Free"} • ${fmtDate(k.createdAt)}</div>
-          <div class="sub" style="margin-top:4px;">id: ${k.id}</div>
+          <div class="sub">Created: ${fmtDate(k.createdAt)} • id: ${k.id}</div>
+
+          <div class="field">
+            <input class="mini-input" type="number" step="0.01" min="0"
+              data-field="kitPrice" data-id="${k.id}" value="${Number(k.price||0)}" />
+            <span class="pill">Price</span>
+          </div>
+
+          <div class="field">
+            <input class="mini-input wide" type="text"
+              data-field="kitDownloadUrl" data-id="${k.id}"
+              placeholder="downloadUrl (must be public link or signed URL)"
+              value="${(k.downloadUrl||"").replace(/"/g,'&quot;')}" />
+            <span class="pill">downloadUrl</span>
+          </div>
         </td>
-        <td>${k.category || "—"}</td>
+        <td>
+          <div style="font-weight:900;">${k.category || "—"}</div>
+          <div class="sub">producer: ${k.producerId || "—"}</div>
+        </td>
         <td>
           ${k.published ? `<span class="pill ok">Published</span>` : `<span class="pill no">Unpublished</span>`}
         </td>
         <td>
           <div class="actions">
+            <button class="btn" data-action="saveKit" data-id="${k.id}">Save</button>
             <button class="btn" data-action="toggleKit" data-id="${k.id}" data-to="${k.published ? "0":"1"}">
               ${k.published ? "Unpublish" : "Publish"}
             </button>
             <button class="btn danger" data-action="deleteKit" data-id="${k.id}">Delete</button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  function renderPayouts(){
+    const q = ($("payoutsSearch").value||"").trim().toLowerCase();
+    const f = ($("payoutsFilter").value||"").trim().toLowerCase();
+
+    const list = ALL_PAYOUTS.filter(p=>{
+      const hay = `${p.id} ${p.producerId} ${p.email} ${p.status}`.toLowerCase();
+      const okQ = !q || hay.includes(q);
+      const okF = !f || String(p.status).toLowerCase() === f;
+      return okQ && okF;
+    }).sort((a,b)=>Number(b.createdAt||0)-Number(a.createdAt||0));
+
+    const tb = $("payoutsTbody");
+    tb.innerHTML = "";
+
+    list.slice(0, 250).forEach(p=>{
+      const status = String(p.status||"requested").toLowerCase();
+      const pill =
+        status === "paid" ? `<span class="pill ok">Paid</span>` :
+        status === "approved" ? `<span class="pill warn">Approved</span>` :
+        `<span class="pill no">Requested</span>`;
+
+      const tr = document.createElement("tr");
+      tr.className = "rowcard";
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:950;">${money(p.amount)} payout</div>
+          <div class="sub">payout id: ${p.id}</div>
+          <div class="sub">created: ${fmtDate(p.createdAt)}</div>
+          <div class="sub">approved: ${p.approvedAt ? fmtDate(p.approvedAt) : "—"} • paid: ${p.paidAt ? fmtDate(p.paidAt) : "—"}</div>
+
+          <div class="field">
+            <input class="mini-input wide" type="text"
+              data-field="payoutTx" data-id="${p.id}"
+              placeholder="txId / M-Pesa / PayPal reference"
+              value="${(p.txId||"").replace(/"/g,'&quot;')}" />
+            <span class="pill">txId</span>
+          </div>
+
+          <div class="field">
+            <input class="mini-input wide" type="text"
+              data-field="payoutNote" data-id="${p.id}"
+              placeholder="admin note (optional)"
+              value="${(p.note||"").replace(/"/g,'&quot;')}" />
+            <span class="pill">note</span>
+          </div>
+        </td>
+        <td>
+          <div style="font-weight:900;">${p.email || "—"}</div>
+          <div class="sub">producerId: ${p.producerId || "—"}</div>
+        </td>
+        <td>${pill}</td>
+        <td>
+          <div class="actions">
+            <button class="btn" data-action="savePayoutMeta" data-id="${p.id}">Save</button>
+            ${status === "requested" ? `<button class="btn primary" data-action="approvePayout" data-id="${p.id}">Approve</button>` : ``}
+            ${status !== "paid" ? `<button class="btn primary" data-action="markPaid" data-id="${p.id}">Mark Paid</button>` : ``}
           </div>
         </td>
       `;
@@ -581,7 +761,10 @@
           <div style="font-weight:950;">${u.name}</div>
           <div class="sub">${u.email || "—"}</div>
         </td>
-        <td><span class="pill">${u.role}</span></td>
+        <td>
+          <span class="pill">${u.role}</span>
+          ${u.isAdmin ? `<span class="pill ok" style="margin-left:6px;">Admin</span>` : ``}
+        </td>
         <td class="sub" style="font-weight:900;">${u.id}</td>
         <td>
           <div class="actions">
@@ -632,6 +815,7 @@
     if (active === "overview") renderOverview();
     if (active === "beats") renderBeats();
     if (active === "kits") renderKits();
+    if (active === "payouts") renderPayouts();
     if (active === "users") renderUsers();
     if (active === "orders") renderOrders();
   }
@@ -644,7 +828,7 @@
       const beatsRes = await fetchCollectionSafe(["beats"], 400);
       ALL_BEATS = beatsRes.docs.map(normalizeBeat);
 
-      // Kits (try both)
+      // Kits
       let kitsRes = null;
       try{
         kitsRes = await fetchCollectionSafe(["soundkits", "soundKits"], 400);
@@ -671,6 +855,15 @@
       }
       ALL_ORDERS = ordersRes.docs.map(normalizeOrder);
 
+      // Payouts (admin-only by rules)
+      let payoutsRes = null;
+      try{
+        payoutsRes = await fetchCollectionSafe(["payouts"], 400);
+      }catch(e){
+        payoutsRes = { name:"payouts", docs:[] };
+      }
+      ALL_PAYOUTS = payoutsRes.docs.map(normalizePayout);
+
       hideStatus();
       renderOverview();
       refreshVisible();
@@ -683,8 +876,8 @@
         (code ? ("Error code: " + code + "\n") : "") +
         (msg ? ("Message: " + msg + "\n\n") : "\n") +
         "Fix:\n" +
-        "- If permission-denied: update Firestore rules for admin.\n" +
-        "- Check console for the exact failing collection."
+        "- If permission-denied: ensure your /users/<uid>.isAdmin == true\n" +
+        "- Then confirm Firestore rules include admin privileges.\n"
       );
     }
   }
@@ -697,6 +890,65 @@
   async function deleteDocFrom(collectionName, id){
     const ref = doc(window.FB.db, collectionName, id);
     await deleteDoc(ref);
+  }
+
+  function getInputValue(field, id){
+    const el = document.querySelector(`[data-field="${field}"][data-id="${id}"]`);
+    return el ? el.value : "";
+  }
+
+  async function saveBeatEdits(beatId){
+    const price = Number(getInputValue("beatPrice", beatId) || 0);
+    const downloadUrl = String(getInputValue("beatDownloadUrl", beatId) || "").trim();
+
+    const ref = doc(window.FB.db, "beats", beatId);
+    await updateDoc(ref, {
+      price: isFinite(price) ? price : 0,
+      downloadUrl
+    });
+  }
+
+  async function saveKitEdits(kitId){
+    const price = Number(getInputValue("kitPrice", kitId) || 0);
+    const downloadUrl = String(getInputValue("kitDownloadUrl", kitId) || "").trim();
+
+    // try both kit collections
+    try{
+      const ref = doc(window.FB.db, "soundkits", kitId);
+      await updateDoc(ref, { price: isFinite(price) ? price : 0, downloadUrl });
+    }catch{
+      const ref = doc(window.FB.db, "soundKits", kitId);
+      await updateDoc(ref, { price: isFinite(price) ? price : 0, downloadUrl });
+    }
+  }
+
+  async function savePayoutMeta(payoutId){
+    const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
+    const note = String(getInputValue("payoutNote", payoutId) || "").trim();
+
+    const ref = doc(window.FB.db, "payouts", payoutId);
+    await updateDoc(ref, {
+      txId,
+      note
+    });
+  }
+
+  async function approvePayout(payoutId){
+    const ref = doc(window.FB.db, "payouts", payoutId);
+    await updateDoc(ref, {
+      status: "approved",
+      approvedAt: Date.now()
+    });
+  }
+
+  async function markPaid(payoutId){
+    const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
+    const ref = doc(window.FB.db, "payouts", payoutId);
+    await updateDoc(ref, {
+      status: "paid",
+      paidAt: Date.now(),
+      txId: txId || ""
+    });
   }
 
   // UI events
@@ -715,6 +967,19 @@
     const id = actionBtn.getAttribute("data-id");
 
     try{
+      if (!IS_ADMIN){
+        setStatus("Access denied.\n\nThis account is not an admin.\nSet /users/<uid>.isAdmin = true");
+        return;
+      }
+
+      if (action === "saveBeat"){
+        actionBtn.disabled = true;
+        setStatus("Saving beat edits…");
+        await saveBeatEdits(id);
+        await loadAll();
+        return;
+      }
+
       if (action === "toggleBeat"){
         actionBtn.disabled = true;
         setStatus("Updating beat…");
@@ -733,11 +998,18 @@
         return;
       }
 
+      if (action === "saveKit"){
+        actionBtn.disabled = true;
+        setStatus("Saving kit edits…");
+        await saveKitEdits(id);
+        await loadAll();
+        return;
+      }
+
       if (action === "toggleKit"){
         actionBtn.disabled = true;
         setStatus("Updating kit…");
         const to = actionBtn.getAttribute("data-to") === "1";
-        // try both possible kit collections (whichever exists)
         try{
           await togglePublished("soundkits", id, to);
         }catch{
@@ -760,13 +1032,39 @@
         return;
       }
 
+      if (action === "savePayoutMeta"){
+        actionBtn.disabled = true;
+        setStatus("Saving payout…");
+        await savePayoutMeta(id);
+        await loadAll();
+        return;
+      }
+
+      if (action === "approvePayout"){
+        if (!confirm("Approve this payout request?")) return;
+        actionBtn.disabled = true;
+        setStatus("Approving payout…");
+        await approvePayout(id);
+        await loadAll();
+        return;
+      }
+
+      if (action === "markPaid"){
+        if (!confirm("Mark payout as PAID?")) return;
+        actionBtn.disabled = true;
+        setStatus("Marking payout as paid…");
+        await markPaid(id);
+        await loadAll();
+        return;
+      }
+
       if (action === "openUser"){
-        alert("User UID:\n\n" + id + "\n\n(You can add a full user detail modal next)");
+        alert("User UID:\n\n" + id);
         return;
       }
 
       if (action === "openOrder"){
-        alert("Order ID:\n\n" + id + "\n\n(You can add a full order detail modal next)");
+        alert("Order ID:\n\n" + id);
         return;
       }
 
@@ -778,7 +1076,7 @@
         "Action failed.\n\n" +
         (code ? ("Error code: " + code + "\n") : "") +
         (msg ? ("Message: " + msg + "\n\n") : "\n") +
-        "Fix:\n- If permission-denied: your rules are blocking admin writes.\n"
+        "Fix:\n- If permission-denied: ensure /users/<uid>.isAdmin == true and rules allow admin updates.\n"
       );
       actionBtn.disabled = false;
     }
@@ -798,6 +1096,9 @@
   $("kitsSearch").addEventListener("input", renderKits);
   $("kitsFilter").addEventListener("change", renderKits);
 
+  $("payoutsSearch").addEventListener("input", renderPayouts);
+  $("payoutsFilter").addEventListener("change", renderPayouts);
+
   $("usersSearch").addEventListener("input", renderUsers);
   $("ordersSearch").addEventListener("input", renderOrders);
 
@@ -810,9 +1111,7 @@
     }
   });
 
-  // Wait for firebase.js to load + auth state
-  window.addEventListener("firebase-ready", ()=>{
-    // keep auth chip updated
+  window.addEventListener("firebase-ready", async ()=>{
     const tick = ()=>{
       const u = window.FB?.auth?.currentUser || window.FB?.user || null;
       if (!u){
@@ -831,11 +1130,26 @@
       return;
     }
 
+    // optional front-end email gate
     if (!isAdminUser(u)){
       setStatus("Access denied.\n\nThis account is not in ADMIN_EMAILS list in admin-dashboard.html");
       return;
     }
 
+    setStatus("Checking admin permissions…");
+    IS_ADMIN = await checkIsAdmin(u);
+
+    if (!IS_ADMIN){
+      setStatus(
+        "Access denied.\n\n" +
+        "Your Firestore profile is not admin.\n\n" +
+        "Fix:\n" +
+        "- In Firestore: /users/" + u.uid + " add: isAdmin: true\n"
+      );
+      return;
+    }
+
+    hideStatus();
     loadAll();
   });
 </script>
