@@ -394,3 +394,52 @@ window.FB.logFreeDownload = async function ({
 
 // ✅ Tell pages firebase is ready
 window.dispatchEvent(new Event("firebase-ready"));
+
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+function el(id){ return document.getElementById(id); }
+
+function setNavLoggedIn(user){
+  // hide logged-out links
+  el("navSignIn")?.classList.add("hidden");
+  el("navStartSelling")?.classList.add("hidden");
+  el("mNavSignIn")?.classList.add("hidden");
+  el("mNavStartSelling")?.classList.add("hidden");
+
+  // show dashboard + signout
+  el("navDashboard")?.classList.remove("hidden");
+  el("mNavDashboard")?.classList.remove("hidden");
+  el("navSignOut")?.classList.remove("hidden");
+  el("mNavSignOut")?.classList.remove("hidden");
+
+  // Optional: route admins / producers differently later
+}
+
+function setNavLoggedOut(){
+  el("navSignIn")?.classList.remove("hidden");
+  el("navStartSelling")?.classList.remove("hidden");
+  el("mNavSignIn")?.classList.remove("hidden");
+  el("mNavStartSelling")?.classList.remove("hidden");
+
+  el("navDashboard")?.classList.add("hidden");
+  el("mNavDashboard")?.classList.add("hidden");
+  el("navSignOut")?.classList.add("hidden");
+  el("mNavSignOut")?.classList.add("hidden");
+}
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    setNavLoggedIn(user);
+  } else {
+    setNavLoggedOut();
+  }
+});
+
+// Sign out buttons
+["navSignOut","mNavSignOut"].forEach(id=>{
+  el(id)?.addEventListener("click", async ()=>{
+    await signOut(auth);
+    location.href = "/index.html";
+  });
+});
+
