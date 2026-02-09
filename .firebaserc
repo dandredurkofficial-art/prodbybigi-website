@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "audiory-beat-store",
+    "audiory": "audiory-beat-store"
+  },
+  "targets": {},
+  "etags": {}
+}

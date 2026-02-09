@@ -3,10 +3,12 @@ const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 
 admin.initializeApp();
+const db = admin.firestore();
 
 // Secrets
-const DARAJA_CONSUMER_KEY = defineSecret("DARAJAhcnoeS1xt9FATqCN3AfaVYDohaxHUEJXBW5UMnCyh9O4KNWy");
-const DARAJA_CONSUMER_SECRET = defineSecret("DAR0UwfZIXXyBTgBLLKGLUG5V7X45vlcL9usqeNgXRhWpOXGgJFu40uOg7rafof7iS9");
+// Secrets (names only!)
+const DARAJA_CONSUMER_KEY = defineSecret("DARAJA_CONSUMER_KEY");
+const DARAJA_CONSUMER_SECRET = defineSecret("DARAJA_CONSUMER_SECRET");
 const MPESA_SHORTCODE = defineSecret("MPESA_SHORTCODE");
 const MPESA_PASSKEY = defineSecret("MPESA_PASSKEY");
 const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
@@ -108,15 +110,53 @@ exports.stkpush = onRequest(
 );
 
 // Callback endpoint Daraja will hit after STK push prompt
-exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    // Here you’ll save the result to Firestore later
-    console.log("STK CALLBACK:", JSON.stringify(req.body));
+exports.stkCallback = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      const callback = req.body?.Body?.stkCallback;
 
-    // Safaricom expects a 200 response
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  } catch (e) {
-    console.error(e);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+      if (!callback) {
+        console.log("Invalid callback body", req.body);
+        return res.status(400).send("Invalid callback");
+      }
+
+      const {
+        CheckoutRequestID,
+        ResultCode,
+        ResultDesc,
+        CallbackMetadata
+      } = callback;
+
+      // Extract metadata
+      const metadata = {};
+      if (CallbackMetadata?.Item) {
+        CallbackMetadata.Item.forEach(item => {
+          metadata[item.Name] = item.Value ?? null;
+        });
+      }
+
+      // Save payment to Firestore
+      await db.collection("mpesaPayments").doc(CheckoutRequestID).set({
+        checkoutRequestId: CheckoutRequestID,
+        resultCode: ResultCode,
+        resultDesc: ResultDesc,
+        amount: metadata.Amount || null,
+        phone: metadata.PhoneNumber || null,
+        receipt: metadata.MpesaReceiptNumber || null,
+        transactionDate: metadata.TransactionDate || null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        raw: callback
+      });
+
+      console.log("Payment saved:", CheckoutRequestID);
+
+      // Safaricom expects 200 OK
+      return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+
+    } catch (err) {
+      console.error("Callback error:", err);
+      return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    }
   }
-});
+);

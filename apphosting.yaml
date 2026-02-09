@@ -1,0 +1,7 @@
+env:
+  - variable: DARAJA_CONSUMER_KEY
+    secret: DARAJA_CONSUMER_KEY
+  - variable: DARAJA_CONSUMER_SECRET
+    secret: DARAJA_CONSUMER_SECRET
+  - variable: M_PESA_SHORTCODE
+    secret: M-PESA_SHORTCODE
