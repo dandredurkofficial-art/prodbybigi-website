@@ -282,3 +282,67 @@ exports.secureDownload = onRequest(
     }
   }
 );
+
+/**
+ * 🔐 POST /licenseDownload
+ * body: { beatId: "BEAT_123", phone?: "2547..." }
+ */
+exports.licenseDownload = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
+
+      const { beatId, phone } = req.body || {};
+      if (!beatId) {
+        return res.status(400).json({ error: "beatId is required" });
+      }
+
+      // 1) Check unlock
+      const unlockSnap = await db
+        .collection("unlocks")
+        .where("beatId", "==", beatId)
+        .limit(1)
+        .get();
+
+      if (unlockSnap.empty) {
+        return res.status(403).json({ error: "Beat not unlocked" });
+      }
+
+      // Optional phone check
+      if (phone) {
+        const unlock = unlockSnap.docs[0].data();
+        if (unlock.phone && unlock.phone !== phone) {
+          return res.status(403).json({ error: "Unauthorized phone" });
+        }
+      }
+
+      // 2) Get licensePath from beat doc
+      const beatDoc = await db.collection("beats").doc(beatId).get();
+      if (!beatDoc.exists) {
+        return res.status(404).json({ error: "Beat not found" });
+      }
+
+      const { licensePath } = beatDoc.data();
+      if (!licensePath) {
+        return res.status(500).json({ error: "licensePath missing on beat doc" });
+      }
+
+      // 3) Signed URL (10 min)
+      const [url] = await bucket.file(licensePath).getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 10 * 60 * 1000,
+        responseDisposition: "attachment", // forces download
+        responseType: "application/pdf",
+      });
+
+      return res.json({ url });
+    } catch (err) {
+      console.error("licenseDownload error:", err);
+      return res.status(500).json({ error: "Internal error" });
+    }
+  }
+);
