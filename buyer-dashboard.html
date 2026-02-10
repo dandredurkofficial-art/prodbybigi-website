@@ -304,6 +304,9 @@
 
   let ALL_ORDERS = [];
 
+  // ✅ NEW: Cloud Function endpoint for License PDF
+  const LICENSE_FN_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/licenseDownload";
+
   function setStatus(text){
     $("status").textContent = text || "";
     $("status").classList.remove("hidden");
@@ -367,6 +370,14 @@
     const downloadUrl =
       x.downloadUrl || x.downloadURL || x.fileUrl || x.fileURL || "";
 
+    // ✅ NEW: carry beatId (needed for license download)
+    const beatId =
+      x.beatId || x.beatID || x.itemId || x.itemID || "";
+
+    // ✅ NEW: phone may exist on order (optional check)
+    const phone =
+      x.phone || x.phoneNumber || x.msisdn || "";
+
     return {
       id: x.id,
       itemTitle: String(itemTitle),
@@ -374,7 +385,10 @@
       licenseKey: String(licenseKey),
       status: status.toLowerCase(),
       createdAt: x.createdAt || x.timestamp || 0,
-      downloadUrl: String(downloadUrl)
+      downloadUrl: String(downloadUrl),
+
+      beatId: String(beatId),
+      phone: String(phone)
     };
   }
 
@@ -420,8 +434,14 @@
         <td>
           <div class="actions">
             <button class="btn" type="button" data-action="view" data-id="${o.id}">View</button>
+
             <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${o.downloadUrl ? "" : "disabled"}>
               Download
+            </button>
+
+            <!-- ✅ NEW: License PDF button -->
+            <button class="btn" type="button" data-action="license" data-id="${o.id}">
+              License PDF
             </button>
           </div>
         </td>
@@ -453,7 +473,11 @@
         <td><span class="pill">${o.itemType || "—"}</span></td>
         <td><span class="pill">${o.licenseKey || "—"}</span></td>
         <td style="text-align:right;">
-          <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
+          <div class="actions" style="justify-content:flex-end;">
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
+            <!-- ✅ NEW: License PDF button -->
+            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
+          </div>
         </td>
       `;
       tb.appendChild(tr);
@@ -536,7 +560,30 @@
     return ALL_ORDERS.find(o => o.id === id) || null;
   }
 
-  document.addEventListener("click", (e)=>{
+  // ✅ NEW: call cloud function to generate license URL
+  async function requestLicensePdf({ beatId, phone }){
+    if (!beatId) throw new Error("Missing beatId on this order.");
+
+    const payload = {
+      beatId: String(beatId),
+      phone: phone ? String(phone) : ""
+    };
+
+    const r = await fetch(LICENSE_FN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json().catch(()=> ({}));
+    if (!r.ok){
+      throw new Error(data?.error || `License request failed (${r.status})`);
+    }
+    if (!data?.url) throw new Error(data?.error || "No license URL returned.");
+    return data.url;
+  }
+
+  document.addEventListener("click", async (e)=>{
     const tabBtn = e.target.closest(".tab");
     if (tabBtn){
       setTab(tabBtn.dataset.tab);
@@ -568,6 +615,29 @@
     if (action === "download"){
       if (!order.downloadUrl) return alert("Download not ready yet.");
       window.open(order.downloadUrl, "_blank");
+      return;
+    }
+
+    // ✅ NEW: License PDF action
+    if (action === "license"){
+      try{
+        btn.disabled = true;
+        btn.textContent = "Generating…";
+
+        // beatId must exist in the order doc (your STK push already writes beatId)
+        const beatId = order.beatId;
+
+        // Optional: phone match (only if you store phone in orders/unlocks)
+        const phone = order.phone || "";
+
+        const url = await requestLicensePdf({ beatId, phone });
+        window.location.href = url;
+      }catch(err){
+        alert(err?.message || String(err));
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "License PDF";
+      }
       return;
     }
   });
