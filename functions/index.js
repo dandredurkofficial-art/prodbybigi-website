@@ -3,10 +3,18 @@ const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 
 // ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch if needed
-const fetchFn = global.fetch ? global.fetch : (...args) => import("node-fetch").then(({ default: fetch }) => fetch(...args));
+const fetchFn = global.fetch
+  ? global.fetch
+  : (...args) =>
+      import("node-fetch").then(({ default: fetch }) => fetch(...args));
+
+// ✅ ADD: Firebase Storage
+const { getStorage } = require("firebase-admin/storage");
 
 admin.initializeApp();
+
 const db = admin.firestore();
+const bucket = getStorage().bucket(); // ✅ ADD
 
 // Secrets (names only!)
 const DARAJA_CONSUMER_KEY = defineSecret("DARAJA_CONSUMER_KEY");
@@ -22,7 +30,6 @@ const STK_PUSH_URL =
   "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
 function nowTimestamp() {
-  // YYYYMMDDHHmmss
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
   return (
@@ -89,31 +96,27 @@ exports.stkpush = onRequest(
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
-      const consumerKey = DARAJA_CONSUMER_KEY.value();
-      const consumerSecret = DARAJA_CONSUMER_SECRET.value();
-      const shortcode = MPESA_SHORTCODE.value();
-      const passkey = MPESA_PASSKEY.value();
-      const callbackUrl = MPESA_CALLBACK_URL.value();
-
       const timestamp = nowTimestamp();
-      const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString(
-        "base64"
+      const password = Buffer.from(
+        `${MPESA_SHORTCODE.value()}${MPESA_PASSKEY.value()}${timestamp}`
+      ).toString("base64");
+
+      const token = await getAccessToken(
+        DARAJA_CONSUMER_KEY.value(),
+        DARAJA_CONSUMER_SECRET.value()
       );
 
-      const token = await getAccessToken(consumerKey, consumerSecret);
-
-      // 2) STK payload (IMPORTANT: AccountReference = orderRef.id)
       const payload = {
-        BusinessShortCode: Number(shortcode),
+        BusinessShortCode: Number(MPESA_SHORTCODE.value()),
         Password: password,
         Timestamp: timestamp,
         TransactionType: "CustomerPayBillOnline",
         Amount: Number(amount),
         PartyA: phone,
-        PartyB: Number(shortcode),
+        PartyB: Number(MPESA_SHORTCODE.value()),
         PhoneNumber: phone,
-        CallBackURL: callbackUrl,
-        AccountReference: orderRef.id, // ✅ link to order id
+        CallBackURL: MPESA_CALLBACK_URL.value(),
+        AccountReference: orderRef.id,
         TransactionDesc: `Beat ${beatId}`,
       };
 
@@ -128,30 +131,16 @@ exports.stkpush = onRequest(
 
       const data = await r.json();
 
-      // 3) Save CheckoutRequestID into the order (so callback can find it)
-      if (data?.CheckoutRequestID) {
-        await orderRef.set(
-          {
-            checkoutRequestId: data.CheckoutRequestID,
-            merchantRequestId: data.MerchantRequestID || null,
-            stkResponse: data,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      } else {
-        // If STK push request failed, mark order failed
-        await orderRef.set(
-          {
-            status: "FAILED_TO_REQUEST_STK",
-            stkResponse: data,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
+      await orderRef.set(
+        {
+          checkoutRequestId: data.CheckoutRequestID || null,
+          merchantRequestId: data.MerchantRequestID || null,
+          stkResponse: data,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
 
-      // Return orderId to frontend + response from daraja
       return res.status(r.ok ? 200 : 400).json({
         orderId: orderRef.id,
         ...data,
@@ -163,15 +152,11 @@ exports.stkpush = onRequest(
   }
 );
 
-// Callback endpoint Daraja will hit after STK push prompt
+// Callback endpoint
 exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
   try {
     const callback = req.body?.Body?.stkCallback;
-
-    if (!callback) {
-      console.log("Invalid callback body", req.body);
-      return res.status(400).send("Invalid callback");
-    }
+    if (!callback) return res.json({ ResultCode: 0 });
 
     const {
       CheckoutRequestID,
@@ -181,15 +166,11 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
       CallbackMetadata,
     } = callback;
 
-    // Extract metadata
     const metadata = {};
-    if (CallbackMetadata?.Item) {
-      CallbackMetadata.Item.forEach((item) => {
-        metadata[item.Name] = item.Value ?? null;
-      });
-    }
+    CallbackMetadata?.Item?.forEach((item) => {
+      metadata[item.Name] = item.Value ?? null;
+    });
 
-    // 1) Save payment to Firestore (permanent record)
     await db.collection("mpesaPayments").doc(CheckoutRequestID).set({
       checkoutRequestId: CheckoutRequestID,
       merchantRequestId: MerchantRequestID || null,
@@ -203,7 +184,6 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
       raw: callback,
     });
 
-    // 2) Find the matching order by checkoutRequestId
     const orderSnap = await db
       .collection("orders")
       .where("checkoutRequestId", "==", CheckoutRequestID)
@@ -212,17 +192,11 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
 
     if (!orderSnap.empty) {
       const orderDoc = orderSnap.docs[0];
-      const orderId = orderDoc.id;
-      const orderData = orderDoc.data();
-
-      // Update order status
       const paid = Number(ResultCode) === 0;
 
       await orderDoc.ref.set(
         {
           status: paid ? "PAID" : "FAILED",
-          resultCode: ResultCode,
-          resultDesc: ResultDesc,
           receipt: metadata.MpesaReceiptNumber || null,
           transactionDate: metadata.TransactionDate || null,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -230,27 +204,81 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
         { merge: true }
       );
 
-      // 3) OPTION A: Create unlock document only if paid
       if (paid) {
-        await db.collection("unlocks").doc(orderId).set({
-          orderId,
-          beatId: orderData.beatId || null,
-          phone: metadata.PhoneNumber || orderData.phone || null,
-          amount: metadata.Amount || orderData.amount || null,
+        await db.collection("unlocks").doc(orderDoc.id).set({
+          orderId: orderDoc.id,
+          beatId: orderDoc.data().beatId,
+          phone: metadata.PhoneNumber || null,
+          amount: metadata.Amount || null,
           receipt: metadata.MpesaReceiptNumber || null,
           transactionDate: metadata.TransactionDate || null,
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
           checkoutRequestId: CheckoutRequestID,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       }
-    } else {
-      console.log("No matching order found for:", CheckoutRequestID);
     }
 
-    // Safaricom expects 200 OK
     return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
   } catch (err) {
-    console.error("Callback error:", err);
-    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    console.error(err);
+    return res.json({ ResultCode: 0 });
   }
 });
+
+/**
+ * 🔐 POST /secureDownload
+ * body: { beatId: "BEAT_123", phone?: "2547..." }
+ */
+exports.secureDownload = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
+
+      const { beatId, phone } = req.body || {};
+      if (!beatId) {
+        return res.status(400).json({ error: "beatId is required" });
+      }
+
+      const unlockSnap = await db
+        .collection("unlocks")
+        .where("beatId", "==", beatId)
+        .limit(1)
+        .get();
+
+      if (unlockSnap.empty) {
+        return res.status(403).json({ error: "Beat not unlocked" });
+      }
+
+      if (phone) {
+        const unlock = unlockSnap.docs[0].data();
+        if (unlock.phone && unlock.phone !== phone) {
+          return res.status(403).json({ error: "Unauthorized phone" });
+        }
+      }
+
+      const beatDoc = await db.collection("beats").doc(beatId).get();
+      if (!beatDoc.exists) {
+        return res.status(404).json({ error: "Beat not found" });
+      }
+
+      const { filePath } = beatDoc.data();
+      if (!filePath) {
+        return res.status(500).json({ error: "File path missing" });
+      }
+
+      const [url] = await bucket.file(filePath).getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 10 * 60 * 1000,
+      });
+
+      return res.json({ url });
+    } catch (err) {
+      console.error("secureDownload error:", err);
+      return res.status(500).json({ error: "Internal error" });
+    }
+  }
+);
