@@ -505,7 +505,10 @@
       published: x.published === true,
       createdAt: x.createdAt || x.timestamp || 0,
       price: Number(x.price ?? 0) || 0,
-      downloadUrl: (x.downloadUrl || x.downloadURL || x.freeDownloadUrl || "").toString()
+      downloadUrl: (x.downloadUrl || x.downloadURL || x.freeDownloadUrl || "").toString(),
+
+      // ✅ NEW: licensePath (stored in beats doc)
+      licensePath: (x.licensePath || x.licensePDFPath || x.licenseFilePath || "").toString(),
     };
   }
 
@@ -615,7 +618,19 @@
             <span class="pill">downloadUrl</span>
           </div>
 
-          <div class="hint">Save to apply changes. If your store shows “Free”, it’s usually because price is missing/0 or your UI is using licenses.</div>
+          <!-- ✅ NEW: licensePath input -->
+          <div class="field">
+            <input class="mini-input wide" type="text"
+              data-field="beatLicensePath" data-id="${b.id}"
+              placeholder='licensePath (e.g. licenses/${b.id}/license.pdf)'
+              value="${(b.licensePath||"").replace(/"/g,'&quot;')}" />
+            <span class="pill">licensePath</span>
+          </div>
+
+          <div class="hint">
+            License PDF path is a Storage path, not a URL.<br>
+            Example: <b>licenses/${b.id}/license.pdf</b> (you upload the PDF to Firebase Storage at that path)
+          </div>
         </td>
         <td>
           <div style="font-weight:900;">${b.producerName}</div>
@@ -911,8 +926,18 @@
   async function saveBeatEdits(beatId){
     const price = Number(getInputValue("beatPrice", beatId) || 0);
     const downloadUrl = String(getInputValue("beatDownloadUrl", beatId) || "").trim();
+
+    // ✅ NEW: licensePath
+    // If user leaves it empty, we'll auto-set to: licenses/<beatId>/license.pdf
+    let licensePath = String(getInputValue("beatLicensePath", beatId) || "").trim();
+    if (!licensePath) licensePath = `licenses/${beatId}/license.pdf`;
+
     const ref = doc(window.FB.db, "beats", beatId);
-    await updateDoc(ref, { price: isFinite(price) ? price : 0, downloadUrl });
+    await updateDoc(ref, {
+      price: isFinite(price) ? price : 0,
+      downloadUrl,
+      licensePath
+    });
   }
 
   async function saveKitEdits(kitId){
