@@ -315,12 +315,22 @@
     return "Prod. " + String(b.producerId).slice(0,8);
   }
 
-  // ✅ Avatar helper (safe)
-  function setAvatar(name){
+  // ✅ Avatar: show image if available, else initials
+  function setAvatar(name, photoURL){
     const el = document.getElementById("prodAvatar");
     if (!el) return;
+
+    const pic = String(photoURL || "").trim();
+
+    if (pic) {
+      // cache-bust so updated pic shows immediately
+      const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
+      el.innerHTML = `<img src="${pic + bust}" alt="${name || "Producer"}">`;
+      return;
+    }
+
     const initials = String(name||"PB").trim().slice(0,2).toUpperCase();
-    el.textContent = initials || "PB";
+    el.innerHTML = `<div style="font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
   function formatDate(ts){
@@ -329,6 +339,16 @@
     const d = new Date(n);
     if (isNaN(d.getTime())) return "—";
     return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  }
+
+  // ✅ Try to get producer photo from beats if it exists
+  function getPhotoFromBeats(mine){
+    if (!Array.isArray(mine)) return "";
+    const b = mine.find(x =>
+      (x && (x.producerPhotoURL || x.producerAvatar || x.producerPhoto || x.photoURL))
+    );
+    if (!b) return "";
+    return b.producerPhotoURL || b.producerAvatar || b.producerPhoto || b.photoURL || "";
   }
 
   async function loadProducerProfile(){
@@ -361,7 +381,32 @@
       const displayName = mine[0] ? prettyProducerNameFromBeat(mine[0]) : ("Prod. " + pid.slice(0,8));
       document.getElementById("prodName").textContent = displayName;
       document.getElementById("prodSub").textContent = `Producer ID: ${pid}`;
-      setAvatar(displayName);
+      let producerPhoto = "";
+
+      // ✅ fetch producer profile (photo) if available
+      try{
+        if (window.FB && typeof window.FB.getProducerProfile === "function"){
+          const prof = await window.FB.getProducerProfile(pid);
+
+          const profName =
+            (prof?.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+            : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
+
+          if (profName){
+            document.getElementById("prodName").textContent = profName;
+          }
+
+          producerPhoto = prof?.photoURL || prof?.photoUrl || prof?.photo || "";
+        }
+      }catch(e){
+        console.log("getProducerProfile error:", e);
+      }
+
+      // Fallback: try from beats
+      if (!producerPhoto) producerPhoto = getPhotoFromBeats(mine);
+
+      // ✅ Apply avatar
+      setAvatar(document.getElementById("prodName").textContent, producerPhoto);
 
       document.getElementById("statBeats").textContent = String(mine.length);
 
