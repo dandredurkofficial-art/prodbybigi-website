@@ -1,11 +1,6 @@
 const { onRequest } = require("firebase-functions/v2/https");
-const { onDocumentCreated } = require("firebase-functions/v2/firestore"); // ✅ ADD
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
-
-// ✅ SendGrid
-const sgMail = require("@sendgrid/mail"); // ✅ ADD
-const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY"); // ✅ ADD
 
 // ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch if needed
 const fetchFn = global.fetch
@@ -16,32 +11,19 @@ const fetchFn = global.fetch
 // ✅ ADD: Firebase Storage
 const { getStorage } = require("firebase-admin/storage");
 
+// ✅ ADD: Firestore triggers (for emails)
+const {
+  onDocumentCreated,
+  onDocumentUpdated,
+} = require("firebase-functions/v2/firestore");
+
+// ✅ ADD: SendGrid
+const sgMail = require("@sendgrid/mail");
+
 admin.initializeApp();
 
 const db = admin.firestore();
 const bucket = getStorage().bucket(); // ✅ ADD
-
-// ✅ ADD: Admin email + sender (change if you want)
-const ADMIN_EMAIL = "support@audiory.site"; // ✅ ADD
-const FROM_EMAIL = "no-reply@audiory.site"; // ✅ ADD
-const FROM_NAME = "Audiory"; // ✅ ADD
-
-// ✅ ADD: SendGrid init + send helper
-function initSendGrid() {
-  const key = SENDGRID_API_KEY.value();
-  if (!key) throw new Error("SendGrid API key missing (SENDGRID_API_KEY secret)");
-  sgMail.setApiKey(key);
-}
-
-async function sendEmail({ to, subject, html }) {
-  initSendGrid();
-  await sgMail.send({
-    to,
-    from: { email: FROM_EMAIL, name: FROM_NAME },
-    subject,
-    html,
-  });
-}
 
 // Secrets (names only!)
 const DARAJA_CONSUMER_KEY = defineSecret("DARAJA_CONSUMER_KEY");
@@ -49,6 +31,11 @@ const DARAJA_CONSUMER_SECRET = defineSecret("DARAJA_CONSUMER_SECRET");
 const MPESA_SHORTCODE = defineSecret("MPESA_SHORTCODE");
 const MPESA_PASSKEY = defineSecret("MPESA_PASSKEY");
 const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
+
+// ✅ ADD: SendGrid secrets
+const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
+const SENDGRID_FROM = defineSecret("SENDGRID_FROM");
+const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 
 // Daraja endpoints (Sandbox)
 const OAUTH_URL =
@@ -86,108 +73,47 @@ async function getAccessToken(consumerKey, consumerSecret) {
   return data.access_token;
 }
 
-/**
- * ✅ ADD: Firestore trigger → Producer signup:
- * - Welcome email to producer
- * - Notify you (admin)
- *
- * Works when you create /users/<uid> with { role: "producer", email: "..." }
- */
-exports.onProducerSignup = onDocumentCreated(
-  {
-    document: "users/{uid}",
-    region: "us-central1",
-    secrets: [SENDGRID_API_KEY],
-  },
-  async (event) => {
-    try {
-      const user = event.data?.data();
-      if (!user) return;
+/* =========================================================
+✅ SENDGRID EMAIL HELPERS
+========================================================= */
+let SENDGRID_READY = false;
 
-      const role = String(user.role || user.userType || "").toLowerCase();
-      const email = String(user.email || "").trim();
+function initSendgrid() {
+  if (SENDGRID_READY) return;
+  const key = SENDGRID_API_KEY.value();
+  if (!key) throw new Error("Missing SENDGRID_API_KEY secret");
+  sgMail.setApiKey(key);
+  SENDGRID_READY = true;
+}
 
-      // Only run for producers
-      if (role !== "producer") return;
-      if (!email) return;
+async function sendEmail({ to, subject, text, html }) {
+  initSendgrid();
+  const from = SENDGRID_FROM.value();
+  if (!from) throw new Error("Missing SENDGRID_FROM secret");
 
-      // 1) Welcome email
-      await sendEmail({
-        to: email,
-        subject: "Welcome to Audiory 🎶",
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height:1.5">
-            <h2>Welcome to Audiory!</h2>
-            <p>We’re excited to have you as a producer.</p>
-            <p>You can now upload beats, sell licenses, and earn on Audiory.</p>
-            <p style="margin-top:18px;">— ${FROM_NAME}</p>
-          </div>
-        `,
-      });
+  await sgMail.send({
+    to,
+    from,
+    subject,
+    text: text || "",
+    html: html || "",
+  });
+}
 
-      // 2) Notify admin
-      await sendEmail({
-        to: ADMIN_EMAIL,
-        subject: "New Producer Signup",
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height:1.5">
-            <h3>New producer joined</h3>
-            <p><b>Email:</b> ${email}</p>
-            <p><b>UID:</b> ${event.params.uid}</p>
-            <p><b>Role:</b> ${role}</p>
-          </div>
-        `,
-      });
-    } catch (e) {
-      console.error("onProducerSignup email error:", e);
-    }
-  }
-);
+function safeStr(v) {
+  return (v === null || v === undefined) ? "" : String(v);
+}
 
-/**
- * ✅ ADD: Firestore trigger → Payout request:
- * - Notify you (admin)
- *
- * Works when a producer creates /payouts/<id> with { producerId, email?, amount, status }
- */
-exports.onPayoutRequest = onDocumentCreated(
-  {
-    document: "payouts/{payoutId}",
-    region: "us-central1",
-    secrets: [SENDGRID_API_KEY],
-  },
-  async (event) => {
-    try {
-      const payout = event.data?.data();
-      if (!payout) return;
+function isProducerProfile(userData) {
+  const role = safeStr(userData?.role || userData?.userType).toLowerCase().trim();
+  return role === "producer";
+}
 
-      const producerId = String(payout.producerId || payout.uid || "").trim();
-      const email = String(payout.email || payout.producerEmail || "").trim();
-      const amount = payout.amount ?? payout.total ?? 0;
-      const status = String(payout.status || "requested").toLowerCase();
-
-      // If you only want notifications for new "requested" payouts, keep this:
-      if (status !== "requested") return;
-
-      await sendEmail({
-        to: ADMIN_EMAIL,
-        subject: "New Payout Request",
-        html: `
-          <div style="font-family: Arial, sans-serif; line-height:1.5">
-            <h3>Payout Requested</h3>
-            <p><b>Payout ID:</b> ${event.params.payoutId}</p>
-            <p><b>Producer ID:</b> ${producerId || "—"}</p>
-            <p><b>Email:</b> ${email || "—"}</p>
-            <p><b>Amount:</b> ${amount}</p>
-            <p><b>Status:</b> ${status}</p>
-          </div>
-        `,
-      });
-    } catch (e) {
-      console.error("onPayoutRequest email error:", e);
-    }
-  }
-);
+function money(n) {
+  const v = Number(n || 0);
+  if (!isFinite(v)) return "$0.00";
+  return "$" + v.toFixed(2);
+}
 
 /**
  * POST /stkpush
@@ -283,101 +209,77 @@ exports.stkpush = onRequest(
 );
 
 // Callback endpoint
-exports.stkCallback = onRequest(
-  { region: "us-central1", secrets: [SENDGRID_API_KEY] }, // ✅ ADD secret
-  async (req, res) => {
-    try {
-      const callback = req.body?.Body?.stkCallback;
-      if (!callback) return res.json({ ResultCode: 0 });
+exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    const callback = req.body?.Body?.stkCallback;
+    if (!callback) return res.json({ ResultCode: 0 });
 
-      const {
-        CheckoutRequestID,
-        MerchantRequestID,
-        ResultCode,
-        ResultDesc,
-        CallbackMetadata,
-      } = callback;
+    const {
+      CheckoutRequestID,
+      MerchantRequestID,
+      ResultCode,
+      ResultDesc,
+      CallbackMetadata,
+    } = callback;
 
-      const metadata = {};
-      CallbackMetadata?.Item?.forEach((item) => {
-        metadata[item.Name] = item.Value ?? null;
-      });
+    const metadata = {};
+    CallbackMetadata?.Item?.forEach((item) => {
+      metadata[item.Name] = item.Value ?? null;
+    });
 
-      await db.collection("mpesaPayments").doc(CheckoutRequestID).set({
-        checkoutRequestId: CheckoutRequestID,
-        merchantRequestId: MerchantRequestID || null,
-        resultCode: ResultCode,
-        resultDesc: ResultDesc,
-        amount: metadata.Amount || null,
-        phone: metadata.PhoneNumber || null,
-        receipt: metadata.MpesaReceiptNumber || null,
-        transactionDate: metadata.TransactionDate || null,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        raw: callback,
-      });
+    await db.collection("mpesaPayments").doc(CheckoutRequestID).set({
+      checkoutRequestId: CheckoutRequestID,
+      merchantRequestId: MerchantRequestID || null,
+      resultCode: ResultCode,
+      resultDesc: ResultDesc,
+      amount: metadata.Amount || null,
+      phone: metadata.PhoneNumber || null,
+      receipt: metadata.MpesaReceiptNumber || null,
+      transactionDate: metadata.TransactionDate || null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      raw: callback,
+    });
 
-      const orderSnap = await db
-        .collection("orders")
-        .where("checkoutRequestId", "==", CheckoutRequestID)
-        .limit(1)
-        .get();
+    const orderSnap = await db
+      .collection("orders")
+      .where("checkoutRequestId", "==", CheckoutRequestID)
+      .limit(1)
+      .get();
 
-      if (!orderSnap.empty) {
-        const orderDoc = orderSnap.docs[0];
-        const paid = Number(ResultCode) === 0;
+    if (!orderSnap.empty) {
+      const orderDoc = orderSnap.docs[0];
+      const paid = Number(ResultCode) === 0;
 
-        await orderDoc.ref.set(
-          {
-            status: paid ? "PAID" : "FAILED",
-            receipt: metadata.MpesaReceiptNumber || null,
-            transactionDate: metadata.TransactionDate || null,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
+      await orderDoc.ref.set(
+        {
+          status: paid ? "PAID" : "FAILED",
+          receipt: metadata.MpesaReceiptNumber || null,
+          transactionDate: metadata.TransactionDate || null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
 
-        if (paid) {
-          await db.collection("unlocks").doc(orderDoc.id).set({
-            orderId: orderDoc.id,
-            beatId: orderDoc.data().beatId,
-            phone: metadata.PhoneNumber || null,
-            amount: metadata.Amount || null,
-            receipt: metadata.MpesaReceiptNumber || null,
-            transactionDate: metadata.TransactionDate || null,
-            checkoutRequestId: CheckoutRequestID,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-
-          // ✅ ADD: Email you (admin) when a purchase is successful
-          try {
-            const beatId = orderDoc.data().beatId || "—";
-            await sendEmail({
-              to: ADMIN_EMAIL,
-              subject: "New Beat Purchase 💰",
-              html: `
-                <div style="font-family: Arial, sans-serif; line-height:1.5">
-                  <h3>New purchase received</h3>
-                  <p><b>Order ID:</b> ${orderDoc.id}</p>
-                  <p><b>Beat ID:</b> ${beatId}</p>
-                  <p><b>Amount:</b> ${metadata.Amount || "—"}</p>
-                  <p><b>Phone:</b> ${metadata.PhoneNumber || "—"}</p>
-                  <p><b>Receipt:</b> ${metadata.MpesaReceiptNumber || "—"}</p>
-                </div>
-              `,
-            });
-          } catch (e) {
-            console.error("Purchase email error:", e);
-          }
-        }
+      if (paid) {
+        await db.collection("unlocks").doc(orderDoc.id).set({
+          orderId: orderDoc.id,
+          beatId: orderDoc.data().beatId,
+          phone: metadata.PhoneNumber || null,
+          amount: metadata.Amount || null,
+          receipt: metadata.MpesaReceiptNumber || null,
+          transactionDate: metadata.TransactionDate || null,
+          checkoutRequestId: CheckoutRequestID,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
       }
-
-      return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
-    } catch (err) {
-      console.error(err);
-      return res.json({ ResultCode: 0 });
     }
+
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (err) {
+    console.error(err);
+    return res.json({ ResultCode: 0 });
   }
-);
+});
 
 /**
  * 🔐 POST /secureDownload
@@ -481,9 +383,7 @@ exports.licenseDownload = onRequest(
 
       const { licensePath } = beatDoc.data();
       if (!licensePath) {
-        return res
-          .status(500)
-          .json({ error: "licensePath missing on beat doc" });
+        return res.status(500).json({ error: "licensePath missing on beat doc" });
       }
 
       // 3) Signed URL (10 min)
@@ -499,6 +399,182 @@ exports.licenseDownload = onRequest(
     } catch (err) {
       console.error("licenseDownload error:", err);
       return res.status(500).json({ error: "Internal error" });
+    }
+  }
+);
+
+/* =========================================================
+✅ EMAIL TRIGGERS (SendGrid)
+========================================================= */
+
+/**
+ * 1) Producer signup:
+ * - Trigger when /users/{uid} is created AND role/userType === "producer"
+ * - Email admin
+ * - Email producer welcome
+ */
+exports.onProducerSignup = onDocumentCreated(
+  {
+    region: "us-central1",
+    document: "users/{uid}",
+    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+  },
+  async (event) => {
+    try {
+      const data = event.data?.data() || {};
+      if (!isProducerProfile(data)) return;
+
+      const uid = event.params.uid;
+      const email = safeStr(data.email);
+      const name = safeStr(data.displayName || data.name || "Producer");
+
+      const adminTo = ADMIN_NOTIFY_EMAIL.value();
+      if (adminTo) {
+        await sendEmail({
+          to: adminTo,
+          subject: "New producer signup on Audiory",
+          text: `A new producer signed up.\n\nName: ${name}\nEmail: ${email || "—"}\nUID: ${uid}`,
+          html: `
+            <h2>New producer signup</h2>
+            <p><b>Name:</b> ${name}</p>
+            <p><b>Email:</b> ${email || "—"}</p>
+            <p><b>UID:</b> ${uid}</p>
+          `,
+        });
+      }
+
+      if (email) {
+        await sendEmail({
+          to: email,
+          subject: "Welcome to Audiory 👋",
+          text:
+            `Hey ${name}, welcome to Audiory!\n\n` +
+            `You can now upload beats, set prices, and start selling.\n\n` +
+            `If you need help, reply to this email.\n\n` +
+            `— Audiory Team`,
+          html: `
+            <h2>Welcome to Audiory 👋</h2>
+            <p>Hey ${name},</p>
+            <p>Welcome to <b>Audiory</b>! You can now upload beats, set prices, and start selling.</p>
+            <p>If you need help, just reply to this email.</p>
+            <p style="margin-top:14px;">— Audiory Team</p>
+          `,
+        });
+      }
+    } catch (e) {
+      console.error("onProducerSignup email error:", e);
+    }
+  }
+);
+
+/**
+ * 2) Payout requests:
+ * - Trigger when /payouts/{id} is created
+ * - Email admin
+ */
+exports.onPayoutRequest = onDocumentCreated(
+  {
+    region: "us-central1",
+    document: "payouts/{payoutId}",
+    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+  },
+  async (event) => {
+    try {
+      const data = event.data?.data() || {};
+      const payoutId = event.params.payoutId;
+
+      const adminTo = ADMIN_NOTIFY_EMAIL.value();
+      if (!adminTo) return;
+
+      await sendEmail({
+        to: adminTo,
+        subject: "New payout request on Audiory",
+        text:
+          `A producer requested a payout.\n\n` +
+          `Payout ID: ${payoutId}\n` +
+          `Producer ID: ${safeStr(data.producerId)}\n` +
+          `Email: ${safeStr(data.email)}\n` +
+          `Amount: ${money(data.amount)}\n` +
+          `Status: ${safeStr(data.status || "requested")}`,
+        html: `
+          <h2>New payout request</h2>
+          <p><b>Payout ID:</b> ${payoutId}</p>
+          <p><b>Producer ID:</b> ${safeStr(data.producerId)}</p>
+          <p><b>Email:</b> ${safeStr(data.email) || "—"}</p>
+          <p><b>Amount:</b> ${money(data.amount)}</p>
+          <p><b>Status:</b> ${safeStr(data.status || "requested")}</p>
+        `,
+      });
+    } catch (e) {
+      console.error("onPayoutRequest email error:", e);
+    }
+  }
+);
+
+/**
+ * 3) Buyer pays (order becomes PAID):
+ * - Trigger when /orders/{id} status changes to "PAID"
+ * - Email admin
+ */
+exports.onOrderPaid = onDocumentUpdated(
+  {
+    region: "us-central1",
+    document: "orders/{orderId}",
+    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+  },
+  async (event) => {
+    try {
+      const before = event.data?.before?.data() || {};
+      const after = event.data?.after?.data() || {};
+      const orderId = event.params.orderId;
+
+      const beforeStatus = safeStr(before.status).toUpperCase();
+      const afterStatus = safeStr(after.status).toUpperCase();
+
+      if (beforeStatus === afterStatus) return;
+      if (afterStatus !== "PAID") return;
+
+      const adminTo = ADMIN_NOTIFY_EMAIL.value();
+      if (!adminTo) return;
+
+      // Try to fetch beat details for nicer email
+      let beatTitle = "";
+      try {
+        const beatId = safeStr(after.beatId);
+        if (beatId) {
+          const beatSnap = await db.collection("beats").doc(beatId).get();
+          if (beatSnap.exists) {
+            const b = beatSnap.data() || {};
+            beatTitle = safeStr(b.title || b.beatTitle || "");
+          }
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      await sendEmail({
+        to: adminTo,
+        subject: "Beat purchase (PAID) on Audiory",
+        text:
+          `A buyer completed payment.\n\n` +
+          `Order ID: ${orderId}\n` +
+          `Beat ID: ${safeStr(after.beatId)}\n` +
+          `Beat: ${beatTitle || "—"}\n` +
+          `Amount: ${money(after.amount)}\n` +
+          `Phone: ${safeStr(after.phone)}\n` +
+          `Receipt: ${safeStr(after.receipt) || "—"}`,
+        html: `
+          <h2>Order paid ✅</h2>
+          <p><b>Order ID:</b> ${orderId}</p>
+          <p><b>Beat ID:</b> ${safeStr(after.beatId)}</p>
+          <p><b>Beat:</b> ${beatTitle || "—"}</p>
+          <p><b>Amount:</b> ${money(after.amount)}</p>
+          <p><b>Phone:</b> ${safeStr(after.phone) || "—"}</p>
+          <p><b>Receipt:</b> ${safeStr(after.receipt) || "—"}</p>
+        `,
+      });
+    } catch (e) {
+      console.error("onOrderPaid email error:", e);
     }
   }
 );
