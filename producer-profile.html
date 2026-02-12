@@ -74,6 +74,9 @@
     .muted{color:var(--muted)}
     .hidden{display:none !important}
 
+    /* ✅ ADDED: small follow status text */
+    .follow-note{margin-top:8px;color:rgba(255,255,255,.65);font-size:12px;min-height:16px}
+
     /* footer social svg */
     .social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
     .social svg{width:18px;height:18px;fill:currentColor}
@@ -159,12 +162,25 @@
           <div class="k">Latest Upload</div>
           <div class="v" id="statLatest">—</div>
         </div>
+
+        <!-- ✅ ADDED: Followers stat -->
+        <div class="stat">
+          <div class="k">Followers</div>
+          <div class="v" id="statFollowers">0</div>
+        </div>
       </div>
 
       <div class="actions">
         <a class="btn" href="/marketplace.html">Browse Marketplace</a>
+
+        <!-- ✅ ADDED: Follow button -->
+        <button class="btn primary" id="followBtn" type="button">Follow</button>
+
         <a class="btn primary" href="/register.html">Start Selling</a>
       </div>
+
+      <!-- ✅ ADDED: follow status note -->
+      <div class="follow-note" id="followNote"></div>
     </div>
   </section>
 
@@ -326,7 +342,6 @@
     const pic = String(photoURL || "").trim();
 
     if (pic) {
-      // cache-bust so updated pic shows immediately
       const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
       el.innerHTML = `<img src="${pic + bust}" alt="${name || "Producer"}">`;
       return;
@@ -354,6 +369,155 @@
     return b.producerPhotoURL || b.producerAvatar || b.producerPhoto || b.photoURL || "";
   }
 
+  /* ======================================================
+     ✅ FOLLOW SYSTEM (ADDED)
+     Path: producerFollows/{producerId}/followers/{uid}
+  ====================================================== */
+  function getFollowerDocRefs(pid, uid){
+    // We rely on Firebase helpers exposed in window.FB (same style you used elsewhere)
+    const col = window.FB?.collection;
+    const doc = window.FB?.doc;
+    if (!col || !doc || !window.FB?.db) return null;
+
+    const followersCol = col(window.FB.db, "producerFollows", pid, "followers");
+    const followerDoc = doc(window.FB.db, "producerFollows", pid, "followers", uid);
+    return { followersCol, followerDoc };
+  }
+
+  async function getFollowerCount(pid){
+    const outEl = document.getElementById("statFollowers");
+    try{
+      const qFn = window.FB?.query;
+      const getDocs = window.FB?.getDocs;
+      const limitFn = window.FB?.limit;
+
+      if (!qFn || !getDocs || !limitFn) {
+        outEl.textContent = "0";
+        return 0;
+      }
+
+      // NOTE: early stage simple count by fetching docs (fine for small audiences)
+      const col = window.FB?.collection(window.FB.db, "producerFollows", pid, "followers");
+      const snap = await getDocs(qFn(col, limitFn(5000)));
+      const count = snap.size || 0;
+      outEl.textContent = String(count);
+      return count;
+    }catch(err){
+      console.log("getFollowerCount error:", err);
+      outEl.textContent = "0";
+      return 0;
+    }
+  }
+
+  async function getIsFollowing(pid, uid){
+    try{
+      const getDoc = window.FB?.getDoc;
+      const refs = getFollowerDocRefs(pid, uid);
+      if (!getDoc || !refs) return false;
+      const snap = await getDoc(refs.followerDoc);
+      return snap.exists();
+    }catch(err){
+      console.log("getIsFollowing error:", err);
+      return false;
+    }
+  }
+
+  function setFollowUI({ isFollowing, disabled=false, note="" }){
+    const btn = document.getElementById("followBtn");
+    const noteEl = document.getElementById("followNote");
+    if (!btn) return;
+
+    btn.disabled = !!disabled;
+
+    if (isFollowing){
+      btn.textContent = "Following";
+    } else {
+      btn.textContent = "Follow";
+    }
+
+    if (noteEl) noteEl.textContent = note || "";
+  }
+
+  async function toggleFollow(pid){
+    const btn = document.getElementById("followBtn");
+    const noteEl = document.getElementById("followNote");
+
+    // must be signed in
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      // redirect to login, return back after login
+      const ret = encodeURIComponent(location.pathname + location.search);
+      location.href = "/login.html?return=" + ret;
+      return;
+    }
+
+    if (user.uid === pid){
+      setFollowUI({ isFollowing:false, note:"You can’t follow yourself." });
+      return;
+    }
+
+    try{
+      setFollowUI({ isFollowing: btn?.textContent === "Following", disabled:true, note:"Updating…" });
+
+      const refs = getFollowerDocRefs(pid, user.uid);
+      const setDoc = window.FB?.setDoc;
+      const deleteDoc = window.FB?.deleteDoc;
+
+      if (!refs || !setDoc || !deleteDoc){
+        setFollowUI({ isFollowing:false, disabled:false, note:"Follow system not ready in firebase.js yet." });
+        return;
+      }
+
+      const currently = await getIsFollowing(pid, user.uid);
+
+      if (currently){
+        await deleteDoc(refs.followerDoc);
+        setFollowUI({ isFollowing:false, disabled:false, note:"Unfollowed." });
+      } else {
+        await setDoc(refs.followerDoc, {
+          uid: user.uid,
+          createdAt: Date.now()
+        });
+        setFollowUI({ isFollowing:true, disabled:false, note:"Followed ✅" });
+      }
+
+      // refresh followers count
+      await getFollowerCount(pid);
+
+    }catch(err){
+      console.error("toggleFollow error:", err);
+      const msg = err?.code === "permission-denied"
+        ? "Permission denied. We need to add Firestore rules for follows."
+        : ("Failed: " + (err?.message || err));
+
+      if (noteEl) noteEl.textContent = msg;
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function initFollowUI(pid){
+    const btn = document.getElementById("followBtn");
+    if (!btn) return;
+
+    // show count always
+    await getFollowerCount(pid);
+
+    // set following state if logged in
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      setFollowUI({ isFollowing:false, note:"Sign in to follow this producer." });
+      return;
+    }
+    if (user.uid === pid){
+      setFollowUI({ isFollowing:false, note:"This is your producer profile." });
+      btn.disabled = true;
+      return;
+    }
+
+    const following = await getIsFollowing(pid, user.uid);
+    setFollowUI({ isFollowing: following, note:"" });
+  }
+
   async function loadProducerProfile(){
     const pid = getProducerIdFromURL();
     const status = document.getElementById("status");
@@ -367,6 +531,10 @@
       status.textContent = "Open a producer from Marketplace (click producer name).";
       return;
     }
+
+    // ✅ ADDED: hook follow button
+    const followBtn = document.getElementById("followBtn");
+    followBtn?.addEventListener("click", ()=> toggleFollow(pid));
 
     try{
       status.textContent = "Loading beats…";
@@ -416,9 +584,11 @@
       const genres = Array.from(new Set(mine.map(b => (b.genre||"").trim()).filter(Boolean)));
       document.getElementById("statGenres").textContent = genres.length ? genres.slice(0,3).join(", ") : "—";
 
-      // naive latest using first beat
       const latest = mine.length ? mine[0].createdAt : 0;
       document.getElementById("statLatest").textContent = formatDate(latest);
+
+      // ✅ ADDED: init follow (count + button state)
+      await initFollowUI(pid);
 
       if (!mine.length){
         status.textContent = "No beats from this producer yet.";
