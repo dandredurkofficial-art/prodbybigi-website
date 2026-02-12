@@ -576,5 +576,41 @@ exports.onOrderPaid = onDocumentUpdated(
     } catch (e) {
       console.error("onOrderPaid email error:", e);
     }
+
+    /**
+ * Trigger:
+ * producerFollows/{producerId}/followers/{uid}
+ *
+ * When a follow doc is created -> increment users/{producerId}.followersCount
+ * When deleted -> decrement users/{producerId}.followersCount
+ */
+exports.onProducerFollowWrite = functions.firestore
+  .document("producerFollows/{producerId}/followers/{uid}")
+  .onWrite(async (change, context) => {
+    const { producerId } = context.params;
+
+    const producerRef = db.collection("users").doc(producerId);
+
+    // Created
+    if (!change.before.exists && change.after.exists) {
+      await producerRef.set(
+        { followersCount: admin.firestore.FieldValue.increment(1) },
+        { merge: true }
+      );
+      return;
+    }
+
+    // Deleted
+    if (change.before.exists && !change.after.exists) {
+      await producerRef.set(
+        { followersCount: admin.firestore.FieldValue.increment(-1) },
+        { merge: true }
+      );
+      return;
+    }
+
+    // Updated (not used)
+    return;
+  });
   }
 );
