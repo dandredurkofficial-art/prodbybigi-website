@@ -386,24 +386,42 @@
 
   async function getFollowerCount(pid){
     const outEl = document.getElementById("statFollowers");
+
+    // ✅ 1) FAST PATH: read users/{producerId}.followersCount
+    try{
+      const docFn = window.FB?.doc;
+      const getDocFn = window.FB?.getDoc;
+
+      if (docFn && getDocFn && window.FB?.db){
+        const ref = docFn(window.FB.db, "users", pid);
+        const snap = await getDocFn(ref);
+        const n = Number(snap?.data()?.followersCount || 0);
+        outEl.textContent = String(Number.isFinite(n) ? n : 0);
+        return Number.isFinite(n) ? n : 0;
+      }
+    }catch(e){
+      console.log("fast followersCount read failed:", e);
+    }
+
+    // ✅ 2) FALLBACK: count follower docs (works even before function is deployed)
     try{
       const qFn = window.FB?.query;
       const getDocs = window.FB?.getDocs;
       const limitFn = window.FB?.limit;
+      const colFn = window.FB?.collection;
 
-      if (!qFn || !getDocs || !limitFn) {
+      if (!qFn || !getDocs || !limitFn || !colFn || !window.FB?.db){
         outEl.textContent = "0";
         return 0;
       }
 
-      // NOTE: early stage simple count by fetching docs (fine for small audiences)
-      const col = window.FB?.collection(window.FB.db, "producerFollows", pid, "followers");
+      const col = colFn(window.FB.db, "producerFollows", pid, "followers");
       const snap = await getDocs(qFn(col, limitFn(5000)));
       const count = snap.size || 0;
       outEl.textContent = String(count);
       return count;
     }catch(err){
-      console.log("getFollowerCount error:", err);
+      console.log("fallback follower count error:", err);
       outEl.textContent = "0";
       return 0;
     }
