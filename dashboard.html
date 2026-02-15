@@ -13,7 +13,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
   import {
-    getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc
+    getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc, setDoc
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   import {
@@ -61,6 +61,7 @@
   window.where = where;
   window.updateDoc = updateDoc;
   window.deleteDoc = deleteDoc;
+  window.setDoc = setDoc;
 
   // expose storage helpers
   window.ref = ref;
@@ -90,12 +91,14 @@
       // ✅ NEW
       if (typeof window.refreshProLocks === "function") window.refreshProLocks();
       if (typeof window.loadMessagesThreadList === "function") window.loadMessagesThreadList();
+      if (typeof window.loadUpgradeUI === "function") window.loadUpgradeUI();
     } else {
       window.currentUser = null;
       window.currentProfile = null;
 
       // ✅ NEW
       if (typeof window.refreshProLocks === "function") window.refreshProLocks();
+      if (typeof window.loadUpgradeUI === "function") window.loadUpgradeUI();
     }
   });
 
@@ -182,6 +185,17 @@
   .msg-meta strong{ display:block; }
   .msg-meta small{ color:#9ca3af; }
 
+  /* ✅ NEW: upgrade pricing cards */
+  .price-grid{ display:flex; gap:12px; flex-wrap:wrap; }
+  .price-card{
+    flex:1; min-width:260px;
+    background:#05070c; border:1px solid #1f2937; border-radius:16px; padding:16px;
+  }
+  .price-card h3{ margin:0 0 6px 0; }
+  .price-big{ font-size:28px; font-weight:950; margin:6px 0 10px 0; }
+  .ul{ margin:0; padding-left:18px; color:#cbd5e1; }
+  .ul li{ margin:6px 0; }
+
   @media(max-width:900px){
     nav { display:none; position:fixed; top:64px; left:0; height:100%; background:#070a12; z-index:9999; pointer-events:auto; }
     nav.open { display:block; }
@@ -209,6 +223,13 @@
   <a onclick="showPage('tracks', this)">Tracks</a>
   <a onclick="showPage('finance', this)">Finance</a>
   <a onclick="showPage('soundkits', this)">Sound Kits</a>
+
+  <!-- ✅ NEW PAGES (LOCKED UNTIL PRO) -->
+  <a onclick="showPage('advancedAnalytics', this)" id="navAdv">Advanced Analytics</a>
+  <a onclick="showPage('marketingTools', this)" id="navMkt">Marketing Tools</a>
+  <a onclick="showPage('privateMessages', this)" id="navMsg">Private Messages</a>
+  <a onclick="showPage('upgrade', this)" id="navUpg">Upgrade</a>
+
   <a onclick="showPage('settings', this)">Account Settings</a>
 </nav>
 
@@ -235,14 +256,69 @@
       </div>
     </div>
 
-    <!-- ✅ NEW: ADVANCED ANALYTICS (PRO) -->
+    <!-- ✅ KEEP (DO NOT REMOVE): we keep the boxes but now they also have dedicated pages -->
     <div class="pro-only" id="advAnalyticsBox">
       <div class="title">Advanced Analytics (Pro)</div>
       <div class="subtle" id="advAnalyticsNote">
         Upgrade to Pro to unlock views, plays, conversion rate, top beats, traffic sources.
       </div>
+      <button class="btn2" type="button" onclick="showPage('advancedAnalytics', document.getElementById('navAdv'))" style="margin-top:10px;">Open Advanced Analytics</button>
+    </div>
 
-      <div class="row" id="advAnalyticsGrid" style="margin-top:10px; display:none;">
+    <div class="pro-only" id="marketingBox">
+      <div class="title">Marketing Tools (Pro)</div>
+      <div class="subtle" id="marketingNote">
+        Upgrade to Pro to unlock boosts, campaigns, promo links, discount campaigns.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('marketingTools', document.getElementById('navMkt'))" style="margin-top:10px;">Open Marketing Tools</button>
+    </div>
+
+    <div class="pro-only" id="messagesBox">
+      <div class="title">Private Messages (Pro)</div>
+      <div class="subtle" id="messagesNote">
+        Upgrade to Pro to unlock unlimited private messages with customers.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('privateMessages', document.getElementById('navMsg'))" style="margin-top:10px;">Open Private Messages</button>
+    </div>
+
+    <div class="pro-only" id="upgradeBox">
+      <div class="title">Upgrade</div>
+      <div class="subtle" id="upgradeNote">
+        Upgrade to Pro to unlock Bulk Upload, Advanced Analytics, Marketing Tools, Private Messages.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))" style="margin-top:10px;">Go to Upgrade</button>
+    </div>
+
+    <div id="walletNote" style="margin-top:12px;color:#9ca3af;font-size:13px;">
+      (Sales + wallet become fully real after your PayPal order webhook/API writes earnings to Firestore.)
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: ADVANCED ANALYTICS -->
+<section id="advancedAnalytics" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Advanced Analytics</h2>
+        <div class="subtle">Views, plays, conversion rate, top beats, traffic sources.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipAdv">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="advLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro only. Upgrade to Pro to unlock advanced analytics.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div id="advUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked ✅ (We will connect these numbers to Firestore events later.)</div>
+
+      <div class="row" style="margin-top:12px;">
         <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
           <div class="subtle">Profile Views</div>
           <div id="statViews" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
@@ -257,19 +333,39 @@
         </div>
       </div>
 
-      <div class="subtle" style="margin-top:10px;">
-        (We will connect these numbers to Firestore events later.)
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Top Beats (placeholder)</h3>
+        <div class="subtle">We’ll build real top beats once analytics events are stored.</div>
+        <div style="margin-top:10px;color:#9ca3af;">No data yet.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: MARKETING TOOLS -->
+<section id="marketingTools" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Marketing Tools</h2>
+        <div class="subtle">Boosts, campaigns, promo links, discount campaigns.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipMkt">Plan: Free</span>
       </div>
     </div>
 
-    <!-- ✅ NEW: MARKETING TOOLS (PRO) -->
-    <div class="pro-only" id="marketingBox">
-      <div class="title">Marketing Tools (Pro)</div>
-      <div class="subtle" id="marketingNote">
-        Upgrade to Pro to unlock boosts, campaigns, promo links, discount campaigns.
+    <div id="mktLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro only. Upgrade to Pro to unlock marketing tools.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
       </div>
+    </div>
 
-      <div id="marketingUI" style="display:none; margin-top:10px;">
+    <div id="mktUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked ✅ (Create your campaigns below. We will build full manager UI next.)</div>
+
+      <div style="margin-top:12px;">
         <div class="row">
           <div class="col">
             <input id="mkCampaignName" placeholder="Campaign name (e.g. Feb Promo)" />
@@ -279,43 +375,141 @@
               <option value="boost">Boost (featured)</option>
               <option value="promo_link">Promo Link</option>
               <option value="discount">Discount Campaign</option>
+              <option value="buy_x_get_y">Buy 1 Get 2-5 Beats</option>
             </select>
           </div>
         </div>
+
+        <div class="row">
+          <div class="col">
+            <select id="mkBuyGetQty">
+              <option value="2">Buy 1 Get 2</option>
+              <option value="3">Buy 1 Get 3</option>
+              <option value="4">Buy 1 Get 4</option>
+              <option value="5">Buy 1 Get 5</option>
+            </select>
+            <div class="subtle">This is Pro only (BeatStars-style bulk deal).</div>
+          </div>
+          <div class="col">
+            <input id="mkDiscountPct" placeholder="Discount % (optional, e.g. 20)" />
+            <div class="subtle">Optional for discount campaigns.</div>
+          </div>
+        </div>
+
         <button class="btn2" type="button" onclick="createMarketingCampaign()">Create Campaign</button>
         <div id="mkStatus" class="subtle" style="margin-top:10px;"></div>
       </div>
     </div>
+  </div>
+</section>
 
-    <!-- ✅ NEW: PRIVATE MESSAGES (PRO) -->
-    <div class="pro-only" id="messagesBox">
-      <div class="title">Private Messages (Pro)</div>
-      <div class="subtle" id="messagesNote">
-        Upgrade to Pro to unlock unlimited private messages with customers.
+<!-- ✅ NEW PAGE: PRIVATE MESSAGES -->
+<section id="privateMessages" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Private Messages</h2>
+        <div class="subtle">Unlimited private messages with customers (Pro).</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipMsg">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="msgLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro only. Upgrade to Pro to unlock private messages.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div id="msgUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked ✅ (Inbox UI will be upgraded later. This is a working starter.)</div>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="col">
+          <input id="msgBuyerId" placeholder="Buyer UID (for now)" />
+          <small class="subtle">Later we’ll show real buyers list. For now type buyer UID.</small>
+        </div>
+        <div class="col">
+          <textarea id="msgText" placeholder="Type a message..."></textarea>
+        </div>
       </div>
 
-      <div id="messagesUI" style="display:none; margin-top:10px;">
-        <div class="row">
-          <div class="col">
-            <input id="msgBuyerId" placeholder="Buyer UID (for now)" />
-            <small class="subtle">Later we’ll show real buyers list. For now type buyer UID.</small>
-          </div>
-          <div class="col">
-            <textarea id="msgText" placeholder="Type a message..."></textarea>
-          </div>
-        </div>
-        <button class="btn2" type="button" onclick="sendPrivateMessage()">Send Message</button>
-        <div id="msgSendStatus" class="subtle" style="margin-top:10px;"></div>
+      <button class="btn2" type="button" onclick="sendPrivateMessage()">Send Message</button>
+      <div id="msgSendStatus" class="subtle" style="margin-top:10px;"></div>
 
-        <div style="margin-top:14px;">
-          <div class="subtle" style="margin-bottom:8px;">Recent Threads</div>
-          <div id="threadsList"></div>
+      <div style="margin-top:14px;">
+        <div class="subtle" style="margin-bottom:8px;">Recent Threads</div>
+        <div id="threadsList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: UPGRADE -->
+<section id="upgrade" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Upgrade</h2>
+        <div class="subtle">Unlock Pro tools: Bulk Upload, Advanced Analytics, Marketing Tools, Private Messages.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipUpg">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="upgradeStatusBox" class="subtle" style="margin-top:10px;"></div>
+
+    <div class="price-grid" style="margin-top:14px;">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price-big">$0</div>
+        <ul class="ul">
+          <li>Basic dashboard + upload</li>
+          <li>Normal analytics (beats, kits)</li>
+          <li>No bulk upload</li>
+          <li>No advanced analytics</li>
+          <li>No marketing tools</li>
+          <li>No private messages</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" disabled id="btnFree">Current Plan</button>
+        </div>
+      </div>
+
+      <div class="price-card" style="border-color:rgba(59,130,246,.45);">
+        <h3>Pro</h3>
+        <div class="price-big">$19/mo</div>
+        <ul class="ul">
+          <li>✅ Bulk Upload</li>
+          <li>✅ Advanced Analytics</li>
+          <li>✅ Marketing Tools</li>
+          <li>✅ Unlimited Private Messages</li>
+          <li>✅ Buy 1 Get 2-5 Beats promo tool</li>
+          <li>✅ Priority features later (domain connect)</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" onclick="requestUpgrade('pro')" id="btnPro">Upgrade to Pro</button>
+        </div>
+        <div class="subtle" style="margin-top:10px;">
+          Note: for now this creates an upgrade request in Firestore. After payment integration, we will auto-upgrade.
         </div>
       </div>
     </div>
 
-    <div id="walletNote" style="margin-top:12px;color:#9ca3af;font-size:13px;">
-      (Sales + wallet become fully real after your PayPal order webhook/API writes earnings to Firestore.)
+    <div class="card" style="margin-top:14px;">
+      <h3 style="margin-top:0;">How unlocking works</h3>
+      <div class="subtle">
+        We read your plan from your user profile:
+        <br><b>users/{uid}.plan</b> or <b>users/{uid}.planTier</b> = "pro"
+        <br>When you’re upgraded, these pages automatically unlock.
+      </div>
+
+      <div class="subtle" style="margin-top:10px;">
+        If you want to test right now: in Firebase, open your user doc and set <b>plan</b> to <b>"pro"</b>.
+      </div>
     </div>
   </div>
 </section>
@@ -538,40 +732,75 @@ function getPlanTier(){
 function isPro(){
   return getPlanTier() === "pro";
 }
+function setPlanChips(){
+  const label = "Plan: " + (getPlanTier().charAt(0).toUpperCase() + getPlanTier().slice(1));
+  const ids = ["planChipAdv","planChipMkt","planChipMsg","planChipUpg"];
+  ids.forEach(id=>{
+    const el = $(id);
+    if (el) el.textContent = label;
+  });
+}
 function refreshProLocks(){
   const pro = isPro();
 
-  // advanced analytics
-  const advGrid = $("advAnalyticsGrid");
+  // update plan chips
+  setPlanChips();
+
+  // dashboard hints (keep)
   const advNote = $("advAnalyticsNote");
-  if (advGrid) advGrid.style.display = pro ? "flex" : "none";
   if (advNote) advNote.textContent = pro
-    ? "Unlocked ✅ (connect data later)"
+    ? "Unlocked ✅ (open the page to view)"
     : "Upgrade to Pro to unlock views, plays, conversion rate, top beats, traffic sources.";
 
-  // marketing
-  const mkUI = $("marketingUI");
   const mkNote = $("marketingNote");
-  if (mkUI) mkUI.style.display = pro ? "block" : "none";
   if (mkNote) mkNote.textContent = pro
-    ? "Unlocked ✅ (create campaigns below)"
+    ? "Unlocked ✅ (open the page to create campaigns)"
     : "Upgrade to Pro to unlock boosts, campaigns, promo links, discount campaigns.";
 
-  // messages
-  const msgUI = $("messagesUI");
   const msgNote = $("messagesNote");
-  if (msgUI) msgUI.style.display = pro ? "block" : "none";
   if (msgNote) msgNote.textContent = pro
-    ? "Unlocked ✅ (send + view threads below)"
+    ? "Unlocked ✅ (open the page to message customers)"
     : "Upgrade to Pro to unlock unlimited private messages with customers.";
 
-  // bulk upload
+  const upNote = $("upgradeNote");
+  if (upNote) upNote.textContent = pro
+    ? "You are Pro ✅"
+    : "Upgrade to Pro to unlock Bulk Upload, Advanced Analytics, Marketing Tools, Private Messages.";
+
+  // bulk upload (inside upload page)
   const buUI = $("bulkUploadUI");
   const buNote = $("bulkUploadNote");
   if (buUI) buUI.style.display = pro ? "block" : "none";
   if (buNote) buNote.textContent = pro
     ? "Unlocked ✅ Upload many beats at once."
     : "Upgrade to Pro to upload many beats at once (artwork + full audio + preview audio).";
+
+  // Advanced Analytics PAGE lock
+  const advLocked = $("advLocked");
+  const advUnlocked = $("advUnlocked");
+  if (advLocked) advLocked.style.display = pro ? "none" : "block";
+  if (advUnlocked) advUnlocked.style.display = pro ? "block" : "none";
+
+  // Marketing page lock
+  const mktLocked = $("mktLocked");
+  const mktUnlocked = $("mktUnlocked");
+  if (mktLocked) mktLocked.style.display = pro ? "none" : "block";
+  if (mktUnlocked) mktUnlocked.style.display = pro ? "block" : "none";
+
+  // Messages page lock
+  const msgLocked = $("msgLocked");
+  const msgUnlocked = $("msgUnlocked");
+  if (msgLocked) msgLocked.style.display = pro ? "none" : "block";
+  if (msgUnlocked) msgUnlocked.style.display = pro ? "block" : "none";
+
+  // Upgrade page buttons
+  const btnFree = $("btnFree");
+  const btnPro = $("btnPro");
+  if (btnFree) btnFree.disabled = true;
+  if (btnPro) {
+    btnPro.disabled = pro;
+    btnPro.textContent = pro ? "Already Pro ✅" : "Upgrade to Pro";
+  }
 }
 window.refreshProLocks = refreshProLocks;
 
@@ -622,6 +851,16 @@ function showPage(id, el){
   if (id === "settings") fillSettingsForm();
   if (id === "soundkits") loadKits();
   if (id === "finance") loadPayoutUI();
+
+  // ✅ NEW: load threads when entering messages page
+  if (id === "privateMessages" && typeof window.loadMessagesThreadList === "function") {
+    window.loadMessagesThreadList();
+  }
+
+  // ✅ NEW: load upgrade UI
+  if (id === "upgrade" && typeof window.loadUpgradeUI === "function") {
+    window.loadUpgradeUI();
+  }
 
   // ✅ NEW: refresh locks on nav
   refreshProLocks();
@@ -1186,6 +1425,9 @@ async function createMarketingCampaign(){
 
   const name = ($("mkCampaignName")?.value || "").trim();
   const type = ($("mkType")?.value || "boost").trim();
+  const buyGetQty = Number($("mkBuyGetQty")?.value || 2);
+  const discountPct = Number(($("mkDiscountPct")?.value || "").trim() || 0);
+
   if (!name) return alert("Enter campaign name");
 
   try{
@@ -1194,11 +1436,13 @@ async function createMarketingCampaign(){
       producerName: getProducerDisplayName(),
       name,
       type,
+      buyGetQty: (type === "buy_x_get_y" ? buyGetQty : null),
+      discountPct: (type === "discount" ? discountPct : null),
       status: "active",
       createdAt: Date.now()
     });
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created (we'll build UI to manage campaigns next).";
-    $("mkCampaignName").value = "";
+    if ($("mkCampaignName")) $("mkCampaignName").value = "";
   }catch(err){
     alert("Campaign failed: " + (err?.message || err));
   }
@@ -1238,18 +1482,13 @@ async function sendPrivateMessage(){
   const tid = threadIdFor(pid, buyerId);
 
   try{
-    // upsert thread doc
-    await window.updateDoc(window.doc(window.db,"messagesThreads",tid), {
+    // ✅ create/merge thread doc safely
+    await window.setDoc(window.doc(window.db,"messagesThreads",tid), {
       participants: [pid, buyerId],
       producerId: pid,
       lastMessage: text.slice(0,200),
       updatedAt: Date.now()
-    }).catch(async ()=>{
-      // if not exists, create via set-like update (using updateDoc fails when missing)
-      await window.addDoc(window.collection(window.db,"messagesThreads"), { _tmp:true }).catch(()=>{});
-      // fallback: use addDoc is messy; so we do create by setting a doc with known id using updateDoc workaround:
-      // (Your rules should allow create; we will fix rules later.)
-    });
+    }, { merge: true });
 
     // add message
     await window.addDoc(window.collection(window.db,"messagesThreads",tid,"messages"), {
@@ -1317,6 +1556,46 @@ async function loadMessagesThreadList(){
   }
 }
 window.loadMessagesThreadList = loadMessagesThreadList;
+
+/* ===========================
+   ✅ UPGRADE (NEW)
+   Creates Firestore request (payment integration later)
+=========================== */
+async function requestUpgrade(plan){
+  if (!window.currentUser) return alert("Login again.");
+  const p = String(plan||"pro").toLowerCase().trim();
+
+  try{
+    await window.addDoc(window.collection(window.db,"upgradeRequests"),{
+      userId: window.currentUser.uid,
+      plan: p,
+      status: "pending",
+      createdAt: Date.now(),
+      producerName: getProducerDisplayName(),
+      email: window.currentUser.email || ""
+    });
+
+    const box = $("upgradeStatusBox");
+    if (box) box.textContent = "✅ Upgrade request submitted. (Admin/payment flow will approve and set your plan to Pro.)";
+    alert("✅ Upgrade request submitted");
+  }catch(err){
+    alert("Upgrade request failed: " + (err?.message || err));
+  }
+}
+window.requestUpgrade = requestUpgrade;
+
+function loadUpgradeUI(){
+  const box = $("upgradeStatusBox");
+  if (!box) return;
+  const tier = getPlanTier();
+  if (tier === "pro") {
+    box.textContent = "You are Pro ✅ All Pro pages are unlocked.";
+  } else {
+    box.textContent = "You are on Free plan. Upgrade to Pro to unlock Pro pages.";
+  }
+  refreshProLocks();
+}
+window.loadUpgradeUI = loadUpgradeUI;
 
 /* ===========================
    FINANCE UI
