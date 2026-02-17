@@ -37,6 +37,14 @@ const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const SENDGRID_FROM = defineSecret("SENDGRID_FROM");
 const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 
+// ✅ ADD: PayPal secrets
+const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
+const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
+// Your PayPal Webhook ID (from PayPal dashboard for that webhook endpoint)
+const PAYPAL_WEBHOOK_ID = defineSecret("PAYPAL_WEBHOOK_ID");
+// optional: "live" or "sandbox" (default sandbox if missing)
+const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
+
 // Daraja endpoints (Sandbox)
 const OAUTH_URL =
   "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
@@ -101,7 +109,7 @@ async function sendEmail({ to, subject, text, html }) {
 }
 
 function safeStr(v) {
-  return (v === null || v === undefined) ? "" : String(v);
+  return v === null || v === undefined ? "" : String(v);
 }
 
 function isProducerProfile(userData) {
@@ -114,6 +122,519 @@ function money(n) {
   if (!isFinite(v)) return "$0.00";
   return "$" + v.toFixed(2);
 }
+
+/* =========================================================
+✅ PAYPAL HELPERS (NEW)
+========================================================= */
+function paypalBaseUrl() {
+  const mode = safeStr(PAYPAL_MODE.value() || "sandbox").toLowerCase().trim();
+  return mode === "live"
+    ? "https://api-m.paypal.com"
+    : "https://api-m.sandbox.paypal.com";
+}
+
+async function getPayPalAccessToken() {
+  const cid = PAYPAL_CLIENT_ID.value();
+  const cs = PAYPAL_CLIENT_SECRET.value();
+  if (!cid || !cs) throw new Error("Missing PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET secret");
+
+  const auth = Buffer.from(`${cid}:${cs}`).toString("base64");
+  const res = await fetchFn(`${paypalBaseUrl()}/v1/oauth2/token`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: "grant_type=client_credentials",
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`PayPal OAuth failed: ${res.status} ${txt}`);
+  }
+
+  const data = await res.json();
+  return data.access_token;
+}
+
+async function verifyPayPalWebhookSignature(req) {
+  // PayPal sends these headers:
+  // PAYPAL-TRANSMISSION-ID, PAYPAL-TRANSMISSION-TIME, PAYPAL-TRANSMISSION-SIG,
+  // PAYPAL-CERT-URL, PAYPAL-AUTH-ALGO
+  const transmissionId =
+    req.header("paypal-transmission-id") || req.header("PAYPAL-TRANSMISSION-ID");
+  const transmissionTime =
+    req.header("paypal-transmission-time") || req.header("PAYPAL-TRANSMISSION-TIME");
+  const transmissionSig =
+    req.header("paypal-transmission-sig") || req.header("PAYPAL-TRANSMISSION-SIG");
+  const certUrl = req.header("paypal-cert-url") || req.header("PAYPAL-CERT-URL");
+  const authAlgo = req.header("paypal-auth-algo") || req.header("PAYPAL-AUTH-ALGO");
+
+  const webhookId = PAYPAL_WEBHOOK_ID.value();
+  if (!webhookId) throw new Error("Missing PAYPAL_WEBHOOK_ID secret");
+  if (!transmissionId || !transmissionTime || !transmissionSig || !certUrl || !authAlgo) {
+    throw new Error("Missing PayPal signature headers");
+  }
+
+  // In Cloud Functions, req.body is already parsed (object). PayPal expects the original body JSON.
+  // We'll send the parsed object as `webhook_event`, which PayPal API accepts.
+  const accessToken = await getPayPalAccessToken();
+
+  const payload = {
+    auth_algo: authAlgo,
+    cert_url: certUrl,
+    transmission_id: transmissionId,
+    transmission_sig: transmissionSig,
+    transmission_time: transmissionTime,
+    webhook_id: webhookId,
+    webhook_event: req.body,
+  };
+
+  const res = await fetchFn(`${paypalBaseUrl()}/v1/notifications/verify-webhook-signature`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`PayPal verify failed: ${res.status} ${txt}`);
+  }
+
+  const data = await res.json();
+  return safeStr(data.verification_status).toUpperCase() === "SUCCESS";
+}
+
+function parseAmountFromPayPalEvent(event) {
+  // Best-effort: handle PAYMENT.CAPTURE.COMPLETED primarily
+  const resource = event?.resource || {};
+  // capture
+  const amt = resource?.amount?.value;
+  const cur = resource?.amount?.currency_code;
+  if (amt && cur) return { value: Number(amt), currency: String(cur) };
+  // checkout order (approved) doesn't guarantee captured amount yet
+  const pu = resource?.purchase_units?.[0];
+  const orderAmt = pu?.amount?.value;
+  const orderCur = pu?.amount?.currency_code;
+  if (orderAmt && orderCur) return { value: Number(orderAmt), currency: String(orderCur) };
+  return { value: 0, currency: "USD" };
+}
+
+async function creditProducerWallet({ producerId, orderId, grossAmount, currency, source }) {
+  // 10% platform fee, 90% producer
+  const gross = Number(grossAmount || 0);
+  const fee = Math.round(gross * 0.10 * 100) / 100;
+  const net = Math.round((gross - fee) * 100) / 100;
+
+  // atomic: increment producer wallet and store platform earnings
+  const producerRef = db.collection("users").doc(producerId);
+  await db.runTransaction(async (tx) => {
+    const snap = await tx.get(producerRef);
+    if (!snap.exists) throw new Error("Producer profile missing");
+
+    tx.set(
+      producerRef,
+      {
+        availableBalance: admin.firestore.FieldValue.increment(net),
+        walletUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // platform revenue log (optional but useful)
+    const revRef = db.collection("platformRevenue").doc(orderId);
+    tx.set(
+      revRef,
+      {
+        orderId,
+        producerId,
+        gross,
+        fee,
+        net,
+        currency: currency || "USD",
+        source: source || "paypal",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+  });
+
+  return { gross, fee, net };
+}
+
+/**
+ * ✅ NEW: POST /paypalWebhook
+ * PayPal will call this. We verify signature and then:
+ * - create/update order in Firestore
+ * - create unlock if it is a beat purchase
+ * - credit producer wallet (net after 10% fee)
+ *
+ * IMPORTANT: You should include metadata in your PayPal Checkout order:
+ * - beatId
+ * - producerId
+ * - buyerEmail/uid/phone (optional)
+ */
+exports.paypalWebhook = onRequest(
+  {
+    region: "us-central1",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID, PAYPAL_MODE],
+  },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") return res.status(405).send("Use POST");
+
+      // 1) Verify signature (very important)
+      const ok = await verifyPayPalWebhookSignature(req);
+      if (!ok) return res.status(401).send("Invalid signature");
+
+      const event = req.body || {};
+      const eventType = safeStr(event.event_type).trim();
+      const resource = event.resource || {};
+      const resourceId = safeStr(resource.id || event.id);
+
+      // Store raw webhook for audit (idempotent)
+      await db
+        .collection("paypalWebhooks")
+        .doc(safeStr(event.id || resourceId || String(Date.now())))
+        .set(
+          {
+            eventType,
+            resourceId,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            raw: event,
+          },
+          { merge: true }
+        );
+
+      // We mainly act on CAPTURE COMPLETED (money actually received)
+      if (eventType !== "PAYMENT.CAPTURE.COMPLETED") {
+        return res.status(200).json({ received: true, ignored: eventType });
+      }
+
+      const { value, currency } = parseAmountFromPayPalEvent(event);
+
+      // Pull custom metadata if you included it
+      // You can attach metadata via:
+      // purchase_units[0].custom_id or invoice_id
+      // or resource.supplementary_data / payee / etc
+      const customId =
+        safeStr(resource?.custom_id) ||
+        safeStr(resource?.invoice_id) ||
+        safeStr(resource?.supplementary_data?.related_ids?.order_id) ||
+        "";
+
+      // We’ll try to read beatId + producerId from customId if you format it like:
+      // "beatId=XYZ|producerId=ABC|buyer=..."
+      const meta = {};
+      if (customId) {
+        customId.split("|").forEach((part) => {
+          const [k, ...rest] = part.split("=");
+          const key = safeStr(k).trim();
+          const val = safeStr(rest.join("=")).trim();
+          if (key) meta[key] = val;
+        });
+      }
+
+      const beatId = safeStr(meta.beatId || meta.beat || "");
+      let producerId = safeStr(meta.producerId || meta.producer || "");
+
+      // If producerId not provided, read from beat doc
+      if (beatId && !producerId) {
+        const beatSnap = await db.collection("beats").doc(beatId).get();
+        if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
+      }
+
+      // Create order doc (idempotent using capture id)
+      const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
+      const orderRef = db.collection("orders").doc(orderId);
+
+      const existing = await orderRef.get();
+      if (!existing.exists) {
+        await orderRef.set({
+          orderId,
+          provider: "paypal",
+          providerEventId: safeStr(event.id),
+          providerCaptureId: safeStr(resource.id),
+          providerStatus: safeStr(resource.status),
+          beatId: beatId || null,
+          producerId: producerId || null,
+          amount: Number(value || 0),
+          currency: currency || "USD",
+          status: "PAID",
+          payerEmail: safeStr(resource?.payer?.email_address),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          raw: event,
+        });
+      } else {
+        await orderRef.set(
+          {
+            providerStatus: safeStr(resource.status),
+            status: "PAID",
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+
+      // If it's a beat purchase, unlock + credit producer wallet
+      if (beatId && producerId) {
+        // 1) create unlock (idempotent)
+        await db.collection("unlocks").doc(orderId).set(
+          {
+            orderId,
+            beatId,
+            phone: null,
+            amount: Number(value || 0),
+            receipt: safeStr(resource.id),
+            transactionDate: Date.now(),
+            checkoutRequestId: null,
+            provider: "paypal",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        // 2) credit wallet once (idempotent) by checking a marker
+        const creditedRef = db.collection("orders").doc(orderId);
+        await db.runTransaction(async (tx) => {
+          const snap = await tx.get(creditedRef);
+          const d = snap.data() || {};
+          if (d.walletCredited === true) return;
+
+          tx.set(
+            creditedRef,
+            {
+              walletCredited: true,
+              walletCreditedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+        });
+
+        // after marker set, credit (safe if repeated: our transaction prevents repeats)
+        await creditProducerWallet({
+          producerId,
+          orderId,
+          grossAmount: Number(value || 0),
+          currency,
+          source: "paypal",
+        });
+      }
+
+      return res.status(200).json({ received: true, eventType });
+    } catch (e) {
+      console.error("paypalWebhook error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+/**
+ * ✅ NEW: PRODUCER WITHDRAW (PAYPAL)
+ * Producers create a doc in /payouts with method=paypal, amount, destination(email)
+ * This trigger will:
+ * - validate balance
+ * - create PayPal payout
+ * - decrement producer wallet
+ * - update payout status
+ */
+exports.onPaypalPayoutRequest = onDocumentCreated(
+  {
+    region: "us-central1",
+    document: "payouts/{payoutId}",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+  },
+  async (event) => {
+    try {
+      const payoutId = event.params.payoutId;
+      const data = event.data?.data() || {};
+
+      const method = safeStr(data.method || data.withdrawMethod || "").toLowerCase().trim();
+      if (method !== "paypal") return; // ignore mpesa or others
+
+      const producerId = safeStr(data.producerId);
+      const destination = safeStr(data.destination || data.email || data.paypalEmail).trim();
+      const amount = Number(data.amount || 0);
+
+      if (!producerId || !destination || !amount || amount <= 0) {
+        await db.collection("payouts").doc(payoutId).set(
+          {
+            status: "FAILED",
+            error: "Missing producerId/destination/amount",
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+        return;
+      }
+
+      const producerRef = db.collection("users").doc(producerId);
+      const payoutRef = db.collection("payouts").doc(payoutId);
+
+      // 1) lock + check balance + decrement
+      let newBalance = 0;
+      await db.runTransaction(async (tx) => {
+        const pSnap = await tx.get(producerRef);
+        if (!pSnap.exists) throw new Error("Producer profile missing");
+        const prof = pSnap.data() || {};
+        const bal = Number(
+          prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? 0
+        );
+        if (!isFinite(bal) || bal < amount) throw new Error("Insufficient balance");
+
+        newBalance = Math.round((bal - amount) * 100) / 100;
+
+        // mark payout processing
+        tx.set(
+          payoutRef,
+          {
+            status: "PROCESSING",
+            provider: "paypal",
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        // decrement balance
+        tx.set(
+          producerRef,
+          {
+            availableBalance: admin.firestore.FieldValue.increment(-amount),
+            walletUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      });
+
+      // 2) create PayPal payout
+      const accessToken = await getPayPalAccessToken();
+
+      const payoutPayload = {
+        sender_batch_header: {
+          sender_batch_id: `audiory_${payoutId}_${Date.now()}`,
+          email_subject: "You have a payout from Audiory",
+          email_message:
+            "Your Audiory payout has been sent. Thank you for using Audiory!",
+        },
+        items: [
+          {
+            recipient_type: "EMAIL",
+            amount: {
+              value: amount.toFixed(2),
+              currency: "USD",
+            },
+            receiver: destination,
+            note: "Audiory producer withdrawal",
+            sender_item_id: payoutId,
+          },
+        ],
+      };
+
+      const r = await fetchFn(`${paypalBaseUrl()}/v1/payments/payouts`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payoutPayload),
+      });
+
+      const respText = await r.text();
+      let respJson = {};
+      try {
+        respJson = JSON.parse(respText);
+      } catch (e) {
+        respJson = { raw: respText };
+      }
+
+      if (!r.ok) {
+        // rollback wallet if PayPal failed
+        await db.runTransaction(async (tx) => {
+          tx.set(
+            producerRef,
+            { availableBalance: admin.firestore.FieldValue.increment(amount) },
+            { merge: true }
+          );
+          tx.set(
+            payoutRef,
+            {
+              status: "FAILED",
+              error: `PayPal payout failed: ${r.status} ${safeStr(respText)}`.slice(0, 1000),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+        });
+        return;
+      }
+
+      // Mark payout submitted
+      await payoutRef.set(
+        {
+          status: "SUBMITTED",
+          paypalBatchId: safeStr(respJson?.batch_header?.payout_batch_id),
+          paypalResponse: respJson,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          balanceAfter: newBalance,
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("onPaypalPayoutRequest error:", e);
+      const payoutId = event.params.payoutId;
+      try {
+        await db.collection("payouts").doc(payoutId).set(
+          {
+            status: "FAILED",
+            error: safeStr(e.message || e).slice(0, 1000),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      } catch (_) {}
+    }
+  }
+);
+
+/**
+ * ✅ OPTIONAL: Admin can check payout batch status (manual)
+ * GET /paypalPayoutStatus?payoutBatchId=XXXX
+ */
+exports.paypalPayoutStatus = onRequest(
+  {
+    region: "us-central1",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+  },
+  async (req, res) => {
+    try {
+      const payoutBatchId = safeStr(req.query?.payoutBatchId).trim();
+      if (!payoutBatchId) return res.status(400).json({ error: "payoutBatchId is required" });
+
+      const accessToken = await getPayPalAccessToken();
+      const r = await fetchFn(`${paypalBaseUrl()}/v1/payments/payouts/${payoutBatchId}`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const txt = await r.text();
+      let j = {};
+      try {
+        j = JSON.parse(txt);
+      } catch (e) {
+        j = { raw: txt };
+      }
+
+      return res.status(r.ok ? 200 : 400).json(j);
+    } catch (e) {
+      console.error("paypalPayoutStatus error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
 
 /**
  * POST /stkpush
@@ -433,7 +954,9 @@ exports.onProducerSignup = onDocumentCreated(
         await sendEmail({
           to: adminTo,
           subject: "New producer signup on Audiory",
-          text: `A new producer signed up.\n\nName: ${name}\nEmail: ${email || "—"}\nUID: ${uid}`,
+          text: `A new producer signed up.\n\nName: ${name}\nEmail: ${
+            email || "—"
+          }\nUID: ${uid}`,
           html: `
             <h2>New producer signup</h2>
             <p><b>Name:</b> ${name}</p>
