@@ -11,7 +11,10 @@ import {
   query,
   where,
   orderBy,
-  limit
+  limit,
+  setDoc,       // ✅ ADDED (follow system)
+  deleteDoc,    // ✅ ADDED (follow system)
+  serverTimestamp // ✅ ADDED (follow system)
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ✅ Storage (for profile pictures)
@@ -392,6 +395,72 @@ window.FB.logFreeDownload = async function ({
   return true;
 };
 
+/* =========================
+   ✅ PRODUCER FOLLOW SYSTEM (ADDED)
+   Collections:
+   - producerFollows/{producerId}/followers/{uid}
+   Counter:
+   - users/{producerId}.followersCount  (optional; if not set, UI can count docs)
+========================= */
+
+// ✅ check if current user follows a producer
+window.FB.isFollowingProducer = async function isFollowingProducer(producerId) {
+  const user = auth.currentUser;
+  if (!user) return false;
+
+  const refDoc = doc(db, "producerFollows", String(producerId), "followers", user.uid);
+  const snap = await getDoc(refDoc);
+  return snap.exists();
+};
+
+// ✅ follow
+window.FB.followProducer = async function followProducer(producerId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const refDoc = doc(db, "producerFollows", String(producerId), "followers", user.uid);
+  await setDoc(refDoc, { uid: user.uid, createdAt: serverTimestamp() }, { merge: true });
+  return true;
+};
+
+// ✅ unfollow
+window.FB.unfollowProducer = async function unfollowProducer(producerId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const refDoc = doc(db, "producerFollows", String(producerId), "followers", user.uid);
+  await deleteDoc(refDoc);
+  return true;
+};
+
+// ✅ follower count (FAST if users/{producerId}.followersCount exists; fallback counts docs)
+window.FB.getProducerFollowerCount = async function getProducerFollowerCount(producerId, { fast = true } = {}) {
+  const pid = String(producerId || "").trim();
+  if (!pid) return 0;
+
+  // ✅ FAST path: users/{producerId}.followersCount
+  if (fast) {
+    try {
+      const snap = await getDoc(doc(db, "users", pid));
+      if (snap.exists()) {
+        const n = Number(snap.data()?.followersCount ?? 0);
+        if (Number.isFinite(n)) return n;
+      }
+    } catch (e) {
+      // ignore, fallback below
+    }
+  }
+
+  // ✅ fallback: count follower docs (ok for small counts)
+  try {
+    const col = collection(db, "producerFollows", pid, "followers");
+    const snap = await getDocs(query(col, limit(5000)));
+    return snap.size || 0;
+  } catch {
+    return 0;
+  }
+};
+
 // ✅ Tell pages firebase is ready
 window.dispatchEvent(new Event("firebase-ready"));
 
@@ -442,4 +511,3 @@ onAuthStateChanged(auth, (user) => {
     location.href = "/index.html";
   });
 });
-
