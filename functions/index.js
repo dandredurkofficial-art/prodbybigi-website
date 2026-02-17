@@ -20,10 +20,12 @@ const {
 // ✅ ADD: SendGrid
 const sgMail = require("@sendgrid/mail");
 
-admin.initializeApp();
+admin.initializeApp({
+storageBucket: "audiory-beat-store.firebasestorage.app",
+});
 
 const db = admin.firestore();
-const bucket = getStorage().bucket(); // ✅ ADD
+const bucket = getStorage().bucket("audiory-beat-store.firebasestorage.app");
 
 // Secrets (names only!)
 const DARAJA_CONSUMER_KEY = defineSecret("DARAJA_CONSUMER_KEY");
