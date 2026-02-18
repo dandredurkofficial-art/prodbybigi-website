@@ -278,8 +278,8 @@ async function creditProducerWallet({ producerId, orderId, grossAmount, currency
 exports.createOrder = onRequest(
   {
     region: "us-central1",
+    cors: ["https://audiory.site"],
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
-    cors: true,
   },
   async (req, res) => {
     try {
