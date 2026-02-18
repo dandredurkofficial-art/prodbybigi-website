@@ -60,7 +60,7 @@
 
   // Try to discover your Firebase PayPal create-order endpoint safely.
   // You can override by setting:
-  //   window.PB_PAYPAL_CREATE_ORDER_URL = "https://.../paypalCreateOrder"
+  //   window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app"
   function getPaypalCreateOrderCandidates() {
     const out = [];
 
