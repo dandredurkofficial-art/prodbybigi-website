@@ -39,7 +39,7 @@
 
   function isFreeBeat(beat) {
     if (!beat) return false;
-    if (beat.freeDownload === true || beat.isFree === true) return true;
+    if (beat.freeDownload === true) return true;
     return Number(beat.price || 0) === 0;
   }
 
@@ -51,46 +51,51 @@
     return null;
   }
 
-  // ✅ Decide which backend URL to use for PayPal create order
-  function getCreateOrderUrl() {
-    // Preferred: Firebase Function URL you set in index.html
+  // ✅ Resolve PayPal create-order endpoint (Firebase function preferred)
+  function resolveCreateOrderUrl() {
+    // 1) If you set it in index.html, use it
     const direct = String(window.PB_PAYPAL_CREATE_ORDER_URL || "").trim();
     if (direct) return direct;
 
-    // Fallback: old Render API (only if you still use it)
-    const base = String(window.API_BASE || "").trim();
-    if (base) return `${base.replace(/\/+$/, "")}/api/create-order`;
+    // 2) Otherwise fallback to API_BASE styles (Render etc)
+    const base = String(window.API_BASE || "").trim().replace(/\/+$/, "");
+    if (!base) return ""; // handled by caller
 
-    throw new Error(
-      "Missing backend: set window.PB_PAYPAL_CREATE_ORDER_URL (Firebase createOrder function URL)."
-    );
+    // support both patterns if you ever change backend routes
+    return `${base}/api/create-order`;
   }
 
-  // ✅ PayPal order create
+  // ✅ PayPal order create (fixed to use PB_PAYPAL_CREATE_ORDER_URL)
   async function createPaypalOrder({ beatId, licenseKey }) {
-    const token = await getBuyerIdTokenFast();
-    const url = getCreateOrderUrl();
+    const url = resolveCreateOrderUrl();
+    if (!url) throw new Error("Missing create order URL. Set window.PB_PAYPAL_CREATE_ORDER_URL.");
 
-    const r = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ beatId, licenseKey }),
-    });
+    const token = await getBuyerIdTokenFast();
+
+    let r;
+    try {
+      r = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ beatId, licenseKey }),
+      });
+    } catch (e) {
+      // network/CORS/blocked
+      throw new Error("Failed to fetch (network/CORS). Check function URL + CORS.");
+    }
 
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      const msg = data?.error || data?.message || "Create order failed";
-      throw new Error(msg);
-    }
+    if (!r.ok) throw new Error(data.error || data.message || "Create order failed");
 
     if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
 
+    const links = data.approveLinks || data.links || [];
     const approve =
-      (data.approveLinks || data.links || []).find((l) => l.rel === "approve") ||
-      (data.approveLinks || data.links || []).find((l) => l.rel === "payer-action");
+      (links || []).find((l) => l.rel === "approve") ||
+      (links || []).find((l) => l.rel === "payer-action");
 
     const approveUrl = data.approveUrl || approve?.href;
     if (!approveUrl) throw new Error("No PayPal approve link returned");
@@ -351,7 +356,9 @@
     }
 
     if (!window.PB_CART || typeof window.PB_CART.add !== "function") {
-      alert("Cart not loaded. Make sure /js/cart.js is included before /js/license-modal.js");
+      alert(
+        "Cart not loaded. Make sure /js/cart.js is included before /js/license-modal.js"
+      );
       return;
     }
 
@@ -406,10 +413,11 @@
     }
 
     if (!beat) {
-      const title =
-        (wrap.querySelector("h3")?.textContent ||
-          wrap.querySelector(".t")?.textContent ||
-          "Beat").trim();
+      const title = (
+        wrap.querySelector("h3")?.textContent ||
+        wrap.querySelector(".t")?.textContent ||
+        "Beat"
+      ).trim();
 
       beat = {
         id: beatId,
@@ -431,7 +439,11 @@
 
     if (!resolveBeatId(beat)) return;
 
-    if (pill && isFreeBeat(beat) && typeof window.PB_OPEN_FREE_DOWNLOAD === "function") {
+    if (
+      pill &&
+      isFreeBeat(beat) &&
+      typeof window.PB_OPEN_FREE_DOWNLOAD === "function"
+    ) {
       window.PB_OPEN_FREE_DOWNLOAD({
         beatId: resolveBeatId(beat),
         beatTitle: safeTitle(beat),
