@@ -55,27 +55,37 @@ const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
 function applyCors(req, res) {
   const origin = req.headers.origin || "";
 
-  // allow your site + local dev
-  const allowlist = new Set([
+  // ✅ allow your domains (add localhost for testing)
+  const allowed = new Set([
     "https://audiory.site",
     "https://www.audiory.site",
     "http://localhost:5000",
     "http://127.0.0.1:5000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
   ]);
 
-  // If origin is in allowlist, echo it back. Otherwise default to your main domain.
-  const allowedOrigin = allowlist.has(origin) ? origin : "https://audiory.site";
+  // If no origin (server-to-server), don’t block
+  if (origin && allowed.has(origin)) {
+    res.set("Access-Control-Allow-Origin", origin);
+  } else if (origin) {
+    // If you want to hard block unknown origins, keep it strict like this:
+    // (Do NOT set "*" when you use credentials)
+    res.set("Access-Control-Allow-Origin", "https://audiory.site");
+  } else {
+    res.set("Access-Control-Allow-Origin", "https://audiory.site");
+  }
 
-  res.set("Access-Control-Allow-Origin", allowedOrigin);
   res.set("Vary", "Origin");
   res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
   res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.set("Access-Control-Max-Age", "3600");
 }
 
 function handleCorsPreflight(req, res) {
   if (req.method === "OPTIONS") {
     applyCors(req, res);
-    return res.status(204).send(""); // ✅ preflight success
+    return res.status(204).send("");
   }
   return null;
 }
@@ -311,13 +321,12 @@ exports.createOrder = onRequest(
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (req, res) => {
-    const stop = handleCorsPreflight(req, res);
-    if (stop) return;
+    // ✅ CORS ONCE (and preflight)
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
     applyCors(req, res);
 
     try {
-      if (applyCors(req, res)) return; // ✅ MUST be first
-
       if (req.method !== "POST") {
         return res.status(405).json({ error: "Use POST" });
       }
@@ -337,9 +346,9 @@ exports.createOrder = onRequest(
       // Price from beat.licenses
       const lic = beat.licenses || {};
       const selected = lic?.[licenseKey] || {};
-      const price = Number(selected.price || beat.price || 0);
+      const price = Number(selected.price ?? beat.price ?? 0);
 
-      if (!price || price <= 0) {
+      if (!Number.isFinite(price) || price <= 0) {
         return res.status(400).json({ error: "Invalid price for this license" });
       }
 
@@ -367,10 +376,8 @@ exports.createOrder = onRequest(
           user_action: "PAY_NOW",
           landing_page: "LOGIN",
 
-          // ✅ where paypall will send user AFTER they approve payment
+          // ✅ Use the pages you will create on hosting
           return_url: "https://audiory.site/success.html",
-
-          // ✅ where paypal will send the user if they cancel
           cancel_url: "https://audiory.site/cancel.html",
         },
       };
@@ -401,10 +408,52 @@ exports.createOrder = onRequest(
         orderId: data.id,
         approveLinks: data.links || [],
         approveUrl: approve?.href || null,
+        mode: safeStr(PAYPAL_MODE.value() || "sandbox"), // ✅ helps you debug
       });
     } catch (e) {
       console.error("createOrder error:", e);
-      try { applyCors(req, res); } catch (_) {}
+      applyCors(req, res);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+exports.captureOrder = onRequest(
+  {
+    region: "us-central1",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+  },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { orderId } = req.body || {};
+      if (!orderId) return res.status(400).json({ error: "orderId is required" });
+
+      const accessToken = await getPayPalAccessToken();
+
+      const r = await fetchFn(`${paypalBaseUrl()}/v2/checkout/orders/${orderId}/capture`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok) {
+        return res.status(400).json({ error: data?.message || "Capture failed", details: data });
+      }
+
+      return res.json({ ok: true, data });
+    } catch (e) {
+      console.error("captureOrder error:", e);
+      applyCors(req, res);
       return res.status(500).json({ error: e.message });
     }
   }
