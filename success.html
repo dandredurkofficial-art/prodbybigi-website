@@ -3,62 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Payment Successful | ProdByBigi</title>
-  <link rel="stylesheet" href="/css/global.css">
-  <style>
-    .wrap{min-height:70vh;display:grid;place-items:center}
-    .box{width:min(720px,92vw);padding:22px}
-    .muted{color:var(--muted)}
-    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
-  </style>
+  <title>Payment successful - Audiory</title>
 </head>
-<body>
-  <main class="wrap">
-    <div class="card box">
-      <h2 class="h2">Payment successful ✅</h2>
-      <p class="muted" id="msg">Finalizing your order…</p>
-
-      <div class="btnrow">
-        <a class="play-btn" href="/marketplace.html"><span class="playIcon">←</span><span class="playText">Back to Marketplace</span></a>
-        <a class="play-btn" href="/index.html"><span class="playIcon">🏠</span><span class="playText">Home</span></a>
-      </div>
-    </div>
-  </main>
+<body style="font-family:system-ui; padding:24px;">
+  <h2>Payment approved ✅</h2>
+  <p>Finalizing your order…</p>
 
   <script>
-    window.API_BASE = "https://prodbybigi-api.onrender.com";
-  </script>
+    // PayPal returns: ?token=ORDER_ID
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
 
-  <script>
-    async function capture() {
-      const msg = document.getElementById("msg");
-      const orderId = localStorage.getItem("pb_last_order_id");
-
-      if (!orderId) {
-        msg.textContent = "Missing order id. If you paid, contact support.";
-        return;
-      }
-
-      try {
-        const r = await fetch(`${window.API_BASE}/api/capture-order`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ orderId })
-        });
-
-        const data = await r.json();
-        if (!r.ok) throw new Error(data.error || "Capture failed");
-
-        msg.textContent = "Order completed. Thank you! Your license will be available soon.";
-        // optional cleanup:
-        // localStorage.removeItem("pb_last_order_id");
-      } catch (e) {
-        console.error(e);
-        msg.textContent = "Payment approved, but we could not finalize. Please refresh or contact support.";
-      }
-    }
-
-    capture();
+    // For now we just send them back home.
+    // (Later, we’ll add capture logic here.)
+    setTimeout(() => {
+      window.location.href = "/buyer-dashboard.html";
+    }, 1200);
   </script>
 </body>
 </html>
