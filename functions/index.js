@@ -8,50 +8,76 @@ const fetchFn = global.fetch
   : (...args) =>
       import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
-// ✅ ADD: Firebase Storage
+// ✅ Firebase Storage
 const { getStorage } = require("firebase-admin/storage");
 
-// ✅ ADD: Firestore triggers (for emails)
+// ✅ Firestore triggers (v2)
 const {
   onDocumentCreated,
   onDocumentUpdated,
+  onDocumentWritten,
 } = require("firebase-functions/v2/firestore");
 
-// ✅ ADD: SendGrid
+// ✅ SendGrid
 const sgMail = require("@sendgrid/mail");
 
+/** =========================
+ * ✅ Firebase init
+ ========================= */
 admin.initializeApp({
-storageBucket: "audiory-beat-store.firebasestorage.app",
+  storageBucket: "audiory-beat-store.firebasestorage.app",
 });
 
 const db = admin.firestore();
-const bucket = getStorage().bucket("audiory-beat-store.firebasestorage.app");
+// Use default bucket set in initializeApp()
+const bucket = getStorage().bucket();
 
-// Secrets (names only!)
+/** =========================
+ * ✅ Secrets (names only)
+ ========================= */
+// Daraja
 const DARAJA_CONSUMER_KEY = defineSecret("DARAJA_CONSUMER_KEY");
 const DARAJA_CONSUMER_SECRET = defineSecret("DARAJA_CONSUMER_SECRET");
 const MPESA_SHORTCODE = defineSecret("MPESA_SHORTCODE");
 const MPESA_PASSKEY = defineSecret("MPESA_PASSKEY");
 const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
 
-// ✅ ADD: SendGrid secrets
+// SendGrid
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
 const SENDGRID_FROM = defineSecret("SENDGRID_FROM");
 const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 
-// ✅ ADD: PayPal secrets
+// PayPal
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
-// Your PayPal Webhook ID (from PayPal dashboard for that webhook endpoint)
 const PAYPAL_WEBHOOK_ID = defineSecret("PAYPAL_WEBHOOK_ID");
-// optional: "live" or "sandbox" (default sandbox if missing)
-const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
+const PAYPAL_MODE = defineSecret("PAYPAL_MODE"); // "live" or "sandbox"
 
 // Daraja endpoints (Sandbox)
 const OAUTH_URL =
   "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
 const STK_PUSH_URL =
   "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+
+/** =========================
+ * ✅ Helpers
+ ========================= */
+function safeStr(v) {
+  return v === null || v === undefined ? "" : String(v);
+}
+
+function isProducerProfile(userData) {
+  const role = safeStr(userData?.role || userData?.userType)
+    .toLowerCase()
+    .trim();
+  return role === "producer";
+}
+
+function money(n) {
+  const v = Number(n || 0);
+  if (!isFinite(v)) return "$0.00";
+  return "$" + v.toFixed(2);
+}
 
 function nowTimestamp() {
   const d = new Date();
@@ -110,23 +136,8 @@ async function sendEmail({ to, subject, text, html }) {
   });
 }
 
-function safeStr(v) {
-  return v === null || v === undefined ? "" : String(v);
-}
-
-function isProducerProfile(userData) {
-  const role = safeStr(userData?.role || userData?.userType).toLowerCase().trim();
-  return role === "producer";
-}
-
-function money(n) {
-  const v = Number(n || 0);
-  if (!isFinite(v)) return "$0.00";
-  return "$" + v.toFixed(2);
-}
-
 /* =========================================================
-✅ PAYPAL HELPERS (NEW)
+✅ PAYPAL HELPERS
 ========================================================= */
 function paypalBaseUrl() {
   const mode = safeStr(PAYPAL_MODE.value() || "sandbox").toLowerCase().trim();
@@ -138,7 +149,8 @@ function paypalBaseUrl() {
 async function getPayPalAccessToken() {
   const cid = PAYPAL_CLIENT_ID.value();
   const cs = PAYPAL_CLIENT_SECRET.value();
-  if (!cid || !cs) throw new Error("Missing PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET secret");
+  if (!cid || !cs)
+    throw new Error("Missing PAYPAL_CLIENT_ID or PAYPAL_CLIENT_SECRET secret");
 
   const auth = Buffer.from(`${cid}:${cs}`).toString("base64");
   const res = await fetchFn(`${paypalBaseUrl()}/v1/oauth2/token`, {
@@ -160,9 +172,6 @@ async function getPayPalAccessToken() {
 }
 
 async function verifyPayPalWebhookSignature(req) {
-  // PayPal sends these headers:
-  // PAYPAL-TRANSMISSION-ID, PAYPAL-TRANSMISSION-TIME, PAYPAL-TRANSMISSION-SIG,
-  // PAYPAL-CERT-URL, PAYPAL-AUTH-ALGO
   const transmissionId =
     req.header("paypal-transmission-id") || req.header("PAYPAL-TRANSMISSION-ID");
   const transmissionTime =
@@ -178,8 +187,6 @@ async function verifyPayPalWebhookSignature(req) {
     throw new Error("Missing PayPal signature headers");
   }
 
-  // In Cloud Functions, req.body is already parsed (object). PayPal expects the original body JSON.
-  // We'll send the parsed object as `webhook_event`, which PayPal API accepts.
   const accessToken = await getPayPalAccessToken();
 
   const payload = {
@@ -192,14 +199,17 @@ async function verifyPayPalWebhookSignature(req) {
     webhook_event: req.body,
   };
 
-  const res = await fetchFn(`${paypalBaseUrl()}/v1/notifications/verify-webhook-signature`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
+  const res = await fetchFn(
+    `${paypalBaseUrl()}/v1/notifications/verify-webhook-signature`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    }
+  );
 
   if (!res.ok) {
     const txt = await res.text();
@@ -211,27 +221,24 @@ async function verifyPayPalWebhookSignature(req) {
 }
 
 function parseAmountFromPayPalEvent(event) {
-  // Best-effort: handle PAYMENT.CAPTURE.COMPLETED primarily
   const resource = event?.resource || {};
-  // capture
   const amt = resource?.amount?.value;
   const cur = resource?.amount?.currency_code;
   if (amt && cur) return { value: Number(amt), currency: String(cur) };
-  // checkout order (approved) doesn't guarantee captured amount yet
+
   const pu = resource?.purchase_units?.[0];
   const orderAmt = pu?.amount?.value;
   const orderCur = pu?.amount?.currency_code;
   if (orderAmt && orderCur) return { value: Number(orderAmt), currency: String(orderCur) };
+
   return { value: 0, currency: "USD" };
 }
 
 async function creditProducerWallet({ producerId, orderId, grossAmount, currency, source }) {
-  // 10% platform fee, 90% producer
   const gross = Number(grossAmount || 0);
-  const fee = Math.round(gross * 0.10 * 100) / 100;
+  const fee = Math.round(gross * 0.1 * 100) / 100;
   const net = Math.round((gross - fee) * 100) / 100;
 
-  // atomic: increment producer wallet and store platform earnings
   const producerRef = db.collection("users").doc(producerId);
   await db.runTransaction(async (tx) => {
     const snap = await tx.get(producerRef);
@@ -246,7 +253,6 @@ async function creditProducerWallet({ producerId, orderId, grossAmount, currency
       { merge: true }
     );
 
-    // platform revenue log (optional but useful)
     const revRef = db.collection("platformRevenue").doc(orderId);
     tx.set(
       revRef,
@@ -267,17 +273,98 @@ async function creditProducerWallet({ producerId, orderId, grossAmount, currency
   return { gross, fee, net };
 }
 
+/* =========================================================
+✅ ✅ FIX 1: CREATE PAYPAL ORDER (THIS WAS MISSING)
+Your website must call this instead of Render.
+POST /createOrder
+body: { beatId, licenseKey }
+========================================================= */
+exports.createOrder = onRequest(
+  {
+    region: "us-central1",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+    cors: true,
+  },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { beatId, licenseKey } = req.body || {};
+      if (!beatId || !licenseKey) {
+        return res.status(400).json({ error: "beatId and licenseKey are required" });
+      }
+
+      // Fetch beat
+      const beatSnap = await db.collection("beats").doc(String(beatId)).get();
+      if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
+
+      const beat = beatSnap.data() || {};
+      const producerId = safeStr(beat.producerId || "");
+
+      // Price from beat.licenses
+      const lic = beat.licenses || {};
+      const selected = lic?.[licenseKey] || {};
+      const price = Number(selected.price || beat.price || 0);
+
+      if (!price || price <= 0) {
+        return res.status(400).json({ error: "Invalid price for this license" });
+      }
+
+      const accessToken = await getPayPalAccessToken();
+
+      // Metadata for webhook unlock/wallet credit
+      const customId = `beatId=${beatId}|licenseKey=${licenseKey}|producerId=${producerId}`;
+
+      const payload = {
+        intent: "CAPTURE",
+        purchase_units: [
+          {
+            reference_id: String(beatId),
+            custom_id: customId,
+            amount: {
+              currency_code: "USD",
+              value: price.toFixed(2),
+            },
+            description: `${safeStr(beat.title || "Beat")} - ${licenseKey} license`,
+          },
+        ],
+      };
+
+      const r = await fetchFn(`${paypalBaseUrl()}/v2/checkout/orders`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        return res.status(400).json({
+          error: data?.message || "PayPal create order failed",
+          details: data,
+        });
+      }
+
+      const approve =
+        (data.links || []).find((l) => l.rel === "approve") ||
+        (data.links || []).find((l) => l.rel === "payer-action");
+
+      return res.json({
+        orderId: data.id,
+        approveLinks: data.links || [],
+        approveUrl: approve?.href || null,
+      });
+    } catch (e) {
+      console.error("createOrder error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
 /**
- * ✅ NEW: POST /paypalWebhook
- * PayPal will call this. We verify signature and then:
- * - create/update order in Firestore
- * - create unlock if it is a beat purchase
- * - credit producer wallet (net after 10% fee)
- *
- * IMPORTANT: You should include metadata in your PayPal Checkout order:
- * - beatId
- * - producerId
- * - buyerEmail/uid/phone (optional)
+ * ✅ POST /paypalWebhook
  */
 exports.paypalWebhook = onRequest(
   {
@@ -288,7 +375,6 @@ exports.paypalWebhook = onRequest(
     try {
       if (req.method !== "POST") return res.status(405).send("Use POST");
 
-      // 1) Verify signature (very important)
       const ok = await verifyPayPalWebhookSignature(req);
       if (!ok) return res.status(401).send("Invalid signature");
 
@@ -297,7 +383,6 @@ exports.paypalWebhook = onRequest(
       const resource = event.resource || {};
       const resourceId = safeStr(resource.id || event.id);
 
-      // Store raw webhook for audit (idempotent)
       await db
         .collection("paypalWebhooks")
         .doc(safeStr(event.id || resourceId || String(Date.now())))
@@ -311,25 +396,18 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-      // We mainly act on CAPTURE COMPLETED (money actually received)
       if (eventType !== "PAYMENT.CAPTURE.COMPLETED") {
         return res.status(200).json({ received: true, ignored: eventType });
       }
 
       const { value, currency } = parseAmountFromPayPalEvent(event);
 
-      // Pull custom metadata if you included it
-      // You can attach metadata via:
-      // purchase_units[0].custom_id or invoice_id
-      // or resource.supplementary_data / payee / etc
       const customId =
         safeStr(resource?.custom_id) ||
         safeStr(resource?.invoice_id) ||
         safeStr(resource?.supplementary_data?.related_ids?.order_id) ||
         "";
 
-      // We’ll try to read beatId + producerId from customId if you format it like:
-      // "beatId=XYZ|producerId=ABC|buyer=..."
       const meta = {};
       if (customId) {
         customId.split("|").forEach((part) => {
@@ -340,22 +418,19 @@ exports.paypalWebhook = onRequest(
         });
       }
 
-      const beatId = safeStr(meta.beatId || meta.beat || "");
-      let producerId = safeStr(meta.producerId || meta.producer || "");
+      const beatId = safeStr(meta.beatId || "");
+      let producerId = safeStr(meta.producerId || "");
 
-      // If producerId not provided, read from beat doc
       if (beatId && !producerId) {
         const beatSnap = await db.collection("beats").doc(beatId).get();
         if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
       }
 
-      // Create order doc (idempotent using capture id)
       const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
       const orderRef = db.collection("orders").doc(orderId);
 
-      const existing = await orderRef.get();
-      if (!existing.exists) {
-        await orderRef.set({
+      await orderRef.set(
+        {
           orderId,
           provider: "paypal",
           providerEventId: safeStr(event.id),
@@ -370,21 +445,11 @@ exports.paypalWebhook = onRequest(
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           raw: event,
-        });
-      } else {
-        await orderRef.set(
-          {
-            providerStatus: safeStr(resource.status),
-            status: "PAID",
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
+        },
+        { merge: true }
+      );
 
-      // If it's a beat purchase, unlock + credit producer wallet
       if (beatId && producerId) {
-        // 1) create unlock (idempotent)
         await db.collection("unlocks").doc(orderId).set(
           {
             orderId,
@@ -400,15 +465,13 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-        // 2) credit wallet once (idempotent) by checking a marker
-        const creditedRef = db.collection("orders").doc(orderId);
         await db.runTransaction(async (tx) => {
-          const snap = await tx.get(creditedRef);
+          const snap = await tx.get(orderRef);
           const d = snap.data() || {};
           if (d.walletCredited === true) return;
 
           tx.set(
-            creditedRef,
+            orderRef,
             {
               walletCredited: true,
               walletCreditedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -417,7 +480,6 @@ exports.paypalWebhook = onRequest(
           );
         });
 
-        // after marker set, credit (safe if repeated: our transaction prevents repeats)
         await creditProducerWallet({
           producerId,
           orderId,
@@ -436,13 +498,7 @@ exports.paypalWebhook = onRequest(
 );
 
 /**
- * ✅ NEW: PRODUCER WITHDRAW (PAYPAL)
- * Producers create a doc in /payouts with method=paypal, amount, destination(email)
- * This trigger will:
- * - validate balance
- * - create PayPal payout
- * - decrement producer wallet
- * - update payout status
+ * ✅ PRODUCER WITHDRAW (PAYPAL)
  */
 exports.onPaypalPayoutRequest = onDocumentCreated(
   {
@@ -455,8 +511,10 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
       const payoutId = event.params.payoutId;
       const data = event.data?.data() || {};
 
-      const method = safeStr(data.method || data.withdrawMethod || "").toLowerCase().trim();
-      if (method !== "paypal") return; // ignore mpesa or others
+      const method = safeStr(data.method || data.withdrawMethod || "")
+        .toLowerCase()
+        .trim();
+      if (method !== "paypal") return;
 
       const producerId = safeStr(data.producerId);
       const destination = safeStr(data.destination || data.email || data.paypalEmail).trim();
@@ -477,11 +535,11 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
       const producerRef = db.collection("users").doc(producerId);
       const payoutRef = db.collection("payouts").doc(payoutId);
 
-      // 1) lock + check balance + decrement
       let newBalance = 0;
       await db.runTransaction(async (tx) => {
         const pSnap = await tx.get(producerRef);
         if (!pSnap.exists) throw new Error("Producer profile missing");
+
         const prof = pSnap.data() || {};
         const bal = Number(
           prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? 0
@@ -490,7 +548,6 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
 
         newBalance = Math.round((bal - amount) * 100) / 100;
 
-        // mark payout processing
         tx.set(
           payoutRef,
           {
@@ -501,7 +558,6 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
           { merge: true }
         );
 
-        // decrement balance
         tx.set(
           producerRef,
           {
@@ -512,23 +568,18 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
         );
       });
 
-      // 2) create PayPal payout
       const accessToken = await getPayPalAccessToken();
 
       const payoutPayload = {
         sender_batch_header: {
           sender_batch_id: `audiory_${payoutId}_${Date.now()}`,
           email_subject: "You have a payout from Audiory",
-          email_message:
-            "Your Audiory payout has been sent. Thank you for using Audiory!",
+          email_message: "Your Audiory payout has been sent. Thank you for using Audiory!",
         },
         items: [
           {
             recipient_type: "EMAIL",
-            amount: {
-              value: amount.toFixed(2),
-              currency: "USD",
-            },
+            amount: { value: amount.toFixed(2), currency: "USD" },
             receiver: destination,
             note: "Audiory producer withdrawal",
             sender_item_id: payoutId,
@@ -549,12 +600,11 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
       let respJson = {};
       try {
         respJson = JSON.parse(respText);
-      } catch (e) {
+      } catch {
         respJson = { raw: respText };
       }
 
       if (!r.ok) {
-        // rollback wallet if PayPal failed
         await db.runTransaction(async (tx) => {
           tx.set(
             producerRef,
@@ -574,7 +624,6 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
         return;
       }
 
-      // Mark payout submitted
       await payoutRef.set(
         {
           status: "SUBMITTED",
@@ -602,14 +651,11 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
   }
 );
 
-/**
- * ✅ OPTIONAL: Admin can check payout batch status (manual)
- * GET /paypalPayoutStatus?payoutBatchId=XXXX
- */
 exports.paypalPayoutStatus = onRequest(
   {
     region: "us-central1",
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+    cors: true,
   },
   async (req, res) => {
     try {
@@ -626,7 +672,7 @@ exports.paypalPayoutStatus = onRequest(
       let j = {};
       try {
         j = JSON.parse(txt);
-      } catch (e) {
+      } catch {
         j = { raw: txt };
       }
 
@@ -640,7 +686,6 @@ exports.paypalPayoutStatus = onRequest(
 
 /**
  * POST /stkpush
- * body: { phone: "2547XXXXXXXX", amount: 10, beatId: "BEAT_123" }
  */
 exports.stkpush = onRequest(
   {
@@ -652,20 +697,17 @@ exports.stkpush = onRequest(
       MPESA_PASSKEY,
       MPESA_CALLBACK_URL,
     ],
+    cors: true,
   },
   async (req, res) => {
     try {
-      if (req.method !== "POST")
-        return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
       const { phone, amount, beatId } = req.body || {};
       if (!phone || !amount || !beatId) {
-        return res
-          .status(400)
-          .json({ error: "phone, amount, and beatId are required" });
+        return res.status(400).json({ error: "phone, amount, and beatId are required" });
       }
 
-      // 1) Create an order in Firestore (PENDING)
       const orderRef = db.collection("orders").doc();
       await orderRef.set({
         beatId,
@@ -720,10 +762,7 @@ exports.stkpush = onRequest(
         { merge: true }
       );
 
-      return res.status(r.ok ? 200 : 400).json({
-        orderId: orderRef.id,
-        ...data,
-      });
+      return res.status(r.ok ? 200 : 400).json({ orderId: orderRef.id, ...data });
     } catch (e) {
       console.error(e);
       return res.status(500).json({ error: e.message });
@@ -737,13 +776,8 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
     const callback = req.body?.Body?.stkCallback;
     if (!callback) return res.json({ ResultCode: 0 });
 
-    const {
-      CheckoutRequestID,
-      MerchantRequestID,
-      ResultCode,
-      ResultDesc,
-      CallbackMetadata,
-    } = callback;
+    const { CheckoutRequestID, MerchantRequestID, ResultCode, ResultDesc, CallbackMetadata } =
+      callback;
 
     const metadata = {};
     CallbackMetadata?.Item?.forEach((item) => {
@@ -806,136 +840,87 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
 
 /**
  * 🔐 POST /secureDownload
- * body: { beatId: "BEAT_123", phone?: "2547..." }
  */
-exports.secureDownload = onRequest(
-  { region: "us-central1" },
-  async (req, res) => {
-    try {
-      if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+exports.secureDownload = onRequest({ region: "us-central1", cors: true }, async (req, res) => {
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+    const { beatId, phone } = req.body || {};
+    if (!beatId) return res.status(400).json({ error: "beatId is required" });
+
+    const unlockSnap = await db.collection("unlocks").where("beatId", "==", beatId).limit(1).get();
+    if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked" });
+
+    if (phone) {
+      const unlock = unlockSnap.docs[0].data();
+      if (unlock.phone && unlock.phone !== phone) {
+        return res.status(403).json({ error: "Unauthorized phone" });
       }
-
-      const { beatId, phone } = req.body || {};
-      if (!beatId) {
-        return res.status(400).json({ error: "beatId is required" });
-      }
-
-      const unlockSnap = await db
-        .collection("unlocks")
-        .where("beatId", "==", beatId)
-        .limit(1)
-        .get();
-
-      if (unlockSnap.empty) {
-        return res.status(403).json({ error: "Beat not unlocked" });
-      }
-
-      if (phone) {
-        const unlock = unlockSnap.docs[0].data();
-        if (unlock.phone && unlock.phone !== phone) {
-          return res.status(403).json({ error: "Unauthorized phone" });
-        }
-      }
-
-      const beatDoc = await db.collection("beats").doc(beatId).get();
-      if (!beatDoc.exists) {
-        return res.status(404).json({ error: "Beat not found" });
-      }
-
-      const { filePath } = beatDoc.data();
-      if (!filePath) {
-        return res.status(500).json({ error: "File path missing" });
-      }
-
-      const [url] = await bucket.file(filePath).getSignedUrl({
-        version: "v4",
-        action: "read",
-        expires: Date.now() + 10 * 60 * 1000,
-      });
-
-      return res.json({ url });
-    } catch (err) {
-      console.error("secureDownload error:", err);
-      return res.status(500).json({ error: "Internal error" });
     }
+
+    const beatDoc = await db.collection("beats").doc(beatId).get();
+    if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
+
+    const { filePath } = beatDoc.data();
+    if (!filePath) return res.status(500).json({ error: "File path missing" });
+
+    const [url] = await bucket.file(filePath).getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + 10 * 60 * 1000,
+    });
+
+    return res.json({ url });
+  } catch (err) {
+    console.error("secureDownload error:", err);
+    return res.status(500).json({ error: "Internal error" });
   }
-);
+});
 
 /**
  * 🔐 POST /licenseDownload
- * body: { beatId: "BEAT_123", phone?: "2547..." }
  */
-exports.licenseDownload = onRequest(
-  { region: "us-central1" },
-  async (req, res) => {
-    try {
-      if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+exports.licenseDownload = onRequest({ region: "us-central1", cors: true }, async (req, res) => {
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+    const { beatId, phone } = req.body || {};
+    if (!beatId) return res.status(400).json({ error: "beatId is required" });
+
+    const unlockSnap = await db.collection("unlocks").where("beatId", "==", beatId).limit(1).get();
+    if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked" });
+
+    if (phone) {
+      const unlock = unlockSnap.docs[0].data();
+      if (unlock.phone && unlock.phone !== phone) {
+        return res.status(403).json({ error: "Unauthorized phone" });
       }
-
-      const { beatId, phone } = req.body || {};
-      if (!beatId) {
-        return res.status(400).json({ error: "beatId is required" });
-      }
-
-      // 1) Check unlock
-      const unlockSnap = await db
-        .collection("unlocks")
-        .where("beatId", "==", beatId)
-        .limit(1)
-        .get();
-
-      if (unlockSnap.empty) {
-        return res.status(403).json({ error: "Beat not unlocked" });
-      }
-
-      // Optional phone check
-      if (phone) {
-        const unlock = unlockSnap.docs[0].data();
-        if (unlock.phone && unlock.phone !== phone) {
-          return res.status(403).json({ error: "Unauthorized phone" });
-        }
-      }
-
-      // 2) Get licensePath from beat doc
-      const beatDoc = await db.collection("beats").doc(beatId).get();
-      if (!beatDoc.exists) {
-        return res.status(404).json({ error: "Beat not found" });
-      }
-
-      const { licensePath } = beatDoc.data();
-      if (!licensePath) {
-        return res.status(500).json({ error: "licensePath missing on beat doc" });
-      }
-
-      // 3) Signed URL (10 min)
-      const [url] = await bucket.file(licensePath).getSignedUrl({
-        version: "v4",
-        action: "read",
-        expires: Date.now() + 10 * 60 * 1000,
-        responseDisposition: "attachment", // forces download
-        responseType: "application/pdf",
-      });
-
-      return res.json({ url });
-    } catch (err) {
-      console.error("licenseDownload error:", err);
-      return res.status(500).json({ error: "Internal error" });
     }
+
+    const beatDoc = await db.collection("beats").doc(beatId).get();
+    if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
+
+    const { licensePath } = beatDoc.data();
+    if (!licensePath) return res.status(500).json({ error: "licensePath missing on beat doc" });
+
+    const [url] = await bucket.file(licensePath).getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + 10 * 60 * 1000,
+      responseDisposition: "attachment",
+      responseType: "application/pdf",
+    });
+
+    return res.json({ url });
+  } catch (err) {
+    console.error("licenseDownload error:", err);
+    return res.status(500).json({ error: "Internal error" });
   }
-);
+});
 
 /* =========================================================
 ✅ EMAIL TRIGGERS (SendGrid)
 ========================================================= */
-
-/**
- * 1) Producer signup:
- * - Trigger when /users/{uid} is created AND role/userType === "producer"
- * - Email admin
- * - Email producer welcome
- */
 exports.onProducerSignup = onDocumentCreated(
   {
     region: "us-central1",
@@ -956,15 +941,10 @@ exports.onProducerSignup = onDocumentCreated(
         await sendEmail({
           to: adminTo,
           subject: "New producer signup on Audiory",
-          text: `A new producer signed up.\n\nName: ${name}\nEmail: ${
+          text: `A new producer signed up.\n\nName: ${name}\nEmail: ${email || "—"}\nUID: ${uid}`,
+          html: `<h2>New producer signup</h2><p><b>Name:</b> ${name}</p><p><b>Email:</b> ${
             email || "—"
-          }\nUID: ${uid}`,
-          html: `
-            <h2>New producer signup</h2>
-            <p><b>Name:</b> ${name}</p>
-            <p><b>Email:</b> ${email || "—"}</p>
-            <p><b>UID:</b> ${uid}</p>
-          `,
+          }</p><p><b>UID:</b> ${uid}</p>`,
         });
       }
 
@@ -977,13 +957,7 @@ exports.onProducerSignup = onDocumentCreated(
             `You can now upload beats, set prices, and start selling.\n\n` +
             `If you need help, reply to this email.\n\n` +
             `— Audiory Team`,
-          html: `
-            <h2>Welcome to Audiory 👋</h2>
-            <p>Hey ${name},</p>
-            <p>Welcome to <b>Audiory</b>! You can now upload beats, set prices, and start selling.</p>
-            <p>If you need help, just reply to this email.</p>
-            <p style="margin-top:14px;">— Audiory Team</p>
-          `,
+          html: `<h2>Welcome to Audiory 👋</h2><p>Hey ${name},</p><p>Welcome to <b>Audiory</b>! You can now upload beats, set prices, and start selling.</p><p style="margin-top:14px;">— Audiory Team</p>`,
         });
       }
     } catch (e) {
@@ -992,11 +966,6 @@ exports.onProducerSignup = onDocumentCreated(
   }
 );
 
-/**
- * 2) Payout requests:
- * - Trigger when /payouts/{id} is created
- * - Email admin
- */
 exports.onPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
@@ -1021,14 +990,11 @@ exports.onPayoutRequest = onDocumentCreated(
           `Email: ${safeStr(data.email)}\n` +
           `Amount: ${money(data.amount)}\n` +
           `Status: ${safeStr(data.status || "requested")}`,
-        html: `
-          <h2>New payout request</h2>
-          <p><b>Payout ID:</b> ${payoutId}</p>
-          <p><b>Producer ID:</b> ${safeStr(data.producerId)}</p>
-          <p><b>Email:</b> ${safeStr(data.email) || "—"}</p>
-          <p><b>Amount:</b> ${money(data.amount)}</p>
-          <p><b>Status:</b> ${safeStr(data.status || "requested")}</p>
-        `,
+        html: `<h2>New payout request</h2><p><b>Payout ID:</b> ${payoutId}</p><p><b>Producer ID:</b> ${safeStr(
+          data.producerId
+        )}</p><p><b>Email:</b> ${safeStr(data.email) || "—"}</p><p><b>Amount:</b> ${money(
+          data.amount
+        )}</p><p><b>Status:</b> ${safeStr(data.status || "requested")}</p>`,
       });
     } catch (e) {
       console.error("onPayoutRequest email error:", e);
@@ -1036,11 +1002,6 @@ exports.onPayoutRequest = onDocumentCreated(
   }
 );
 
-/**
- * 3) Buyer pays (order becomes PAID):
- * - Trigger when /orders/{id} status changes to "PAID"
- * - Email admin
- */
 exports.onOrderPaid = onDocumentUpdated(
   {
     region: "us-central1",
@@ -1062,7 +1023,6 @@ exports.onOrderPaid = onDocumentUpdated(
       const adminTo = ADMIN_NOTIFY_EMAIL.value();
       if (!adminTo) return;
 
-      // Try to fetch beat details for nicer email
       let beatTitle = "";
       try {
         const beatId = safeStr(after.beatId);
@@ -1073,9 +1033,7 @@ exports.onOrderPaid = onDocumentUpdated(
             beatTitle = safeStr(b.title || b.beatTitle || "");
           }
         }
-      } catch (e) {
-        // ignore
-      }
+      } catch {}
 
       await sendEmail({
         to: adminTo,
@@ -1088,36 +1046,39 @@ exports.onOrderPaid = onDocumentUpdated(
           `Amount: ${money(after.amount)}\n` +
           `Phone: ${safeStr(after.phone)}\n` +
           `Receipt: ${safeStr(after.receipt) || "—"}`,
-        html: `
-          <h2>Order paid ✅</h2>
-          <p><b>Order ID:</b> ${orderId}</p>
-          <p><b>Beat ID:</b> ${safeStr(after.beatId)}</p>
-          <p><b>Beat:</b> ${beatTitle || "—"}</p>
-          <p><b>Amount:</b> ${money(after.amount)}</p>
-          <p><b>Phone:</b> ${safeStr(after.phone) || "—"}</p>
-          <p><b>Receipt:</b> ${safeStr(after.receipt) || "—"}</p>
-        `,
+        html: `<h2>Order paid ✅</h2><p><b>Order ID:</b> ${orderId}</p><p><b>Beat ID:</b> ${safeStr(
+          after.beatId
+        )}</p><p><b>Beat:</b> ${beatTitle || "—"}</p><p><b>Amount:</b> ${money(
+          after.amount
+        )}</p><p><b>Phone:</b> ${safeStr(after.phone) || "—"}</p><p><b>Receipt:</b> ${
+          safeStr(after.receipt) || "—"
+        }</p>`,
       });
     } catch (e) {
       console.error("onOrderPaid email error:", e);
     }
+  }
+);
 
-    /**
- * Trigger:
- * producerFollows/{producerId}/followers/{uid}
- *
- * When a follow doc is created -> increment users/{producerId}.followersCount
- * When deleted -> decrement users/{producerId}.followersCount
- */
-exports.onProducerFollowWrite = functions.firestore
-  .document("producerFollows/{producerId}/followers/{uid}")
-  .onWrite(async (change, context) => {
-    const { producerId } = context.params;
-
+/* =========================================================
+✅ ✅ FIX 2: Producer follow counter (was broken + wrong v1)
+Trigger:
+producerFollows/{producerId}/followers/{uid}
+========================================================= */
+exports.onProducerFollowWrite = onDocumentWritten(
+  {
+    region: "us-central1",
+    document: "producerFollows/{producerId}/followers/{uid}",
+  },
+  async (event) => {
+    const producerId = event.params.producerId;
     const producerRef = db.collection("users").doc(producerId);
 
+    const beforeExists = !!event.data?.before?.exists;
+    const afterExists = !!event.data?.after?.exists;
+
     // Created
-    if (!change.before.exists && change.after.exists) {
+    if (!beforeExists && afterExists) {
       await producerRef.set(
         { followersCount: admin.firestore.FieldValue.increment(1) },
         { merge: true }
@@ -1126,7 +1087,7 @@ exports.onProducerFollowWrite = functions.firestore
     }
 
     // Deleted
-    if (change.before.exists && !change.after.exists) {
+    if (beforeExists && !afterExists) {
       await producerRef.set(
         { followersCount: admin.firestore.FieldValue.increment(-1) },
         { merge: true }
@@ -1134,8 +1095,6 @@ exports.onProducerFollowWrite = functions.firestore
       return;
     }
 
-    // Updated (not used)
     return;
-  });
   }
 );
