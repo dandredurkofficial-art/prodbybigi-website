@@ -39,8 +39,7 @@
 
   function isFreeBeat(beat) {
     if (!beat) return false;
-    if (beat.freeDownload === true) return true;
-    // also treat price 0 as free (just in case)
+    if (beat.freeDownload === true || beat.isFree === true) return true;
     return Number(beat.price || 0) === 0;
   }
 
@@ -52,57 +51,50 @@
     return null;
   }
 
-  // ✅ Resolve create order URL (Firebase function preferred)
-  function getPayPalCreateOrderUrl() {
-    // ✅ best: you set this in index.html
-    if (window.PB_PAYPAL_CREATE_ORDER_URL) {
-      return String(window.PB_PAYPAL_CREATE_ORDER_URL).trim();
-    }
+  // ✅ Decide which backend URL to use for PayPal create order
+  function getCreateOrderUrl() {
+    // Preferred: Firebase Function URL you set in index.html
+    const direct = String(window.PB_PAYPAL_CREATE_ORDER_URL || "").trim();
+    if (direct) return direct;
 
-    // fallback: old style API_BASE (Render / API server)
-    if (window.API_BASE) {
-      const base = String(window.API_BASE).replace(/\/+$/, "");
-      return `${base}/api/create-order`;
-    }
+    // Fallback: old Render API (only if you still use it)
+    const base = String(window.API_BASE || "").trim();
+    if (base) return `${base.replace(/\/+$/, "")}/api/create-order`;
 
-    // nothing set
-    return "";
+    throw new Error(
+      "Missing backend: set window.PB_PAYPAL_CREATE_ORDER_URL (Firebase createOrder function URL)."
+    );
   }
 
-  // ✅ PayPal order create (calls Firebase Function createOrder)
+  // ✅ PayPal order create
   async function createPaypalOrder({ beatId, licenseKey }) {
-    const url = getPayPalCreateOrderUrl();
-    if (!url) {
-      throw new Error(
-        "Failed to fetch\n\nFix: set window.PB_PAYPAL_CREATE_ORDER_URL to your Firebase createOrder function URL."
-      );
-    }
-
     const token = await getBuyerIdTokenFast();
+    const url = getCreateOrderUrl();
 
     const r = await fetch(url, {
       method: "POST",
-      mode: "cors",
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      body: JSON.stringify({ beatId, licenseKey })
+      body: JSON.stringify({ beatId, licenseKey }),
     });
 
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || "Create order failed");
+    if (!r.ok) {
+      const msg = data?.error || data?.message || "Create order failed";
+      throw new Error(msg);
+    }
 
     if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
 
     const approve =
-      (data.approveLinks || []).find((l) => l.rel === "approve") ||
-      (data.approveLinks || []).find((l) => l.rel === "payer-action");
+      (data.approveLinks || data.links || []).find((l) => l.rel === "approve") ||
+      (data.approveLinks || data.links || []).find((l) => l.rel === "payer-action");
 
-    // extra fallback if your function returns approveUrl
-    const approveUrl = approve?.href || data.approveUrl || null;
-
+    const approveUrl = data.approveUrl || approve?.href;
     if (!approveUrl) throw new Error("No PayPal approve link returned");
+
     window.location.href = approveUrl;
   }
 
@@ -131,8 +123,8 @@
           "Use for 1 song/project",
           "Up to 10,000 streams",
           "Credit producer required",
-          "No Content ID"
-        ]
+          "No Content ID",
+        ],
       });
     }
 
@@ -148,8 +140,8 @@
           "Use for 1 song/project",
           "Up to 100,000 streams",
           "Monetization allowed",
-          "Credit producer required"
-        ]
+          "Credit producer required",
+        ],
       });
     }
 
@@ -160,26 +152,46 @@
         price: Number(lic.exclusive.price || 0) || 0,
         meta: stemsReady ? "STEMS + WAV" : "WAV",
         terms: [
-          stemsReady ? "STEMS included" : "STEMS not included (producer didn’t upload stems)",
+          stemsReady
+            ? "STEMS included"
+            : "STEMS not included (producer didn’t upload stems)",
           "Exclusive rights (producer stops selling this beat)",
           "Unlimited streams",
           "Monetization allowed",
           "Wide distribution",
-          "Credit producer required"
-        ]
+          "Credit producer required",
+        ],
       });
     }
 
     // fallback: if nothing is enabled, show defaults (so UI never breaks)
     if (!list.length) {
       list.push(
-        { key: "basic", name: "Basic", price: 29.99, meta: "MP3", badge: "Popular", terms: ["MP3 download", "Non-exclusive license"] },
-        { key: "premium", name: "Premium", price: 79.99, meta: "WAV + MP3", terms: ["WAV + MP3 download", "Non-exclusive license"] },
-        { key: "exclusive", name: "Exclusive", price: 299.99, meta: "WAV", terms: ["Exclusive rights", "Unlimited use"] }
+        {
+          key: "basic",
+          name: "Basic",
+          price: 29.99,
+          meta: "MP3",
+          badge: "Popular",
+          terms: ["MP3 download", "Non-exclusive license"],
+        },
+        {
+          key: "premium",
+          name: "Premium",
+          price: 79.99,
+          meta: "WAV + MP3",
+          terms: ["WAV + MP3 download", "Non-exclusive license"],
+        },
+        {
+          key: "exclusive",
+          name: "Exclusive",
+          price: 299.99,
+          meta: "WAV",
+          terms: ["Exclusive rights", "Unlimited use"],
+        }
       );
     }
 
-    // ensure price numbers
     list.forEach((l) => (l.price = Number(l.price || 0) || 0));
     return list;
   }
@@ -214,7 +226,6 @@
       if (termsGrid) termsGrid.innerHTML = "";
       if (totalEl) totalEl.textContent = money(0);
 
-      // Hide cart/buy for free (optional)
       buyBtn.textContent = "Download";
       cartBtn && (cartBtn.style.display = "none");
 
@@ -248,7 +259,9 @@
       `;
 
       card.addEventListener("click", () => {
-        [...grid.querySelectorAll(".pb-license")].forEach((x) => x.classList.remove("selected"));
+        [...grid.querySelectorAll(".pb-license")].forEach((x) =>
+          x.classList.remove("selected")
+        );
         card.classList.add("selected");
         selectedLicense = l;
         if (totalEl) totalEl.textContent = money(l.price);
@@ -290,7 +303,6 @@
 
     // ✅ FREE: open your BeatStars-style free download popup
     if (isFreeBeat(currentBeat)) {
-      // close modal then open popup
       closeModal();
 
       if (typeof window.PB_OPEN_FREE_DOWNLOAD === "function") {
@@ -299,10 +311,12 @@
           beatTitle: safeTitle(currentBeat),
           producerId: String(currentBeat.producerId || ""),
           producerName: String(currentBeat.producerName || ""),
-          downloadUrl: String(currentBeat.fullAudio || currentBeat.audio || "")
+          downloadUrl: String(currentBeat.fullAudio || currentBeat.audio || ""),
         });
       } else {
-        alert("Free download popup not found. Add the FREE download popup script to this page.");
+        alert(
+          "Free download popup not found. Add the FREE download popup script to this page."
+        );
       }
       return;
     }
@@ -315,7 +329,7 @@
     try {
       await createPaypalOrder({
         beatId,
-        licenseKey: selectedLicense.key
+        licenseKey: selectedLicense.key,
       });
     } catch (err) {
       console.error(err);
@@ -349,7 +363,7 @@
       licenseKey,
       licenseName: String(selectedLicense.name || licenseKey),
       producerId: String(currentBeat.producerId || ""),
-      producerName: String(currentBeat.producerName || "")
+      producerName: String(currentBeat.producerName || ""),
     });
 
     alert("Added to cart ✅");
@@ -365,11 +379,9 @@
   // - NEVER open modal when clicking play button
   // - Open modal when clicking price pill OR card (but not links/buttons)
   document.addEventListener("click", (e) => {
-    // play button -> never open modal
     const playBtn = e.target.closest("[data-play-btn]");
     if (playBtn) return;
 
-    // explicit ignore
     const ignore = e.target.closest("[data-ignore-license='1']");
     if (ignore) return;
 
@@ -378,7 +390,6 @@
 
     if (!pill && !card) return;
 
-    // if clicked on a link or a button inside the card (except price-pill), don't open
     const clickable = e.target.closest("a, button");
     if (clickable && !pill) return;
 
@@ -387,7 +398,6 @@
 
     const beatId = String(wrap.getAttribute("data-beat-id") || "").trim();
 
-    // Find beat from cached list
     const list = window.__LATEST_BEATS__ || [];
     let beat = null;
 
@@ -395,7 +405,6 @@
       beat = list.find((b) => String(b.id) === String(beatId)) || null;
     }
 
-    // fallback
     if (!beat) {
       const title =
         (wrap.querySelector("h3")?.textContent ||
@@ -415,21 +424,20 @@
         licenses: {
           basic: { enabled: true, price: 29.99 },
           premium: { enabled: true, price: 79.99 },
-          exclusive: { enabled: true, price: 299.99 }
-        }
+          exclusive: { enabled: true, price: 299.99 },
+        },
       };
     }
 
     if (!resolveBeatId(beat)) return;
 
-    // ✅ If FREE beat and the click was on pill, open FREE popup directly (BeatStars feel)
     if (pill && isFreeBeat(beat) && typeof window.PB_OPEN_FREE_DOWNLOAD === "function") {
       window.PB_OPEN_FREE_DOWNLOAD({
         beatId: resolveBeatId(beat),
         beatTitle: safeTitle(beat),
         producerId: String(beat.producerId || ""),
         producerName: String(beat.producerName || ""),
-        downloadUrl: String(beat.fullAudio || beat.audio || "")
+        downloadUrl: String(beat.fullAudio || beat.audio || ""),
       });
       return;
     }
