@@ -53,37 +53,31 @@ const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
 ✅ PERMANENT CORS FIX (FOREVER)
 ========================================================= */
 function applyCors(req, res) {
-  const origin = req.get("origin") || "";
+  const origin = req.headers.origin || "";
 
-  const allowlist = [
+  // allow your site + local dev
+  const allowlist = new Set([
     "https://audiory.site",
     "https://www.audiory.site",
     "http://localhost:5000",
     "http://127.0.0.1:5000",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-  ];
+  ]);
 
-  const allowed = allowlist.includes(origin) ? origin : "";
+  // If origin is in allowlist, echo it back. Otherwise default to your main domain.
+  const allowedOrigin = allowlist.has(origin) ? origin : "https://audiory.site";
 
-  if (allowed) {
-    res.set("Access-Control-Allow-Origin", allowed);
-    res.set("Vary", "Origin");
-  }
-
+  res.set("Access-Control-Allow-Origin", allowedOrigin);
+  res.set("Vary", "Origin");
   res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Requested-With"
-  );
-  res.set("Access-Control-Max-Age", "3600");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
 
-  // Preflight
+function handleCorsPreflight(req, res) {
   if (req.method === "OPTIONS") {
-    res.status(204).send("");
-    return true;
+    applyCors(req, res);
+    return res.status(204).send(""); // ✅ preflight success
   }
-  return false;
+  return null;
 }
 
 /* =========================================================
@@ -317,6 +311,10 @@ exports.createOrder = onRequest(
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (applyCors(req, res)) return; // ✅ MUST be first
 
@@ -413,6 +411,10 @@ exports.paypalWebhook = onRequest(
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID, PAYPAL_MODE],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (applyCors(req, res)) return;
 
@@ -709,6 +711,10 @@ exports.paypalPayoutStatus = onRequest(
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (applyCors(req, res)) return;
 
@@ -749,6 +755,10 @@ exports.stkpush = onRequest(
     ],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (applyCors(req, res)) return;
 
@@ -823,7 +833,13 @@ exports.stkpush = onRequest(
 );
 
 // Callback endpoint
-exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
+exports.stkCallback = onRequest(
+  { region: "us-central1" }, 
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
   try {
     // callback is Safaricom -> no browser, but safe
     const callback = req.body?.Body?.stkCallback;
@@ -899,7 +915,13 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
 /* =========================================================
 ✅ SECURE DOWNLOAD (CORS FIXED)
 ========================================================= */
-exports.secureDownload = onRequest({ region: "us-central1" }, async (req, res) => {
+exports.secureDownload = onRequest(
+  { region: "us-central1" }, 
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
   try {
     if (applyCors(req, res)) return;
 
@@ -946,7 +968,13 @@ exports.secureDownload = onRequest({ region: "us-central1" }, async (req, res) =
 /* =========================================================
 ✅ LICENSE DOWNLOAD (CORS FIXED)
 ========================================================= */
-exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) => {
+exports.licenseDownload = onRequest(
+  { region: "us-central1" }, 
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
   try {
     if (applyCors(req, res)) return;
 
