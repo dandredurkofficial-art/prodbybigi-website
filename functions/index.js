@@ -362,8 +362,16 @@ exports.createOrder = onRequest(
           },
         ],
         application_context: {
+          brand_name: "Audiory",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
+          landing_page: "LOGIN",
+
+          // ✅ where paypall will send user AFTER they approve payment
+          return_url: "https://audiory.site/success.html",
+
+          // ✅ where paypal will send the user if they cancel
+          cancel_url: "https://audiory.site/cancel.html",
         },
       };
 
