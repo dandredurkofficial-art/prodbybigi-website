@@ -52,131 +52,58 @@
     return null;
   }
 
-  /* =========================
-     ✅ PAYPAL ORDER CREATE (FIXED)
-     - Stops using Render
-     - Uses Firebase Function URL(s)
-  ========================= */
-
-  // Try to discover your Firebase PayPal create-order endpoint safely.
-  // You can override by setting:
-  //   window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app"
-  function getPaypalCreateOrderCandidates() {
-    const out = [];
-
-    // 1) Preferred explicit URL
-    if (window.PB_PAYPAL_CREATE_ORDER_URL) out.push(String(window.PB_PAYPAL_CREATE_ORDER_URL).trim());
-
-    // 2) If you still have API_BASE set somewhere, keep it as LAST resort
-    // (but this is what was pointing to Render)
-    if (window.API_BASE) out.push(String(window.API_BASE).replace(/\/+$/, "") + "/api/create-order");
-
-    // 3) Auto-try from your deployed Cloud Run function base (from screenshot)
-    // If you set:
-    //   window.PB_PAYPAL_WEBHOOK_URL = "https://paypalwebhook-f65rhsquva-uc.a.run.app"
-    // it will use it.
-    if (window.PB_PAYPAL_WEBHOOK_URL) out.push(String(window.PB_PAYPAL_WEBHOOK_URL).trim());
-
-    // 4) If you ever store it in localStorage
-    try {
-      const ls = localStorage.getItem("PB_PAYPAL_CREATE_ORDER_URL");
-      if (ls) out.push(String(ls).trim());
-    } catch {}
-
-    // Remove empties + duplicates
-    return [...new Set(out.filter(Boolean))];
-  }
-
-  async function postJson(url, body, token) {
-    const r = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(body || {}),
-    });
-
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      const msg = data?.error || data?.message || `Request failed (${r.status})`;
-      const err = new Error(msg);
-      err.__status = r.status;
-      err.__data = data;
-      throw err;
+  // ✅ Resolve create order URL (Firebase function preferred)
+  function getPayPalCreateOrderUrl() {
+    // ✅ best: you set this in index.html
+    if (window.PB_PAYPAL_CREATE_ORDER_URL) {
+      return String(window.PB_PAYPAL_CREATE_ORDER_URL).trim();
     }
-    return data;
+
+    // fallback: old style API_BASE (Render / API server)
+    if (window.API_BASE) {
+      const base = String(window.API_BASE).replace(/\/+$/, "");
+      return `${base}/api/create-order`;
+    }
+
+    // nothing set
+    return "";
   }
 
-  function findApproveLink(data) {
-    const approve =
-      (data.approveLinks || []).find((l) => l.rel === "approve") ||
-      (data.approveLinks || []).find((l) => l.rel === "payer-action") ||
-      (data.links || []).find((l) => l.rel === "approve") ||
-      (data.links || []).find((l) => l.rel === "payer-action");
-    return approve?.href || "";
-  }
-
-  // ✅ PayPal order create
+  // ✅ PayPal order create (calls Firebase Function createOrder)
   async function createPaypalOrder({ beatId, licenseKey }) {
-    const token = await getBuyerIdTokenFast();
-
-    const candidates = getPaypalCreateOrderCandidates();
-
-    // Build more auto-fallback attempts for your paypalWebhook service:
-    // - Some backends use different paths.
-    const expanded = [];
-    candidates.forEach((u) => {
-      const base = String(u).trim().replace(/\/+$/, "");
-      expanded.push(base);
-      expanded.push(base + "/create-order");
-      expanded.push(base + "/api/create-order");
-    });
-
-    // Remove duplicates
-    const urls = [...new Set(expanded)];
-
-    if (!urls.length) {
+    const url = getPayPalCreateOrderUrl();
+    if (!url) {
       throw new Error(
-        "Checkout is not configured. Missing PB_PAYPAL_CREATE_ORDER_URL or PB_PAYPAL_WEBHOOK_URL."
+        "Failed to fetch\n\nFix: set window.PB_PAYPAL_CREATE_ORDER_URL to your Firebase createOrder function URL."
       );
     }
 
-    let lastErr = null;
+    const token = await getBuyerIdTokenFast();
 
-    for (const url of urls) {
-      try {
-        // Strategy A: normal create-order body
-        let data = await postJson(url, { beatId, licenseKey }, token);
+    const r = await fetch(url, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({ beatId, licenseKey })
+    });
 
-        // Strategy B: if backend expects an action field (common when reusing paypalWebhook)
-        if (!findApproveLink(data)) {
-          data = await postJson(url, { action: "createOrder", beatId, licenseKey }, token);
-        }
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || "Create order failed");
 
-        // Store order id if provided
-        if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
+    if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
 
-        const approveHref = findApproveLink(data);
-        if (!approveHref) {
-          throw new Error("No PayPal approve link returned from " + url);
-        }
+    const approve =
+      (data.approveLinks || []).find((l) => l.rel === "approve") ||
+      (data.approveLinks || []).find((l) => l.rel === "payer-action");
 
-        // Redirect
-        window.location.href = approveHref;
-        return;
-      } catch (e) {
-        lastErr = e;
-        // continue trying next URL
-      }
-    }
+    // extra fallback if your function returns approveUrl
+    const approveUrl = approve?.href || data.approveUrl || null;
 
-    // If we got here, everything failed.
-    console.error("PayPal create order failed (all endpoints):", lastErr);
-    throw new Error(
-      (lastErr && lastErr.message ? lastErr.message : "Checkout failed") +
-        "\n\nFix: set window.PB_PAYPAL_CREATE_ORDER_URL to your Firebase create-order function URL."
-    );
+    if (!approveUrl) throw new Error("No PayPal approve link returned");
+    window.location.href = approveUrl;
   }
 
   /* =========================
