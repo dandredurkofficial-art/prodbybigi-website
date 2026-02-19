@@ -66,7 +66,7 @@ function applyCors(req, res) {
   ]);
 
   // If no origin (server-to-server), don’t block
-  if (origin && allowed.has(origin)) {
+  if (origin && origin.startsWith("https://")) {
     res.set("Access-Control-Allow-Origin", origin);
   } else if (origin) {
     // If you want to hard block unknown origins, keep it strict like this:
