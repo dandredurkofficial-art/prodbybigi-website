@@ -122,6 +122,52 @@ function nowTimestamp() {
 }
 
 /* =========================================================
+✅ DOMAIN CONNECT HELPERS (Elite)
+========================================================= */
+function normDomain(d) {
+  let s = String(d || "").trim().toLowerCase();
+  s = s.replace(/^https?:\/\//, "");
+  s = s.replace(/\/.*$/, "");
+  s = s.replace(/:\d+$/, "");
+  if (s.startsWith("www.")) s = s.slice(4);
+  return s;
+}
+
+function safeIdFromDomain(domain) {
+  return String(domain || "").replace(/[^\w.-]/g, "_");
+}
+
+async function dohTxtLookup(name) {
+  const endpoints = [
+    "https://cloudflare-dns.com/dns-query",
+    "https://dns.google/resolve",
+  ];
+
+  for (const base of endpoints) {
+    try {
+      const url = `${base}?name=${encodeURIComponent(name)}&type=TXT`;
+      const r = await fetchFn(url, {
+        method: "GET",
+        headers: { accept: "application/dns-json" },
+      });
+
+      const j = await r.json().catch(() => ({}));
+      const answers = Array.isArray(j.Answer) ? j.Answer : [];
+
+      const txts = answers
+        .filter((a) => a && a.type === 16 && typeof a.data === "string")
+        .map((a) => a.data.replace(/^"|"$/g, "").replace(/\\"/g, '"'));
+
+      if (txts.length) return txts;
+    } catch (e) {
+      // try next endpoint
+    }
+  }
+
+  return [];
+}
+
+/* =========================================================
 ✅ SENDGRID EMAIL HELPERS
 ========================================================= */
 let SENDGRID_READY = false;
@@ -380,6 +426,138 @@ exports.verifySubscription = onRequest(
     } catch (e) {
       console.error("verifySubscription error:", e);
       try { applyCors(req, res); } catch (_) {}
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+/* =========================================================
+✅ DOMAIN CONNECT (Elite) - HTTP FUNCTIONS
+========================================================= */
+exports.createDomainChallenge = onRequest(
+  {
+    region: "us-central1",
+    secrets: [], // no secrets needed
+  },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { uid, domain } = req.body || {};
+      if (!uid) return res.status(400).json({ error: "uid is required" });
+      if (!domain) return res.status(400).json({ error: "domain is required" });
+
+      const d = normDomain(domain);
+      if (!d.includes(".")) return res.status(400).json({ error: "Invalid domain" });
+
+      const token = `audiory-${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
+
+      await db.collection("users").doc(uid).set(
+        {
+          customDomain: d,
+          customDomainStatus: "pending_dns",
+          customDomainToken: token,
+          customDomainUpdatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      await db.collection("domainRequests").doc(`${uid}__${safeIdFromDomain(d)}`).set(
+        {
+          uid,
+          domain: d,
+          token,
+          status: "pending_dns",
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      return res.json({
+        ok: true,
+        domain: d,
+        token,
+        dns: {
+          txt: { host: `_audiory-verify.${d}`, value: token },
+          cname_www: { host: `www.${d}`, value: "audiory.site" },
+          cname_apex: { host: d, value: "audiory.site" },
+        },
+      });
+    } catch (e) {
+      console.error("createDomainChallenge:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+exports.verifyDomainDns = onRequest(
+  {
+    region: "us-central1",
+    secrets: [], // no secrets needed
+  },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { uid, domain } = req.body || {};
+      if (!uid) return res.status(400).json({ error: "uid is required" });
+      if (!domain) return res.status(400).json({ error: "domain is required" });
+
+      const d = normDomain(domain);
+
+      const usnap = await db.collection("users").doc(uid).get();
+      if (!usnap.exists) return res.status(404).json({ error: "User not found" });
+
+      const u = usnap.data() || {};
+      const expected = String(u.customDomainToken || "").trim();
+      if (!expected) return res.status(400).json({ error: "No token found. Create challenge first." });
+      if (normDomain(u.customDomain || "") !== d) return res.status(400).json({ error: "Domain mismatch. Save the same domain first." });
+
+      const txtHost = `_audiory-verify.${d}`;
+      const txts = await dohTxtLookup(txtHost);
+      const ok = txts.some((v) => String(v || "").includes(expected));
+
+      if (!ok) {
+        return res.status(200).json({
+          ok: false,
+          reason: "TXT_NOT_FOUND",
+          checked: txtHost,
+          got: txts,
+        });
+      }
+
+      await db.collection("domains").doc(safeIdFromDomain(d)).set(
+        {
+          domain: d,
+          uid,
+          verified: true,
+          verifiedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      await db.collection("users").doc(uid).set(
+        {
+          customDomain: d,
+          customDomainVerified: true,
+          customDomainStatus: "verified",
+          customDomainVerifiedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      return res.json({ ok: true, domain: d });
+    } catch (e) {
+      console.error("verifyDomainDns:", e);
       return res.status(500).json({ error: e.message });
     }
   }
