@@ -837,7 +837,7 @@ window.AUDIORY_PLANS = {
 
 // Optional: call a backend function to verify subscription and set plan
 // Replace with your real function URL if you deploy it
-window.PB_VERIFY_SUBSCRIPTION_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/verifySubscription";
+window.PB_VERIFY_SUBSCRIPTION_URL = "https://verifysubscription-f65rhsquva-uc.a.run.app";
 
 /* ===========================
    GLOBALS
@@ -1221,7 +1221,7 @@ async function setUserPlanLocal({ planTier, subscriptionId, status }){
 
 async function verifySubscriptionBackend(subscriptionId){
   const url = window.PB_VERIFY_SUBSCRIPTION_URL || "";
-  if (!url || url.includes("YOUR_VERIFY_SUBSCRIPTION_URL_HERE")) return null;
+  if (!url || url.includes("https://verifysubscription-f65rhsquva-uc.a.run.app")) return null;
 
   const r = await fetch(url, {
     method: "POST",
