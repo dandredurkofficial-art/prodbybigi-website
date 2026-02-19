@@ -1223,7 +1223,7 @@ async function setUserPlanLocal({ planTier, subscriptionId, status }){
 
 async function verifySubscriptionBackend(subscriptionId){
   const url = window.PB_VERIFY_SUBSCRIPTION_URL || "";
-  if (!url || url.includes("https://verifysubscription-f65rhsquva-uc.a.run.app")) return null;
+  if (!url) return null;
 
   const r = await fetch(url, {
     method: "POST",
