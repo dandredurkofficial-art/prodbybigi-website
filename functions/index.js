@@ -310,6 +310,81 @@ async function creditProducerWallet({ producerId, orderId, grossAmount, currency
   return { gross, fee, net };
 }
 
+exports.verifySubscription = onRequest(
+  {
+    region: "us-central1",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+  },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { subscriptionId, uid } = req.body || {};
+      if (!subscriptionId) return res.status(400).json({ error: "subscriptionId is required" });
+      if (!uid) return res.status(400).json({ error: "uid is required" });
+
+      // Always verify against PayPal API (LIVE if PAYPAL_MODE=live)
+      const accessToken = await getPayPalAccessToken();
+
+      const r = await fetchFn(`${paypalBaseUrl()}/v1/billing/subscriptions/${subscriptionId}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        return res.status(400).json({ error: data?.message || "PayPal verify failed", details: data });
+      }
+
+      const status = String(data.status || "").toLowerCase(); // ACTIVE, SUSPENDED, CANCELLED...
+      const planId = String(data.plan_id || "").trim();
+
+      // Map PayPal plan_id -> planTier
+      const PLAN_MAP = {
+        "P-6N459415976946710NGJZWKI": "starter",
+        "P-74D41012PM804561FNGJZ7UQ": "pro",
+        "P-0KG19158TD0563439NGJ2EIQ": "elite",
+      };
+
+      const planTier = PLAN_MAP[planId] || "free";
+
+      // Decide if we should activate. (You can choose to allow APPROVAL too, but ACTIVE is safest.)
+      const isActive = status === "active";
+
+      // Update Firestore user
+      await db.collection("users").doc(uid).set(
+        {
+          plan: isActive ? planTier : "free",
+          planTier: isActive ? planTier : "free",
+          subscriptionStatus: status || "unknown",
+          paypalSubscriptionId: subscriptionId,
+          paypalPlanId: planId,
+          planUpdatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      return res.json({
+        ok: true,
+        status,
+        planId,
+        planTier: isActive ? planTier : "free",
+      });
+    } catch (e) {
+      console.error("verifySubscription error:", e);
+      try { applyCors(req, res); } catch (_) {}
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
 /* =========================================================
 ✅ CREATE PAYPAL ORDER (THIS IS THE ONE YOUR WEBSITE CALLS)
 POST /createOrder
