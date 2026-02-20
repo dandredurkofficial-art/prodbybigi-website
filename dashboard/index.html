@@ -1716,6 +1716,7 @@ async function loadMarketingCampaigns(){
   const list = document.getElementById("mkList");
   if (!list) return;
 
+  // Always show something immediately
   if (!window.currentUser){
     list.textContent = "Login to view campaigns.";
     return;
@@ -1733,7 +1734,6 @@ async function loadMarketingCampaigns(){
 
     const items = [];
     snap.forEach(d => items.push({ id: d.id, ...d.data() }));
-
     items.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
 
     if (!items.length){
@@ -1744,42 +1744,30 @@ async function loadMarketingCampaigns(){
     list.innerHTML = items.map(c => `
       <div class="track" style="margin-bottom:10px;">
         <div style="flex:1">
-          <strong>${c.name || "Campaign"}</strong><br>
-          <span class="subtle">
-            Type: ${c.type || "-"} • 
-            Status: ${c.status || "active"}
-          </span>
+          <strong>${(c.name||"Campaign")}</strong><br>
+          <span class="subtle">Type: ${c.type||"-"} • Status: ${c.status||"-"}</span>
         </div>
-        <button class="btn2" onclick="disableCampaign('${c.id}')">
-          Disable
-        </button>
+        <button type="button" onclick="disableCampaign('${c.id}')">Disable</button>
       </div>
     `).join("");
 
   }catch(err){
-    list.innerHTML = `
-      <span style="color:#fecaca;">
-        Could not load campaigns: ${err?.message || err}
-      </span>
-    `;
+    console.error("loadMarketingCampaigns error:", err);
+    list.innerHTML = `<span style="color:#fecaca;">Could not load campaigns: ${err?.message || err}</span>`;
   }
 }
+window.loadMarketingCampaigns = loadMarketingCampaigns;
 
 async function disableCampaign(id){
   if (!window.currentUser) return alert("Login again.");
 
-  await window.updateDoc(
-    window.doc(window.db, "marketingCampaigns", id),
-    {
-      status: "disabled",
-      updatedAt: Date.now()
-    }
-  );
+  await window.updateDoc(window.doc(window.db, "marketingCampaigns", id), {
+    status: "disabled",
+    updatedAt: Date.now()
+  });
 
-  await loadMarketingCampaigns();
+  loadMarketingCampaigns();
 }
-
-window.loadMarketingCampaigns = loadMarketingCampaigns;
 window.disableCampaign = disableCampaign;  
 
 /* ===========================
