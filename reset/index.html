@@ -50,7 +50,7 @@ btn.onclick = async () => {
     await verifyPasswordResetCode(auth, oobCode);
     await confirmPasswordReset(auth, oobCode, newPassword);
     alert("✅ Password updated. Now login.");
-    location.href = "login/";
+    location.href = "/login/";
   } catch (e) {
     alert("Reset failed: " + (e?.message || e));
   }
