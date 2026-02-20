@@ -691,7 +691,7 @@
     try{
       await signOut(window.FB.auth);
       updateNavAuthUI(null);
-      location.href = "/login.html";
+      location.href = "/login/";
     }catch(e){
       alert("Sign out failed: " + (e?.message || e));
     }
