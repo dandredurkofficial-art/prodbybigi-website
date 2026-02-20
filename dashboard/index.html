@@ -1681,7 +1681,7 @@ async function createMarketingCampaign(){
 
   if (!name) return alert("Enter campaign name");
 
-  try{
+  try {
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
@@ -1692,9 +1692,12 @@ async function createMarketingCampaign(){
       status: "active",
       createdAt: Date.now()
     });
+
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
-  }catch(err){
+
+    await loadMarketingCampaigns(); // ✅ HERE (inside try)
+  } catch (err) {
     alert("Campaign failed: " + (err?.message || err));
   }
 }
