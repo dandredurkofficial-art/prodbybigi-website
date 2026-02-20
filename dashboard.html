@@ -52,7 +52,7 @@
   window.PB_LOGOUT = async () => {
     localStorage.setItem("justLoggedOut", "1");
     await signOut(window.auth);
-    location.replace("/login.html");
+    location.replace("/login/");
   };
 
   // expose firestore helpers
@@ -112,7 +112,7 @@
   window.PB_LOGOUT = async () => {
     try {
       await signOut(auth);
-      location.href = "/login.html";
+      location.href = "/login/";
     } catch (err) {
       alert("Logout failed: " + (err?.message || err));
     }
@@ -573,11 +573,11 @@
         <h3>Elite</h3>
         <div class="price-big">$65/mo</div>
         <ul class="ul">
-          <li>✅ Everything in Pro</li>
-          <li>✅ <b>Custom Domain Connect</b></li>
-          <li>✅ Content ID Ready (license IDs per sale)</li>
-          <li>✅ Priority payout + support (coming)</li>
-          <li>✅ Advanced watermark + delivery (coming)</li>
+          <li>Everything in Pro</li>
+          <li>Custom Domain Connect</b></li>
+          <li>Content ID Ready (license IDs per sale)</li>
+          <li>Priority payout + support (coming)</li>
+          <li>Advanced watermark + delivery (coming)</li>
         </ul>
         <div style="margin-top:12px;">
           <button class="btn2" type="button" id="btnElite" onclick="startSubscription('elite')">Subscribe Elite</button>
