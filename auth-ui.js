@@ -376,7 +376,7 @@ function redirectByRole(role) {
     return;
   }
   if (r === "producer") {
-    location.href = "dashboard.html";
+    location.href = "/dashboard/";
     return;
   }
   if (r === "buyer") {
