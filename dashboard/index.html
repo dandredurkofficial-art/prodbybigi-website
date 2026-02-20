@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Producer Studio</title>
+
+<!-- Cloudinary (kept, but NOT used anymore) -->
+<script src="https://widget.cloudinary.com/v2.0/global/all.js"></script>
+
+<!-- ✅ PAYPAL SDK (Subscriptions) -->
+<!-- Replace YOUR_PAYPAL_CLIENT_ID_HERE with your PayPal client id -->
+<script src="https://www.paypal.com/sdk/js?client-id=AeYbIURAE9Gwxfe4NBGTOCpl4TyT1RIpnfmA4KalV-EnVMoBnq2a5W-DGQyN4b_lWQepeqROfPYJmGWr&vault=true&intent=subscription"></script>
+
+<!-- Firebase (module) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+  import {
+    getFirestore, collection, addDoc, getDocs, getDoc, doc, query, where, updateDoc, deleteDoc, setDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  import {
+    getAuth, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  import {
+    getStorage, ref, uploadBytesResumable, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+    authDomain: "audiory-beat-store.firebaseapp.com",
+    projectId: "audiory-beat-store",
+    storageBucket: "audiory-beat-store.firebasestorage.app",
+    messagingSenderId: "688272560511",
+    appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+    measurementId: "G-GLYGWQGS26"
+  };
+
+  const app = initializeApp(firebaseConfig);
+
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
+
+  // expose to window
+  window.db = db;
+  window.auth = auth;
+  window.storage = storage;
+
+  window.PB_LOGOUT = async () => {
+    localStorage.setItem("justLoggedOut", "1");
+    await signOut(window.auth);
+    location.replace("/login/");
+  };
+
+  // expose firestore helpers
+  window.addDoc = addDoc;
+  window.collection = collection;
+  window.getDocs = getDocs;
+  window.getDoc = getDoc;
+  window.doc = doc;
+  window.query = query;
+  window.where = where;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
+  window.setDoc = setDoc;
+
+  // expose storage helpers
+  window.ref = ref;
+  window.uploadBytesResumable = uploadBytesResumable;
+  window.getDownloadURL = getDownloadURL;
+
+  window.currentUser = null;
+  window.currentProfile = null;
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window.currentUser = user;
+
+      try {
+        const uref = doc(db, "users", user.uid);
+        const usnap = await getDoc(uref);
+        window.currentProfile = usnap.exists() ? usnap.data() : null;
+      } catch (e) {
+        window.currentProfile = null;
+      }
+
+      // only call after functions exist
+      if (typeof window.loadBeats === "function") window.loadBeats();
+      if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
+      if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
+
+      // ✅ NEW
+      if (typeof window.refreshProLocks === "function") window.refreshProLocks();
+      if (typeof window.loadMessagesThreadList === "function") window.loadMessagesThreadList();
+      if (typeof window.loadUpgradeUI === "function") window.loadUpgradeUI();
+
+      // ✅ NEW: handle PayPal subscription return if present
+      if (typeof window.handlePayPalReturn === "function") window.handlePayPalReturn();
+    } else {
+      window.currentUser = null;
+      window.currentProfile = null;
+
+      // ✅ NEW
+      if (typeof window.refreshProLocks === "function") window.refreshProLocks();
+      if (typeof window.loadUpgradeUI === "function") window.loadUpgradeUI();
+    }
+  });
+
+  window.PB_LOGOUT = async () => {
+    try {
+      await signOut(auth);
+      location.href = "/login/";
+    } catch (err) {
+      alert("Logout failed: " + (err?.message || err));
+    }
+  };
+</script>
+
+<style>
+  body { margin:0; font-family:Inter,system-ui; background:#070a12; color:#fff; }
+  header { height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid #1f2937; }
+  .menu-btn { font-size:22px; cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent; }
+  .logout { background:#ef4444; border:none; padding:8px 14px; border-radius:8px; color:#fff; cursor:pointer; }
+  .layout { display:flex; min-height:calc(100vh - 64px); }
+
+  nav { width:240px; border-right:1px solid #1f2937; padding:16px; }
+  nav a { display:block; padding:12px; margin-bottom:6px; border-radius:10px; color:#9ca3af; cursor:pointer; user-select:none; }
+  nav a.active { background:#111827; color:#fff; }
+
+  main { flex:1; padding:24px; }
+  .page { display:none; }
+  .page.active { display:block; }
+
+  .card { background:#0b1220; border:1px solid #1f2937; border-radius:16px; padding:20px; margin-bottom:20px; }
+
+  input,textarea,select { width:100%; background:#05070c; border:1px solid #1f2937; border-radius:10px; padding:12px; color:#fff; margin-bottom:12px; }
+  .toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; }
+  .price { width:120px; }
+
+  button.primary { background:#3b82f6; border:none; padding:14px; border-radius:10px; color:#fff; cursor:pointer; }
+  button.primary[disabled]{ opacity:.6; cursor:not-allowed; }
+
+  .artwork-preview { width:100%; max-width:260px; aspect-ratio:1/1; border-radius:14px; background:#05070c; border:1px dashed #1f2937; display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:14px; }
+  .artwork-preview img { width:100%; height:100%; object-fit:cover; }
+
+  .upload-status{ font-size:13px; color:#22c55e; margin-bottom:8px; }
+  .upload-status.err{ color:#ef4444; }
+
+  .track { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .track img { width:64px; height:64px; border-radius:10px; object-fit:cover; }
+  .track button { background:#111827; border:1px solid #1f2937; color:#fff; padding:8px 12px; border-radius:8px; cursor:pointer; }
+
+  /* ✅ NEW: pro feature boxes */
+  .pro-only {
+    border: 1px dashed rgba(59,130,246,.35);
+    background: rgba(59,130,246,.06);
+    border-radius: 14px;
+    padding: 14px;
+    margin-top: 14px;
+  }
+  .pro-only .title {
+    font-weight: 900;
+    margin-bottom: 6px;
+  }
+  .subtle { color:#9ca3af; font-size:13px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .col { flex:1; min-width:260px; }
+  .btn2 { background:#111827; border:1px solid #1f2937; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:900; }
+  .btn2[disabled]{ opacity:.6; cursor:not-allowed; }
+  .chip { display:inline-flex; gap:8px; align-items:center; padding:8px 12px; border-radius:999px; background:#05070c; border:1px solid #1f2937; font-size:13px; font-weight:800; color:#e5e7eb;}
+  .lockbox { margin-top:10px; padding:12px; border-radius:12px; background:rgba(239,68,68,.08); border:1px solid rgba(239,68,68,.25); color:#fecaca; font-size:13px; }
+  .okbox { margin-top:10px; padding:12px; border-radius:12px; background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.25); color:#bbf7d0; font-size:13px; }
+
+  /* ✅ NEW: messages list */
+  .msg-item{
+    display:flex; gap:10px; align-items:center;
+    padding:12px; border-radius:12px;
+    background:#05070c; border:1px solid #1f2937;
+    cursor:pointer;
+  }
+  .msg-item:hover{ border-color:#334155; }
+  .avatar{
+    width:44px; height:44px; border-radius:12px;
+    background:#111827; border:1px solid #1f2937;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:950; color:#93c5fd;
+  }
+  .msg-meta{ flex:1; }
+  .msg-meta strong{ display:block; }
+  .msg-meta small{ color:#9ca3af; }
+
+  /* ✅ NEW: upgrade pricing cards */
+  .price-grid{ display:flex; gap:12px; flex-wrap:wrap; }
+  .price-card{
+    flex:1; min-width:260px;
+    background:#05070c; border:1px solid #1f2937; border-radius:16px; padding:16px;
+  }
+  .price-card h3{ margin:0 0 6px 0; }
+  .price-big{ font-size:28px; font-weight:950; margin:6px 0 10px 0; }
+  .ul{ margin:0; padding-left:18px; color:#cbd5e1; }
+  .ul li{ margin:6px 0; }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px; border-radius:999px;
+    border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06);
+    font-size:12px; font-weight:900;
+  }
+  .badge.good{ border-color: rgba(34,197,94,.28); background: rgba(34,197,94,.08); color:#bbf7d0; }
+  .badge.warn{ border-color: rgba(245,158,11,.28); background: rgba(245,158,11,.08); color:#fde68a; }
+  .badge.bad{ border-color: rgba(239,68,68,.28); background: rgba(239,68,68,.08); color:#fecaca; }
+
+  @media(max-width:900px){
+    nav { display:none; position:fixed; top:64px; left:0; height:100%; background:#070a12; z-index:9999; pointer-events:auto; }
+    nav.open { display:block; }
+  }
+  @media(max-width:640px){
+    .toggle { flex-direction:column; align-items:flex-start; }
+    .price { width:100%; }
+    button.primary { width:100%; }
+  }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="menu-btn" id="hamburgerBtn">☰</div>
+  <strong>Producer Studio</strong>
+  <button class="logout" id="logoutBtn" type="button">Logout</button>
+</header>
+
+<div class="layout">
+<nav id="sidebar">
+  <a onclick="showPage('dashboard', this)" class="active">Dashboard</a>
+  <a onclick="showPage('upload', this)">Upload Beat</a>
+  <a onclick="showPage('tracks', this)">Tracks</a>
+  <a onclick="showPage('finance', this)">Finance</a>
+  <a onclick="showPage('soundkits', this)">Sound Kits</a>
+
+  <!-- ✅ NEW PAGES (LOCKED UNTIL PRO/ELITE) -->
+  <a onclick="showPage('advancedAnalytics', this)" id="navAdv">Advanced Analytics</a>
+  <a onclick="showPage('marketingTools', this)" id="navMkt">Marketing Tools</a>
+  <a onclick="showPage('privateMessages', this)" id="navMsg">Private Messages</a>
+  <a onclick="showPage('upgrade', this)" id="navUpg">Upgrade</a>
+
+  <a onclick="showPage('settings', this)">Account Settings</a>
+</nav>
+
+<main>
+
+<section id="dashboard" class="page active">
+  <div class="card"><h2>Total Sales</h2><h1 id="totalSales">$0.00</h1></div>
+  <div class="card"><h2>Available Balance</h2><h1 id="availableBalance">$0.00</h1></div>
+
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Analytics</h2>
+        <div class="subtle">Your growth overview.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;">
+        <span class="chip" id="planChipDash">Plan: Free</span>
+        <span class="badge warn" id="planStatusBadge" style="display:none;">Subscription: Pending</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Beats Uploaded</div>
+        <div id="statBeats" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+        <div class="subtle" id="beatLimitNote" style="margin-top:6px;"></div>
+      </div>
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Published Beats</div>
+        <div id="statPublished" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+        <div style="color:#9ca3af;font-size:13px;">Sound Kits</div>
+        <div id="statKits" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+      </div>
+    </div>
+
+    <!-- ✅ KEEP (DO NOT REMOVE): we keep the boxes but now they also have dedicated pages -->
+    <div class="pro-only" id="advAnalyticsBox">
+      <div class="title">Advanced Analytics (Pro)</div>
+      <div class="subtle" id="advAnalyticsNote">
+        Upgrade to Pro to unlock views, plays, conversion rate, top beats, traffic sources.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('advancedAnalytics', document.getElementById('navAdv'))" style="margin-top:10px;">Open Advanced Analytics</button>
+    </div>
+
+    <div class="pro-only" id="marketingBox">
+      <div class="title">Marketing Tools (Pro)</div>
+      <div class="subtle" id="marketingNote">
+        Upgrade to Pro to unlock boosts, campaigns, promo links, discount campaigns.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('marketingTools', document.getElementById('navMkt'))" style="margin-top:10px;">Open Marketing Tools</button>
+    </div>
+
+    <div class="pro-only" id="messagesBox">
+      <div class="title">Private Messages (Pro)</div>
+      <div class="subtle" id="messagesNote">
+        Upgrade to Pro to unlock unlimited private messages with customers.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('privateMessages', document.getElementById('navMsg'))" style="margin-top:10px;">Open Private Messages</button>
+    </div>
+
+    <div class="pro-only" id="upgradeBox">
+      <div class="title">Upgrade</div>
+      <div class="subtle" id="upgradeNote">
+        Upgrade to Starter/Pro/Elite to unlock more tools.
+      </div>
+      <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))" style="margin-top:10px;">Go to Upgrade</button>
+    </div>
+
+    <!-- ✅ NEW: “Beyond BeatStars” feature teasers -->
+    <div class="card" style="margin-top:14px;">
+      <h3 style="margin-top:0;">Exclusive Audiory Features (Beyond BeatStars)</h3>
+      <div class="subtle">These are the features that make producers move from other platforms:</div>
+      <ul class="ul" style="margin-top:10px;">
+        <li><b>Smart Pricing AI</b> (Pro/Elite): suggests best prices based on demand & conversions</li>
+        <li><b>Auto Tagging + AI Genre Detection</b> (Starter+): faster uploads, higher discovery</li>
+        <li><b>Fan CRM</b> (Pro/Elite): collect buyer emails + send campaigns from dashboard</li>
+        <li><b>Content ID Ready</b> (Elite): submit proof + license IDs per sale (placeholder now)</li>
+        <li><b>Custom Domain Connect</b> (Elite): producers connect their domain in 2 mins</li>
+      </ul>
+      <div class="subtle" style="margin-top:10px;">We’ll wire these into Firestore + Functions as we go — UI is ready.</div>
+    </div>
+
+    <div id="walletNote" style="margin-top:12px;color:#9ca3af;font-size:13px;">
+      (Sales + wallet become fully real after your PayPal order webhook/API writes earnings to Firestore.)
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: ADVANCED ANALYTICS -->
+<section id="advancedAnalytics" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Advanced Analytics</h2>
+        <div class="subtle">Views, plays, conversion rate, top beats, traffic sources.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipAdv">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="advLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro/Elite only. Upgrade to Pro to unlock advanced analytics.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div id="advUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked (We will connect these numbers to Firestore events later.)</div>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+          <div class="subtle">Profile Views</div>
+          <div id="statViews" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+        </div>
+        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+          <div class="subtle">Preview Plays</div>
+          <div id="statPlays" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+        </div>
+        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
+          <div class="subtle">Conversion</div>
+          <div id="statConv" style="font-size:22px;font-weight:900;margin-top:6px;">0%</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Smart Pricing AI (Pro/Elite)</h3>
+        <div class="subtle">This will suggest prices based on market demand + your conversion rate.</div>
+        <div style="margin-top:10px;">
+          <button class="btn2" type="button" onclick="alert('Smart Pricing AI will be connected next (Firestore + Functions).')">Run Smart Pricing</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: MARKETING TOOLS -->
+<section id="marketingTools" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Marketing Tools</h2>
+        <div class="subtle">Boosts, campaigns, promo links, discount campaigns.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipMkt">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="mktLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro/Elite only. Upgrade to Pro to unlock marketing tools.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div id="mktUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked (Create your campaigns below. We will build full manager UI next.)</div>
+
+      <div style="margin-top:12px;">
+        <div class="row">
+          <div class="col">
+            <input id="mkCampaignName" placeholder="Campaign name (e.g. Feb Promo)" />
+          </div>
+          <div class="col">
+            <select id="mkType">
+              <option value="boost">Boost (featured)</option>
+              <option value="promo_link">Promo Link</option>
+              <option value="discount">Discount Campaign</option>
+              <option value="buy_x_get_y">Buy 1 Get 2-5 Beats</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col">
+            <select id="mkBuyGetQty">
+              <option value="2">Buy 1 Get 2</option>
+              <option value="3">Buy 1 Get 3</option>
+              <option value="4">Buy 1 Get 4</option>
+              <option value="5">Buy 1 Get 5</option>
+            </select>
+            <div class="subtle">This is Pro/Elite only (BeatStars-style bulk deal).</div>
+          </div>
+          <div class="col">
+            <input id="mkDiscountPct" placeholder="Discount % (optional, e.g. 20)" />
+            <div class="subtle">Optional for discount campaigns.</div>
+          </div>
+        </div>
+
+        <button class="btn2" type="button" onclick="createMarketingCampaign()">Create Campaign</button>
+        <div id="mkStatus" class="subtle" style="margin-top:10px;"></div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3 style="margin-top:0;">Fan CRM (Pro/Elite)</h3>
+          <div class="subtle">Audiory will build an email list for each producer from purchases + free downloads.</div>
+          <button class="btn2" type="button" onclick="alert('Fan CRM will be connected next (SendGrid + Firestore).')">Open Fan CRM</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: PRIVATE MESSAGES -->
+<section id="privateMessages" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Private Messages</h2>
+        <div class="subtle">Unlimited private messages with customers (Pro/Elite).</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipMsg">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="msgLocked" class="lockbox" style="display:none;">
+      🔒 This page is Pro/Elite only. Upgrade to Pro to unlock private messages.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade Now</button>
+      </div>
+    </div>
+
+    <div id="msgUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked (Inbox UI will be upgraded later. This is a working starter.)</div>
+
+      <div class="row" style="margin-top:12px;">
+        <div class="col">
+          <input id="msgBuyerId" placeholder="Buyer UID (for now)" />
+          <small class="subtle">Later we’ll show real buyers list. For now type buyer UID.</small>
+        </div>
+        <div class="col">
+          <textarea id="msgText" placeholder="Type a message..."></textarea>
+        </div>
+      </div>
+
+      <button class="btn2" type="button" onclick="sendPrivateMessage()">Send Message</button>
+      <div id="msgSendStatus" class="subtle" style="margin-top:10px;"></div>
+
+      <div style="margin-top:14px;">
+        <div class="subtle" style="margin-bottom:8px;">Recent Threads</div>
+        <div id="threadsList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ✅ NEW PAGE: UPGRADE -->
+<section id="upgrade" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Upgrade</h2>
+        <div class="subtle">Choose a plan to unlock Pro tools and Elite power features.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipUpg">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="upgradeStatusBox" class="subtle" style="margin-top:10px;"></div>
+
+    <div class="price-grid" style="margin-top:14px;">
+
+      <!-- FREE -->
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price-big">$0</div>
+        <ul class="ul">
+          <li>Basic dashboard + upload</li>
+          <li><b>Upload limit: 10 beats</b></li>
+          <li>Normal analytics (beats, kits)</li>
+          <li>No bulk upload</li>
+          <li>No advanced analytics</li>
+          <li>No marketing tools</li>
+          <li>No private messages</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" disabled id="btnFree">Current Plan</button>
+        </div>
+      </div>
+
+      <!-- STARTER -->
+      <div class="price-card" style="border-color:rgba(245,158,11,.35);">
+        <h3>Starter</h3>
+        <div class="price-big">$15/mo</div>
+        <ul class="ul">
+          <li>Higher upload limit</li>
+          <li>AI auto-tagging (genre/mood)</li>
+          <li>Better discovery tools (coming)</li>
+          <li>Basic promo links (coming)</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" id="btnStarter" onclick="startSubscription('starter')">Subscribe Starter</button>
+          <div id="ppBtnStarter" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <!-- PRO -->
+      <div class="price-card" style="border-color:rgba(59,130,246,.45);">
+        <h3>Pro</h3>
+        <div class="price-big">$39/mo</div>
+        <ul class="ul">
+          <li>✅ Bulk Upload</li>
+          <li>✅ Advanced Analytics</li>
+          <li>✅ Marketing Tools</li>
+          <li>✅ Unlimited Private Messages</li>
+          <li>✅ Buy 1 Get 2-5 Beats promo tool</li>
+          <li>✅ Fan CRM (coming)</li>
+          <li>✅ Smart Pricing AI (coming)</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" id="btnPro" onclick="startSubscription('pro')">Subscribe Pro</button>
+          <div id="ppBtnPro" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+      <!-- ELITE -->
+      <div class="price-card" style="border-color:rgba(34,197,94,.45);">
+        <h3>Elite</h3>
+        <div class="price-big">$65/mo</div>
+        <ul class="ul">
+          <li>Everything in Pro</li>
+          <li>Custom Domain Connect</b></li>
+          <li>Content ID Ready (license IDs per sale)</li>
+          <li>Priority payout + support (coming)</li>
+          <li>Advanced watermark + delivery (coming)</li>
+        </ul>
+        <div style="margin-top:12px;">
+          <button class="btn2" type="button" id="btnElite" onclick="startSubscription('elite')">Subscribe Elite</button>
+          <div id="ppBtnElite" style="margin-top:10px;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <h3 style="margin-top:0;">How unlocking works</h3>
+      <div class="subtle">
+        We read your plan from your user profile:
+        <br><b>users/{uid}.plan</b> or <b>users/{uid}.planTier</b> = "free" | "starter" | "pro" | "elite"
+        <br>When your plan updates, pages automatically unlock.
+      </div>
+
+      <div class="subtle" style="margin-top:10px;">
+        If you want to test right now: in Firebase, open your user doc and set <b>plan</b> to <b>"pro"</b> or <b>"elite"</b>.
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="upload" class="page">
+  <div class="card">
+    <h2>Track Details</h2>
+
+    <div class="artwork-preview" id="artworkBox">
+      <span>Artwork Preview</span>
+    </div>
+    <div id="artworkStatus"></div>
+    <button class="primary" type="button" onclick="uploadArtwork()">Upload Artwork</button>
+
+    <input id="title" placeholder="Track title" />
+    <textarea id="desc" placeholder="Description"></textarea>
+    <input id="bpm" placeholder="BPM" />
+    <input id="key" placeholder="Key" />
+
+    <select id="genre">
+      <option value="">Select genre</option>
+      <option value="Afrobeats">Afrobeats</option>
+      <option value="Trap">Trap</option>
+      <option value="Drill">Drill</option>
+      <option value="Amapiano">Amapiano</option>
+      <option value="R&B">R&B</option>
+      <option value="Hip Hop">Hip Hop</option>
+    </select>
+
+    <!-- ✅ NEW: AI auto tagging (Starter+) -->
+    <div class="pro-only" id="aiTagBox" style="margin-top:10px;">
+      <div class="title">AI Auto Tagging (Starter+)</div>
+      <div class="subtle" id="aiTagNote">Upgrade to Starter to unlock auto-genre/mood tags (placeholder now).</div>
+      <button class="btn2" type="button" onclick="alert('AI Auto Tagging will be connected next.')">Generate Tags</button>
+    </div>
+
+    <div id="fullStatus"></div>
+    <button class="primary" type="button" onclick="uploadFullAudio()">Upload Full Beat</button>
+
+    <div id="previewStatus"></div>
+    <button class="primary" type="button" onclick="uploadPreviewAudio()">Upload Preview (Tagged)</button>
+
+    <div id="stemsStatus" style="margin-top:10px;"></div>
+    <button class="primary" type="button" onclick="uploadStemsZip()">Upload Stems (ZIP) — Exclusive Only</button>
+  </div>
+
+  <!-- ✅ NEW: BULK UPLOAD (PRO/ELITE) -->
+  <div class="card pro-only" id="bulkUploadBox">
+    <h2 style="margin-top:0;">Bulk Upload (Pro)</h2>
+    <div class="subtle" id="bulkUploadNote">
+      Upgrade to Pro to upload many beats at once (artwork + full audio + preview audio).
+    </div>
+
+    <div id="bulkUploadUI" style="display:none; margin-top:10px;">
+      <div class="subtle" style="margin-bottom:10px;">
+        How it works: pick multiple files → names must match:
+        <br><b>Full:</b> song1.mp3, song2.mp3
+        <br><b>Preview:</b> song1_preview.mp3, song2_preview.mp3
+        <br><b>Artwork:</b> song1.jpg, song2.png
+      </div>
+
+      <button class="btn2" type="button" onclick="bulkPickFiles()">Pick Bulk Files</button>
+      <div id="bulkFilesStatus" class="subtle" style="margin-top:10px;"></div>
+
+      <div style="margin-top:12px;">
+        <button class="btn2" type="button" onclick="startBulkUpload()">Start Bulk Upload</button>
+      </div>
+
+      <div id="bulkProgress" class="subtle" style="margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Licenses & Pricing</h2>
+
+    <div class="toggle">
+      <label>Basic (MP3)</label>
+      <input type="checkbox" id="basicEnabled" checked />
+      <input class="price" id="basicPrice" value="29.99" />
+    </div>
+
+    <div class="toggle">
+      <label>Premium (WAV)</label>
+      <input type="checkbox" id="premiumEnabled" />
+      <input class="price" id="premiumPrice" value="79.99" />
+    </div>
+
+    <div class="toggle">
+      <label>Exclusive</label>
+      <input type="checkbox" id="exclusiveEnabled" />
+      <input class="price" id="exclusivePrice" value="299.99" />
+    </div>
+
+    <div class="toggle">
+      <label>Free Download</label>
+      <input type="checkbox" id="freeDownload" />
+    </div>
+
+    <div class="toggle">
+      <label>Include in Bulk Discounts</label>
+      <input type="checkbox" id="bulkDiscount" />
+    </div>
+
+    <button class="primary" id="publishBtn" type="button" onclick="publishBeat()">Publish Beat</button>
+  </div>
+</section>
+
+<section id="tracks" class="page">
+  <div class="card">
+    <h2>Your Beats</h2>
+    <div id="beats"></div>
+  </div>
+</section>
+
+<section id="finance" class="page">
+  <div class="card">
+    <h2>Payouts</h2>
+    <p id="payoutBalance">$0.00</p>
+
+    <div id="payoutNotice" style="color:#9ca3af;font-size:13px;margin:8px 0 12px;"></div>
+
+    <select id="withdrawMethod">
+      <option value="paypal">PayPal</option>
+      <option value="mpesa">M-Pesa</option>
+    </select>
+
+    <input id="withdrawAmount" placeholder="Amount (USD)" />
+    <input id="withdrawDestination" placeholder="PayPal email or M-Pesa phone (2547...)" />
+
+    <button class="primary" id="withdrawBtn" type="button">Withdraw</button>
+
+    <div id="withdrawStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+  </div>
+</section>
+
+<section id="soundkits" class="page">
+  <div class="card">
+    <h2>Upload Sound Kit</h2>
+
+    <div class="artwork-preview" id="kitCoverBox">
+      <span>Cover Preview</span>
+    </div>
+    <div id="kitCoverStatus"></div>
+    <button class="primary" type="button" onclick="uploadKitCover()">Upload Cover</button>
+
+    <input id="kitTitle" placeholder="Kit title" />
+    <textarea id="kitDesc" placeholder="Description"></textarea>
+
+    <select id="kitCategory">
+      <option value="">Select category</option>
+      <option value="drums">Drums</option>
+      <option value="loops">Loops</option>
+      <option value="midi">MIDI</option>
+      <option value="one-shots">One-shots</option>
+      <option value="fx">FX</option>
+    </select>
+
+    <input id="kitPrice" placeholder="Price (0 for Free)" value="0" />
+
+    <div id="kitFileStatus"></div>
+    <button class="primary" type="button" onclick="uploadKitFile()">Upload Kit File (ZIP)</button>
+
+    <input id="kitDownloadUrl" placeholder="Download URL (auto-filled after upload OR paste link)" />
+
+    <div class="toggle">
+      <label>Published</label>
+      <input type="checkbox" id="kitPublished" checked />
+    </div>
+
+    <button class="primary" id="publishKitBtn" type="button" onclick="publishKit()">Publish Sound Kit</button>
+  </div>
+
+  <div class="card">
+    <h2>Your Sound Kits</h2>
+    <div id="kitsList"></div>
+  </div>
+</section>
+
+<section id="settings" class="page">
+  <div class="card">
+    <h2>Account Settings</h2>
+
+    <div class="artwork-preview" id="profilePicBox">
+      <span>Profile Picture</span>
+    </div>
+    <div id="profilePicStatus"></div>
+    <button class="primary" type="button" onclick="uploadProfilePic()">Upload Profile Picture</button>
+
+    <input id="firstName" placeholder="First name" />
+    <input id="lastName" placeholder="Last name" />
+    <input id="displayName" placeholder="Display name" />
+    <input id="location" placeholder="Location (Country / City)" />
+    <textarea id="bio" placeholder="Biography"></textarea>
+
+    <button class="primary" id="saveProfileBtn" type="button" onclick="saveProfile()">Save Profile</button>
+    <div id="saveProfileStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+
+    <!-- ✅ NEW: Elite Domain Connect -->
+    <div class="card" style="margin-top:14px;">
+      <h3 style="margin-top:0;">Custom Domain (Elite)</h3>
+      <div class="subtle">Connect your own domain to your producer store (Elite-only).</div>
+
+      <div id="domainLocked" class="lockbox" style="display:none;">
+        🔒 Custom Domain is Elite only. Upgrade to Elite to unlock domain connect.
+        <div style="margin-top:10px;">
+          <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade to Elite</button>
+        </div>
+      </div>
+
+      <div id="domainUnlocked" style="display:none; margin-top:10px;">
+        <div class="okbox">Unlocked</div>
+        <input id="customDomain" placeholder="yourdomain.com" />
+        <button class="btn2" type="button" onclick="saveCustomDomain()">Save Domain</button>
+        <div class="subtle" style="margin-top:10px;">
+          After saving, we’ll show DNS records + auto-verify with Cloud Functions (next step).
+        </div>
+        <div id="domainStatus" class="subtle" style="margin-top:10px;"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+/* ===========================
+   ✅ PLAN + PAYPAL CONFIG
+=========================== */
+window.AUDIORY_PLANS = {
+  free:   null,
+  starter:"P-6N459415976946710NGJZWKI",
+  pro:    "P-74D41012PM804561FNGJZ7UQ",
+  elite:  "P-0KG19158TD0563439NGJ2EIQ",
+};
+
+// Optional: call a backend function to verify subscription and set plan
+// Replace with your real function URL if you deploy it
+window.PB_VERIFY_SUBSCRIPTION_URL = "https://verifysubscription-f65rhsquva-uc.a.run.app";
+window.PB_CREATE_DOMAIN_CHALLENGE_URL ="https://createdomainchallenge-f65rhsquva-uc.a.run.app";
+window.PB_VERIFY_DOMAIN_DNS_URL = "https://verifydomaindns-f65rhsquva-uc.a.run.app";
+
+/* ===========================
+   GLOBALS
+=========================== */
+let uploadedArtwork = null, fullAudio = null, previewAudio = null;
+let beatsData = [], currentAudio = null;
+let stemsZipUrl = null;
+
+let kitCover = null, kitFile = null;
+let kitsData = [];
+
+let profilePic = null;
+let editingBeatId = null;
+
+function $(id){ return document.getElementById(id); }
+
+/* ===========================
+   ✅ PLAN HELPERS (UPDATED)
+=========================== */
+function normalizeTier(t){
+  const s = String(t || "").toLowerCase().trim();
+  if (s === "elite") return "elite";
+  if (s === "pro") return "pro";
+  if (s === "starter") return "starter";
+  return "free";
+}
+function getPlanTier(){
+  const prof = window.currentProfile || {};
+  return normalizeTier(prof.planTier || prof.plan || "free");
+}
+function planRank(t){
+  const tier = normalizeTier(t);
+  if (tier === "elite") return 3;
+  if (tier === "pro") return 2;
+  if (tier === "starter") return 1;
+  return 0;
+}
+function hasTier(minTier){
+  return planRank(getPlanTier()) >= planRank(minTier);
+}
+function isPro(){
+  return hasTier("pro"); // pro OR elite
+}
+function isElite(){
+  return hasTier("elite");
+}
+function beatLimitForTier(t){
+  const tier = normalizeTier(t);
+  if (tier === "free") return 10;
+  if (tier === "starter") return 50;
+  // pro/elite unlimited
+  return Infinity;
+}
+function canUploadMoreBeats(){
+  const limit = beatLimitForTier(getPlanTier());
+  if (!isFinite(limit)) return true;
+  return (beatsData.length || 0) < limit;
+}
+function setPlanChips(){
+  const tier = getPlanTier();
+  const label = "Plan: " + tier.charAt(0).toUpperCase() + tier.slice(1);
+  const ids = ["planChipAdv","planChipMkt","planChipMsg","planChipUpg","planChipDash"];
+  ids.forEach(id=>{
+    const el = $(id);
+    if (el) el.textContent = label;
+  });
+
+  const limit = beatLimitForTier(tier);
+  const note = $("beatLimitNote");
+  if (note){
+    if (isFinite(limit)){
+      note.textContent = `Limit: ${beatsData.length || 0}/${limit} beats`;
+      note.style.color = (beatsData.length >= limit) ? "#fecaca" : "#9ca3af";
+    } else {
+      note.textContent = "Unlimited uploads";
+      note.style.color = "#9ca3af";
+    }
+  }
+}
+function setSubStatusBadge(){
+  const prof = window.currentProfile || {};
+  const status = String(prof.subscriptionStatus || "").toLowerCase().trim();
+  const badge = $("planStatusBadge");
+  if (!badge) return;
+
+  if (!status){
+    badge.style.display = "none";
+    return;
+  }
+
+  badge.style.display = "inline-flex";
+  if (status === "active"){
+    badge.className = "badge good";
+    badge.textContent = "Subscription: Active";
+  } else if (status === "pending"){
+    badge.className = "badge warn";
+    badge.textContent = "Subscription: Pending";
+  } else {
+    badge.className = "badge bad";
+    badge.textContent = "Subscription: " + status;
+  }
+}
+
+/* ===========================
+   ✅ PRO/ELITE LOCK HELPERS (UPDATED)
+=========================== */
+function refreshProLocks(){
+  const pro = isPro();
+  const starterPlus = hasTier("starter");
+  const elite = isElite();
+
+  // update plan chips
+  setPlanChips();
+  setSubStatusBadge();
+
+  // dashboard hints (keep)
+  const advNote = $("advAnalyticsNote");
+  if (advNote) advNote.textContent = pro
+    ? "Unlocked (open the page to view)"
+    : "Upgrade to Pro to unlock views, plays, conversion rate, top beats, traffic sources.";
+
+  const mkNote = $("marketingNote");
+  if (mkNote) mkNote.textContent = pro
+    ? "Unlocked (open the page to create campaigns)"
+    : "Upgrade to Pro to unlock boosts, campaigns, promo links, discount campaigns.";
+
+  const msgNote = $("messagesNote");
+  if (msgNote) msgNote.textContent = pro
+    ? "Unlocked (open the page to message customers)"
+    : "Upgrade to Pro to unlock unlimited private messages with customers.";
+
+  const upNote = $("upgradeNote");
+  if (upNote) upNote.textContent = (elite ? "You are Elite" : pro ? "You are Pro" : starterPlus ? "You are Starter" : "Upgrade to Starter/Pro/Elite to unlock more tools.");
+
+  // bulk upload (inside upload page)
+  const buUI = $("bulkUploadUI");
+  const buNote = $("bulkUploadNote");
+  if (buUI) buUI.style.display = pro ? "block" : "none";
+  if (buNote) buNote.textContent = pro
+    ? "Unlocked Upload many beats at once."
+    : "Upgrade to Pro to upload many beats at once (artwork + full audio + preview audio).";
+
+  // AI tagging box (starter+)
+  const aiBox = $("aiTagBox");
+  const aiNote = $("aiTagNote");
+  if (aiBox) aiBox.style.display = "block";
+  if (aiNote) aiNote.textContent = starterPlus
+    ? "Unlocked (placeholder now — will connect next)"
+    : "Upgrade to Starter to unlock auto-genre/mood tags (placeholder now).";
+
+  // Advanced Analytics PAGE lock
+  const advLocked = $("advLocked");
+  const advUnlocked = $("advUnlocked");
+  if (advLocked) advLocked.style.display = pro ? "none" : "block";
+  if (advUnlocked) advUnlocked.style.display = pro ? "block" : "none";
+
+  // Marketing page lock
+  const mktLocked = $("mktLocked");
+  const mktUnlocked = $("mktUnlocked");
+  if (mktLocked) mktLocked.style.display = pro ? "none" : "block";
+  if (mktUnlocked) mktUnlocked.style.display = pro ? "block" : "none";
+
+  // Messages page lock
+  const msgLocked = $("msgLocked");
+  const msgUnlocked = $("msgUnlocked");
+  if (msgLocked) msgLocked.style.display = pro ? "none" : "block";
+  if (msgUnlocked) msgUnlocked.style.display = pro ? "block" : "none";
+
+  // Upgrade page buttons (disable current tier)
+  const btnFree = $("btnFree");
+  const btnStarter = $("btnStarter");
+  const btnPro = $("btnPro");
+  const btnElite = $("btnElite");
+
+  const tier = getPlanTier();
+  if (btnFree) btnFree.disabled = true;
+
+  if (btnStarter){
+    btnStarter.disabled = (tier === "starter" || tier === "pro" || tier === "elite");
+    btnStarter.textContent = (tier === "starter") ? "Current Starter" : (btnStarter.disabled ? "Already higher plan" : "Subscribe Starter");
+  }
+  if (btnPro){
+    btnPro.disabled = (tier === "pro" || tier === "elite");
+    btnPro.textContent = (tier === "pro") ? "Current Pro" : (btnPro.disabled ? "Already Elite" : "Subscribe Pro");
+  }
+  if (btnElite){
+    btnElite.disabled = (tier === "elite");
+    btnElite.textContent = (tier === "elite") ? "Current Elite" : "Subscribe Elite";
+  }
+
+  // Elite domain connect lock
+  const dLocked = $("domainLocked");
+  const dUnlocked = $("domainUnlocked");
+  if (dLocked) dLocked.style.display = elite ? "none" : "block";
+  if (dUnlocked) dUnlocked.style.display = elite ? "block" : "none";
+}
+window.refreshProLocks = refreshProLocks;
+
+/* ===========================
+   CLICK FIXES (Hamburger + Logout)
+=========================== */
+function toggleMenu(){
+  const sb = $("sidebar");
+  if (!sb) return;
+  sb.classList.toggle("open");
+}
+window.toggleMenu = toggleMenu;
+
+document.addEventListener("DOMContentLoaded", ()=>{
+  const hb = $("hamburgerBtn");
+  if (hb){
+    hb.addEventListener("click", (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      toggleMenu();
+    });
+  }
+
+  const btn = $("logoutBtn");
+  if (btn){
+    btn.addEventListener("click", (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      window.PB_LOGOUT && window.PB_LOGOUT();
+    });
+  }
+
+  refreshProLocks();
+});
+
+/* ===========================
+   NAV
+=========================== */
+function showPage(id, el){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("nav a").forEach(a => a.classList.remove("active"));
+
+  const page = document.getElementById(id);
+  if (page) page.classList.add("active");
+  if (el) el.classList.add("active");
+
+  const sb = $("sidebar");
+  if (sb) sb.classList.remove("open");
+
+  if (id === "settings") fillSettingsForm();
+  if (id === "soundkits") loadKits();
+  if (id === "finance") loadPayoutUI();
+
+  // ✅ NEW: load threads when entering messages page
+  if (id === "privateMessages" && typeof window.loadMessagesThreadList === "function") {
+    window.loadMessagesThreadList();
+  }
+
+  // ✅ NEW: load upgrade UI
+  if (id === "upgrade" && typeof window.loadUpgradeUI === "function") {
+    window.loadUpgradeUI();
+  }
+
+  // ✅ NEW: refresh locks on nav
+  refreshProLocks();
+}
+window.showPage = showPage;
+
+/* ===========================
+   HELPERS
+=========================== */
+function getProducerDisplayName(){
+  const prof = window.currentProfile || {};
+  const name =
+    (prof.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+    : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
+  return name || ("Prod. " + String(window.auth?.currentUser?.uid || "").slice(0,8));
+}
+
+function getWalletBalance(){
+  const prof = window.currentProfile || {};
+  const v = prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? prof.earnings ?? 0;
+  const n = Number(v || 0);
+  return isFinite(n) ? n : 0;
+}
+
+function money(n){
+  const v = Number(n || 0);
+  return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
+}
+
+function pickFile(accept){
+  return new Promise((resolve)=>{
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept || "*/*";
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const f = input.files && input.files[0] ? input.files[0] : null;
+      input.remove();
+      resolve(f);
+    };
+    input.click();
+  });
+}
+
+function pickFiles(accept, multiple=true){
+  return new Promise((resolve)=>{
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = accept || "*/*";
+    input.multiple = multiple;
+    input.style.position = "fixed";
+    input.style.left = "-9999px";
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const files = input.files ? Array.from(input.files) : [];
+      input.remove();
+      resolve(files);
+    };
+    input.click();
+  });
+}
+
+function extFromName(name){
+  const s = String(name||"");
+  const i = s.lastIndexOf(".");
+  return i >= 0 ? s.slice(i).toLowerCase() : "";
+}
+
+function baseNameNoExt(name){
+  const s = String(name||"");
+  const dot = s.lastIndexOf(".");
+  return (dot>=0 ? s.slice(0,dot) : s).trim();
+}
+
+async function uploadToStorage({ file, path, onProgress }){
+  if (!window.storage || !window.ref || !window.uploadBytesResumable || !window.getDownloadURL){
+    throw new Error("Firebase Storage not ready. (window.storage/ref/uploadBytesResumable/getDownloadURL missing)");
+  }
+
+  const r = window.ref(window.storage, path);
+  const task = window.uploadBytesResumable(r, file, { contentType: file.type || undefined });
+
+  return await new Promise((resolve, reject)=>{
+    task.on("state_changed",
+      (snap)=>{
+        const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
+        if (onProgress) onProgress(pct);
+      },
+      reject,
+      async ()=>{
+        const url = await window.getDownloadURL(task.snapshot.ref);
+        resolve(url);
+      }
+    );
+  });
+}
+
+/* ===========================
+   ✅ PAYPAL SUBSCRIPTIONS (NEW)
+=========================== */
+function qs(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+
+async function setUserPlanLocal({ planTier, subscriptionId, status }){
+  if (!window.currentUser) return;
+  const uid = window.currentUser.uid;
+  const patch = {
+    plan: planTier,
+    planTier: planTier,
+    subscriptionStatus: status || "pending",
+    paypalSubscriptionId: subscriptionId || "",
+    planUpdatedAt: Date.now()
+  };
+
+  await window.updateDoc(window.doc(window.db, "users", uid), patch);
+
+  // refresh local cache
+  window.currentProfile = { ...(window.currentProfile||{}), ...patch };
+  refreshProLocks();
+  loadDashboardStats();
+}
+
+async function verifySubscriptionBackend(subscriptionId){
+  const url = window.PB_VERIFY_SUBSCRIPTION_URL || "";
+  if (!url) return null;
+
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      subscriptionId,
+      uid: window.currentUser?.uid || ""
+    })
+  });
+  const j = await r.json().catch(()=> ({}));
+  if (!r.ok) throw new Error(j?.error || "Verify subscription failed");
+  return j;
+}
+
+async function handlePayPalReturn(){
+  // PayPal returns subscription_id on success
+  const sid = qs("subscription_id");
+  const plan = qs("plan"); // we add plan ourselves when redirecting (starter/pro/elite)
+  if (!sid) return;
+
+  try{
+    const planTier = normalizeTier(plan || "pro");
+
+    // Save quick local "pending" so user unlocks immediately (optional)
+    await setUserPlanLocal({ planTier, subscriptionId: sid, status: "pending" });
+
+    // Try backend verify (recommended)
+    try{
+      const resp = await verifySubscriptionBackend(sid);
+      if (resp && resp.ok){
+        const finalTier = normalizeTier(resp.planTier || planTier);
+        await setUserPlanLocal({ planTier: finalTier, subscriptionId: sid, status: String(resp.status || "active").toLowerCase() });
+      } else {
+        // if backend not set, keep pending
+      }
+    }catch(e){
+      // keep pending if backend not ready
+      console.warn("verifySubscriptionBackend:", e);
+    }
+
+    // remove query params so it doesn't repeat
+    const u = new URL(location.href);
+    u.searchParams.delete("subscription_id");
+    u.searchParams.delete("ba_token");
+    u.searchParams.delete("plan");
+    history.replaceState({}, "", u.toString());
+
+    alert("Subscription received! Your plan will activate automatically.");
+  }catch(err){
+    alert("Subscription save failed: " + (err?.message || err));
+  }
+}
+window.handlePayPalReturn = handlePayPalReturn;
+
+function startSubscription(tier){
+  // We render PayPal button only once per tier
+  renderPayPalButton(tier);
+  alert("Scroll a little — the PayPal button is now ready under the plan.");
+}
+
+function renderPayPalButton(tier){
+  const planTier = normalizeTier(tier);
+  const planId = window.AUDIORY_PLANS[planTier];
+  if (!planId) return alert("Plan not found");
+
+  const mountId =
+    planTier === "starter" ? "ppBtnStarter" :
+    planTier === "pro" ? "ppBtnPro" :
+    "ppBtnElite";
+
+  const mount = $(mountId);
+  if (!mount) return;
+
+  // prevent duplicate render
+  if (mount.getAttribute("data-rendered") === "1") return;
+
+  if (!window.paypal || !window.paypal.Buttons){
+    mount.innerHTML = `<div class="subtle" style="color:#fecaca;">PayPal SDK not loaded. Check client-id in the script.</div>`;
+    return;
+  }
+
+  mount.setAttribute("data-rendered", "1");
+
+  window.paypal.Buttons({
+    style: { layout: "vertical" },
+
+    createSubscription: function(data, actions) {
+      // Add plan parameter so we know which tier on return
+      const u = new URL(location.href);
+      u.searchParams.set("plan", planTier);
+      history.replaceState({}, "", u.toString());
+
+      return actions.subscription.create({
+        plan_id: planId
+      });
+    },
+
+    onApprove: async function(data, actions) {
+      // PayPal will return subscriptionID here, and also redirect can happen
+      const subscriptionId = data.subscriptionID || data.subscriptionId || "";
+      if (subscriptionId){
+        // Save immediately (pending) so it unlocks now
+        await setUserPlanLocal({ planTier, subscriptionId, status: "pending" });
+        alert("Approved! Subscription ID: " + subscriptionId);
+      }
+    },
+
+    onCancel: function() {
+      alert("Payment cancelled.");
+    },
+
+    onError: function(err) {
+      console.error("PayPal subscription error:", err);
+      alert("PayPal error: " + (err?.message || err));
+    }
+  }).render("#" + mountId);
+}
+
+/* ===========================
+   ✅ UPLOAD LIMIT ENFORCEMENT (Free = 10 beats)
+=========================== */
+function blockIfUploadLimitReached(){
+  const limit = beatLimitForTier(getPlanTier());
+  if (!isFinite(limit)) return false;
+
+  const count = beatsData.length || 0;
+  if (count >= limit){
+    alert(`Upload limit reached (${count}/${limit}). Upgrade to Starter/Pro/Elite to upload more.`);
+    showPage("upgrade", document.getElementById("navUpg"));
+    return true;
+  }
+  return false;
+}
+
+/* ===========================
+   UPLOADS (Firebase Storage only)
+=========================== */
+async function uploadArtwork(){
+  try{
+    if (blockIfUploadLimitReached()) return;
+
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/artwork/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
+    });
+
+    uploadedArtwork = url;
+    $("artworkBox").innerHTML = `<img src="${uploadedArtwork}">`;
+    $("artworkStatus").innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("artworkStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Artwork upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadFullAudio(){
+  try{
+    if (blockIfUploadLimitReached()) return;
+
+    const file = await pickFile("audio/*");
+    if(!file) return;
+
+    $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".mp3";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/full/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
+    });
+
+    fullAudio = url;
+    $("fullStatus").innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("fullStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Full beat upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadPreviewAudio(){
+  try{
+    if (blockIfUploadLimitReached()) return;
+
+    const file = await pickFile("audio/*");
+    if(!file) return;
+
+    $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".mp3";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
+    });
+
+    previewAudio = url;
+    $("previewStatus").innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("previewStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Preview upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadStemsZip(){
+  try{
+    if (blockIfUploadLimitReached()) return;
+
+    if (!$("exclusiveEnabled").checked) {
+      alert("Stems are Exclusive-only. Turn ON the Exclusive license first.");
+      return;
+    }
+
+    const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
+    if(!file) return;
+
+    $("stemsStatus").innerHTML = `<div class="upload-status">Uploading stems…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".zip";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/beats/stems/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("stemsStatus").innerHTML = `<div class="upload-status">Uploading stems… ${p}%</div>`
+    });
+
+    stemsZipUrl = url;
+    $("stemsStatus").innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
+    alert("Stems ZIP uploaded");
+  }catch(err){
+    console.error(err);
+    $("stemsStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Stems upload failed: " + (err?.message || err));
+  }
+}
+
+/* ===========================
+   ✅ BULK UPLOAD (PRO/ELITE)
+=========================== */
+let bulkSelection = { full:[], preview:[], art:[] };
+
+async function bulkPickFiles(){
+  if (!isPro()){
+    alert("Bulk Upload is Pro/Elite only. Upgrade to Pro.");
+    return;
+  }
+
+  const full = await pickFiles("audio/*", true);
+  const preview = await pickFiles("audio/*", true);
+  const art = await pickFiles("image/*", true);
+
+  bulkSelection = { full, preview, art };
+
+  const s = $("bulkFilesStatus");
+  if (s){
+    s.textContent =
+      `Selected: Full=${full.length} | Preview=${preview.length} | Artwork=${art.length}`;
+  }
+}
+
+function mapByKey(files, kind){
+  const m = new Map();
+  files.forEach(f=>{
+    const bn = baseNameNoExt(f.name);
+    let key = bn;
+    if (kind === "preview"){
+      key = bn.replace(/(_preview|_tagged|_tag)/i,"").trim();
+    }
+    m.set(key.toLowerCase(), f);
+  });
+  return m;
+}
+
+async function startBulkUpload(){
+  if (!isPro()){
+    alert("Bulk Upload is Pro/Elite only. Upgrade to Pro.");
+    return;
+  }
+  if (!window.currentUser) return alert("Login again.");
+
+  const fullM = mapByKey(bulkSelection.full, "full");
+  const prevM = mapByKey(bulkSelection.preview, "preview");
+  const artM  = mapByKey(bulkSelection.art, "art");
+
+  const keys = [...fullM.keys()].filter(k=> prevM.has(k));
+  if (!keys.length){
+    alert("No matches found. Make sure full + preview names match. Example: song1.mp3 and song1_preview.mp3");
+    return;
+  }
+
+  const prog = $("bulkProgress");
+  const uid = window.currentUser.uid;
+  const producerName = getProducerDisplayName();
+
+  for (let i=0;i<keys.length;i++){
+    const k = keys[i];
+
+    // free/starter limit check (starter limit enforced too if you want)
+    if (blockIfUploadLimitReached()) break;
+
+    const fFull = fullM.get(k);
+    const fPrev = prevM.get(k);
+    const fArt  = artM.get(k) || null;
+
+    if (prog) prog.textContent = `Uploading ${i+1}/${keys.length}: ${k}...`;
+
+    // upload artwork if available
+    let artUrl = "";
+    if (fArt){
+      const ext = extFromName(fArt.name) || ".jpg";
+      artUrl = await uploadToStorage({
+        file: fArt,
+        path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`
+      });
+    }
+
+    // upload full
+    const extFull = extFromName(fFull.name) || ".mp3";
+    const fullUrl = await uploadToStorage({
+      file: fFull,
+      path: `audiory/beats/full/${uid}/bulk_${Date.now()}_${i}${extFull}`
+    });
+
+    // upload preview
+    const extPrev = extFromName(fPrev.name) || ".mp3";
+    const prevUrl = await uploadToStorage({
+      file: fPrev,
+      path: `audiory/beats/preview/${uid}/bulk_${Date.now()}_${i}${extPrev}`
+    });
+
+    // create beat doc
+    await window.addDoc(window.collection(window.db,"beats"),{
+      title: (baseNameNoExt(fFull.name) || "Untitled Beat").trim(),
+      desc: "",
+      bpm: "",
+      key: "",
+      genre: "",
+      producerName,
+      artwork: artUrl,
+      fullAudio: fullUrl,
+      previewAudio: prevUrl,
+      producerId: uid,
+      stemsZipUrl: null,
+      published: true,
+      licenses: {
+        basic: { enabled: true, price: Number($("basicPrice")?.value||0) },
+        premium: { enabled: $("premiumEnabled")?.checked === true, price: Number($("premiumPrice")?.value||0) },
+        exclusive: { enabled: $("exclusiveEnabled")?.checked === true, price: Number($("exclusivePrice")?.value||0) }
+      },
+      freeDownload: $("freeDownload")?.checked === true,
+      bulkDiscount: $("bulkDiscount")?.checked === true,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      bulkUploaded: true
+    });
+
+    // update local count to keep limit accurate
+    beatsData.push({ producerId: uid });
+    setPlanChips();
+  }
+
+  if (prog) prog.textContent = `Bulk upload done.`;
+  alert("Bulk upload complete!");
+  try{ await loadBeats(); }catch(e){}
+}
+
+/* ===========================
+   PUBLISH BEAT
+=========================== */
+async function publishBeat(){
+  if (blockIfUploadLimitReached()) return;
+
+  if(!fullAudio || !previewAudio){
+    alert("Upload both audios first");
+    return;
+  }
+
+  if (!$("exclusiveEnabled").checked) stemsZipUrl = null;
+
+  const publishBtn = $("publishBtn");
+  publishBtn.disabled = true;
+  publishBtn.innerText = "Publishing...";
+
+  try{
+    const producerName = getProducerDisplayName();
+
+    const payload = {
+      title: $("title").value || "Untitled Beat",
+      desc: $("desc").value || "",
+      bpm: $("bpm").value || "",
+      key: $("key").value || "",
+      genre: ($("genre").value || "").trim(),
+      producerName: producerName,
+      artwork: uploadedArtwork || "",
+      fullAudio,
+      previewAudio,
+      producerId: window.auth.currentUser.uid,
+
+      stemsZipUrl: ($("exclusiveEnabled").checked ? (stemsZipUrl || null) : null),
+
+      published: true,
+      licenses: {
+        basic: { enabled: $("basicEnabled").checked, price: Number($("basicPrice").value||0) },
+        premium: { enabled: $("premiumEnabled").checked, price: Number($("premiumPrice").value||0) },
+        exclusive: { enabled: $("exclusiveEnabled").checked, price: Number($("exclusivePrice").value||0) }
+      },
+      freeDownload: $("freeDownload").checked,
+      bulkDiscount: $("bulkDiscount").checked,
+
+      ...(editingBeatId ? {} : { createdAt: Date.now() }),
+      updatedAt: Date.now()
+    };
+
+    if (editingBeatId){
+      await window.updateDoc(window.doc(window.db,"beats",editingBeatId), payload);
+      editingBeatId = null;
+    } else {
+      await window.addDoc(window.collection(window.db,"beats"), payload);
+    }
+
+    resetUploadForm();
+    await loadBeats();
+    await loadDashboardStats();
+    alert("Beat published");
+  }catch(err){
+    alert("Publish failed: " + (err?.message || err));
+  }
+
+  publishBtn.disabled = false;
+  publishBtn.innerText = "Publish Beat";
+}
+
+function resetUploadForm(){
+  $("title").value = "";
+  $("desc").value = "";
+  $("bpm").value = "";
+  $("key").value = "";
+  $("genre").value = "";
+
+  uploadedArtwork = null;
+  fullAudio = null;
+  previewAudio = null;
+  stemsZipUrl = null;
+
+  $("artworkBox").innerHTML = "<span>Artwork Preview</span>";
+  $("artworkStatus").innerHTML = "";
+  $("fullStatus").innerHTML = "";
+  $("previewStatus").innerHTML = "";
+  $("stemsStatus").innerHTML = "";
+}
+
+/* ===========================
+   LOAD / RENDER BEATS
+=========================== */
+async function loadBeats(){
+  if(!window.currentUser) return;
+
+  $("beats").innerHTML = "";
+  beatsData = [];
+
+  const q = window.query(
+    window.collection(window.db,"beats"),
+    window.where("producerId","==",window.currentUser.uid)
+  );
+
+  const snap = await window.getDocs(q);
+  snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
+
+  try{
+    const name = getProducerDisplayName();
+    const toFix = beatsData.filter(b => !b.producerName || String(b.producerName).trim() === "");
+    if (toFix.length){
+      await Promise.all(toFix.map(b => window.updateDoc(window.doc(window.db,"beats",b.id), { producerName: name })));
+      beatsData = beatsData.map(b => ({...b, producerName: (b.producerName && String(b.producerName).trim()) ? b.producerName : name }));
+    }
+  }catch(e){}
+
+  renderTracks();
+  loadDashboardStats();
+}
+
+function renderTracks(){
+  $("beats").innerHTML = "";
+  beatsData.forEach((b,i)=>{
+    $("beats").innerHTML += `
+      <div class="track">
+        <img src="${b.artwork||''}">
+        <div style="flex:1"><strong>${b.title||"Untitled"}</strong><br>BPM ${b.bpm||"—"} • ${b.key||"—"}</div>
+        <button onclick="playPreview(${i})">▶</button>
+        <button onclick="editBeat(${i})">Edit</button>
+        <button onclick="deleteBeat(${i})">Delete</button>
+      </div>`;
+  });
+}
+
+function editBeat(i){
+  const b = beatsData[i];
+  editingBeatId = b.id;
+
+  $("title").value = b.title || "";
+  $("desc").value = b.desc || "";
+  $("bpm").value = b.bpm || "";
+  $("key").value = b.key || "";
+  $("genre").value = b.genre || "";
+
+  uploadedArtwork = b.artwork || null;
+  fullAudio = b.fullAudio || null;
+  previewAudio = b.previewAudio || null;
+  stemsZipUrl = b.stemsZipUrl || null;
+
+  $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
+
+  $("basicEnabled").checked = !!(b.licenses?.basic?.enabled);
+  $("basicPrice").value = (b.licenses?.basic?.price ?? 0);
+
+  $("premiumEnabled").checked = !!(b.licenses?.premium?.enabled);
+  $("premiumPrice").value = (b.licenses?.premium?.price ?? 0);
+
+  $("exclusiveEnabled").checked = !!(b.licenses?.exclusive?.enabled);
+  $("exclusivePrice").value = (b.licenses?.exclusive?.price ?? 0);
+
+  $("freeDownload").checked = !!b.freeDownload;
+  $("bulkDiscount").checked = !!b.bulkDiscount;
+
+  showPage("upload");
+}
+
+function playPreview(i){
+  if(currentAudio) currentAudio.pause();
+  const url = beatsData[i]?.previewAudio;
+  if (!url) return alert("No previewAudio for this beat yet.");
+  currentAudio = new Audio(url);
+  currentAudio.play();
+}
+
+async function deleteBeat(i){
+  const beat = beatsData[i];
+  if(!confirm(`Delete "${beat.title}"? This cannot be undone.`)) return;
+  try{
+    await window.deleteDoc(window.doc(window.db,"beats",beat.id));
+    alert("Beat deleted");
+    loadBeats();
+  }catch(err){
+    alert("Delete failed: " + (err?.message || err));
+  }
+}
+
+/* ===========================
+   DASHBOARD STATS
+=========================== */
+async function loadDashboardStats(){
+  try{
+    const total = beatsData.length || 0;
+    const published = beatsData.filter(b=>b.published===true).length;
+
+    if ($("statBeats")) $("statBeats").textContent = String(total);
+    if ($("statPublished")) $("statPublished").textContent = String(published);
+
+    if (window.currentUser){
+      const qk = window.query(window.collection(window.db,"soundkits"), window.where("producerId","==",window.currentUser.uid));
+      const ksnap = await window.getDocs(qk);
+      if ($("statKits")) $("statKits").textContent = String(ksnap.size || 0);
+    }
+
+    let sales = 0;
+    try{
+      const qo = window.query(window.collection(window.db,"orders"), window.where("producerId","==",window.currentUser.uid));
+      const osnap = await window.getDocs(qo);
+      osnap.forEach(d=>{
+        const o = d.data() || {};
+        const amt = Number(o.amount ?? o.total ?? o.price ?? 0) || 0;
+        const status = String(o.status ?? o.state ?? "").toLowerCase();
+        if (!status || status.includes("completed") || status.includes("paid")) sales += amt;
+      });
+    }catch(e){}
+
+    if ($("totalSales")) $("totalSales").textContent = money(sales);
+
+    const bal = getWalletBalance();
+    if ($("availableBalance")) $("availableBalance").textContent = money(bal);
+    if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
+
+    if ($("walletNote")) $("walletNote").textContent = "Wallet updates when your sales/earnings are written to Firestore (orders/earnings).";
+
+    refreshProLocks();
+
+    if (isPro()){
+      if ($("statViews")) $("statViews").textContent = "0";
+      if ($("statPlays")) $("statPlays").textContent = "0";
+      if ($("statConv")) $("statConv").textContent = "0%";
+    }
+  }catch(e){}
+}
+
+/* ===========================
+   ✅ MARKETING (PRO) (NEW)
+=========================== */
+async function createMarketingCampaign(){
+  if (!isPro()) return alert("Marketing tools are Pro/Elite only.");
+  if (!window.currentUser) return alert("Login again.");
+
+  const name = ($("mkCampaignName")?.value || "").trim();
+  const type = ($("mkType")?.value || "boost").trim();
+  const buyGetQty = Number($("mkBuyGetQty")?.value || 2);
+  const discountPct = Number(($("mkDiscountPct")?.value || "").trim() || 0);
+
+  if (!name) return alert("Enter campaign name");
+
+  try{
+    await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
+      producerId: window.currentUser.uid,
+      producerName: getProducerDisplayName(),
+      name,
+      type,
+      buyGetQty: (type === "buy_x_get_y" ? buyGetQty : null),
+      discountPct: (type === "discount" ? discountPct : null),
+      status: "active",
+      createdAt: Date.now()
+    });
+    if ($("mkStatus")) $("mkStatus").textContent = "Campaign created (we'll build UI to manage campaigns next).";
+    if ($("mkCampaignName")) $("mkCampaignName").value = "";
+  }catch(err){
+    alert("Campaign failed: " + (err?.message || err));
+  }
+}
+window.createMarketingCampaign = createMarketingCampaign;
+
+/* ===========================
+   ✅ PRIVATE MESSAGES (PRO) (NEW)
+   Collection: messagesThreads/{threadId}/messages/{msgId}
+   threadId = producerId__buyerId (sorted)
+=========================== */
+function threadIdFor(producerId, buyerId){
+  const a = String(producerId||"").trim();
+  const b = String(buyerId||"").trim();
+  if (!a || !b) return "";
+  return [a,b].sort().join("__");
+}
+function initials(s){
+  const t = String(s||"").trim();
+  if (!t) return "U";
+  const parts = t.split(/\s+/).filter(Boolean);
+  const a = (parts[0]||"U")[0] || "U";
+  const b = (parts[1]||"")[0] || "";
+  return (a+b).toUpperCase();
+}
+
+async function sendPrivateMessage(){
+  if (!isPro()) return alert("Private messages are Pro/Elite only.");
+  if (!window.currentUser) return alert("Login again.");
+
+  const buyerId = ($("msgBuyerId")?.value || "").trim();
+  const text = ($("msgText")?.value || "").trim();
+  if (!buyerId) return alert("Enter Buyer UID");
+  if (!text) return alert("Type a message");
+
+  const pid = window.currentUser.uid;
+  const tid = threadIdFor(pid, buyerId);
+
+  try{
+    await window.setDoc(window.doc(window.db,"messagesThreads",tid), {
+      participants: [pid, buyerId],
+      producerId: pid,
+      lastMessage: text.slice(0,200),
+      updatedAt: Date.now()
+    }, { merge: true });
+
+    await window.addDoc(window.collection(window.db,"messagesThreads",tid,"messages"), {
+      from: pid,
+      to: buyerId,
+      text,
+      createdAt: Date.now()
+    });
+
+    if ($("msgSendStatus")) $("msgSendStatus").textContent = "Message sent";
+    if ($("msgText")) $("msgText").value = "";
+    loadMessagesThreadList();
+  }catch(err){
+    alert("Message failed: " + (err?.message || err));
+  }
+}
+window.sendPrivateMessage = sendPrivateMessage;
+
+async function loadMessagesThreadList(){
+  const list = $("threadsList");
+  if (!list) return;
+  list.innerHTML = "";
+
+  if (!isPro()){
+    list.innerHTML = `<div class="subtle">Upgrade to Pro to view message threads.</div>`;
+    return;
+  }
+  if (!window.currentUser){
+    list.innerHTML = `<div class="subtle">Login to view threads.</div>`;
+    return;
+  }
+
+  try{
+    const q = window.query(
+      window.collection(window.db,"messagesThreads"),
+      window.where("producerId","==",window.currentUser.uid)
+    );
+    const snap = await window.getDocs(q);
+
+    const threads = [];
+    snap.forEach(d=> threads.push({ id:d.id, ...d.data() }));
+    threads.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+
+    if (!threads.length){
+      list.innerHTML = `<div class="subtle">No threads yet.</div>`;
+      return;
+    }
+
+    threads.slice(0,15).forEach(t=>{
+      const txt = String(t.lastMessage||"").trim() || "—";
+      const other = (t.participants||[]).find(x=> x !== window.currentUser.uid) || "buyer";
+      list.innerHTML += `
+        <div class="msg-item" onclick="alert('Thread: ${t.id}\\n(We will build full inbox view next)')">
+          <div class="avatar">${initials(other)}</div>
+          <div class="msg-meta">
+            <strong>${other}</strong>
+            <small>${txt}</small>
+          </div>
+          <small class="subtle">›</small>
+        </div>
+      `;
+    });
+  }catch(err){
+    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Could not load threads: ${err?.message||err}</div>`;
+  }
+}
+window.loadMessagesThreadList = loadMessagesThreadList;
+
+/* ===========================
+   UPGRADE UI
+=========================== */
+function loadUpgradeUI(){
+  const box = $("upgradeStatusBox");
+  if (!box) return;
+  const tier = getPlanTier();
+  if (tier === "elite") {
+    box.textContent = "You are Elite.";
+  } else if (tier === "pro") {
+    box.textContent = "You are Pro.";
+  } else if (tier === "starter") {
+    box.textContent = "You are Starter.";
+  } else {
+    box.textContent = "You are on Free plan. Upload limit is 10 beats. Upgrade to Starter/Pro/Elite to grow.";
+  }
+  refreshProLocks();
+}
+window.loadUpgradeUI = loadUpgradeUI;
+
+/* ===========================
+   FINANCE UI
+=========================== */
+function loadPayoutUI(){
+  const prof = window.currentProfile || {};
+  const loc = String(prof.location || "").toLowerCase();
+  const isKenya = loc.includes("kenya") || loc.includes("ke") || loc.includes("nairobi") || loc.includes("mombasa");
+
+  if ($("payoutNotice")){
+    $("payoutNotice").textContent = isKenya
+      ? "Kenya detected: You can withdraw via M-Pesa or PayPal."
+      : "Non-Kenya: Withdrawals available via PayPal only.";
+  }
+
+  if ($("withdrawMethod")){
+    const method = $("withdrawMethod");
+    const mpesaOption = [...method.options].find(o => o.value === "mpesa");
+    if (mpesaOption) mpesaOption.disabled = !isKenya;
+    if (!isKenya) method.value = "paypal";
+  }
+
+  try{
+    const bal = getWalletBalance();
+    if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
+  }catch(e){}
+}
+
+document.addEventListener("click", async (e)=>{
+  const btn = e.target.closest("#withdrawBtn");
+  if (!btn) return;
+
+  const amount = Number(($("withdrawAmount").value || "").trim());
+  const dest = ($("withdrawDestination").value || "").trim();
+  const status = $("withdrawStatus");
+
+  if (!amount || amount <= 0) return alert("Enter a valid amount");
+  if (!dest) return alert("Enter PayPal email or M-Pesa phone");
+
+  const bal = getWalletBalance();
+  if (bal <= 0 || amount > bal){
+    if (status) status.style.color = "#ef4444";
+    if (status) status.textContent = "❌ Insufficient balance for this withdrawal.";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "Processing...";
+
+  try{
+    if (status) status.style.color = "#22c55e";
+    if (status) status.textContent = "Payout request submitted.";
+  }catch(err){
+    alert("Withdraw failed: " + (err?.message || err));
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Withdraw";
+});
+
+/* ===========================
+   SOUND KITS (Firebase Storage)
+=========================== */
+async function uploadKitCover(){
+  try{
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    $("kitCoverStatus").innerHTML = `<div class="upload-status">Uploading cover…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/soundkits/covers/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("kitCoverStatus").innerHTML = `<div class="upload-status">Uploading cover… ${p}%</div>`
+    });
+
+    kitCover = url;
+    $("kitCoverBox").innerHTML = `<img src="${kitCover}">`;
+    $("kitCoverStatus").innerHTML = `<div class="upload-status">✔ Cover uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("kitCoverStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Cover upload failed: " + (err?.message || err));
+  }
+}
+
+async function uploadKitFile(){
+  try{
+    const file = await pickFile(".zip,application/zip,application/x-zip-compressed");
+    if(!file) return;
+
+    $("kitFileStatus").innerHTML = `<div class="upload-status">Uploading kit ZIP…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".zip";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/soundkits/files/${uid}/${Date.now()}${ext}`,
+      onProgress:(p)=> $("kitFileStatus").innerHTML = `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
+    });
+
+    kitFile = url;
+    $("kitDownloadUrl").value = kitFile;
+    $("kitFileStatus").innerHTML = `<div class="upload-status">✔ Kit file uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("kitFileStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Kit file upload failed: " + (err?.message || err));
+  }
+}
+
+async function publishKit(){
+  if(!window.currentUser){
+    alert("Please login again.");
+    return;
+  }
+
+  const btn = $("publishKitBtn");
+  btn.disabled = true;
+  btn.textContent = "Publishing...";
+
+  try{
+    const producerName = getProducerDisplayName();
+
+    await window.addDoc(window.collection(window.db,"soundkits"),{
+      title: ($("kitTitle").value || "Untitled Kit").trim(),
+      description: ($("kitDesc").value || "").trim(),
+      category: ($("kitCategory").value || "").trim(),
+      price: Number($("kitPrice").value || 0) || 0,
+      cover: kitCover || "",
+      downloadUrl: ($("kitDownloadUrl").value || kitFile || "").trim(),
+      producerId: window.currentUser.uid,
+      producerName,
+      published: $("kitPublished").checked === true,
+      createdAt: Date.now()
+    });
+
+    $("kitTitle").value = "";
+    $("kitDesc").value = "";
+    $("kitCategory").value = "";
+    $("kitPrice").value = "0";
+    $("kitDownloadUrl").value = "";
+    kitCover = null;
+    kitFile = null;
+    $("kitCoverBox").innerHTML = "<span>Cover Preview</span>";
+    $("kitCoverStatus").innerHTML = "";
+    $("kitFileStatus").innerHTML = "";
+
+    alert("Sound kit published");
+    loadKits();
+    loadDashboardStats();
+  }catch(err){
+    alert("Publish failed: " + (err?.message || err));
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Publish Sound Kit";
+}
+
+async function loadKits(){
+  if(!window.currentUser) return;
+
+  const list = $("kitsList");
+  if (!list) return;
+
+  kitsData = [];
+  list.innerHTML = "";
+
+  try{
+    const qk = window.query(window.collection(window.db,"soundkits"), window.where("producerId","==",window.currentUser.uid));
+    const snap = await window.getDocs(qk);
+    snap.forEach(d => kitsData.push({ id:d.id, ...d.data() }));
+
+    if(!kitsData.length){
+      list.innerHTML = `<div style="color:#9ca3af;">No sound kits yet.</div>`;
+      return;
+    }
+
+    kitsData.forEach(k=>{
+      list.innerHTML += `
+        <div class="track">
+          <img src="${k.cover||''}">
+          <div style="flex:1"><strong>${k.title}</strong><br>${k.category||"—"} • ${k.price ? "$"+Number(k.price).toFixed(2) : "Free"}</div>
+          <button onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')">Link</button>
+        </div>
+      `;
+    });
+  }catch(err){
+    list.innerHTML = `<div style="color:#ef4444;">Could not load kits: ${err?.message||err}</div>`;
+  }
+}
+
+function copyKitLink(url){
+  if(!url) return alert("No downloadUrl set yet.");
+  navigator.clipboard?.writeText(url);
+  alert("Link copied");
+}
+
+/* ===========================
+   ACCOUNT SETTINGS (profile pic in Storage)
+=========================== */
+async function uploadProfilePic(){
+  try{
+    const file = await pickFile("image/*");
+    if(!file) return;
+
+    $("profilePicStatus").innerHTML = `<div class="upload-status">Uploading profile photo…</div>`;
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const url = await uploadToStorage({
+      file,
+      path: `audiory/producers/profile/${uid}/photo${ext}`,
+      onProgress:(p)=> $("profilePicStatus").innerHTML = `<div class="upload-status">Uploading profile photo… ${p}%</div>`
+    });
+
+    profilePic = url;
+    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
+    $("profilePicStatus").innerHTML = `<div class="upload-status">✔ Profile picture uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("profilePicStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Profile picture upload failed: " + (err?.message || err));
+  }
+}
+
+function fillSettingsForm(){
+  const prof = window.currentProfile || {};
+  $("firstName").value = prof.firstName || "";
+  $("lastName").value = prof.lastName || "";
+  $("displayName").value = prof.displayName || "";
+  $("location").value = prof.location || "";
+  $("bio").value = prof.bio || "";
+
+  const pic = prof.photoURL || prof.photoUrl || prof.photo || "";
+  if (pic){
+    profilePic = pic;
+    $("profilePicBox").innerHTML = `<img src="${pic}">`;
+  } else if (profilePic){
+    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
+  } else {
+    $("profilePicBox").innerHTML = `<span>Profile Picture</span>`;
+  }
+
+  // domain
+  const cd = $("customDomain");
+  if (cd) cd.value = String(prof.customDomain || "").trim();
+
+  refreshProLocks();
+}
+
+async function saveProfile(){
+  if(!window.currentUser) return alert("Please login again.");
+
+  const btn = $("saveProfileBtn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+
+  try{
+    const data = {
+      firstName: ($("firstName").value || "").trim(),
+      lastName: ($("lastName").value || "").trim(),
+      displayName: ($("displayName").value || "").trim(),
+      location: ($("location").value || "").trim(),
+      bio: ($("bio").value || "").trim(),
+      photoURL: profilePic || ""
+    };
+
+    await window.updateDoc(window.doc(window.db,"users",window.currentUser.uid), data);
+
+    window.currentProfile = { ...(window.currentProfile||{}), ...data };
+    $("saveProfileStatus").textContent = "Profile updated";
+    loadPayoutUI();
+    loadDashboardStats();
+
+    try{ await loadBeats(); }catch(e){}
+  }catch(err){
+    alert("Save failed: " + (err?.message || err));
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Save Profile";
+}
+
+async function saveCustomDomain(){
+  if (!window.currentUser) return alert("Login again.");
+  if (!isElite()){
+    alert("Custom domain is Elite only.");
+    showPage("upgrade", document.getElementById("navUpg"));
+    return;
+  }
+
+  const d = ($("customDomain")?.value || "").trim().toLowerCase();
+  if (!d || !d.includes(".")) return alert("Enter a valid domain like yourdomain.com");
+
+  const status = $("domainStatus");
+  if (status) status.textContent = "Generating DNS records…";
+
+  const r = await fetch(window.PB_CREATE_DOMAIN_CHALLENGE_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ uid: window.currentUser.uid, domain: d })
+  });
+  const j = await r.json().catch(()=> ({}));
+  if (!r.ok) return alert(j?.error || "Could not create challenge");
+
+  // show records
+  const txtHost = j?.dns?.txt?.host || `_audiory-verify.${d}`;
+  const txtVal  = j?.dns?.txt?.value || "";
+  const cnameW  = j?.dns?.cname_www?.value || "audiory.site";
+  const cnameA  = j?.dns?.cname_apex?.value || "audiory.site";
+
+  if (status){
+    status.innerHTML = `
+      <div class="okbox">DNS records generated</div>
+      <div class="subtle" style="margin-top:10px;"><b>1) Add TXT (Verification)</b></div>
+      <div class="subtle">Name/Host: <b>_audiory-verify</b> (or full: ${txtHost})</div>
+      <div class="subtle">Value: <b>${txtVal}</b></div>
+
+      <div class="subtle" style="margin-top:10px;"><b>2) Add CNAME (www)</b></div>
+      <div class="subtle">Host: <b>www</b></div>
+      <div class="subtle">Target: <b>${cnameW}</b></div>
+
+      <div class="subtle" style="margin-top:10px;"><b>3) Optional (apex/root)</b></div>
+      <div class="subtle">If your DNS supports CNAME flattening (Cloudflare does):</div>
+      <div class="subtle">Host: <b>@</b> → Target: <b>${cnameA}</b></div>
+
+      <div style="margin-top:12px;">
+        <button class="btn2" type="button" onclick="verifyCustomDomain()">Verify DNS Now</button>
+      </div>
+      <div class="subtle" style="margin-top:10px;">DNS can take a few minutes. If it fails, wait then retry.</div>
+    `;
+  }
+}
+window.saveCustomDomain = saveCustomDomain;
+
+async function verifyCustomDomain(){
+  if (!window.currentUser) return alert("Login again.");
+  const d = ($("customDomain")?.value || "").trim().toLowerCase();
+  if (!d) return alert("Enter your domain first");
+
+  const status = $("domainStatus");
+  if (status) status.textContent = "Verifying DNS…";
+
+  const r = await fetch(window.PB_VERIFY_DOMAIN_DNS_URL, {
+    method: "POST",
+    headers: { "Content-Type":"application/json" },
+    body: JSON.stringify({ uid: window.currentUser.uid, domain: d })
+  });
+  const j = await r.json().catch(()=> ({}));
+  if (!r.ok) return alert(j?.error || "Verify failed");
+
+  if (j.ok){
+    if (status) status.innerHTML = `<div class="okbox">Verified! Domain connected: ${d}</div>`;
+    // refresh local profile
+    window.currentProfile = { ...(window.currentProfile||{}), customDomain: d, customDomainVerified: true, customDomainStatus: "verified" };
+    refreshProLocks();
+  } else {
+    if (status) status.innerHTML = `<div class="lockbox">❌ Not verified yet. Reason: ${j.reason || "UNKNOWN"}</div>`;
+  }
+}
+window.verifyCustomDomain = verifyCustomDomain;
+
+/* ===========================
+   EXPORT for onclick=""
+=========================== */
+window.uploadArtwork = uploadArtwork;
+window.uploadFullAudio = uploadFullAudio;
+window.uploadPreviewAudio = uploadPreviewAudio;
+window.uploadStemsZip = uploadStemsZip;
+window.publishBeat = publishBeat;
+
+window.loadBeats = loadBeats;
+window.loadDashboardStats = loadDashboardStats;
+window.loadPayoutUI = loadPayoutUI;
+
+window.playPreview = playPreview;
+window.editBeat = editBeat;
+window.deleteBeat = deleteBeat;
+
+window.uploadKitCover = uploadKitCover;
+window.uploadKitFile = uploadKitFile;
+window.publishKit = publishKit;
+window.loadKits = loadKits;
+window.copyKitLink = copyKitLink;
+
+window.uploadProfilePic = uploadProfilePic;
+window.saveProfile = saveProfile;
+window.fillSettingsForm = fillSettingsForm;
+
+window.bulkPickFiles = bulkPickFiles;
+window.startBulkUpload = startBulkUpload;
+
+window.startSubscription = startSubscription;
+window.renderPayPalButton = renderPayPalButton;
+</script>
+
+</body>
+</html>
