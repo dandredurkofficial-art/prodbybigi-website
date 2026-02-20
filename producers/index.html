@@ -1,0 +1,721 @@
+<!-- /producers.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Producers | Audiory</title>
+
+  <!-- ✅ SEO META (ADDED) -->
+  <meta name="description" content="Discover Audiory producers and explore their latest beats. View producer profiles, browse catalogs, and find your next sound.">
+  <meta name="keywords" content="music producers, beat producers, producer marketplace, buy beats, sell beats, hip hop producers, afrobeats producers, trap producers, drill producers, amapiano producers, Audiory">
+  <meta name="author" content="Audiory">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://audiory.site/producers/">
+
+  <!-- ✅ FAVICON (ADDED) -->
+  <link rel="icon" href="/audioryfavicon.web">
+  <link rel="shortcut icon" href="/audioryfavicon.web">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="apple-touch-icon" href="/audioryfavicon.web">
+
+  <!-- ✅ OPEN GRAPH (ADDED) -->
+  <meta property="og:title" content="Producers – Audiory">
+  <meta property="og:description" content="Discover producers on Audiory and explore their latest beats. View profiles, browse catalogs, and find your next sound.">
+  <meta property="og:url" content="https://audiory.site/producers/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://audiory.site/og-image.jpg">
+  <meta property="og:image:alt" content="Audiory Producers">
+  <meta property="og:site_name" content="Audiory">
+
+  <!-- ✅ TWITTER/X CARDS (ADDED) -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Producers – Audiory">
+  <meta name="twitter:description" content="Discover Audiory producers and explore their latest beats. View profiles and browse catalogs.">
+  <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    .page-head{padding:20px 0 10px}
+    .page-title{font-size:26px;font-weight:900;margin:0}
+    .page-sub{color:var(--muted);margin:6px 0 0}
+    .tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .search{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);padding:10px 12px;border-radius:14px}
+    .search input{flex:1;background:transparent;border:0;outline:0;color:inherit}
+    .pill{padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);color:inherit;font-weight:800;font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 28px}
+    @media (max-width: 900px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+    @media (max-width: 520px){ .grid{grid-template-columns:1fr;} }
+
+    .producer-card{padding:14px;border-radius:20px}
+    .producer-top{display:flex;gap:12px;align-items:center}
+    .avatar{
+      width:44px;height:44px;border-radius:14px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid;place-items:center;
+      font-weight:900;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+
+    .pname{font-weight:900;margin:0}
+    .pmeta{color:var(--muted);font-size:12px;margin:4px 0 0}
+
+    .producer-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .stat{
+      padding:8px 10px;border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.85);
+      font-weight:850;
+      font-size:12px;
+    }
+
+    .producer-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:inherit;font-weight:900;font-size:13px;
+      text-decoration:none;cursor:pointer
+    }
+    .btn.primary{background:rgba(255,255,255,.12)}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
+    /* ✅ follow white + message blue (same style idea as profile) */
+    .btn.follow-white{
+      background: rgba(255,255,255,.92);
+      color: #0b0b0f;
+      border-color: rgba(255,255,255,.75);
+    }
+    .btn.message-blue{
+      background: rgba(66, 133, 244, .95);
+      border-color: rgba(66, 133, 244, .75);
+      color: #fff;
+    }
+
+    .loading-box{margin-top:14px}
+    .hidden{display:none !important}
+
+    /* footer social svg */
+    .social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+    .social svg{width:18px;height:18px;fill:currentColor}
+
+    /* ======================================================
+       ✅ DM MODAL (Inbox)
+    ====================================================== */
+    .dm-backdrop{
+      position:fixed;inset:0;background:rgba(0,0,0,.55);
+      display:none;align-items:center;justify-content:center;
+      padding:18px;z-index:9999;
+    }
+    .dm-backdrop.show{display:flex}
+    .dm-card{
+      width:min(720px, 100%);
+      border-radius:22px;
+      background:rgba(18,18,22,.92);
+      border:1px solid rgba(255,255,255,.10);
+      box-shadow:0 14px 70px rgba(0,0,0,.55);
+      overflow:hidden;
+    }
+    .dm-head{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:10px;padding:14px 14px;border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .dm-title{font-weight:950}
+    .dm-sub{color:var(--muted);font-size:12px;margin-top:2px}
+    .dm-body{
+      height:min(60vh, 520px);
+      overflow:auto;
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .dm-msg{
+      max-width:85%;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      font-size:13px;
+      line-height:1.35;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .dm-msg.me{
+      margin-left:auto;
+      background:rgba(66,133,244,.22);
+      border-color:rgba(66,133,244,.35);
+    }
+    .dm-meta{
+      opacity:.7;
+      font-size:11px;
+      margin-top:6px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .dm-foot{
+      border-top:1px solid rgba(255,255,255,.10);
+      padding:12px 14px;
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
+    }
+    .dm-input{
+      flex:1;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      color:inherit;
+      padding:10px 12px;
+      min-height:42px;
+      max-height:120px;
+      resize:vertical;
+      outline:none;
+      font-size:13px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</span></div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+
+      <!-- Logged OUT -->
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <!-- Logged IN -->
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">
+        Dashboard
+      </a>
+      <button id="navSignOut" class="ghost hidden" type="button">
+        Sign out
+      </button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a id="mNavStartSelling" href="/register/" class="cta">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+</nav>
+
+<main class="container">
+  <section class="page-head">
+    <h1 class="page-title">Producers</h1>
+    <p class="page-sub">Discover producers and their latest beats.</p>
+
+    <div class="tools">
+      <div class="search">
+        <span aria-hidden="true">🔎</span>
+        <input id="producerSearch" placeholder="Search producers…" autocomplete="off" />
+      </div>
+      <div class="pill" id="producerCount">0 producers</div>
+    </div>
+  </section>
+
+  <div id="producerStatus" class="loading-box">Loading producers…</div>
+  <div id="producerGrid" class="grid"></div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social" aria-label="Social links">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-.9a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/>
+        </svg>
+      </a>
+
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18.9 2H22l-6.8 7.8L23 22h-6.5l-5.1-6.7L5.5 22H2.4l7.3-8.4L1 2h6.7l4.6 6.1L18.9 2zm-1.1 18h1.7L6.7 3.9H4.9L17.8 20z"/>
+        </svg>
+      </a>
+
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z"/>
+        </svg>
+      </a>
+
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.8 4.6 12 4.6 12 4.6s-5.8 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.7.5 7.5.5 7.5.5s5.8 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- DM Modal -->
+<div class="dm-backdrop" id="dmBackdrop" aria-hidden="true">
+  <div class="dm-card" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
+    <div class="dm-head">
+      <div>
+        <div class="dm-title" id="dmTitle">Message</div>
+        <div class="dm-sub" id="dmSub">Chat</div>
+      </div>
+      <button class="icon-btn" id="dmCloseBtn" aria-label="Close">✕</button>
+    </div>
+
+    <div class="dm-body" id="dmBody"></div>
+
+    <div class="dm-foot">
+      <textarea class="dm-input" id="dmInput" placeholder="Type a message…" rows="2"></textarea>
+      <button class="btn message-blue" id="dmSendBtn" type="button">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+  <div class="pb-cart-body" id="pbCartItems"></div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+
+<script>
+  /* =========================
+     helpers
+  ========================= */
+  function initials(name){
+    const s = String(name||"P").trim();
+    const parts = s.split(/\s+/).filter(Boolean);
+    const a = (parts[0]||"P").slice(0,1);
+    const b = (parts[1]||"").slice(0,1);
+    return (a+b).toUpperCase();
+  }
+
+  function safeNameFromBeat(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (b.producerId) return "Producer " + String(b.producerId).slice(0,6);
+    return "Producer";
+  }
+
+  async function track(eventName, props = {}){
+    try{
+      if (!window.FB || typeof window.FB.trackEvent !== "function") return;
+      await window.FB.trackEvent(eventName, { page:"producers", ...props });
+    }catch{}
+  }
+
+  function escapeHtml(s){
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  /* =========================
+     DM (Inbox)
+  ========================= */
+  let __dmUnsub = null;
+  let __dmThreadId = "";
+  let __dmOtherUid = "";
+  let __dmOtherName = "";
+
+  function openDM(){
+    document.getElementById("dmBackdrop")?.classList.add("show");
+    document.body.style.overflow = "hidden";
+    document.getElementById("dmInput")?.focus();
+  }
+  function closeDM(){
+    document.getElementById("dmBackdrop")?.classList.remove("show");
+    document.body.style.overflow = "";
+    if (typeof __dmUnsub === "function") { try{ __dmUnsub(); }catch{} }
+    __dmUnsub = null;
+    __dmThreadId = "";
+  }
+  function fmtTime(ms){
+    const n = Number(ms || 0);
+    if (!n) return "";
+    const d = new Date(n);
+    if (isNaN(d.getTime())) return "";
+    return d.toLocaleString(undefined, { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+  }
+  function renderMessages(list){
+    const body = document.getElementById("dmBody");
+    if (!body) return;
+    body.innerHTML = "";
+
+    const me = window.FB?.auth?.currentUser?.uid || "";
+
+    (list || []).forEach(m=>{
+      const wrap = document.createElement("div");
+      wrap.className = "dm-msg" + (m.fromUid === me ? " me" : "");
+      wrap.innerHTML = `
+        <div>${escapeHtml(m.text || "")}</div>
+        <div class="dm-meta">
+          <span>${m.fromUid === me ? "You" : (__dmOtherName || "Them")}</span>
+          <span>${fmtTime(m.createdAt)}</span>
+        </div>
+      `;
+      body.appendChild(wrap);
+    });
+
+    body.scrollTop = body.scrollHeight;
+  }
+  async function startDM({ otherUid, otherName }){
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      const ret = encodeURIComponent(location.pathname + location.search);
+      location.href = "/login/?return=" + ret;
+      return;
+    }
+    if (user.uid === otherUid){
+      alert("You can’t message yourself.");
+      return;
+    }
+
+    __dmOtherUid = otherUid;
+    __dmOtherName = otherName || "User";
+
+    document.getElementById("dmTitle").textContent = "Message";
+    document.getElementById("dmSub").textContent = "Chat with " + __dmOtherName;
+
+    openDM();
+
+    if (!window.FB || typeof window.FB.ensureThread !== "function"){
+      renderMessages([{ text: "Inbox is not ready yet. Update /js/firebase.js with threads helpers.", fromUid: "system", createdAt: Date.now() }]);
+      return;
+    }
+
+    const t = await window.FB.ensureThread({ otherUid });
+    __dmThreadId = t.threadId || "";
+
+    if (!__dmThreadId){
+      renderMessages([{ text: "Could not open thread.", fromUid: "system", createdAt: Date.now() }]);
+      return;
+    }
+
+    try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
+
+    if (typeof __dmUnsub === "function") { try{ __dmUnsub(); }catch{} }
+    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId, (msgs)=> {
+      renderMessages(msgs || []);
+    });
+
+    await track("open_inbox", { targetUid: otherUid });
+  }
+  async function sendDM(){
+    const input = document.getElementById("dmInput");
+    const btn = document.getElementById("dmSendBtn");
+    const text = String(input?.value || "").trim();
+    if (!text) return;
+
+    if (!window.FB || typeof window.FB.sendMessage !== "function"){
+      alert("Inbox is not ready yet. Update /js/firebase.js with threads helpers.");
+      return;
+    }
+
+    try{
+      btn.disabled = true;
+      await window.FB.sendMessage({ otherUid: __dmOtherUid, text });
+      input.value = "";
+      try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
+      await track("send_message", { targetUid: __dmOtherUid });
+    }catch(e){
+      alert("Failed to send: " + (e?.message || e));
+    }finally{
+      btn.disabled = false;
+      input?.focus();
+    }
+  }
+  function wireDMUI(){
+    document.getElementById("dmCloseBtn")?.addEventListener("click", closeDM);
+    document.getElementById("dmBackdrop")?.addEventListener("click", (e)=>{
+      if (e.target?.id === "dmBackdrop") closeDM();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if (e.key === "Escape") closeDM();
+    });
+    document.getElementById("dmSendBtn")?.addEventListener("click", sendDM);
+    document.getElementById("dmInput")?.addEventListener("keydown", (e)=>{
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter") sendDM();
+    });
+  }
+
+  /* =========================
+     UI render
+  ========================= */
+  function avatarHTML({ name, photoURL }){
+    const pic = String(photoURL || "").trim();
+    if (pic) {
+      const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
+      return `<img src="${pic + bust}" alt="${escapeHtml(name)}" loading="lazy">`;
+    }
+    return escapeHtml(initials(name));
+  }
+
+  async function hydrateProducerExtras(p){
+    // photo + displayName from users/{uid}
+    try{
+      if (window.FB && typeof window.FB.getProducerProfile === "function"){
+        const prof = await window.FB.getProducerProfile(p.id);
+        if (prof){
+          const profName =
+            (prof?.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+            : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
+
+          if (profName) p.name = profName;
+          p.photoURL = prof?.photoURL || "";
+        }
+      }
+    }catch{}
+
+    // followers count
+    try{
+      if (window.FB && typeof window.FB.getProducerFollowerCount === "function"){
+        p.followers = await window.FB.getProducerFollowerCount(p.id, { fast: true });
+      }
+    }catch{}
+  }
+
+  async function canShowActionButtons(pid){
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user) return { canFollow:true, canMessage:true, isSelf:false };
+    const isSelf = user.uid === pid;
+    return { canFollow: !isSelf, canMessage: !isSelf, isSelf };
+  }
+
+  async function renderProducers(list){
+    const grid = document.getElementById("producerGrid");
+    const count = document.getElementById("producerCount");
+    grid.innerHTML = "";
+    count.textContent = `${list.length} producer${list.length===1?"":"s"}`;
+
+    // render
+    list.forEach((p)=>{
+      const el = document.createElement("div");
+      el.className = "card producer-card";
+      el.setAttribute("data-pid", p.id);
+
+      el.innerHTML = `
+        <div class="producer-top">
+          <div class="avatar" id="av_${p.id}" aria-hidden="true">${escapeHtml(initials(p.name))}</div>
+          <div style="min-width:0;">
+            <p class="pname" id="nm_${p.id}">${escapeHtml(p.name)}</p>
+            <p class="pmeta" id="mt_${p.id}">${p.beatCount} beat${p.beatCount===1?"":"s"}</p>
+
+            <div class="producer-stats">
+              <div class="stat" id="fl_${p.id}">Followers: —</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="producer-actions">
+          <a class="btn primary" href="/producer-profile/?producerId=${encodeURIComponent(p.id)}">View Profile</a>
+          <a class="btn" href="/marketplace/?producerId=${encodeURIComponent(p.id)}">View Beats</a>
+
+          <button class="btn follow-white hidden" type="button" id="fb_${p.id}">Follow</button>
+          <button class="btn message-blue hidden" type="button" id="mb_${p.id}">Message</button>
+        </div>
+      `;
+      grid.appendChild(el);
+    });
+
+    // hydrate extras async (photos, followers, follow state)
+    for (const p of list){
+      await hydrateProducerExtras(p);
+
+      const av = document.getElementById("av_" + p.id);
+      const nm = document.getElementById("nm_" + p.id);
+      const fl = document.getElementById("fl_" + p.id);
+      const fb = document.getElementById("fb_" + p.id);
+      const mb = document.getElementById("mb_" + p.id);
+
+      if (nm) nm.textContent = p.name;
+      if (av) av.innerHTML = avatarHTML({ name: p.name, photoURL: p.photoURL });
+      if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
+
+      const { canFollow, canMessage } = await canShowActionButtons(p.id);
+
+      // Follow button (requires FB follow helpers)
+      if (fb && canFollow && window.FB && typeof window.FB.isFollowingProducer === "function"){
+        fb.classList.remove("hidden");
+
+        let following = false;
+        try{ following = await window.FB.isFollowingProducer(p.id); }catch{}
+        fb.textContent = following ? "Following" : "Follow";
+
+        fb.addEventListener("click", async ()=>{
+          const user = window.FB?.auth?.currentUser || null;
+          if (!user){
+            const ret = encodeURIComponent(location.pathname + location.search);
+            location.href = "/login/?return=" + ret;
+            return;
+          }
+
+          try{
+            fb.disabled = true;
+
+            const cur = await window.FB.isFollowingProducer(p.id);
+            if (cur){
+              await window.FB.unfollowProducer(p.id);
+              fb.textContent = "Follow";
+              await track("follow", { action:"unfollow", targetUid: p.id });
+            } else {
+              await window.FB.followProducer(p.id);
+              fb.textContent = "Following";
+              await track("follow", { action:"follow", targetUid: p.id });
+            }
+
+            // refresh followers count
+            try{
+              p.followers = await window.FB.getProducerFollowerCount(p.id, { fast:true });
+              if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
+            }catch{}
+          }catch(e){
+            alert("Follow failed: " + (e?.message || e));
+          }finally{
+            fb.disabled = false;
+          }
+        });
+      }
+
+      // Message button (requires threads helpers)
+      if (mb && canMessage && window.FB && typeof window.FB.ensureThread === "function"){
+        mb.classList.remove("hidden");
+        mb.addEventListener("click", ()=> startDM({ otherUid: p.id, otherName: p.name }));
+      }
+    }
+  }
+
+  function applySearch(all){
+    const q = String(document.getElementById("producerSearch").value||"").trim().toLowerCase();
+    if (!q) return all;
+    return all.filter(p => p.name.toLowerCase().includes(q));
+  }
+
+  async function loadProducers(){
+    const status = document.getElementById("producerStatus");
+    try{
+      status.textContent = "Loading producers…";
+      status.classList.remove("hidden");
+
+      wireDMUI();
+
+      const beats = await window.FB.fetchBeats({ max: 200 });
+
+      const map = new Map();
+      beats.forEach((b)=>{
+        const pid = String(b.producerId||"").trim();
+        if (!pid) return;
+        const name = safeNameFromBeat(b);
+
+        if (!map.has(pid)){
+          map.set(pid, { id: pid, name, beatCount: 1, photoURL:"", followers:0 });
+        } else {
+          const x = map.get(pid);
+          x.beatCount += 1;
+          if ((!x.name || x.name.startsWith("Producer ")) && name && !name.startsWith("Producer ")) x.name = name;
+        }
+      });
+
+      const all = Array.from(map.values())
+        .sort((a,b)=> (b.beatCount - a.beatCount) || a.name.localeCompare(b.name));
+
+      if (!all.length){
+        status.textContent = "No producers yet.";
+        return;
+      }
+
+      status.classList.add("hidden");
+      await renderProducers(all);
+
+      const input = document.getElementById("producerSearch");
+      input.addEventListener("input", async ()=>{
+        await renderProducers(applySearch(all));
+      });
+
+      await track("page_view", { producersCount: all.length });
+
+    }catch(err){
+      console.error("[producers] load error:", err);
+      status.textContent = "Could not load producers. Check console.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", ()=>{
+    if (window.FB && typeof window.FB.fetchBeats === "function") loadProducers();
+  });
+</script>
+
+</body>
+</html>
