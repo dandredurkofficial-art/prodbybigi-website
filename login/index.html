@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login</title>
+  <link rel="stylesheet" href="css/auth.css" />
+  <style>
+    .auth-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .auth-actions button { flex:1; min-width:140px; }
+    .link-btn {
+      background: none; border: none; color: #6cf; cursor: pointer;
+      padding: 0; margin-top: 10px; text-align:left;
+    }
+    .muted { color:#9ca3af; font-size:13px; margin-top:8px; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-box">
+    <h2>Login</h2>
+
+    <input id="email" type="email" placeholder="Email" autocomplete="email" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+
+    <div class="auth-actions">
+      <button onclick="loginUser()">Login</button>
+      <button onclick="googleLogin()">Continue with Google</button>
+    </div>
+
+    <button class="link-btn" onclick="resetPassword()">Forgot password?</button>
+    <div class="muted" id="status"></div>
+
+    <p style="margin-top:14px;">
+      Don’t have an account?
+      <a href="register/">Register</a>
+    </p>
+  </div>
+
+  <script type="module" src="auth-ui.js"></script>
+</body>
+</html>
