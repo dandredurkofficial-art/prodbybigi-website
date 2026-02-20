@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      background:#0b0d12;
+      color:#fff;
+      font-family:Inter;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100vh;
+      padding:16px; /* ✅ prevents edge clipping on mobile */
+      box-sizing:border-box;
+    }
+    .card{
+      background:#121726;
+      padding:30px;
+      border-radius:16px;
+      width:100%;
+      max-width:420px;
+      border:1px solid #1d2230;
+      box-sizing:border-box;
+    }
+    h2{text-align:center;margin-bottom:18px}
+    input{
+      width:100%;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #1d2230;
+      background:#0f1219;
+      color:#fff;
+      margin-bottom:14px;
+      box-sizing:border-box;
+      outline:none;
+    }
+
+    .role{
+      display:flex;
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    /* ✅ FIX: radio circles floating/misaligned on iOS */
+    .role label{
+      flex:1;
+      background:#0f1219;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #1d2230;
+      cursor:pointer;
+      text-align:center;
+
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      box-sizing:border-box;
+      min-height:48px;
+    }
+
+    /* keep the radio inside the card and aligned */
+    .role label input[type="radio"]{
+      margin:0;                 /* ✅ remove default weird margins */
+      flex:0 0 auto;
+      width:18px;
+      height:18px;
+      accent-color:#6cf;        /* ✅ modern browsers */
+    }
+
+    /* selected state (we toggle with JS below for perfect support) */
+    .role label.selected{
+      border-color:#6cf;
+      box-shadow:0 0 0 2px rgba(102,204,255,.22);
+      background:#0b1220;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:none;
+      background:#6cf;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:8px;
+    }
+    .btn-secondary{
+      background:#111827;
+      border:1px solid #1d2230;
+      color:#fff;
+    }
+    a{color:#6cf;text-decoration:none}
+    .muted{color:#9ca3af;font-size:13px;margin-top:10px;text-align:center}
+
+    /* ✅ mobile: stack role buttons nicely */
+    @media (max-width: 420px){
+      .role{flex-direction:column}
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <h2>Create Account</h2>
+
+    <input id="email" type="email" placeholder="Email" autocomplete="email" />
+    <input id="password" type="password" placeholder="Password" autocomplete="new-password" />
+
+    <div class="role">
+      <label><input type="radio" name="role" value="producer"> Producer</label>
+      <label><input type="radio" name="role" value="buyer"> Buyer</label>
+    </div>
+
+    <button onclick="registerUser()">Create Account</button>
+    <button class="btn-secondary" onclick="googleRegister()">Sign up with Google</button>
+
+    <p class="muted">
+      Already have an account?
+      <a href="login/">Login</a>
+    </p>
+  </div>
+
+  <script type="module" src="auth-ui.js"></script>
+
+  <!-- ✅ keeps selected styling in sync everywhere (including iOS Safari) -->
+  <script>
+    (function(){
+      const labels = Array.from(document.querySelectorAll(".role label"));
+      const radios = Array.from(document.querySelectorAll(".role input[type='radio']"));
+
+      function sync(){
+        labels.forEach(l => l.classList.remove("selected"));
+        const checked = radios.find(r => r.checked);
+        if (!checked) return;
+        const parentLabel = checked.closest("label");
+        if (parentLabel) parentLabel.classList.add("selected");
+      }
+
+      radios.forEach(r => r.addEventListener("change", sync));
+      labels.forEach(l => l.addEventListener("click", sync));
+      sync();
+    })();
+  </script>
+</body>
+</html>
