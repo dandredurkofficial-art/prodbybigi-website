@@ -42,30 +42,24 @@
       outline:none;
     }
 
-    /* ✅ password row + toggle on right */
-    .pw-row{ position:relative; width:100%; }
-    .pw-row input{ padding-right:72px; }
+    /* ✅ Password wrapper with right-side Show button */
+    .pw-wrap{ position:relative; margin-bottom:14px; }
+    .pw-wrap input{ margin-bottom:0; padding-right:80px; }
     .pw-toggle{
       position:absolute;
       right:10px;
       top:50%;
       transform:translateY(-50%);
-      border:1px solid rgba(255,255,255,.18);
-      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
       color:#fff;
-      padding:6px 10px;
       border-radius:10px;
-      font-weight:700;
-      font-size:12px;
+      padding:8px 10px;
+      font-weight:800;
       cursor:pointer;
-      line-height:1;
     }
 
-    .role{
-      display:flex;
-      gap:14px;
-      margin-bottom:18px;
-    }
+    .role{ display:flex; gap:14px; margin-bottom:18px; }
     .role label{
       flex:1;
       background:#0f1219;
@@ -115,10 +109,9 @@
     }
     a{color:#6cf;text-decoration:none}
     .muted{color:#9ca3af;font-size:13px;margin-top:10px;text-align:center}
+    #status{ margin-top:10px; text-align:center; color:#9ca3af; font-size:13px; min-height:18px; }
 
-    @media (max-width: 420px){
-      .role{flex-direction:column}
-    }
+    @media (max-width: 420px){ .role{flex-direction:column} }
   </style>
 </head>
 
@@ -129,7 +122,7 @@
 
     <input id="email" type="email" placeholder="Email" autocomplete="email" />
 
-    <div class="pw-row">
+    <div class="pw-wrap">
       <input id="password" type="password" placeholder="Password" autocomplete="new-password" />
       <button class="pw-toggle" id="pwToggle" type="button">Show</button>
     </div>
@@ -139,53 +132,49 @@
       <label><input type="radio" name="role" value="buyer"> Buyer</label>
     </div>
 
-    <button type="button" onclick="registerUser()">Create Account</button>
-    <button type="button" class="btn-secondary" onclick="googleRegister()">Sign up with Google</button>
+    <button id="createBtn" type="button">Create Account</button>
+    <button class="btn-secondary" id="googleBtn" type="button">Sign up with Google</button>
+
+    <div id="status"></div>
 
     <p class="muted">
       Already have an account?
+      <!-- ✅ absolute path prevents /register/login problem -->
       <a href="/login/">Login</a>
     </p>
   </div>
 
-  <!-- ✅ IMPORTANT: expose module functions globally so onclick works -->
-  <script type="module">
-    import { registerUser, googleRegister } from "/auth-ui.js";
-    window.registerUser = registerUser;
-    window.googleRegister = googleRegister;
-  </script>
+  <script type="module" src="/auth-ui.js"></script>
 
-  <!-- ✅ keeps selected styling in sync everywhere (including iOS Safari) -->
   <script>
+    // ✅ role selected styling
     (function(){
       const labels = Array.from(document.querySelectorAll(".role label"));
       const radios = Array.from(document.querySelectorAll(".role input[type='radio']"));
-
       function sync(){
         labels.forEach(l => l.classList.remove("selected"));
         const checked = radios.find(r => r.checked);
         if (!checked) return;
-        const parentLabel = checked.closest("label");
-        if (parentLabel) parentLabel.classList.add("selected");
+        checked.closest("label")?.classList.add("selected");
       }
-
       radios.forEach(r => r.addEventListener("change", sync));
       labels.forEach(l => l.addEventListener("click", sync));
       sync();
     })();
-  </script>
 
-  <!-- ✅ Show/Hide password -->
-  <script>
+    // ✅ buttons
+    document.getElementById("createBtn")?.addEventListener("click", ()=> window.registerUser?.());
+    document.getElementById("googleBtn")?.addEventListener("click", ()=> window.googleRegister?.());
+
+    // ✅ show/hide password
     (function(){
       const pw = document.getElementById("password");
       const btn = document.getElementById("pwToggle");
-      if (!pw || !btn) return;
-
-      btn.addEventListener("click", () => {
-        const hidden = pw.type === "password";
-        pw.type = hidden ? "text" : "password";
-        btn.textContent = hidden ? "Hide" : "Show";
+      if(!pw || !btn) return;
+      btn.addEventListener("click", ()=>{
+        const showing = pw.type === "text";
+        pw.type = showing ? "password" : "text";
+        btn.textContent = showing ? "Show" : "Hide";
       });
     })();
   </script>
