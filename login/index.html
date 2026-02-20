@@ -5,24 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login</title>
 
-  <!-- ✅ Always use absolute CSS paths when using /login/ /register/ folders -->
   <link rel="stylesheet" href="/css/auth.css" />
 
   <style>
     .auth-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
     .auth-actions button { flex:1; min-width:140px; }
 
-    .link-btn {
-      background: none; border: none; color: #6cf; cursor: pointer;
-      padding: 0; margin-top: 10px; text-align:left;
+    .link-btn{
+      background:none; border:none; color:#6cf; cursor:pointer;
+      padding:0; margin-top:10px; text-align:left;
     }
-    .muted { color:#9ca3af; font-size:13px; margin-top:8px; }
+    .muted{ color:#9ca3af; font-size:13px; margin-top:8px; }
 
-    /* ✅ password row */
-    .pw-row{ position:relative; }
+    /* ✅ password row + toggle on right */
+    .pw-row{ position:relative; width:100%; }
+    .pw-row input{ padding-right:72px; } /* space for the button */
     .pw-toggle{
       position:absolute;
-      right:10px; top:50%;
+      right:10px;
+      top:50%;
       transform:translateY(-50%);
       border:1px solid rgba(255,255,255,.18);
       background:rgba(255,255,255,.08);
@@ -32,24 +33,23 @@
       font-weight:700;
       font-size:12px;
       cursor:pointer;
+      line-height:1;
     }
   </style>
 </head>
-
 <body>
+
   <div class="auth-box">
     <h2>Login</h2>
 
     <input id="email" type="email" placeholder="Email" autocomplete="email" />
 
-    <!-- ✅ Password + Show/Hide -->
     <div class="pw-row">
       <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
       <button class="pw-toggle" id="pwToggle" type="button">Show</button>
     </div>
 
     <div class="auth-actions">
-      <!-- keep onclick, but we now attach functions to window via module below -->
       <button type="button" onclick="loginUser()">Login</button>
       <button type="button" onclick="googleLogin()">Continue with Google</button>
     </div>
@@ -59,14 +59,11 @@
 
     <p style="margin-top:14px;">
       Don’t have an account?
-      <!-- ✅ absolute link -->
       <a href="/register/">Register</a>
     </p>
   </div>
 
-  <!-- ✅ IMPORTANT:
-       We import functions from /auth-ui.js and expose them globally
-       so inline onclick works (fixes "googleLogin is not defined") -->
+  <!-- ✅ IMPORTANT: expose module functions globally so onclick works -->
   <script type="module">
     import { loginUser, googleLogin, resetPassword } from "/auth-ui.js";
     window.loginUser = loginUser;
@@ -82,11 +79,12 @@
       if (!pw || !btn) return;
 
       btn.addEventListener("click", () => {
-        const isHidden = pw.type === "password";
-        pw.type = isHidden ? "text" : "password";
-        btn.textContent = isHidden ? "Hide" : "Show";
+        const hidden = pw.type === "password";
+        pw.type = hidden ? "text" : "password";
+        btn.textContent = hidden ? "Hide" : "Show";
       });
     })();
   </script>
+
 </body>
 </html>
