@@ -990,6 +990,11 @@ function showPage(id, el){
     window.loadUpgradeUI();
   }
 
+  // ✅ Auto-load campaigns when opening marketing page
+  if (id === "marketingTools" && typeof window.loadmarketingCampaigns === "functions") {
+    window.loadMarketingCampaigns();
+  }
+
   refreshProLocks();
 }
 window.showPage = showPage;
