@@ -212,7 +212,7 @@
       <a href="/producers/">Producers</a>
       <!-- Logged OUT -->
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
-      <a id="navSignIn" class="ghost" href="/login.html">Sign in</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
       <!-- Logged IN -->
       <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">
@@ -692,7 +692,7 @@
           <div class="beat-meta">
             <div>
               <h3>${b.title}</h3>
-              <a class="producer" href="/producer-profile.html?producerId=${encodeURIComponent(b.producerId||"")}">
+              <a class="producer" href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}">
                 ${prettyProducerName(b)}
               </a>
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
