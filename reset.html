@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Reset Password</title>
-  <link rel="stylesheet" href="css/auth.css" />
+  <link rel="stylesheet" href="/css/auth.css" />
 </head>
 <body>
 
@@ -12,7 +12,7 @@
   <h2>Reset Password</h2>
   <input id="newPassword" type="password" placeholder="New password" />
   <button id="saveBtn">Save</button>
-  <p><a href="login.html">Back to login</a></p>
+  <p><a href="login/">Back to login</a></p>
 </div>
 
 <script type="module">
@@ -50,7 +50,7 @@ btn.onclick = async () => {
     await verifyPasswordResetCode(auth, oobCode);
     await confirmPasswordReset(auth, oobCode, newPassword);
     alert("✅ Password updated. Now login.");
-    location.href = "login.html";
+    location.href = "login/";
   } catch (e) {
     alert("Reset failed: " + (e?.message || e));
   }
