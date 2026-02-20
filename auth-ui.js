@@ -1,9 +1,13 @@
-// auth-ui.js (FULL UPDATED) ✅ uses AUDIORY firebase + email/pass + Google login/register + better reset + logout fix
-// Don't remove anything else in your project—just replace this whole file.
+// /auth-ui.js (FULL UPDATED) ✅
+// Works with your NEW “no .html” routes like /login/ /register/ /dashboard/ etc.
+// ✅ Uses your existing /js/firebase.js as the SINGLE SOURCE OF TRUTH (no double initialize).
+// ✅ Exposes global functions for onclick: loginUser, registerUser, googleLogin, googleRegister, resetPassword, logout
+// ✅ Google Popup first, Redirect fallback (mobile / popup blocked)
+// ✅ Only auto-redirects when you're on auth pages (/login/, /register/, /reset/) so it won't hijack other pages.
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import "/js/firebase.js";
+
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
@@ -12,138 +16,193 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
+  updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 import {
-  getFirestore,
   doc,
   setDoc,
-  getDoc
+  getDoc,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ✅ AUDIORY FIREBASE CONFIG (NEW firebase) */
-const firebaseConfig = {
-  apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
-  authDomain: "audiory-beat-store.firebaseapp.com",
-  projectId: "audiory-beat-store",
-  storageBucket: "audiory-beat-store.firebasestorage.app",
-  messagingSenderId: "688272560511",
-  appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
-  measurementId: "G-GLYGWQGS26"
-};
+/* ✅ Your live domain (used inside reset email link) */
+const APP_URL = "https://audiory.site";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+function $(id) { return document.getElementById(id); }
+function statusEl() { return $("status"); }
+function setStatus(msg) { if (statusEl()) statusEl().textContent = msg || ""; }
 
-// Expose (optional, helpful)
-window.auth = auth;
-window.db = db;
+function isAuthPage() {
+  const p = location.pathname || "/";
+  return (
+    p.startsWith("/login") ||
+    p.startsWith("/register") ||
+    p.startsWith("/reset")
+  );
+}
 
-const statusEl = () => document.getElementById("status");
+function getRoleSelected() {
+  const r = document.querySelector("input[name='role']:checked");
+  return r ? String(r.value) : "";
+}
 
-/* ✅ Put your live domain here (IMPORTANT for password reset links) */
-const APP_URL = "https://audiory.site"; // you can also use https://officialbigi.shop if you prefer
+function getReturnUrl() {
+  // supports /login/?return=/producer-profile/?producerId=...
+  try {
+    const u = new URL(location.href);
+    const r = (u.searchParams.get("return") || "").trim();
+    if (r.startsWith("/")) return r;
+  } catch {}
+  return "";
+}
+
+function goAfterAuth(role) {
+  // 1) if return exists, always go there (same-site path only)
+  const ret = getReturnUrl();
+  if (ret) {
+    location.href = ret;
+    return;
+  }
+
+  // 2) otherwise route by role (NO .html)
+  redirectByRole(role);
+}
 
 /* =========================
-   REGISTER (email+password)
+   ✅ Helpers: Firebase handles
 ========================= */
-window.registerUser = async function () {
-  const email = document.getElementById("email")?.value?.trim();
-  const password = document.getElementById("password")?.value;
-  const role = document.querySelector("input[name='role']:checked")?.value;
+function getAuthOrThrow() {
+  const auth = window.FB?.auth;
+  if (!auth) throw new Error("Firebase auth not ready (window.FB.auth missing).");
+  return auth;
+}
+
+function getDbOrThrow() {
+  const db = window.FB?.db;
+  if (!db) throw new Error("Firestore not ready (window.FB.db missing).");
+  return db;
+}
+
+/* =========================
+   ✅ REGISTER (email+password)
+========================= */
+window.registerUser = async function registerUser() {
+  const auth = getAuthOrThrow();
+  const db = getDbOrThrow();
+
+  const email = String($("email")?.value || "").trim();
+  const password = String($("password")?.value || "");
+  const role = getRoleSelected();
 
   if (!email || !password) return alert("Enter email and password");
-  if (!role) return alert("Please select a role");
+  if (!role) return alert("Please select a role (Producer or Buyer)");
 
   try {
+    setStatus("Creating account...");
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid = cred.user.uid;
 
+    // Optional nice displayName (can be replaced later)
+    try {
+      await updateProfile(cred.user, { displayName: role === "producer" ? "Producer" : "Buyer" });
+    } catch {}
+
     // Save user profile
     await setDoc(doc(db, "users", uid), {
-      email,
+      email: email.toLowerCase(),
       role,
-      createdAt: Date.now()
-    });
+      createdAt: serverTimestamp(),
+      displayName: role === "producer" ? "Producer" : "Buyer"
+    }, { merge: true });
 
-    // Save role-specific collection
+    // Role-specific collection (keep your current structure)
     if (role === "producer") {
       await setDoc(doc(db, "producers", uid), {
-        email,
+        email: email.toLowerCase(),
         beatsCount: 0,
-        followers: 0
-      });
+        followers: 0,
+        createdAt: serverTimestamp()
+      }, { merge: true });
     }
 
     if (role === "buyer") {
       await setDoc(doc(db, "buyers", uid), {
-        email,
-        purchases: 0
-      });
+        email: email.toLowerCase(),
+        purchases: 0,
+        createdAt: serverTimestamp()
+      }, { merge: true });
     }
 
-    redirectByRole(role);
+    setStatus("");
+    goAfterAuth(role);
   } catch (err) {
-    alert(err?.message || err);
+    console.error(err);
+    setStatus("");
+    alert(err?.message || String(err));
   }
 };
 
 /* =========================
-   LOGIN (email+password)
+   ✅ LOGIN (email+password)
 ========================= */
-window.loginUser = async function () {
-  const email = document.getElementById("email")?.value?.trim();
-  const password = document.getElementById("password")?.value;
+window.loginUser = async function loginUser() {
+  const auth = getAuthOrThrow();
+
+  const email = String($("email")?.value || "").trim();
+  const password = String($("password")?.value || "");
 
   if (!email || !password) return alert("Enter email and password");
 
   try {
+    setStatus("Signing in...");
     await signInWithEmailAndPassword(auth, email, password);
-    // redirect handled by auth listener
+    // redirect handled by auth listener (only on auth pages)
   } catch (err) {
-    alert(err?.message || err);
+    console.error(err);
+    setStatus("");
+    alert(err?.message || String(err));
   }
 };
 
 /* =========================
-   RESET PASSWORD (better link)
-   NOTE: This will still show Firebase reset UI unless you build your own reset.html.
-   But it will RETURN to your site after completion.
+   ✅ RESET PASSWORD
 ========================= */
-window.resetPassword = async function () {
-  const email = document.getElementById("email")?.value?.trim();
+window.resetPassword = async function resetPassword() {
+  const auth = getAuthOrThrow();
+
+  const email = String($("email")?.value || "").trim();
   if (!email) return alert("Enter your email first");
 
   try {
-    if (statusEl()) statusEl().textContent = "Sending reset email...";
+    setStatus("Sending reset email...");
 
     await sendPasswordResetEmail(auth, email, {
       url: `${APP_URL}/login/`,
       handleCodeInApp: false
     });
 
-    if (statusEl()) statusEl().textContent = "✅ Reset email sent. Check inbox/spam.";
+    setStatus("✅ Reset email sent. Check inbox/spam.");
   } catch (err) {
-    if (statusEl()) statusEl().textContent = "";
-    alert(err?.message || err);
+    console.error(err);
+    setStatus("");
+    alert(err?.message || String(err));
   }
 };
 
 /* =========================
-   GOOGLE SIGN IN/REGISTER
+   ✅ GOOGLE SIGN IN/REGISTER
 ========================= */
 const googleProvider = new GoogleAuthProvider();
 
-async function googleSignInSmart() {
+async function googleSignInSmart(auth) {
   try {
-    // ✅ Try popup first (desktop best)
+    // ✅ popup first
     const res = await signInWithPopup(auth, googleProvider);
-    if (res?.user) await ensureUserProfile(res.user); // ✅ IMPORTANT
     return res;
   } catch (e) {
-    // ✅ Fallback to redirect only for popup/mobile-related cases
+    // ✅ redirect fallback for mobile/popup issues
     const code = e?.code || "";
     const popupRelated =
       code.includes("popup") ||
@@ -156,147 +215,190 @@ async function googleSignInSmart() {
       await signInWithRedirect(auth, googleProvider);
       return null;
     }
-
     throw e;
   }
 }
 
-/* Google LOGIN button */
-window.googleLogin = async function () {
+// Google LOGIN button
+window.googleLogin = async function googleLogin() {
+  const auth = getAuthOrThrow();
+  const db = getDbOrThrow();
+
   try {
-    const res = await googleSignInSmart();
-    if (res?.user) {
-      const snap = await getDoc(doc(db, "users", res.user.uid));
-      if (snap.exists()) redirectByRole(snap.data().role);
-    }
+    setStatus("Opening Google...");
+    const res = await googleSignInSmart(auth);
+    if (!res?.user) return; // redirect started
+
+    // ensure profile exists
+    await ensureUserProfile(res.user, { roleHint: "" });
+
+    const snap = await getDoc(doc(db, "users", res.user.uid));
+    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    setStatus("");
+    goAfterAuth(role);
   } catch (err) {
-    alert("Google login failed: " + (err?.message || err));
+    console.error(err);
+    setStatus("");
+    alert("Google login failed: " + (err?.message || String(err)));
   }
 };
 
-/* Google REGISTER button (needs role selected first) */
-window.googleRegister = async function () {
-  const role = document.querySelector("input[name='role']:checked")?.value;
+// Google REGISTER button (role required)
+window.googleRegister = async function googleRegister() {
+  const auth = getAuthOrThrow();
+  const db = getDbOrThrow();
+
+  const role = getRoleSelected();
   if (!role) return alert("Please select a role first (Producer or Buyer)");
 
   localStorage.setItem("pendingRole", role);
 
   try {
-    const res = await googleSignInSmart();
-    if (res?.user) {
-      const snap = await getDoc(doc(db, "users", res.user.uid));
-      if (snap.exists()) redirectByRole(snap.data().role);
-    }
+    setStatus("Opening Google...");
+    const res = await googleSignInSmart(auth);
+    if (!res?.user) return; // redirect started
+
+    await ensureUserProfile(res.user, { roleHint: role });
+
+    const snap = await getDoc(doc(db, "users", res.user.uid));
+    const finalRole = snap.exists() ? (snap.data()?.role || role) : role;
+
+    setStatus("");
+    goAfterAuth(finalRole);
   } catch (err) {
-    alert("Google signup failed: " + (err?.message || err));
+    console.error(err);
+    setStatus("");
+    alert("Google signup failed: " + (err?.message || String(err)));
   }
 };
 
-/* Handle redirect result (mobile / popup blocked) */
+// Handle redirect result (mobile / popup blocked)
 (async function handleGoogleRedirectResult() {
+  const auth = window.FB?.auth;
+  const db = window.FB?.db;
+  if (!auth || !db) return;
+
   try {
     const res = await getRedirectResult(auth);
-    if (!res || !res.user) return;
+    if (!res?.user) return;
 
-    await ensureUserProfile(res.user);
+    const pendingRole = localStorage.getItem("pendingRole") || "";
+    await ensureUserProfile(res.user, { roleHint: pendingRole });
 
     const snap = await getDoc(doc(db, "users", res.user.uid));
-    if (snap.exists()) redirectByRole(snap.data().role);
+    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    setStatus("");
+    goAfterAuth(role);
   } catch (e) {
     // ignore if none
   }
 })();
 
 /* =========================
-   AUTH STATE LISTENER
-   ✅ Fix: don't auto-redirect right after logout
+   ✅ AUTH STATE LISTENER
+   Only redirects on auth pages to avoid hijacking other pages.
 ========================= */
-onAuthStateChanged(auth, async (user) => {
-  // Prevent redirect loop after logout
+onAuthStateChanged(getAuthOrThrow(), async (user) => {
+  const db = window.FB?.db;
+
+  // Prevent redirect loop right after logout
   if (localStorage.getItem("justLoggedOut") === "1") {
     if (!user) localStorage.removeItem("justLoggedOut");
     return;
   }
 
   if (!user) return;
+  if (!isAuthPage()) return; // ✅ IMPORTANT
 
-  await ensureUserProfile(user);
+  try {
+    await ensureUserProfile(user, { roleHint: localStorage.getItem("pendingRole") || "" });
 
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) {
-    alert("Profile not found");
-    return;
+    if (!db) return;
+    const snap = await getDoc(doc(db, "users", user.uid));
+    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    goAfterAuth(role);
+  } catch (e) {
+    console.error(e);
   }
-
-  const role = snap.data().role;
-  redirectByRole(role);
 });
 
-/* Create Firestore profile if missing (Google sign-in users) */
-async function ensureUserProfile(user) {
+/* =========================
+   ✅ Create Firestore profile if missing (Google sign-in users)
+========================= */
+async function ensureUserProfile(user, { roleHint = "" } = {}) {
+  const db = getDbOrThrow();
   const uref = doc(db, "users", user.uid);
   const snap = await getDoc(uref);
 
   if (snap.exists()) return;
 
-  const pendingRole = localStorage.getItem("pendingRole") || "buyer";
+  const pendingRole = (roleHint || localStorage.getItem("pendingRole") || "buyer").trim() || "buyer";
   localStorage.removeItem("pendingRole");
 
-  const email = user.email || "";
+  const email = (user.email || "").toLowerCase();
 
   await setDoc(uref, {
     email,
     role: pendingRole,
-    createdAt: Date.now()
-  });
+    createdAt: serverTimestamp(),
+    displayName: user.displayName || (pendingRole === "producer" ? "Producer" : "Buyer")
+  }, { merge: true });
 
   if (pendingRole === "producer") {
     await setDoc(doc(db, "producers", user.uid), {
       email,
       beatsCount: 0,
-      followers: 0
-    });
+      followers: 0,
+      createdAt: serverTimestamp()
+    }, { merge: true });
   }
 
   if (pendingRole === "buyer") {
     await setDoc(doc(db, "buyers", user.uid), {
       email,
-      purchases: 0
-    });
+      purchases: 0,
+      createdAt: serverTimestamp()
+    }, { merge: true });
   }
 }
 
 /* =========================
-   REDIRECT LOGIC
+   ✅ REDIRECT LOGIC (NO .html)
 ========================= */
 function redirectByRole(role) {
-  if (role === "admin") {
-    location.href = "admin-dashboard/";
+  const r = String(role || "").toLowerCase();
+
+  if (r === "admin") {
+    location.href = "/admin-dashboard/";
+    return;
+  }
+  if (r === "producer") {
+    location.href = "/dashboard/";
+    return;
+  }
+  if (r === "buyer") {
+    location.href = "/buyer-dashboard/";
     return;
   }
 
-  if (role === "producer") {
-    location.href = "dashboard/";
-    return;
-  }
-
-  if (role === "buyer") {
-    location.href = "buyer-dashboard/";
-    return;
-  }
-
-  alert("Invalid role");
+  // fallback
+  location.href = "/buyer-dashboard/";
 }
 
 /* =========================
-   LOGOUT (GLOBAL) ✅ FIX
+   ✅ LOGOUT (GLOBAL)
 ========================= */
-window.logout = async function () {
+window.logout = async function logout() {
+  const auth = getAuthOrThrow();
   try {
     localStorage.setItem("justLoggedOut", "1");
     await signOut(auth);
-    location.replace("login");
+    location.replace("/login/");
   } catch (err) {
-    alert(err?.message || err);
+    console.error(err);
+    alert(err?.message || String(err));
   }
 };
