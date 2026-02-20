@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buyer Dashboard | Audiory</title>
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    .page{ padding:18px 0 44px; }
+    .head{
+      display:flex; justify-content:space-between; align-items:flex-start;
+      gap:14px; flex-wrap:wrap; margin: 18px 0 14px;
+    }
+    .title{ font-size:28px; font-weight:950; letter-spacing:-.02em; margin:0; }
+    .sub{ color:var(--muted); margin-top:6px; font-size:13px; }
+    .right-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: var(--text); font-weight:900; font-size:12px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color:inherit; font-weight:900; font-size:13px;
+      cursor:pointer; text-decoration:none;
+    }
+    .btn.primary{ background: rgba(59,130,246,.22); border-color: rgba(59,130,246,.35); }
+    .btn.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.28); }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+
+    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin: 8px 0 14px; }
+    .tab{
+      padding:10px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-weight:900; font-size:13px; cursor:pointer;
+    }
+    .tab.active{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:12px;
+      margin: 10px 0 18px;
+    }
+    @media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; } }
+
+    .stat{ padding:14px; border-radius:18px; }
+    .k{ color:var(--muted); font-size:12px; }
+    .v{ margin-top:6px; font-size:22px; font-weight:950; }
+    .mini{ margin-top:6px; color:var(--muted); font-size:12px; }
+
+    .panel{ padding:14px; border-radius: 18px; margin-top: 12px; }
+
+    .tools{
+      display:flex; gap:10px; flex-wrap:wrap;
+      margin: 10px 0 12px;
+    }
+    .tools input{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      padding: 12px 12px;
+      border-radius: 14px;
+      outline: none;
+      width: min(420px, 100%);
+    }
+
+    .loading-box{
+      margin: 12px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.85);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .table{
+      width:100%;
+      border-collapse: separate;
+      border-spacing: 0 10px;
+    }
+    .table th{
+      text-align:left;
+      color: var(--muted);
+      font-size:12px;
+      font-weight:900;
+      padding: 0 10px;
+    }
+    .rowcard{
+      background: rgba(17,24,39,.42);
+      border: 1px solid rgba(31,41,55,.75);
+      border-radius: 16px;
+    }
+    .table td{
+      padding: 12px 10px;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    .table td:first-child{ border-top-left-radius:16px; border-bottom-left-radius:16px; }
+    .table td:last-child{ border-top-right-radius:16px; border-bottom-right-radius:16px; }
+
+    .pill{
+      display:inline-flex;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-weight:900;
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .pill.ok{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
+    .pill.no{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
+
+    .actions{
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a class="cta" href="/register/" id="navStartSelling">Start Selling</a>
+      <a class="ghost" href="/login/" id="navSignIn">Sign in</a>
+    </nav>
+
+    <div style="display:flex; gap:10px; align-items:center;">
+      <span class="chip" id="authChip">Auth: checking…</span>
+      <button class="btn" id="refreshBtn" type="button">↻ Refresh</button>
+      <button class="btn danger" id="signOutBtn" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/register/" class="cta" id="mNavStartSelling">Start Selling</a>
+  <a href="/login/" id="mNavSignIn">Sign in</a>
+</nav>
+
+<main class="container page">
+
+  <section class="head">
+    <div>
+      <h1 class="title">Buyer Dashboard</h1>
+      <div class="sub">View your orders, downloads and account details.</div>
+    </div>
+    <div class="right-actions">
+      <a class="btn" href="/marketplace/">← Browse Tracks</a>
+      <a class="btn primary" href="/soundkits/">Browse Kits</a>
+    </div>
+  </section>
+
+  <section class="tabs">
+    <button class="tab active" data-tab="overview">Overview</button>
+    <button class="tab" data-tab="orders">Orders</button>
+    <button class="tab" data-tab="downloads">Downloads</button>
+    <button class="tab" data-tab="profile">Profile</button>
+  </section>
+
+  <div id="status" class="loading-box">Loading…</div>
+
+  <!-- OVERVIEW -->
+  <section id="view-overview">
+    <div class="grid">
+      <div class="card stat">
+        <div class="k">Total Orders</div>
+        <div class="v" id="statOrders">0</div>
+        <div class="mini" id="statOrdersMini">—</div>
+      </div>
+      <div class="card stat">
+        <div class="k">Paid</div>
+        <div class="v" id="statPaid">0</div>
+        <div class="mini" id="statPaidMini">—</div>
+      </div>
+      <div class="card stat">
+        <div class="k">Downloads Ready</div>
+        <div class="v" id="statDownloads">0</div>
+        <div class="mini" id="statDownloadsMini">—</div>
+      </div>
+    </div>
+
+    <div class="card panel">
+      <div style="font-weight:950; font-size:14px;">Quick Tips</div>
+      <div class="sub" style="margin-top:6px;">
+        If your download button is disabled, the seller might still be processing the file.
+        If you need help, contact the producer from the beat page.
+      </div>
+    </div>
+  </section>
+
+  <!-- ORDERS -->
+  <section id="view-orders" class="hidden">
+    <div class="tools">
+      <input id="ordersSearch" placeholder="Search orders (beat/kit title, id)..." />
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Status</th>
+          <th>Created</th>
+          <th style="text-align:right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTbody"></tbody>
+    </table>
+  </section>
+
+  <!-- DOWNLOADS -->
+  <section id="view-downloads" class="hidden">
+    <div class="tools">
+      <input id="downloadsSearch" placeholder="Search downloads..." />
+    </div>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Type</th>
+          <th>License</th>
+          <th style="text-align:right;">Download</th>
+        </tr>
+      </thead>
+      <tbody id="downloadsTbody"></tbody>
+    </table>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="view-profile" class="hidden">
+    <div class="card panel">
+      <div style="font-weight:950; font-size:14px;">Account</div>
+      <div class="sub" style="margin-top:8px;" id="profileInfo">—</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+        <a class="btn" href="/login/" id="switchAccountBtn">Switch account</a>
+        <a class="btn primary" href="/marketplace/">Go shopping</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // keep if you use backend for secure downloads later
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+
+<script type="module">
+  import { collection, getDocs, query, where, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const $ = (id)=>document.getElementById(id);
+
+  let ALL_ORDERS = [];
+
+  // ✅ NEW: Cloud Function endpoint for License PDF
+  const LICENSE_FN_URL = "https://licensedownload-f65rhsquva-uc.a.run.app";
+
+  function setStatus(text){
+    $("status").textContent = text || "";
+    $("status").classList.remove("hidden");
+  }
+  function hideStatus(){ $("status").classList.add("hidden"); }
+
+  function fmtDate(ts){
+    const n = Number(ts||0);
+    if (!n) return "—";
+    const d = new Date(n);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleString();
+  }
+
+  function setTab(tab){
+    document.querySelectorAll(".tab").forEach(b=>{
+      b.classList.toggle("active", b.dataset.tab === tab);
+    });
+    ["overview","orders","downloads","profile"].forEach(name=>{
+      const v = $("view-" + name);
+      if (!v) return;
+      v.classList.toggle("hidden", name !== tab);
+    });
+  }
+
+  // ✅ NEW: hide/show nav auth links (desktop + mobile)
+  function updateNavAuthUI(user){
+    const isIn = !!user;
+
+    const navSignIn = document.getElementById("navSignIn");
+    const navStart  = document.getElementById("navStartSelling");
+    const mSignIn   = document.getElementById("mNavSignIn");
+    const mStart    = document.getElementById("mNavStartSelling");
+
+    // When signed in, don't show "Sign in" again
+    if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
+    if (mSignIn)   mSignIn.style.display   = isIn ? "none" : "";
+
+    // Optional: Buyers dashboard hides "Start Selling" while signed in.
+    // If you want it always visible, change isIn ? "none" : "" to "".
+    if (navStart) navStart.style.display = isIn ? "none" : "";
+    if (mStart)   mStart.style.display   = isIn ? "none" : "";
+
+    // Profile button label
+    const sw = document.getElementById("switchAccountBtn");
+    if (sw) sw.textContent = isIn ? "Switch account" : "Sign in";
+  }
+
+  // Accept multiple shapes (your order docs may differ)
+  function normalizeOrder(x){
+    const itemTitle =
+      x.itemTitle || x.title || x.beatTitle || x.kitTitle || "—";
+    const itemType =
+      (x.itemType || x.type || (x.beatId ? "beat" : (x.kitId ? "kit" : "")) || "—").toString();
+    const licenseKey =
+      (x.licenseKey || x.license || x.lic || "").toString();
+
+    const status =
+      (x.status || x.state || (x.paid ? "paid" : "") || "—").toString();
+
+    const downloadUrl =
+      x.downloadUrl || x.downloadURL || x.fileUrl || x.fileURL || "";
+
+    // ✅ NEW: carry beatId (needed for license download)
+    const beatId =
+      x.beatId || x.beatID || x.itemId || x.itemID || "";
+
+    // ✅ NEW: phone may exist on order (optional check)
+    const phone =
+      x.phone || x.phoneNumber || x.msisdn || "";
+
+    return {
+      id: x.id,
+      itemTitle: String(itemTitle),
+      itemType: itemType.toLowerCase(),
+      licenseKey: String(licenseKey),
+      status: status.toLowerCase(),
+      createdAt: x.createdAt || x.timestamp || 0,
+      downloadUrl: String(downloadUrl),
+
+      beatId: String(beatId),
+      phone: String(phone)
+    };
+  }
+
+  function renderOverview(){
+    $("statOrders").textContent = String(ALL_ORDERS.length);
+
+    const paid = ALL_ORDERS.filter(o => o.status.includes("paid") || o.status.includes("complete")).length;
+    $("statPaid").textContent = String(paid);
+
+    const ready = ALL_ORDERS.filter(o => !!o.downloadUrl).length;
+    $("statDownloads").textContent = String(ready);
+
+    $("statOrdersMini").textContent = "Your purchase history";
+    $("statPaidMini").textContent = "Orders marked paid/complete";
+    $("statDownloadsMini").textContent = "Orders with download links";
+  }
+
+  function renderOrders(){
+    const q = ($("ordersSearch").value||"").trim().toLowerCase();
+    const list = ALL_ORDERS.filter(o=>{
+      const hay = `${o.itemTitle} ${o.id} ${o.status} ${o.licenseKey}`.toLowerCase();
+      return !q || hay.includes(q);
+    });
+
+    const tb = $("ordersTbody");
+    tb.innerHTML = "";
+
+    list.slice(0, 250).forEach(o=>{
+      const tr = document.createElement("tr");
+      tr.className = "rowcard";
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:950;">${o.itemTitle}</div>
+          <div class="sub">order: ${o.id}</div>
+        </td>
+        <td>
+          ${o.status.includes("paid") || o.status.includes("complete")
+            ? `<span class="pill ok">${o.status || "paid"}</span>`
+            : `<span class="pill no">${o.status || "pending"}</span>`
+          }
+        </td>
+        <td>${fmtDate(o.createdAt)}</td>
+        <td>
+          <div class="actions">
+            <button class="btn" type="button" data-action="view" data-id="${o.id}">View</button>
+
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${o.downloadUrl ? "" : "disabled"}>
+              Download
+            </button>
+
+            <!-- ✅ NEW: License PDF button -->
+            <button class="btn" type="button" data-action="license" data-id="${o.id}">
+              License PDF
+            </button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+  }
+
+  function renderDownloads(){
+    const q = ($("downloadsSearch").value||"").trim().toLowerCase();
+    const list = ALL_ORDERS
+      .filter(o => !!o.downloadUrl)
+      .filter(o=>{
+        const hay = `${o.itemTitle} ${o.itemType} ${o.licenseKey}`.toLowerCase();
+        return !q || hay.includes(q);
+      });
+
+    const tb = $("downloadsTbody");
+    tb.innerHTML = "";
+
+    list.slice(0, 250).forEach(o=>{
+      const tr = document.createElement("tr");
+      tr.className = "rowcard";
+      tr.innerHTML = `
+        <td>
+          <div style="font-weight:950;">${o.itemTitle}</div>
+          <div class="sub">order: ${o.id}</div>
+        </td>
+        <td><span class="pill">${o.itemType || "—"}</span></td>
+        <td><span class="pill">${o.licenseKey || "—"}</span></td>
+        <td style="text-align:right;">
+          <div class="actions" style="justify-content:flex-end;">
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
+            <!-- ✅ NEW: License PDF button -->
+            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(tr);
+    });
+
+    if (!list.length){
+      setStatus("No downloads yet.\n\nTip: Only paid orders with a downloadUrl will show here.");
+    } else {
+      hideStatus();
+    }
+  }
+
+  function refreshVisible(){
+    const active = document.querySelector(".tab.active")?.dataset?.tab || "overview";
+    if (active === "overview") renderOverview();
+    if (active === "orders") renderOrders();
+    if (active === "downloads") renderDownloads();
+    if (active === "profile") {/* no-op */}
+  }
+
+  async function loadOrders(){
+    setStatus("Loading your orders…");
+
+    const u = window.FB?.auth?.currentUser || window.FB?.user;
+    updateNavAuthUI(u);
+
+    if (!u){
+      setStatus("You must sign in.\n\nRedirecting to login…");
+      setTimeout(()=>location.href="/login/", 800);
+      return;
+    }
+
+    $("profileInfo").textContent = `Signed in as: ${u.email || "—"}\nUID: ${u.uid}`;
+
+    try{
+      // Try common fields (your /orders docs might use buyerId OR uid)
+      let snap = null;
+
+      try{
+        snap = await getDocs(query(
+          collection(window.FB.db, "orders"),
+          where("buyerId", "==", u.uid),
+          limit(300)
+        ));
+      }catch(e1){
+        snap = await getDocs(query(
+          collection(window.FB.db, "orders"),
+          where("uid", "==", u.uid),
+          limit(300)
+        ));
+      }
+
+      const out = [];
+      snap.forEach(d => out.push(normalizeOrder({ id:d.id, ...d.data() })));
+
+      // Sort newest first
+      out.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
+
+      ALL_ORDERS = out;
+
+      hideStatus();
+      renderOverview();
+      refreshVisible();
+    }catch(err){
+      console.error(err);
+      const code = err?.code ? String(err.code) : "";
+      const msg  = err?.message ? String(err.message) : String(err || "");
+      setStatus(
+        "Could not load your orders.\n\n" +
+        (code ? ("Error code: " + code + "\n") : "") +
+        (msg ? ("Message: " + msg + "\n\n") : "\n") +
+        "Fix:\n" +
+        "- If permission-denied: update Firestore rules for /orders read.\n" +
+        "- Ensure orders contain buyerId or uid field."
+      );
+    }
+  }
+
+  function getOrderById(id){
+    return ALL_ORDERS.find(o => o.id === id) || null;
+  }
+
+  // ✅ NEW: call cloud function to generate license URL
+  async function requestLicensePdf({ beatId, phone }){
+    if (!beatId) throw new Error("Missing beatId on this order.");
+
+    const payload = {
+      beatId: String(beatId),
+      phone: phone ? String(phone) : ""
+    };
+
+    const r = await fetch(LICENSE_FN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await r.json().catch(()=> ({}));
+    if (!r.ok){
+      throw new Error(data?.error || `License request failed (${r.status})`);
+    }
+    if (!data?.url) throw new Error(data?.error || "No license URL returned.");
+    return data.url;
+  }
+
+  document.addEventListener("click", async (e)=>{
+    const tabBtn = e.target.closest(".tab");
+    if (tabBtn){
+      setTab(tabBtn.dataset.tab);
+      refreshVisible();
+      return;
+    }
+
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+
+    const action = btn.getAttribute("data-action");
+    const id = btn.getAttribute("data-id");
+    const order = getOrderById(id);
+    if (!order) return;
+
+    if (action === "view"){
+      alert(
+        `Order: ${order.id}\n\n` +
+        `Item: ${order.itemTitle}\n` +
+        `Type: ${order.itemType}\n` +
+        `License: ${order.licenseKey || "—"}\n` +
+        `Status: ${order.status || "—"}\n` +
+        `Created: ${fmtDate(order.createdAt)}\n\n` +
+        `Download: ${order.downloadUrl ? "Available" : "Not ready"}`
+      );
+      return;
+    }
+
+    if (action === "download"){
+      if (!order.downloadUrl) return alert("Download not ready yet.");
+      window.open(order.downloadUrl, "_blank");
+      return;
+    }
+
+    // ✅ NEW: License PDF action
+    if (action === "license"){
+      try{
+        btn.disabled = true;
+        btn.textContent = "Generating…";
+
+        // beatId must exist in the order doc (your STK push already writes beatId)
+        const beatId = order.beatId;
+
+        // Optional: phone match (only if you store phone in orders/unlocks)
+        const phone = order.phone || "";
+
+        const url = await requestLicensePdf({ beatId, phone });
+        window.location.href = url;
+      }catch(err){
+        alert(err?.message || String(err));
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "License PDF";
+      }
+      return;
+    }
+  });
+
+  $("refreshBtn").addEventListener("click", loadOrders);
+  $("ordersSearch").addEventListener("input", renderOrders);
+  $("downloadsSearch").addEventListener("input", renderDownloads);
+
+  $("signOutBtn").addEventListener("click", async ()=>{
+    try{
+      await signOut(window.FB.auth);
+      updateNavAuthUI(null);
+      location.href = "/login.html";
+    }catch(e){
+      alert("Sign out failed: " + (e?.message || e));
+    }
+  });
+
+  // Wait for firebase.js
+  window.addEventListener("firebase-ready", ()=>{
+    const tick = ()=>{
+      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+      $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
+      updateNavAuthUI(u);
+    };
+    tick();
+    setInterval(tick, 1000);
+
+    // redirect if not signed in
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    updateNavAuthUI(u);
+
+    if (!u){
+      setStatus("You must sign in to use Buyer Dashboard.\n\nRedirecting to login…");
+      setTimeout(()=>location.href="/login/", 800);
+      return;
+    }
+
+    loadOrders();
+  });
+</script>
+
+</body>
+</html>
