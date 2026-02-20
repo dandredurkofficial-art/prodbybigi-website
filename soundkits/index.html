@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Sound Kits | Audiory</title>
+
+  <!-- ✅ SEO -->
+  <meta name="description" content="Download premium drum kits, loops, MIDI packs and one-shots on Audiory. Professional sound kits for Afrobeats, Trap, Drill, Amapiano and more." />
+  <meta name="keywords" content="sound kits, drum kits, midi packs, loops, afrobeats drum kit, trap drum kit, amapiano kits, music production kits" />
+  <meta name="author" content="Audiory" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- ✅ Canonical -->
+  <link rel="canonical" href="https://audiory.site/soundkits/" />
+
+  <!-- ✅ Favicon -->
+  <link rel="icon" type="image/webp" href="/audioryfavicon.web" />
+
+  <!-- ✅ Open Graph (Facebook / WhatsApp) -->
+  <meta property="og:title" content="Sound Kits | Audiory" />
+  <meta property="og:description" content="Professional drum kits, loops and MIDI packs for your next hit." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://audiory.site/soundkits/" />
+  <meta property="og:image" content="https://audiory.site/audioryfavicon.web" />
+
+  <!-- ✅ Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Sound Kits | Audiory" />
+  <meta name="twitter:description" content="Download premium drum kits, loops and MIDI packs on Audiory." />
+  <meta name="twitter:image" content="https://audiory.site/audioryfavicon.web" />
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+  <style>
+    .page-head{ margin: 18px 0 14px; }
+    .page-title{ font-size: 26px; font-weight: 900; letter-spacing: -.02em; }
+    .page-sub{ color: var(--muted); margin-top: 6px; }
+
+    .tools{ display:flex; gap:10px; flex-wrap:wrap; margin: 14px 0 18px; }
+    .tools input, .tools select{
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.10);
+      color: rgba(255,255,255,.92);
+      padding: 12px 12px;
+      border-radius: 14px;
+      outline: none;
+      width: min(360px, 100%);
+    }
+    .tools select{ width: 200px; }
+
+    .kits-grid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      padding-bottom: 22px;
+    }
+    @media (max-width: 980px){ .kits-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 620px){ .kits-grid{ grid-template-columns: 1fr; } }
+
+    .kit-card{ padding: 12px; border-radius: 20px; }
+    .kit-cover{
+      aspect-ratio: 1/1;
+      width: 100%;
+      border-radius: 18px;
+      overflow:hidden;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      display:grid;
+      place-items:center;
+    }
+    .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .kit-meta{ margin-top: 10px; display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .kit-title{ font-weight: 900; font-size: 14px; line-height:1.2; }
+    .kit-desc{ margin-top:6px; color: var(--muted); font-size: 12px; line-height:1.35; }
+
+    .kit-actions{ margin-top: 12px; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+    .price-pill{
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    .btn{
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14);
+      color: rgba(255,255,255,.92);
+      padding: 10px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      cursor: pointer;
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+    }
+    .btn.primary{
+      background: rgba(255,255,255,.92);
+      color: #111;
+      border: 1px solid rgba(255,255,255,.92);
+    }
+    .loading-box{
+      margin: 14px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.85);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .hidden{ display:none !important; }
+
+    /* Footer social icons (real icons) */
+    .social a{ display:inline-flex; width:36px; height:36px; border-radius: 999px; align-items:center; justify-content:center;
+      background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
+    .social svg{ width:18px; height:18px; fill: rgba(255,255,255,.9); }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</span></div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace">Tracks</a>
+      <a href="/soundkits">Sound Kits</a>
+      <a href="/producers">Producers</a>
+      
+      <!-- Logged OUT -->
+      <a id="navStartSelling" class="cta" href="/register">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login">Sign in</a>
+
+      <!-- Logged IN -->
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard">
+        Dashboard
+      </a>
+      <button id="navSignOut" class="ghost hidden" type="button">
+        Sign out
+      </button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace">Tracks</a>
+  <a href="/soundkits">Sound Kits</a>
+  <a href="/producers">Producers</a>
+  <!-- Logged OUT -->
+  <a id="mNavStartSelling" class="cta" href="/register">Start Selling</a>
+  <a id="mNavSignIn" href="/login">Sign in</a>
+
+  <!-- Logged IN -->
+  <a id="mNavDashboard" class="hidden" href="/buyer-dashboard">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container">
+  <section class="page-head">
+    <div class="page-title">Sound Kits</div>
+    <div class="page-sub">Drum kits, loops, MIDI packs — curated for your next hit.</div>
+  </section>
+
+  <section class="tools">
+    <input id="kitSearch" placeholder="Search sound kits (e.g. afrobeats, drums, loops)..." />
+    <select id="kitCategory">
+      <option value="">All categories</option>
+      <option value="drums">Drums</option>
+      <option value="loops">Loops</option>
+      <option value="midi">MIDI</option>
+      <option value="one-shots">One-shots</option>
+      <option value="fx">FX</option>
+    </select>
+  </section>
+
+  <div id="kitStatus" class="loading-box">Loading sound kits…</div>
+  <div id="kitsGrid" class="kits-grid"></div>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/terms">Terms</a>
+      <a href="/cookies">Cookies</a>
+      <a href="/cookie-settings">Cookie Settings</a>
+      <a href="/refunds">Refund Policy</a>
+      <a href="/dmca">DMCA</a>
+      <a href="/creator-agreement">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-2.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>
+      </a>
+
+      <!-- TikTok -->
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" aria-label="TikTok">
+        <svg viewBox="0 0 24 24"><path d="M9 3v12.5a3.5 3.5 0 1 1-3-3.465V9.5A6.5 6.5 0 1 0 12.5 16V8.5a8.5 8.5 0 0 0 5.5 2V7.5a5.5 5.5 0 0 1-5.5-5.5H9z"/></svg>
+      </a>
+
+      <!-- X -->
+      <a href="https://x.com/audiorybeats" target="_blank" aria-label="X">
+        <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.3l-4.9-6.4L6.3 22H2l7.3-8.4L1 2h6.5l4.4 5.8L18.9 2zm-1.1 18h1.7L7.6 3.9H5.8L17.8 20z"/></svg>
+      </a>
+
+      <!-- Facebook -->
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" aria-label="Facebook">
+        <svg viewBox="0 0 24 24"><path d="M13 22v-9h3l1-4h-4V6.5c0-1.2.3-2 2-2h2V1.1S16.3 1 14.6 1C11 1 9 3 9 6.2V9H6v4h3v9h4z"/></svg>
+      </a>
+
+      <!-- YouTube -->
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" aria-label="YouTube">
+        <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Cart Drawer (keep consistent with your site) -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+  <div class="pb-cart-body" id="pbCartItems"></div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script>
+  window.PB_PAYPAL_CREATE_ORDER_URL =
+    "https://createorder-f65rhsquva-uc.a.run.app";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/cookie-banner.js"></script>
+
+<script>
+  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title||"Sound Kit"}" loading="lazy" />`;
+    const initials = String(title||"K").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function normalizeKit(docId, data){
+    return {
+      id: docId,
+      title: data.title || data.name || "Untitled Kit",
+      cover: data.cover || data.coverUrl || data.image || data.artwork || "",
+      description: data.description || data.desc || "",
+      category: (data.category || "").toLowerCase(),
+      price: Number(data.price ?? 0) || 0,
+      published: data.published !== false,
+      createdAt: data.createdAt || 0,
+      downloadUrl: data.downloadUrl || data.downloadURL || ""
+    };
+  }
+
+  // Fallback fetcher (only used if FB.fetchSoundKits is not defined)
+  async function fallbackFetchSoundKits(){
+    const { collection, getDocs, query, limit, where } = window.FB; // ✅ added where
+
+    const names = ["soundKits", "soundkits", "sound_kits", "kits"];
+    let lastErr = null;
+
+    for (const name of names){
+      try{
+        const ref = collection(window.FB.db, name);
+
+        // ✅ FIX: only request published docs (matches your rules)
+        const qy = query(ref, where("published", "==", true), limit(120));
+
+        const snap = await getDocs(qy);
+
+        if (snap.empty) continue;
+
+        const kits = [];
+        snap.forEach(d=>{
+          const k = normalizeKit(d.id, d.data());
+          if (k.published) kits.push(k);
+        });
+
+        kits.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
+        return kits;
+      }catch(err){
+        lastErr = err;
+      }
+    }
+
+    throw lastErr || new Error("No sound kits collection found");
+  }
+
+  let ALL_KITS = [];
+
+  function renderKits(list){
+    const grid = document.getElementById("kitsGrid");
+    const status = document.getElementById("kitStatus");
+    grid.innerHTML = "";
+
+    if (!list.length){
+      status.textContent = "No sound kits found.";
+      status.classList.remove("hidden");
+      return;
+    }
+    status.classList.add("hidden");
+
+    list.forEach(k=>{
+      const el = document.createElement("div");
+      el.className = "card kit-card";
+      el.innerHTML = `
+        <div class="kit-cover">${coverHTML(k.cover, k.title)}</div>
+        <div class="kit-meta">
+          <div style="min-width:0;">
+            <div class="kit-title">${k.title}</div>
+            <div class="kit-desc">${(k.description || "").slice(0, 110)}</div>
+          </div>
+          <div class="price-pill">${k.price ? money(k.price) : "Free"}</div>
+        </div>
+        <div class="kit-actions">
+          <button class="btn" type="button" data-open="${k.id}">Details</button>
+          <button class="btn primary" type="button" data-buy="${k.id}">
+            <span>🛍️</span><span>${k.price ? "Get kit" : "Download"}</span>
+          </button>
+        </div>
+      `;
+      grid.appendChild(el);
+    });
+  }
+
+  function applyFilters(){
+    const q = (document.getElementById("kitSearch").value || "").trim().toLowerCase();
+    const cat = (document.getElementById("kitCategory").value || "").trim().toLowerCase();
+
+    const filtered = ALL_KITS.filter(k=>{
+      const hay = `${k.title} ${k.description} ${k.category}`.toLowerCase();
+      const okQ = !q || hay.includes(q);
+      const okC = !cat || (k.category === cat);
+      return okQ && okC;
+    });
+
+    renderKits(filtered);
+  }
+
+  function showFirebaseError(err){
+    const status = document.getElementById("kitStatus");
+    const code = err?.code ? String(err.code) : "";
+    const msg  = err?.message ? String(err.message) : String(err || "");
+    status.classList.remove("hidden");
+
+    // ✅ show exact problem
+    status.textContent =
+      "Could not load sound kits.\n\n" +
+      (code ? ("Error code: " + code + "\n") : "") +
+      (msg ? ("Message: " + msg + "\n\n") : "\n") +
+      "Fix:\n" +
+      "- If code is permission-denied → update Firestore rules to allow read.\n" +
+      "- If no collection found → create collection 'soundKits' or 'soundkits' in Firestore.\n";
+  }
+
+  async function loadKits(){
+    const status = document.getElementById("kitStatus");
+    status.textContent = "Loading sound kits…";
+    status.classList.remove("hidden");
+
+    try{
+      // ✅ prefer firebase.js helper if you added it
+      if (window.FB && typeof window.FB.fetchSoundKits === "function"){
+        ALL_KITS = await window.FB.fetchSoundKits({ max: 120 });
+      } else {
+        ALL_KITS = await fallbackFetchSoundKits();
+      }
+      applyFilters();
+    }catch(err){
+      console.error(err);
+      showFirebaseError(err);
+    }
+  }
+
+  document.addEventListener("click", (e)=>{
+    const buy = e.target.closest("[data-buy]");
+    const open = e.target.closest("[data-open]");
+    if (!buy && !open) return;
+
+    const id = (buy || open).getAttribute(buy ? "data-buy" : "data-open");
+    const kit = ALL_KITS.find(x=>x.id===id);
+    if (!kit) return;
+
+    if (buy){
+      // ✅ Paid kit => DO NOT direct download
+      if (Number(kit.price || 0) > 0){
+        // If you already have cart logic, push this item into cart.
+        // Minimal: show message so you wire to your cart/checkout next.
+        alert("This kit is paid. Add it to cart / checkout instead of direct download.");
+
+        // OPTIONAL (if your cart.js supports adding custom items)
+        // window.PBCart?.addItem?.({
+        //   type: "soundkit",
+        //   id: kit.id,
+        //   title: kit.title,
+        //   price: Number(kit.price || 0),
+        //   cover: kit.cover,
+        //   downloadUrl: kit.downloadUrl || ""
+        // });
+
+        return;
+      }
+
+      // ✅ Free kit => allow download
+      if (kit.downloadUrl){
+        window.open(kit.downloadUrl, "_blank");
+      } else {
+        alert("This kit is not set up for download yet. Add downloadUrl in Firestore ✅");
+      }
+      return;
+    }
+
+    alert(
+      `${kit.title}\n\n${kit.description || "No description."}\n\n` +
+      `Category: ${kit.category || "—"}\n` +
+      `Price: ${kit.price ? money(kit.price) : "Free"}`
+    );
+  });
+
+  document.getElementById("kitSearch").addEventListener("input", applyFilters);
+  document.getElementById("kitCategory").addEventListener("change", applyFilters);
+
+  window.addEventListener("firebase-ready", () => {
+    if (window.FB?.db) loadKits();
+  });
+</script>
+
+</body>
+</html>
