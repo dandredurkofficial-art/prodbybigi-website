@@ -44,7 +44,7 @@ window.db = db;
 const statusEl = () => document.getElementById("status");
 
 /* ✅ Put your live domain here (IMPORTANT for password reset links) */
-const APP_URL = "https://prodby.officialbigi.shop"; // you can also use https://officialbigi.shop if you prefer
+const APP_URL = "https://audiory.site"; // you can also use https://officialbigi.shop if you prefer
 
 /* =========================
    REGISTER (email+password)
@@ -120,7 +120,7 @@ window.resetPassword = async function () {
     if (statusEl()) statusEl().textContent = "Sending reset email...";
 
     await sendPasswordResetEmail(auth, email, {
-      url: `${APP_URL}/login.html`,
+      url: `${APP_URL}/login/`,
       handleCodeInApp: false
     });
 
@@ -271,17 +271,17 @@ async function ensureUserProfile(user) {
 ========================= */
 function redirectByRole(role) {
   if (role === "admin") {
-    location.href = "admin-dashboard.html";
+    location.href = "admin-dashboard/";
     return;
   }
 
   if (role === "producer") {
-    location.href = "dashboard.html";
+    location.href = "dashboard/";
     return;
   }
 
   if (role === "buyer") {
-    location.href = "buyer-dashboard.html";
+    location.href = "buyer-dashboard/";
     return;
   }
 
@@ -295,7 +295,7 @@ window.logout = async function () {
   try {
     localStorage.setItem("justLoggedOut", "1");
     await signOut(auth);
-    location.replace("login.html");
+    location.replace("login");
   } catch (err) {
     alert(err?.message || err);
   }
