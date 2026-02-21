@@ -825,6 +825,127 @@ exports.captureOrder = onRequest(
   }
 );
 
+async function processCartCapture({ cartId, captureEvent, orderId }) {
+  const cartRef = db.collection("paypalOrders").doc(cartId);
+  const cartSnap = await cartRef.get();
+  if (!cartSnap.exists) throw new Error("Cart not found in paypalOrders");
+
+  const cart = cartSnap.data() || {};
+  const items = Array.isArray(cart.items) ? cart.items : [];
+  if (!items.length) throw new Error("Cart has no items");
+
+  const resource = captureEvent?.resource || {};
+  const payerEmail = safeStr(resource?.payer?.email_address || "");
+
+  // Idempotency: only process once
+  const processedRef = db.collection("paypalOrderCaptures").doc(orderId);
+  const already = await processedRef.get();
+  if (already.exists) return { ok: true, alreadyProcessed: true };
+
+  const { value, currency } = parseAmountFromPayPalEvent(captureEvent);
+
+  // Save main order doc
+  const orderRef = db.collection("orders").doc(orderId);
+  await orderRef.set(
+    {
+      orderId,
+      provider: "paypal",
+      type: "cart",
+      cartId,
+      providerEventId: safeStr(captureEvent?.id),
+      providerCaptureId: safeStr(resource?.id),
+      providerStatus: safeStr(resource?.status),
+      amount: Number(value || cart.total || 0),
+      currency: currency || cart.currency || "USD",
+      status: "PAID",
+      payerEmail,
+      items,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  // mark capture processed first (prevents double-processing on retries)
+  await processedRef.set({
+    orderId,
+    cartId,
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // unlock + credit per item
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i] || {};
+    const type = safeStr(it.type);
+    const id = safeStr(it.id);
+    const licenseKey = safeStr(it.licenseKey || "");
+    const qty = toQty(it.qty || 1);
+    const producerId = safeStr(it.producerId || "");
+
+    const lineTotal = Number(it.unitPrice || 0) * qty;
+    const unlockId = `${orderId}__${type}__${id}__${licenseKey}__${i}`;
+    const unlockRef = db.collection("unlocks").doc(unlockId);
+
+    await unlockRef.set(
+      {
+        unlockId,
+        orderId,
+        cartId,
+        provider: "paypal",
+        type,
+        beatId: type === "beat" ? id : null,
+        kitId: type === "soundkit" ? id : null,
+        licenseKey: licenseKey || null,
+        qty,
+        amount: lineTotal,
+        receipt: safeStr(resource?.id),
+        payerEmail,
+        transactionDate: Date.now(),
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    // credit producer (idempotent per unlock)
+    if (producerId) {
+      const creditMarkerRef = db.collection("walletCredits").doc(unlockId);
+      const marker = await creditMarkerRef.get();
+      if (!marker.exists) {
+        await creditProducerWallet({
+          producerId,
+          orderId,
+          grossAmount: lineTotal,
+          currency: currency || cart.currency || "USD",
+          source: "paypal",
+          revenueId: unlockId,
+        });
+        await creditMarkerRef.set({
+          unlockId,
+          orderId,
+          cartId,
+          producerId,
+          grossAmount: lineTotal,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    }
+  }
+
+  // update cart doc status
+  await cartRef.set(
+    {
+      status: "paid",
+      paidAt: Date.now(),
+      orderId,
+      payerEmail,
+      updatedAt: Date.now(),
+    },
+    { merge: true }
+  );
+
+  return { ok: true };
+}
+
 /* =========================================================
 ✅ PAYPAL WEBHOOK
 ========================================================= */
