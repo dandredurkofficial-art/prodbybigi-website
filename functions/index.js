@@ -878,20 +878,114 @@ exports.paypalWebhook = onRequest(
 
       const meta = {};
       if (customId) {
+        // supports both: "cartId=xxx" and old "beatId=..|licenseKey=..|producerId=.."
         customId.split("|").forEach((part) => {
           const [k, ...rest] = part.split("=");
           const key = safeStr(k).trim();
           const val = safeStr(rest.join("=")).trim();
           if (key) meta[key] = val;
         });
+        // if it's "cartId=xxx" only, this still works
+        if (customId.includes("cartId=") && !meta.cartId) {
+          meta.cartId = safeStr(customId.split("cartId=")[1] || "").trim();
+        }
       }
 
+      const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
+
+      // ✅ 1) CART FLOW
+      const cartId = safeStr(meta.cartId || "");
+      if (cartId) {
+        await processCartCapture({ cartId, captureEvent: event, orderId });
+        return res.status(200).json({ received: true, eventType, cart: true });
+      }
+
+      // ✅ 2) OLD SINGLE-BEAT FLOW (backward compatible)
       const beatId = safeStr(meta.beatId || meta.beat || "");
+      const licenseKey = safeStr(meta.licenseKey || "basic").toLowerCase().trim();
       let producerId = safeStr(meta.producerId || meta.producer || "");
 
       if (beatId && !producerId) {
         const beatSnap = await db.collection("beats").doc(beatId).get();
         if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
+      }
+
+      const { value, currency } = parseAmountFromPayPalEvent(event);
+
+      const orderRef = db.collection("orders").doc(orderId);
+      const existing = await orderRef.get();
+
+      if (!existing.exists) {
+        await orderRef.set({
+          orderId,
+          provider: "paypal",
+          type: "single",
+          providerEventId: safeStr(event.id),
+          providerCaptureId: safeStr(resource.id),
+          providerStatus: safeStr(resource.status),
+          beatId: beatId || null,
+          producerId: producerId || null,
+          licenseKey: licenseKey || null,
+          amount: Number(value || 0),
+          currency: currency || "USD",
+          status: "PAID",
+          payerEmail: safeStr(resource?.payer?.email_address),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          raw: event,
+        });
+      } else {
+        await orderRef.set(
+          {
+            providerStatus: safeStr(resource.status),
+            status: "PAID",
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+
+      if (beatId && producerId) {
+        const unlockId = `${orderId}__beat__${beatId}__${licenseKey}`;
+        await db.collection("unlocks").doc(unlockId).set(
+          {
+            unlockId,
+            orderId,
+            beatId,
+            kitId: null,
+            type: "beat",
+            licenseKey,
+            phone: null,
+            amount: Number(value || 0),
+            receipt: safeStr(resource.id),
+            transactionDate: Date.now(),
+            checkoutRequestId: null,
+            provider: "paypal",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        // idempotent credit marker
+        const markerRef = db.collection("walletCredits").doc(unlockId);
+        const marker = await markerRef.get();
+        if (!marker.exists) {
+          await creditProducerWallet({
+            producerId,
+            orderId,
+            grossAmount: Number(value || 0),
+            currency,
+            source: "paypal",
+            revenueId: unlockId,
+          });
+          await markerRef.set({
+            unlockId,
+            orderId,
+            producerId,
+            grossAmount: Number(value || 0),
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        }
       }
 
       const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
