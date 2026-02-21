@@ -354,7 +354,12 @@
       el.setAttribute("data-kit-id", k.id);
 
       el.innerHTML = `
-       <div class="kit-meta">
+        <!-- ✅ COVER ONLY -->
+        <div class="kit-cover" data-go="${k.id}">
+          ${coverOnly(k.cover, k.title)}
+        </div>
+
+        <div class="kit-meta">
           <div style="min-width:0;">
             <div class="kit-title">${k.title}</div>
             <div class="kit-desc">${(k.description || "").slice(0, 110)}</div>
@@ -364,17 +369,17 @@
         <div class="kit-actions">
           <button class="btn" type="button" data-open="${k.id}">Details</button>
 
-          <!-- ✅ real working price pill -->
           <button class="price-pill-btn" type="button" data-add="${k.id}">
             <span>🛒</span>
             <span>${k.price ? money(k.price) : "Free"}</span>
           </button>
         </div>
       `;
+
       grid.appendChild(el);
     });
   }
-
+  
   function applyFilters(){
     const q = (document.getElementById("kitSearch").value || "").trim().toLowerCase();
     const cat = (document.getElementById("kitCategory").value || "").trim().toLowerCase();
