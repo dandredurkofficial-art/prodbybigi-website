@@ -22,7 +22,8 @@ import {
   serverTimestamp,
   onSnapshot,
   updateDoc,
-  increment
+  increment,
+  getCountFromServer // ✅ ADDED (for Advanced Analytics fast counts)
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -67,8 +68,36 @@ Object.assign(window.FB, {
   serverTimestamp,
   onSnapshot,
   updateDoc,
-  increment
+  increment,
+
+  // ✅ analytics agg helper
+  getCountFromServer
 });
+
+// ✅ ALSO expose globals (compat with your dashboard scripts that call window.addDoc/window.collection etc.)
+window.app = app;
+window.auth = auth;
+window.db = db;
+window.storage = storage;
+
+window.collection = collection;
+window.getDocs = getDocs;
+window.getDoc = getDoc;
+window.addDoc = addDoc;
+window.doc = doc;
+window.query = query;
+window.where = where;
+window.orderBy = orderBy;
+window.limit = limit;
+window.setDoc = setDoc;
+window.deleteDoc = deleteDoc;
+window.serverTimestamp = serverTimestamp;
+window.onSnapshot = onSnapshot;
+window.updateDoc = updateDoc;
+window.increment = increment;
+
+// ✅ Advanced analytics fast counts helper
+window.getCountFromServer = getCountFromServer;
 
 // ✅ FAST token getter
 window.FB.getIdToken = async () => {
@@ -108,8 +137,16 @@ function setNavLoggedOut() {
 
 window.FB.user = null;
 
+// ✅ Optional: keep these for older scripts
+window.currentUser = null;
+
 onAuthStateChanged(auth, (u) => {
   window.FB.user = u || null;
+
+  // ✅ keep dashboard-style globals in sync
+  window.currentUser = u || null;
+  window.FB.currentUser = u || null;
+
   try { window.FB.user ? setNavLoggedIn() : setNavLoggedOut(); } catch {}
   try {
     window.dispatchEvent(new CustomEvent("firebase-auth-changed", { detail: { user: window.FB.user } }));
@@ -580,6 +617,37 @@ window.FB.trackEvent = async function ({
   await addDoc(collection(db, "analyticsEvents"), payload);
   return true;
 };
+
+/* =========================================================
+   ✅ NEW: SIMPLE PLAY/VIEW LOGGER (for Advanced Analytics page)
+   Uses: { producerId, type:"view"|"play", beatId, actorUid, createdAt }
+   ✅ Uses serverTimestamp() so Firestore writes are consistent
+========================================================= */
+window.FB.logAnalyticsEvent = async function ({ producerId, type, beatId = null } = {}) {
+  try {
+    const u = auth.currentUser;
+    if (!u) return false; // your rules require signed-in
+    if (!producerId || !type) return false;
+
+    await addDoc(collection(db, "analyticsEvents"), {
+      producerId: String(producerId),
+      type: String(type), // "view" | "play"
+      beatId: beatId ? String(beatId) : null,
+      actorUid: u.uid,
+      createdAt: serverTimestamp()
+    });
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
+// ✅ convenience global alias (so pages can call logAnalyticsEvent directly)
+window.logAnalyticsEvent = window.FB.logAnalyticsEvent;
+
+// ✅ small client-side de-dupe store (optional)
+window.__ANA_SENT__ = window.__ANA_SENT__ || { play: {}, view: {} };
 
 // Summary for a producer (last N days)
 window.FB.getAnalyticsSummary = async function ({
