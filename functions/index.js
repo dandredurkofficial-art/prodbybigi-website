@@ -574,53 +574,129 @@ exports.createOrder = onRequest(
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (req, res) => {
-    // ✅ CORS ONCE (and preflight)
     const pre = handleCorsPreflight(req, res);
     if (pre) return;
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const body = req.body || {};
+      const hasCart = Array.isArray(body.items) && body.items.length > 0;
+
+      // ✅ Accept either single item or cart items
+      let rawItems = [];
+      if (hasCart) {
+        rawItems = body.items;
+      } else {
+        const beatId = body.beatId;
+        const licenseKey = body.licenseKey;
+        if (!beatId || !licenseKey) {
+          return res.status(400).json({ error: "beatId and licenseKey are required" });
+        }
+        rawItems = [{ beatId, licenseKey, qty: 1 }];
       }
 
-      const { beatId, licenseKey } = req.body || {};
-      if (!beatId || !licenseKey) {
-        return res.status(400).json({ error: "beatId and licenseKey are required" });
+      // ✅ Normalize incoming items (DON'T trust price from client)
+      const incoming = rawItems
+        .map((it) => ({
+          beatId: String(it.beatId || "").trim(),
+          licenseKey: toKey(it.licenseKey || ""),
+          qty: toQty(it.qty || 1),
+        }))
+        .filter((it) => it.beatId && it.licenseKey);
+
+      if (!incoming.length) {
+        return res.status(400).json({ error: "Cart is empty or invalid items" });
       }
 
-      // Fetch beat
-      const beatSnap = await db.collection("beats").doc(String(beatId)).get();
-      if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
+      // ✅ Resolve each item price & metadata from Firestore
+      const resolved = [];
+      for (const it of incoming) {
+        // Sound kit item
+        if (it.licenseKey === "soundkit" || it.licenseKey === "kit") {
+          const kitFound = await getSoundKitDocById(it.beatId);
+          if (!kitFound) return res.status(404).json({ error: `Sound kit not found: ${it.beatId}` });
 
-      const beat = beatSnap.data() || {};
-      const producerId = safeStr(beat.producerId || "");
+          const kit = kitFound.snap.data() || {};
+          const price = Number(kit.price ?? 0);
 
-      // Price from beat.licenses
-      const lic = beat.licenses || {};
-      const selected = lic?.[licenseKey] || {};
-      const price = Number(selected.price ?? beat.price ?? 0);
+          if (!Number.isFinite(price) || price < 0) {
+            return res.status(400).json({ error: `Invalid kit price: ${it.beatId}` });
+          }
 
-      if (!Number.isFinite(price) || price <= 0) {
-        return res.status(400).json({ error: "Invalid price for this license" });
+          resolved.push({
+            type: "soundkit",
+            id: it.beatId,
+            licenseKey: "soundkit",
+            title: safeStr(kit.title || kit.name || "Sound Kit"),
+            unitPrice: price,
+            qty: it.qty,
+            producerId: safeStr(kit.producerId || ""),
+          });
+
+          continue;
+        }
+
+        // Beat item
+        const beatSnap = await db.collection("beats").doc(String(it.beatId)).get();
+        if (!beatSnap.exists) return res.status(404).json({ error: `Beat not found: ${it.beatId}` });
+
+        const beat = beatSnap.data() || {};
+        const producerId = safeStr(beat.producerId || "");
+
+        const lic = beat.licenses || {};
+        const selected = lic?.[it.licenseKey] || {};
+        const price = Number(selected.price ?? beat.price ?? 0);
+
+        if (!Number.isFinite(price) || price <= 0) {
+          return res.status(400).json({ error: `Invalid price for ${it.beatId} (${it.licenseKey})` });
+        }
+
+        resolved.push({
+          type: "beat",
+          id: it.beatId,
+          licenseKey: it.licenseKey,
+          title: safeStr(beat.title || "Beat"),
+          unitPrice: price,
+          qty: it.qty,
+          producerId,
+        });
+      }
+
+      // ✅ Calculate total
+      const total = resolved.reduce((sum, x) => sum + x.unitPrice * x.qty, 0);
+      if (!Number.isFinite(total) || total <= 0) {
+        return res.status(400).json({ error: "Cart total invalid" });
       }
 
       const accessToken = await getPayPalAccessToken();
 
-      // Metadata for webhook unlock/wallet credit
-      const customId = `beatId=${beatId}|licenseKey=${licenseKey}|producerId=${producerId}`;
+      // ✅ Save full cart in Firestore so webhook/capture can verify later
+      const cartId = crypto.randomUUID();
+      await db.collection("paypalOrders").doc(cartId).set({
+        createdAt: Date.now(),
+        items: resolved,
+        total: Number(total.toFixed(2)),
+        currency: "USD",
+        mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
+        status: "created",
+      });
+
+      // ✅ Put only the cartId in PayPal custom_id
+      const customId = `cartId=${cartId}`;
 
       const payload = {
         intent: "CAPTURE",
         purchase_units: [
           {
-            reference_id: String(beatId),
+            reference_id: cartId,
             custom_id: customId,
             amount: {
               currency_code: "USD",
-              value: price.toFixed(2),
+              value: total.toFixed(2),
             },
-            description: `${safeStr(beat.title || "Beat")} - ${licenseKey} license`,
+            description: `Audiory Cart (${resolved.length} item${resolved.length > 1 ? "s" : ""})`,
           },
         ],
         application_context: {
@@ -628,8 +704,6 @@ exports.createOrder = onRequest(
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
           landing_page: "LOGIN",
-
-          // ✅ Use the pages you will create on hosting
           return_url: "https://audiory.site/success.html",
           cancel_url: "https://audiory.site/cancel.html",
         },
@@ -657,15 +731,25 @@ exports.createOrder = onRequest(
         (data.links || []).find((l) => l.rel === "approve") ||
         (data.links || []).find((l) => l.rel === "payer-action");
 
+      // update cart doc with paypal order id
+      await db.collection("paypalOrders").doc(cartId).set(
+        {
+          paypalOrderId: safeStr(data.id),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
       return res.json({
         orderId: data.id,
         approveLinks: data.links || [],
         approveUrl: approve?.href || null,
-        mode: safeStr(PAYPAL_MODE.value() || "sandbox"), // ✅ helps you debug
+        cartId,
+        mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
       });
     } catch (e) {
       console.error("createOrder error:", e);
-      applyCors(req, res);
+      try { applyCors(req, res); } catch (_) {}
       return res.status(500).json({ error: e.message });
     }
   }
