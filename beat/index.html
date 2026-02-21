@@ -30,12 +30,17 @@
       border:1px solid rgba(255,255,255,.10);
       display:grid;
       place-items:center;
+      cursor:pointer;
     }
     .cover img{width:100%;height:100%;object-fit:cover;display:block}
     .play-big{
       width:54px;height:54px;border-radius:999px;border:none;
       background:#3b82f6;color:#fff;font-weight:900;cursor:pointer;
       display:grid;place-items:center;
+    }
+    .play-big.is-playing{
+      outline:2px solid rgba(59,130,246,.55);
+      box-shadow:0 0 0 6px rgba(59,130,246,.12);
     }
     .pill{
       display:inline-flex;align-items:center;gap:8px;
@@ -69,7 +74,9 @@
       border:1px solid rgba(255,255,255,.14);
       color:#fff;
     }
-    .more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+
+    /* ✅ More from producer: 4 columns desktop, 2 columns mobile (always) */
+    .more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
     .mini{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.03);
@@ -82,12 +89,13 @@
     .mini .mbody{padding:10px}
     .mini .mt{font-weight:900;font-size:13px;line-height:1.25;max-height:32px;overflow:hidden}
     .mini .ms{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px}
+
     @media (max-width: 900px){
       .beat-wrap{grid-template-columns:1fr}
       .more-grid{grid-template-columns:repeat(2,1fr)}
     }
     @media (max-width: 520px){
-      .more-grid{grid-template-columns:1fr}
+      .more-grid{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
@@ -150,7 +158,7 @@
   <section id="beatContent" class="beat-wrap" style="display:none;">
     <!-- Left: cover + play + meta -->
     <div class="cardx">
-      <div class="cover" id="beatCover"></div>
+      <div class="cover" id="beatCover" role="link" aria-label="Open beat page"></div>
 
       <div class="row" style="margin-top:12px;justify-content:space-between;">
         <div style="min-width:0;flex:1">
@@ -304,8 +312,6 @@
     return "$" + v.toFixed(2);
   }
 
-  function norm(s){ return String(s||"").toLowerCase().trim(); }
-
   function coverHTML(url, title){
     if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
     const initials = String(title||"B").trim().slice(0,2).toUpperCase();
@@ -329,27 +335,33 @@
       lic?.premium?.enabled === true ||
       lic?.exclusive?.enabled === true;
 
-    if (hasPaidLicense) return false;
-    return true;
+    return !hasPaidLicense;
   }
 
-  /* ✅ analytics event logger (same behavior as marketplace) */
+  function pickBpm(beat){
+    const v = beat?.bpm ?? beat?.BPM ?? beat?.tempo ?? beat?.Tempo ?? null;
+    return (v === null || v === undefined || String(v).trim() === "") ? "—" : String(v);
+  }
+  function pickKey(beat){
+    const v = beat?.key ?? beat?.Key ?? beat?.scale ?? beat?.Scale ?? null;
+    return (v === null || v === undefined || String(v).trim() === "") ? "—" : String(v);
+  }
+
+  /* ✅ analytics event logger (uses window.FB exposures) */
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
-      if (!window.auth?.currentUser) return; // your rules require signed-in
+      const FB = window.FB;
+      if (!FB?.auth?.currentUser) return; // your rules require signed-in
       if (!producerId || !type) return;
-      if (!window.db || !window.addDoc || !window.collection) return;
+      if (!FB?.db || !FB?.addDoc || !FB?.collection) return;
 
-      const ts =
-        (typeof window.serverTimestamp === "function")
-          ? window.serverTimestamp()
-          : Date.now();
+      const ts = (typeof FB.serverTimestamp === "function") ? FB.serverTimestamp() : Date.now();
 
-      await window.addDoc(window.collection(window.db,"analyticsEvents"), {
+      await FB.addDoc(FB.collection(FB.db,"analyticsEvents"), {
         producerId: String(producerId),
-        type: String(type),
+        type: String(type),          // "view" | "play"
         beatId: beatId ? String(beatId) : null,
-        actorUid: window.auth.currentUser.uid,
+        actorUid: FB.auth.currentUser.uid,
         createdAt: ts
       });
     }catch(e){}
@@ -360,14 +372,10 @@
   function formatDate(x){
     try{
       if (!x) return "—";
-      // Firestore Timestamp?
       if (x?.toDate) return x.toDate().toLocaleDateString();
-      // millis
       if (typeof x === "number") return new Date(x).toLocaleDateString();
-      // string
       const d = new Date(x);
-      if (!isNaN(d.getTime())) return d.toLocaleDateString();
-      return "—";
+      return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
     }catch(e){ return "—"; }
   }
 
@@ -376,6 +384,9 @@
     if (!wrap) return;
     wrap.innerHTML = "";
 
+    const beatId = String(beat?.id || "");
+    const producerId = String(beat?.producerId || "");
+
     const lic = beat.licenses || {};
     const tiers = [
       { key:"basic", label:"Basic License", hint:"WAV/MP3" },
@@ -383,7 +394,6 @@
       { key:"exclusive", label:"Exclusive", hint:"WAV + STEMS, full rights" }
     ];
 
-    // If completely free, show a free pill and message.
     if (isFreeBeat(beat)){
       wrap.innerHTML = `
         <div class="lic">
@@ -394,17 +404,13 @@
           <button class="btn" type="button" id="freeBtn">Free</button>
         </div>
       `;
-      // Free modal is on marketplace page only in your code, so here we just open license modal as fallback:
       $("freeBtn")?.addEventListener("click", ()=>{
-        // If you later add the same FreeDL modal globally, connect it here.
         alert("Free download is available from Marketplace currently. (We can add the same free modal here next.)");
       });
       return;
     }
 
-    // Paid: show enabled tiers if present, otherwise show a default single option
     let added = 0;
-
     tiers.forEach(t=>{
       const cfg = lic?.[t.key] || null;
       const enabled = cfg?.enabled === true;
@@ -418,8 +424,11 @@
               <strong>${t.label}</strong>
               <div class="lsub">${t.hint}</div>
             </div>
-            <button class="btn ghost price-pill" type="button" data-license="${t.key}">
-              ${money(price || beat.price || 0)}
+            <button class="btn ghost price-pill" type="button"
+              data-license="${t.key}"
+              data-producer-id="${producerId}"
+              data-beat-id="${beatId}">
+              ${money(price ?? beat.price ?? 0)}
             </button>
           </div>
         `);
@@ -433,15 +442,14 @@
             <strong>License</strong>
             <div class="lsub">Choose license to continue.</div>
           </div>
-          <button class="btn ghost price-pill" type="button">
+          <button class="btn ghost price-pill" type="button"
+            data-producer-id="${producerId}"
+            data-beat-id="${beatId}">
             ${money(beat.price || 0)}
           </button>
         </div>
       `;
     }
-
-    // Clicking any price-pill should open your license modal (license-modal.js)
-    // Your license-modal.js likely binds to .price-pill globally; if not, we can wire it later.
   }
 
   function renderMoreFromProducer(allBeats, beat){
@@ -451,7 +459,7 @@
     const uid = String(beat.producerId || "");
     const others = (allBeats || [])
       .filter(b => String(b?.producerId||"") === uid && String(b?.id||"") !== String(beat.id||""))
-      .slice(0, 6);
+      .slice(0, 8);
 
     if (!others.length){
       wrap.innerHTML = `<div class="muted" style="grid-column:1/-1;">No more beats yet.</div>`;
@@ -476,26 +484,133 @@
   }
 
   async function fetchBeatById(beatId){
-    // Prefer a dedicated FB helper if you have one; fallback to scanning latest beats cache.
     if (window.FB && typeof window.FB.fetchBeatById === "function"){
       return await window.FB.fetchBeatById(beatId);
     }
 
-    // fallback: use marketplace cache if present
     const cached = window.__LATEST_BEATS__;
     if (Array.isArray(cached)){
-      return cached.find(b => String(b?.id||"") === String(beatId||"")) || null;
+      const found = cached.find(b => String(b?.id||"") === String(beatId||""));
+      if (found) return found;
     }
 
-    // last fallback: fetch list and find
     if (window.FB && typeof window.FB.fetchBeats === "function"){
-      const beats = await window.FB.fetchBeats({ max: 120, force: false });
+      const beats = await window.FB.fetchBeats({ max: 160, force: false });
       window.__LATEST_BEATS__ = beats;
       return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
     }
 
     return null;
   }
+
+  /* ✅ Plays counter (fast if getCountFromServer is exposed; otherwise leaves "—") */
+  async function loadPlaysCount({ beatId }){
+    const FB = window.FB;
+    const el = $("beatPlays");
+    if (!el) return;
+
+    try{
+      if (!FB?.db || !FB?.collection || !FB?.query || !FB?.where) return;
+
+      // Use Firestore aggregation if available
+      if (typeof FB.getCountFromServer === "function"){
+        const qy = FB.query(
+          FB.collection(FB.db, "analyticsEvents"),
+          FB.where("beatId", "==", String(beatId)),
+          FB.where("type", "==", "play")
+        );
+        const agg = await FB.getCountFromServer(qy);
+        const count = agg?.data()?.count ?? 0;
+        el.textContent = String(count);
+        return;
+      }
+
+      // Fallback (avoid heavy reads): keep placeholder
+      // (We’ll add getCountFromServer to firebase.js next)
+      return;
+    }catch(e){
+      // ignore
+    }
+  }
+
+  /* ✅ Beat preview player (toggle play/pause) */
+  const BeatPreview = (() => {
+    const st = { audio:null, url:"", btn:null, beatId:"", producerId:"" };
+
+    function setBtnPlaying(btn, on){
+      if (!btn) return;
+      btn.textContent = on ? "⏸" : "▶";
+      btn.classList.toggle("is-playing", !!on);
+      btn.setAttribute("aria-label", on ? "Pause preview" : "Play preview");
+    }
+
+    function stop(){
+      try{
+        if (st.audio){
+          st.audio.pause();
+          st.audio.currentTime = 0;
+        }
+      }catch{}
+      setBtnPlaying(st.btn, false);
+      st.audio = null; st.url=""; st.btn=null; st.beatId=""; st.producerId="";
+    }
+
+    async function toggle(btn, url, { beatId="", producerId="" } = {}){
+      if (!url) return;
+
+      // same url: toggle pause/resume
+      if (st.audio && st.url === url){
+        if (!st.audio.paused){
+          st.audio.pause();
+          setBtnPlaying(btn, false);
+          return;
+        }
+        try{
+          await st.audio.play();
+          setBtnPlaying(btn, true);
+          return;
+        }catch(err){
+          console.error("resume failed:", err);
+          stop();
+          return;
+        }
+      }
+
+      // new track
+      stop();
+
+      const a = new Audio(url);
+      a.preload = "none";
+      a.crossOrigin = "anonymous";
+
+      st.audio = a;
+      st.url = url;
+      st.btn = btn;
+      st.beatId = String(beatId||"");
+      st.producerId = String(producerId||"");
+
+      a.addEventListener("ended", ()=>stop());
+      a.addEventListener("pause", ()=>{ if (st.audio === a) setBtnPlaying(btn, false); });
+      a.addEventListener("play", ()=>{ if (st.audio === a) setBtnPlaying(btn, true); });
+
+      try{
+        await a.play();
+        setBtnPlaying(btn, true);
+
+        // log play once per session for this beat (only after play succeeds)
+        const key = `${st.producerId}:${st.beatId}`;
+        if (st.producerId && st.beatId && !window.__ANA_SENT__.play[key]){
+          window.__ANA_SENT__.play[key] = 1;
+          logAnalyticsEvent({ producerId: st.producerId, type:"play", beatId: st.beatId });
+        }
+      }catch(err){
+        console.error("play failed:", err);
+        stop();
+      }
+    }
+
+    return { toggle, stop };
+  })();
 
   async function loadBeatPage(){
     const beatId = qs("id");
@@ -527,28 +642,36 @@
 
       $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
 
-      $("beatBpm").textContent = beat.bpm != null ? String(beat.bpm) : "—";
-      $("beatKey").textContent = beat.key != null ? String(beat.key) : "—";
+      $("beatBpm").textContent = pickBpm(beat);
+      $("beatKey").textContent = pickKey(beat);
       $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
 
-      // plays shown here is optional; real play count can be computed from analyticsEvents later
+      // plays: load async (needs getCountFromServer in firebase.js for real numbers)
       $("beatPlays").textContent = "—";
+      loadPlaysCount({ beatId: String(beat.id||beatId) });
 
-      // Price pill top-right
+      // Price pill top-right (make it compatible with license-modal.js)
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
+        const bId = String(beat.id||beatId);
+        const pId = String(beat.producerId||"");
         if (isFreeBeat(beat)){
           pillWrap.innerHTML = `<span class="pill free" title="Free">⬇️ Free</span>`;
         } else {
-          pillWrap.innerHTML = `<span class="pill price-pill" title="Choose license">🛍️ ${money(beat.price || 0)}</span>`;
+          pillWrap.innerHTML = `
+            <span class="pill price-pill" title="Choose license"
+              data-producer-id="${pId}"
+              data-beat-id="${bId}">
+              🛍️ ${money(beat.price || 0)}
+            </span>
+          `;
         }
       }
 
-      // Render licenses + more
       renderLicenses(beat);
 
-      // Load more from producer (use cached list if possible)
-      const list = window.__LATEST_BEATS__ || (window.FB ? await window.FB.fetchBeats({ max: 120, force:false }) : []);
+      // Load more from producer
+      const list = window.__LATEST_BEATS__ || (window.FB ? await window.FB.fetchBeats({ max: 160, force:false }) : []);
       if (Array.isArray(list)) window.__LATEST_BEATS__ = list;
       renderMoreFromProducer(list, beat);
 
@@ -559,40 +682,28 @@
       // back
       $("backToMarket")?.addEventListener("click", ()=>{ location.href = "/marketplace/"; });
 
-      // Play preview
-      $("beatPlayBtn")?.addEventListener("click", ()=>{
-        // If your player.js listens to [data-play-btn], we can also mimic it
-        // Here we simply trigger an event and let you wire into player.js later if needed.
+      // Clicking cover/title also opens marketplace-style URL (already on this page, but keeps behavior consistent)
+      $("beatCover")?.addEventListener("click", ()=>{ /* no-op (already here) */ });
+
+      // Play toggle
+      $("beatPlayBtn")?.addEventListener("click", async ()=>{
         const audioUrl = beat.audio || "";
         if (!audioUrl){
           alert("No preview audio found for this beat.");
           return;
         }
-
-        // log play (once)
-        const producerId = String(beat.producerId||"");
-        const key = `${producerId}:${String(beat.id||"")}`;
-        if (producerId && beat.id && !window.__ANA_SENT__.play[key]){
-          window.__ANA_SENT__.play[key] = 1;
-          logAnalyticsEvent({ producerId, type:"play", beatId: String(beat.id) });
-        }
-
-        // If your player.js exposes a function, use it. Otherwise open audio directly.
-        if (typeof window.playPreview === "function"){
-          window.playPreview(audioUrl, beat);
-        } else {
-          // fallback simple audio
-          const a = new Audio(audioUrl);
-          a.play().catch(()=>alert("Tap again to play (browser blocked autoplay)."));
-        }
+        await BeatPreview.toggle($("beatPlayBtn"), audioUrl, {
+          beatId: String(beat.id||beatId),
+          producerId: String(beat.producerId||"")
+        });
       });
 
-      // log VIEW (once) when page loads
+      // log VIEW (once) when page loads (real view)
       const producerId = String(beat.producerId||"");
-      const viewKey = `${producerId}:${String(beat.id||"")}`;
-      if (producerId && beat.id && !window.__ANA_SENT__.view[viewKey]){
+      const viewKey = `${producerId}:${String(beat.id||beatId)}`;
+      if (producerId && (beat.id || beatId) && !window.__ANA_SENT__.view[viewKey]){
         window.__ANA_SENT__.view[viewKey] = 1;
-        logAnalyticsEvent({ producerId, type:"view", beatId: String(beat.id) });
+        logAnalyticsEvent({ producerId, type:"view", beatId: String(beat.id||beatId) });
       }
 
     }catch(err){
@@ -602,6 +713,7 @@
   }
 
   window.addEventListener("firebase-ready", ()=> loadBeatPage());
+  window.addEventListener("beforeunload", ()=>{ try{ BeatPreview.stop(); }catch{} });
 </script>
 
 </body>
