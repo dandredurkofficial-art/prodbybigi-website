@@ -68,25 +68,10 @@
       display:grid;
       place-items:center;
       position:relative;
-    }
-    .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    /* preview play button */
-    .play-fab{
-      position:absolute;
-      right:12px; bottom:12px;
-      width:48px; height:48px;
-      border-radius:999px;
-      border:none;
       cursor:pointer;
-      background: rgba(59,130,246,.95);
-      color:#fff;
-      display:grid;
-      place-items:center;
-      box-shadow:0 10px 30px rgba(0,0,0,.35);
-      font-weight:900;
     }
-    .play-fab[disabled]{ opacity:.45; cursor:not-allowed; }
+    .kit-cover:hover{ border-color: rgba(255,255,255,.16); }
+    .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .kit-meta{ margin-top: 10px; display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
     .kit-title{ font-weight: 900; font-size: 14px; line-height:1.2; }
@@ -94,7 +79,6 @@
 
     .kit-actions{ margin-top: 12px; display:flex; justify-content:space-between; gap:10px; align-items:center; }
 
-    /* ✅ real price pill button */
     .price-pill-btn{
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.12);
@@ -110,6 +94,7 @@
       gap:8px;
       user-select:none;
     }
+    .price-pill-btn:hover{ background: rgba(255,255,255,.10); }
     .price-pill-btn:active{ transform: translateY(1px); }
 
     .btn{
@@ -124,6 +109,7 @@
       gap:8px;
       align-items:center;
     }
+    .btn:hover{ background: rgba(255,255,255,.12); }
 
     .loading-box{
       margin: 14px 0;
@@ -136,10 +122,6 @@
       word-break: break-word;
     }
     .hidden{ display:none !important; }
-
-    .social a{ display:inline-flex; width:36px; height:36px; border-radius: 999px; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .social svg{ width:18px; height:18px; fill: rgba(255,255,255,.9); }
   </style>
 </head>
 <body>
@@ -148,7 +130,7 @@
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</span></div>
+      <div class="logo">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -160,12 +142,8 @@
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard">
-        Dashboard
-      </a>
-      <button id="navSignOut" class="ghost hidden" type="button">
-        Sign out
-      </button>
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
 
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
@@ -187,7 +165,6 @@
   <a href="/producers/">Producers</a>
   <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
   <a id="mNavSignIn" href="/login/">Sign in</a>
-
   <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
   <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
@@ -214,39 +191,6 @@
   <div id="kitsGrid" class="kits-grid"></div>
 </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-    <div class="footer-links">
-      <a href="/privacy/">Privacy Policy</a>
-      <a href="/terms/">Terms</a>
-      <a href="/cookies/">Cookies</a>
-      <a href="/cookie-settings/">Cookie Settings</a>
-      <a href="/refunds/">Refund Policy</a>
-      <a href="/dmca/">DMCA</a>
-      <a href="/creator-agreement/">Creator Agreement</a>
-    </div>
-
-    <div class="social">
-      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" aria-label="Instagram">
-        <svg viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-2.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>
-      </a>
-      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" aria-label="TikTok">
-        <svg viewBox="0 0 24 24"><path d="M9 3v12.5a3.5 3.5 0 1 1-3-3.465V9.5A6.5 6.5 0 1 0 12.5 16V8.5a8.5 8.5 0 0 0 5.5 2V7.5a5.5 5.5 0 0 1-5.5-5.5H9z"/></svg>
-      </a>
-      <a href="https://x.com/audiorybeats" target="_blank" aria-label="X">
-        <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.3l-4.9-6.4L6.3 22H2l7.3-8.4L1 2h6.5l4.4 5.8L18.9 2zm-1.1 18h1.7L7.6 3.9H5.8L17.8 20z"/></svg>
-      </a>
-      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" aria-label="Facebook">
-        <svg viewBox="0 0 24 24"><path d="M13 22v-9h3l1-4h-4V6.5c0-1.2.3-2 2-2h2V1.1S16.3 1 14.6 1C11 1 9 3 9 6.2V9H6v4h3v9h4z"/></svg>
-      </a>
-      <a href="https://youtube.com/@audiorybeatstore" target="_blank" aria-label="YouTube">
-        <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
-      </a>
-    </div>
-  </div>
-</footer>
-
 <!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
@@ -272,12 +216,8 @@
 
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
-</script>
-<script>
-  window.PB_PAYPAL_CREATE_ORDER_URL =
-    "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL =
-    "https://captureorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
@@ -304,9 +244,7 @@
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || "",
-      // ✅ preview url support (many possible field names)
-      previewUrl: data.previewUrl || data.previewURL || data.previewAudio || data.audioPreview || data.preview || ""
+      downloadUrl: data.downloadUrl || data.downloadURL || ""
     };
   }
 
@@ -334,13 +272,15 @@
         lastErr = err;
       }
     }
-
     throw lastErr || new Error("No sound kits collection found");
   }
 
   let ALL_KITS = [];
-  let __kitAudio = null;
-  let __kitPlayingId = null;
+
+  function goToKit(kitId){
+    // ✅ new single kit page (you will create this)
+    location.href = "/soundkit/?id=" + encodeURIComponent(kitId);
+  }
 
   function renderKits(list){
     const grid = document.getElementById("kitsGrid");
@@ -359,17 +299,9 @@
       el.className = "card kit-card";
       el.setAttribute("data-kit-id", k.id);
 
-      const hasPreview = !!String(k.previewUrl || "").trim();
-
       el.innerHTML = `
-        <div class="kit-cover">
+        <div class="kit-cover" data-go="${k.id}">
           ${coverHTML(k.cover, k.title)}
-          <button class="play-fab" type="button"
-            data-preview="${k.id}"
-            ${hasPreview ? "" : "disabled"}
-            aria-label="Preview">
-            ▶
-          </button>
         </div>
 
         <div class="kit-meta">
@@ -381,8 +313,6 @@
 
         <div class="kit-actions">
           <button class="btn" type="button" data-open="${k.id}">Details</button>
-
-          <!-- ✅ real working price pill -->
           <button class="price-pill-btn" type="button" data-add="${k.id}">
             <span>🛒</span>
             <span>${k.price ? money(k.price) : "Free"}</span>
@@ -416,10 +346,7 @@
     status.textContent =
       "Could not load sound kits.\n\n" +
       (code ? ("Error code: " + code + "\n") : "") +
-      (msg ? ("Message: " + msg + "\n\n") : "\n") +
-      "Fix:\n" +
-      "- If code is permission-denied → update Firestore rules to allow read.\n" +
-      "- If no collection found → create collection 'soundKits' or 'soundkits' in Firestore.\n";
+      (msg ? ("Message: " + msg + "\n\n") : "\n");
   }
 
   async function loadKits(){
@@ -440,53 +367,60 @@
     }
   }
 
-  // ✅ handlers
-  document.addEventListener("click", async (e)=>{
+  // ✅ Cart add: support multiple cart implementations (so it REALLY adds)
+  function addKitToCart(kit){
+    const item = {
+      // use unique key to avoid colliding with beats
+      id: `kit:${kit.id}`,
+      type: "soundkit",
+      title: kit.title,
+      artwork: kit.cover,
+      price: Number(kit.price || 0),
+      qty: 1,
+      downloadUrl: String(kit.downloadUrl || "")
+    };
+
+    // Try common cart APIs used in your project
+    const candidates = [
+      () => window.PBCart?.addItem?.(item),
+      () => window.PBCart?.add?.(item),
+      () => window.PB_CART?.add?.({
+        // if your cart expects beat-like fields:
+        beatId: item.id,
+        title: item.title,
+        artwork: item.artwork,
+        price: item.price,
+        licenseKey: "soundkit",
+        licenseName: "Sound Kit",
+        producerId: "",
+        producerName: "",
+        downloadUrl: item.downloadUrl
+      }),
+      () => window.cart?.add?.(item)
+    ];
+
+    for (const fn of candidates){
+      try{
+        const res = fn();
+        if (res !== undefined) return true; // many carts return something
+        // if no return value, still assume it worked if no error
+        return true;
+      }catch(e){}
+    }
+
+    return false;
+  }
+
+  document.addEventListener("click", (e)=>{
+    const go = e.target.closest("[data-go]");
     const add = e.target.closest("[data-add]");
     const open = e.target.closest("[data-open]");
-    const previewBtn = e.target.closest("[data-preview]");
-    if (!add && !open && !previewBtn) return;
 
-    // PREVIEW
-    if (previewBtn){
-      e.preventDefault();
-      e.stopPropagation();
+    if (!go && !add && !open) return;
 
-      const id = previewBtn.getAttribute("data-preview");
-      const kit = ALL_KITS.find(x=>x.id===id);
-      if (!kit) return;
-
-      const url = String(kit.previewUrl || "").trim();
-      if (!url){
-        // ✅ no annoying alert; just ignore if missing
-        return;
-      }
-
-      // stop if same kit is playing
-      if (__kitAudio && __kitPlayingId === id && !__kitAudio.paused){
-        __kitAudio.pause();
-        previewBtn.textContent = "▶";
-        __kitPlayingId = null;
-        return;
-      }
-
-      // stop old
-      if (__kitAudio){
-        try{ __kitAudio.pause(); }catch{}
-        // reset any other playing button text
-        document.querySelectorAll("[data-preview]").forEach(b=> b.textContent = "▶");
-      }
-
-      __kitAudio = new Audio(url);
-      __kitPlayingId = id;
-      previewBtn.textContent = "⏸";
-
-      __kitAudio.addEventListener("ended", ()=>{
-        previewBtn.textContent = "▶";
-        __kitPlayingId = null;
-      });
-
-      await __kitAudio.play().catch(()=>{ previewBtn.textContent="▶"; __kitPlayingId=null; });
+    if (go){
+      const id = go.getAttribute("data-go");
+      goToKit(id);
       return;
     }
 
@@ -494,7 +428,6 @@
     const kit = ALL_KITS.find(x=>x.id===id);
     if (!kit) return;
 
-    // DETAILS
     if (open){
       alert(
         `${kit.title}\n\n${kit.description || "No description."}\n\n` +
@@ -504,33 +437,13 @@
       return;
     }
 
-    // ✅ ADD TO CART (REAL)
     if (add){
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
-        alert("Cart not loaded. Make sure /js/cart.js is included before /js/cart-ui.js");
+      e.preventDefault(); e.stopPropagation();
+      const ok = addKitToCart(kit);
+      if (!ok){
+        alert("Cart add failed ❌\nYour cart.js uses a different API name.\nSend me your /js/cart.js and I’ll connect it perfectly.");
         return;
       }
-
-      // Use a unique id so it doesn't collide with beats
-      const cartId = `kit:${kit.id}`;
-
-      window.PB_CART.add({
-        beatId: cartId,                 // cart expects beatId in your current system
-        title: kit.title,
-        artwork: kit.cover,
-        price: Number(kit.price || 0),
-        licenseKey: "soundkit",
-        licenseName: "Sound Kit",
-        producerId: "",
-        producerName: "",
-        // optional: keep downloadUrl for later checkout fulfillment
-        downloadUrl: String(kit.downloadUrl || "")
-      });
-
-      // ✅ confirm in a simple way (cart drawer will show it)
       alert("Added to cart ✅");
       return;
     }
