@@ -5,11 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Cart | Audiory</title>
   <link rel="stylesheet" href="/css/global.css">
-
   <style>
     body{background:#0b0d12;color:#fff;font-family:system-ui;margin:0}
     .wrap{max-width:980px;margin:0 auto;padding:18px}
-    .top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
     .muted{opacity:.75}
     .row{display:flex;gap:12px;align-items:center;padding:12px;border:1px solid #1d2230;border-radius:14px;background:#0f1424;margin-top:12px}
     .img{width:56px;height:56px;border-radius:14px;overflow:hidden;background:#111827;border:1px solid rgba(255,255,255,.06);flex:0 0 auto}
@@ -18,49 +16,27 @@
     .t{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .s{color:#a9b1c7;font-size:13px;margin-top:4px;line-height:1.25}
     .right{display:flex;align-items:center;gap:10px;flex:0 0 auto}
-
-    .qty{
-      display:inline-flex;align-items:center;gap:10px;
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.06);
-      user-select:none;
-    }
-    .qty button{
-      width:30px;height:30px;border-radius:999px;border:0;
-      background:rgba(255,255,255,.10);color:#fff;font-weight:900;cursor:pointer;
-    }
+    .qty{display:inline-flex;align-items:center;gap:10px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06)}
+    .qty button{width:30px;height:30px;border-radius:999px;border:0;background:rgba(255,255,255,.10);color:#fff;font-weight:900;cursor:pointer}
     .qty .n{min-width:22px;text-align:center;font-weight:900}
-
     .btn{padding:10px 14px;border-radius:12px;border:0;font-weight:900;cursor:pointer}
     .primary{background:#2b6cff;color:#fff}
     .danger{background:#ff5c5c;color:#fff}
     .ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.10)}
     a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
-
-    .summary{
-      margin-top:16px;padding:14px;border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
-    }
+    .summary{margin-top:16px;padding:14px;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);
+      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
     .total{font-size:18px;font-weight:1000}
     .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .status{margin-top:12px;color:#a9b1c7;font-size:13px;min-height:18px}
+    .status{margin-top:12px;color:#a9b1c7;font-size:13px;white-space:pre-wrap}
     .status.ok{color:#22c55e}
     .status.bad{color:#ff7b7b}
   </style>
 </head>
-
 <body>
   <div class="wrap">
-    <div class="top">
-      <div>
-        <h1 style="margin:6px 0 6px">Your Cart</h1>
-        <div class="muted" id="sub">0 items</div>
-      </div>
-      <a class="btn ghost" href="/marketplace/">Continue shopping</a>
-    </div>
+    <h1 style="margin:6px 0 6px">Your Cart</h1>
+    <div class="muted" id="sub">0 items</div>
 
     <div id="list"></div>
 
@@ -70,7 +46,8 @@
         <div class="total" id="total">$0.00</div>
       </div>
       <div class="actions">
-        <button class="btn danger" id="clearBtn" type="button">Clear cart</button>
+        <button class="btn danger" id="clearBtn" type="button">Clear</button>
+        <a class="btn ghost" href="/marketplace/">Continue shopping</a>
         <button class="btn primary" id="checkoutBtn" type="button">Checkout</button>
       </div>
     </div>
@@ -80,12 +57,8 @@
 
   <script>
     window.API_BASE = "https://prodbybigi-api.onrender.com";
-  </script>
-  <script>
-    window.PB_PAYPAL_CREATE_ORDER_URL =
-      "https://createorder-f65rhsquva-uc.a.run.app";
-    window.PB_PAYPAL_CAPTURE_ORDER_URL =
-      "https://captureorder-f65rhsquva-uc.a.run.app";
+    window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+    window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
   </script>
 
   <script src="/js/cart.js"></script>
@@ -102,64 +75,14 @@
       const v = Number(n || 0);
       return "$" + (Number.isFinite(v) ? v.toFixed(2) : "0.00");
     }
-
     function setStatus(msg, type=""){
       statusEl.className = "status" + (type ? (" " + type) : "");
       statusEl.textContent = msg || "";
     }
 
-    function getCartItems(){
-      if (!window.PB_CART || typeof window.PB_CART.load !== "function") return [];
-      const items = window.PB_CART.load() || [];
-      // ensure qty exists
+    function getItems(){
+      const items = window.PB_CART?.list?.() || [];
       return items.map(it => ({ ...it, qty: Math.max(1, Number(it.qty || 1)) }));
-    }
-
-    // --- Find the localStorage key used by cart.js (fallback)
-    function guessCartStorageKey(){
-      // common possibilities
-      const direct =
-        window.PB_CART?.KEY || window.PB_CART?._KEY || window.PB_CART?.storageKey || window.PB_CART?.CART_KEY;
-      if (direct && localStorage.getItem(direct)) return direct;
-
-      // scan for a JSON array of items with beatId
-      try{
-        for (const k of Object.keys(localStorage)){
-          const raw = localStorage.getItem(k);
-          if (!raw || raw.length < 2) continue;
-          if (raw[0] !== "[") continue;
-          const arr = JSON.parse(raw);
-          if (Array.isArray(arr) && arr[0] && typeof arr[0] === "object" && ("beatId" in arr[0])) {
-            return k;
-          }
-        }
-      }catch{}
-      return null;
-    }
-
-    function saveCartItems(items){
-      // Prefer official save/set if your cart.js has it
-      if (window.PB_CART && typeof window.PB_CART.save === "function"){
-        window.PB_CART.save(items);
-        return true;
-      }
-
-      // Fallback: write to the same localStorage key cart.js uses
-      const key = guessCartStorageKey();
-      if (!key) return false;
-      localStorage.setItem(key, JSON.stringify(items));
-      return true;
-    }
-
-    function updateQty(beatId, licenseKey, nextQty){
-      const items = getCartItems();
-      const idx = items.findIndex(x => x.beatId === beatId && x.licenseKey === licenseKey);
-      if (idx === -1) return;
-
-      items[idx].qty = Math.max(1, Number(nextQty || 1));
-      if (!saveCartItems(items)) {
-        alert("Could not save cart qty. Please check cart.js storage key.");
-      }
     }
 
     function calcTotal(items){
@@ -167,38 +90,35 @@
     }
 
     function render(){
-      const items = getCartItems();
+      const items = getItems();
       list.innerHTML = "";
 
-      subEl.textContent = `${items.reduce((a,b)=>a + (b.qty||1), 0)} item(s)`;
+      const count = items.reduce((a,b)=>a + (b.qty||1), 0);
+      subEl.textContent = `${count} item(s)`;
       totalEl.textContent = money(calcTotal(items));
+
+      checkoutBtn.disabled = items.length === 0;
 
       if (!items.length){
         list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
-        checkoutBtn.disabled = true;
         return;
       }
-      checkoutBtn.disabled = false;
 
-      items.forEach((it) => {
+      items.forEach(it=>{
         const el = document.createElement("div");
         el.className = "row";
-
         el.innerHTML = `
           <div class="img">${it.artwork ? `<img src="${it.artwork}" alt="">` : ""}</div>
-
           <div class="meta">
             <div class="t">${it.title || it.beatId}</div>
             <div class="s">License: ${it.licenseName || it.licenseKey || "—"} • ${money(it.price)} each</div>
           </div>
-
           <div class="right">
-            <div class="qty" aria-label="Quantity">
-              <button type="button" data-dec="1" aria-label="Decrease">−</button>
-              <div class="n">${Math.max(1, Number(it.qty || 1))}</div>
-              <button type="button" data-inc="1" aria-label="Increase">+</button>
+            <div class="qty">
+              <button type="button" data-dec="1">−</button>
+              <div class="n">${it.qty}</div>
+              <button type="button" data-inc="1">+</button>
             </div>
-
             <button class="btn danger" type="button" data-remove="1">Remove</button>
           </div>
         `;
@@ -210,15 +130,13 @@
         };
 
         el.querySelector('[data-inc="1"]').onclick = () => {
-          const q = Math.max(1, Number(it.qty || 1)) + 1;
-          updateQty(it.beatId, it.licenseKey, q);
+          window.PB_CART.setQty(it.beatId, it.licenseKey, it.qty + 1);
           setStatus("");
           render();
         };
 
         el.querySelector('[data-dec="1"]').onclick = () => {
-          const q = Math.max(1, Number(it.qty || 1)) - 1;
-          updateQty(it.beatId, it.licenseKey, Math.max(1, q));
+          window.PB_CART.setQty(it.beatId, it.licenseKey, Math.max(1, it.qty - 1));
           setStatus("");
           render();
         };
@@ -227,122 +145,119 @@
       });
     }
 
-    // ---- PayPal flow (ONE order for entire cart)
-    async function createPayPalOrderForCart(items){
-      const total = calcTotal(items);
+    async function safeReadText(res){
+      try { return await res.text(); } catch { return ""; }
+    }
 
-      // payload is flexible so your cloud function can read either total or items
+    async function createOrder(items){
+      const total = Number(calcTotal(items).toFixed(2));
+
+      // IMPORTANT: send multiple common fields so your cloud function matches at least one
       const payload = {
+        total,
+        amount: total,
         currency: "USD",
-        total: Number(total.toFixed(2)),
         items: items.map(it => ({
           id: it.beatId,
-          title: it.title || "",
-          licenseKey: it.licenseKey || "",
-          licenseName: it.licenseName || "",
+          title: it.title,
           price: Number(Number(it.price||0).toFixed(2)),
-          qty: Math.max(1, Number(it.qty||1))
+          qty: Math.max(1, Number(it.qty||1)),
+          licenseKey: it.licenseKey,
+          licenseName: it.licenseName
         }))
       };
 
       const res = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify(payload)
       });
 
-      const data = await res.json().catch(()=> ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Create order failed");
+      const text = await safeReadText(res);
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+      if (!res.ok){
+        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Create order failed: " + text));
       }
 
-      // Support common shapes:
-      // - { approveUrl }
-      // - { approval_url }
-      // - { links:[{rel:'approve',href:'...'}] }
-      // - { id, ... } (then your function must return approval link too)
-      const approve =
+      const approveUrl =
         data.approveUrl ||
         data.approval_url ||
         (Array.isArray(data.links) ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href) : null);
 
       const orderId = data.id || data.orderID || data.orderId || data.token || null;
 
-      if (!approve) {
-        // If you only return orderId, you need to update cloud function to return approval link.
-        throw new Error("Create order returned no approval link");
+      if (!approveUrl){
+        throw new Error("Create order succeeded but no approval URL returned.\nServer response:\n" + (text || JSON.stringify(data)));
       }
 
-      return { approveUrl: approve, orderId };
+      return { approveUrl, orderId };
     }
 
-    async function capturePayPalOrder(orderID){
+    async function capture(orderID){
       const res = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ orderID })
       });
 
-      const data = await res.json().catch(()=> ({}));
-      if (!res.ok) throw new Error(data?.message || "Capture failed");
+      const text = await safeReadText(res);
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+      if (!res.ok){
+        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Capture failed: " + text));
+      }
       return data;
     }
 
-    async function handleReturnFromPayPal(){
+    async function handleReturn(){
       const qs = new URLSearchParams(location.search);
       const token = qs.get("token") || qs.get("orderID") || qs.get("orderId");
-      const payer = qs.get("PayerID") || qs.get("payerId");
-
-      // If PayPal returned with token, capture it
       if (!token) return;
 
-      setStatus("Finalizing payment…", "");
+      setStatus("Finalizing payment…");
       try{
-        await capturePayPalOrder(token);
+        await capture(token);
         window.PB_CART.clear();
-        setStatus("Payment complete ✅ Your cart was cleared.", "ok");
-
-        // Clean URL (remove token)
+        setStatus("Payment complete ✅", "ok");
         history.replaceState({}, "", location.pathname);
         render();
       }catch(err){
         console.error(err);
-        setStatus("Payment capture failed: " + (err?.message || err), "bad");
+        setStatus("Payment capture failed:\n" + (err?.message || err), "bad");
       }
     }
 
-    clearBtn.onclick = () => {
-      window.PB_CART.clear();
-      setStatus("");
-      render();
-    };
+    clearBtn.onclick = () => { window.PB_CART.clear(); setStatus(""); render(); };
 
     checkoutBtn.onclick = async () => {
-      const items = getCartItems();
+      const items = getItems();
       if (!items.length) return;
 
       checkoutBtn.disabled = true;
-      setStatus("Creating checkout…", "");
+      setStatus("Creating checkout…");
 
       try{
-        const { approveUrl } = await createPayPalOrderForCart(items);
-        setStatus("Redirecting to PayPal…", "");
+        const { approveUrl } = await createOrder(items);
+        setStatus("Redirecting to PayPal…");
         location.href = approveUrl;
       }catch(err){
         console.error(err);
-        setStatus("Load failed: " + (err?.message || err), "bad");
+        setStatus("Load failed:\n" + (err?.message || err), "bad");
         checkoutBtn.disabled = false;
       }
     };
 
-    // boot
     (function(){
-      if (!window.PB_CART || typeof window.PB_CART.load !== "function") {
+      if (!window.PB_CART) {
         setStatus("Cart system not loaded. Check /js/cart.js path.", "bad");
         return;
       }
       render();
-      handleReturnFromPayPal();
+      handleReturn();
+      window.addEventListener("pb-cart-updated", render);
     })();
   </script>
 </body>
