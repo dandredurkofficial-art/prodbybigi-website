@@ -272,7 +272,11 @@
 <script src="/js/cookie-banner.js"></script>
 
 <script>
-  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function money(n){ 
+    const v=Number(n||0); 
+    return "$"+(isFinite(v)?v.toFixed(2):"0.00"); 
+  }
+  
   function coverHTML(url, title){
     if (url) return `<img src="${url}" alt="${title||"Sound Kit"}" loading="lazy" />`;
     const initials = String(title||"K").trim().slice(0,2).toUpperCase();
