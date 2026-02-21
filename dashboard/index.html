@@ -88,6 +88,7 @@
       // only call after functions exist
       if (typeof window.loadBeats === "function") window.loadBeats();
       if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
+      if (typeof window.loadAdvancedAnalyticsReal === "function") window.loadAdvancedAnalyticsReal();
       if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
 
       if (typeof window.loadMarketingCampaigns === "function") window.loadMarketingCampaigns();
@@ -993,6 +994,10 @@ function showPage(id, el){
 
   if (id === "upgrade" && typeof window.loadUpgradeUI === "function") {
     window.loadUpgradeUI();
+  }
+
+  if (id === "advancedAnalytics" && typeof window.loadAdvancedAnalyticsReal === "function") {
+    window.loadAdvancedAnalyticsReal();
   }
 
   // ✅ Auto-load campaigns when opening marketing page
