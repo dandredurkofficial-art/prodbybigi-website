@@ -412,7 +412,7 @@
 <script>
   window.PB_PAYPAL_CREATE_ORDER_URL =
     "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL = 
+  window.PB_PAYPAL_CAPTURE_ORDER_URL =
     "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
 
@@ -637,28 +637,46 @@
   }
 
   /* =========================================================
-     ✅ ADVANCED ANALYTICS (REAL) — LOG EVENTS FROM MARKETPLACE
-     - view: when someone clicks producer link or price pill
-     - play: when someone taps the play button
-     NOTE: Your Firestore rules currently require signed-in users
-           for analyticsEvents create, so this will log only if
-           the visitor is logged in.
+     ✅ Beat Page routing (BeatStars-like)
+     - Clicking cover/title/card opens a dedicated beat page
+     - Price pill still opens license modal (handled by license-modal.js)
+     - Play button still previews (player.js)
+     - Free pill opens free modal (already)
+     NOTE: This assumes you will have a page like:
+           /beat/?id=<beatId>
+           (we'll build/confirm that page next)
+  ========================================================== */
+  function beatPageUrl(beat){
+    const id = beat?.id ? String(beat.id) : "";
+    return `/beat/?id=${encodeURIComponent(id)}`;
+  }
+
+  /* =========================================================
+     ✅ ADVANCED ANALYTICS (REAL) — events
+     - "view" : when user opens the beat page from marketplace
+     - "play" : when user starts preview from marketplace (click play)
+     IMPORTANT:
+     - Your rules require signed-in users for analyticsEvents create.
+     - For timestamp, we prefer serverTimestamp() if your firebase.js exposes it.
+       Fallback: Date.now()
   ========================================================== */
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
-      // requires signed-in (matches your rules)
-      if (!window.auth?.currentUser) return;
+      if (!window.auth?.currentUser) return; // requires signed-in (matches your rules)
       if (!producerId || !type) return;
-
-      // Firestore helpers must be ready (from /js/firebase.js)
       if (!window.db || !window.addDoc || !window.collection) return;
+
+      const ts =
+        (typeof window.serverTimestamp === "function")
+          ? window.serverTimestamp()
+          : Date.now();
 
       await window.addDoc(window.collection(window.db,"analyticsEvents"), {
         producerId: String(producerId),
         type: String(type),          // "view" | "play"
         beatId: beatId ? String(beatId) : null,
         actorUid: window.auth.currentUser.uid,
-        createdAt: Date.now()
+        createdAt: ts
       });
     }catch(e){
       // silently ignore
@@ -666,56 +684,8 @@
   }
   window.logAnalyticsEvent = logAnalyticsEvent;
 
-  // prevent spamming same play event repeatedly in a session
+  // Prevent spamming same event in one session
   window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
-
-  // Event delegation: play logging
-  document.addEventListener("click", (e)=>{
-    const btn = e.target.closest("[data-play-btn]");
-    if (!btn) return;
-
-    const producerId = btn.getAttribute("data-producer-id") || "";
-    const beatId = btn.getAttribute("data-beat-id") || "";
-
-    if (!producerId) return;
-
-    const key = `${producerId}:${beatId || "none"}`;
-    if (window.__ANA_SENT__?.play?.[key]) return;
-    window.__ANA_SENT__.play[key] = 1;
-
-    logAnalyticsEvent({ producerId, type:"play", beatId });
-  }, true);
-
-  // Event delegation: "view" logging (producer profile click OR price pill click)
-  document.addEventListener("click", (e)=>{
-    const prodLink = e.target.closest("a.producer");
-    const priceBtn = e.target.closest(".price-pill");
-
-    // ignore free download button
-    const freeBtn = e.target.closest("[data-free-download='1']");
-    if (freeBtn) return;
-
-    let producerId = "";
-    let beatId = "";
-
-    if (prodLink){
-      producerId = prodLink.getAttribute("data-producer-id") || "";
-      beatId = prodLink.getAttribute("data-beat-id") || "";
-    } else if (priceBtn){
-      producerId = priceBtn.getAttribute("data-producer-id") || "";
-      beatId = priceBtn.getAttribute("data-beat-id") || "";
-    } else {
-      return;
-    }
-
-    if (!producerId) return;
-
-    const key = `${producerId}:${beatId || "none"}`;
-    if (window.__ANA_SENT__?.view?.[key]) return;
-    window.__ANA_SENT__.view[key] = 1;
-
-    logAnalyticsEvent({ producerId, type:"view", beatId });
-  }, true);
 
   async function loadMarketplace(){
     const status = document.getElementById("marketStatus");
@@ -763,11 +733,22 @@
         card.setAttribute("data-beat-id", b.id);
 
         const audioUrl = b.audio || "";
+        const pageUrl = beatPageUrl(b);
 
         card.innerHTML = `
           <div class="beat-cover">
-            ${coverHTML(b.artwork, b.title)}
-            <button class="play-fab" data-play-btn data-ignore-license="1"
+            <a class="beat-open"
+               href="${pageUrl}"
+               data-open-beat="1"
+               data-producer-id="${String(b.producerId||"")}"
+               data-beat-id="${String(b.id||"")}"
+               aria-label="Open beat page">
+              ${coverHTML(b.artwork, b.title)}
+            </a>
+
+            <button class="play-fab"
+              data-play-btn
+              data-ignore-license="1"
               data-audio-url="${audioUrl}"
               data-producer-id="${String(b.producerId||"")}"
               data-beat-id="${String(b.id||"")}"
@@ -778,17 +759,27 @@
 
           <div class="beat-meta">
             <div>
-              <h3>${b.title}</h3>
-              <a class="producer"
+              <a class="beat-title-link"
+                 href="${pageUrl}"
+                 data-open-beat="1"
                  data-producer-id="${String(b.producerId||"")}"
                  data-beat-id="${String(b.id||"")}"
-                 href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}">
+                 style="text-decoration:none;color:inherit;">
+                <h3 style="margin:0 0 4px 0;">${b.title}</h3>
+              </a>
+
+              <a class="producer"
+                 href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}"
+                 data-producer-id="${String(b.producerId||"")}"
+                 data-beat-id="${String(b.id||"")}">
                 ${prettyProducerName(b)}
               </a>
+
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
             </div>
+
             ${
-              // attach producer/beat ids to price pill too (for "view" logs)
+              // keep Free as-is, but keep paid pill as .price-pill so license-modal.js still works
               (isFreeBeat(b))
                 ? pillHTML(b)
                 : `<button class="pb-pill price-pill" type="button"
@@ -802,7 +793,7 @@
           </div>
         `;
 
-        // ✅ attach FREE click only
+        // ✅ Free download button
         card.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
           if (!freeBtn) return;
@@ -810,6 +801,52 @@
           e.stopPropagation();
           FreeDL.open(b);
         });
+
+        // ✅ Beat page open (cover/title/card click)
+        card.addEventListener("click", (e)=>{
+          // Don't hijack clicks for these:
+          if (e.target.closest("[data-free-download='1']")) return;     // free modal
+          if (e.target.closest(".price-pill")) return;                  // license modal
+          if (e.target.closest("[data-play-btn]")) return;              // preview
+          if (e.target.closest("a.producer")) return;                   // producer page
+
+          // If clicked on a beat open link OR anywhere on card body, open beat page:
+          const openLink = e.target.closest("[data-open-beat='1']");
+          const url = pageUrl;
+
+          // log VIEW when user opens beat page
+          const producerId = String(b.producerId||"");
+          const beatId = String(b.id||"");
+          const key = `${producerId}:${beatId}`;
+          if (producerId && beatId && !window.__ANA_SENT__.view[key]){
+            window.__ANA_SENT__.view[key] = 1;
+            logAnalyticsEvent({ producerId, type:"view", beatId });
+          }
+
+          // open
+          if (openLink){
+            // let <a href> navigate naturally
+            return;
+          }
+          window.location.href = url;
+        });
+
+        // ✅ log PLAY when preview is clicked (best we can do from here)
+        // (Actual "when audio starts" can be done inside player.js later)
+        card.addEventListener("click", (e)=>{
+          const btn = e.target.closest("[data-play-btn]");
+          if (!btn) return;
+
+          const producerId = btn.getAttribute("data-producer-id") || "";
+          const beatId = btn.getAttribute("data-beat-id") || "";
+          if (!producerId || !beatId) return;
+
+          const key = `${producerId}:${beatId}`;
+          if (window.__ANA_SENT__.play[key]) return;
+          window.__ANA_SENT__.play[key] = 1;
+
+          logAnalyticsEvent({ producerId, type:"play", beatId });
+        }, true);
 
         grid.appendChild(card);
       });
