@@ -108,6 +108,26 @@ function money(n) {
   return "$" + v.toFixed(2);
 }
 
+const crypto = require("crypto");
+
+function toKey(x) {
+  return String(x || "").trim().toLowerCase();
+}
+
+function toQty(n) {
+  const q = Number(n || 1);
+  return Number.isFinite(q) ? Math.max(1, Math.floor(q)) : 1;
+}
+
+async function getSoundKitDocById(id) {
+  const tryCols = ["soundKits", "soundkits", "sound_kits", "kits"];
+  for (const col of tryCols) {
+    const snap = await db.collection(col).doc(String(id)).get();
+    if (snap.exists) return { col, snap };
+  }
+  return null;
+}
+
 function nowTimestamp() {
   const d = new Date();
   const pad = (n) => String(n).padStart(2, "0");
