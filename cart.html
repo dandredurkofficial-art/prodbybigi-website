@@ -82,7 +82,13 @@
 
     function getItems(){
       const items = window.PB_CART?.list?.() || [];
-      return items.map(it => ({ ...it, qty: Math.max(1, Number(it.qty || 1)) }));
+      return items.map(it => ({
+        ...it,
+        beatId: String(it.beatId || "").trim(),
+        licenseKey: String(it.licenseKey || "basic").trim().toLowerCase(),
+        qty: Math.max(1, Number(it.qty || 1)),
+        price: Number(it.price || 0)
+      })).filter(it => it.beatId && it.licenseKey);
     }
 
     function calcTotal(items){
@@ -149,21 +155,20 @@
       try { return await res.text(); } catch { return ""; }
     }
 
+    // ✅ FIXED payload: send beatId + licenseKey (required by your backend)
     async function createOrder(items){
       const total = Number(calcTotal(items).toFixed(2));
 
-      // IMPORTANT: send multiple common fields so your cloud function matches at least one
       const payload = {
         total,
-        amount: total,
         currency: "USD",
         items: items.map(it => ({
-          id: it.beatId,
-          title: it.title,
-          price: Number(Number(it.price||0).toFixed(2)),
+          beatId: it.beatId,                 // ✅ required
+          licenseKey: it.licenseKey,         // ✅ required
           qty: Math.max(1, Number(it.qty||1)),
-          licenseKey: it.licenseKey,
-          licenseName: it.licenseName
+          price: Number(Number(it.price||0).toFixed(2)),
+          title: it.title || "",
+          artwork: it.artwork || ""
         }))
       };
 
@@ -186,13 +191,11 @@
         data.approval_url ||
         (Array.isArray(data.links) ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href) : null);
 
-      const orderId = data.id || data.orderID || data.orderId || data.token || null;
-
       if (!approveUrl){
         throw new Error("Create order succeeded but no approval URL returned.\nServer response:\n" + (text || JSON.stringify(data)));
       }
 
-      return { approveUrl, orderId };
+      return { approveUrl, orderId: (data.id || data.orderID || data.orderId || null) };
     }
 
     async function capture(orderID){
