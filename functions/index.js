@@ -1594,6 +1594,65 @@ exports.onProducerSignup = onDocumentCreated(
   }
 );
 
+exports.onUserBecameProducer = onDocumentWritten(
+  {
+    region: "us-central1",
+    document: "users/{uid}",
+    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+  },
+  async (event) => {
+    try {
+      const before = event.data?.before?.data() || {};
+      const after = event.data?.after?.data() || {};
+      const uid = event.params.uid;
+
+      const wasProducer = isProducerProfile(before);
+      const isProducer = isProducerProfile(after);
+
+      if (wasProducer || !isProducer) return;
+
+      // prevent duplicate welcome emails
+      if (after.welcomeEmailSent === true) return;
+
+      const email = safeStr(after.email).trim();
+      const name = safeStr(after.displayName || after.name || "Producer");
+
+      const adminTo = ADMIN_NOTIFY_EMAIL.value();
+      if (adminTo) {
+        await sendEmail({
+          to: adminTo,
+          subject: "Producer activated on Audiory",
+          text: `A user became a producer.\n\nName: ${name}\nEmail: ${email || "—"}\nUID: ${uid}`,
+          html: `<h2>Producer activated</h2><p><b>Name:</b> ${name}</p><p><b>Email:</b> ${email || "—"}</p><p><b>UID:</b> ${uid}</p>`,
+        });
+      }
+
+      if (email) {
+        await sendEmail({
+          to: email,
+          subject: "Welcome to Audiory 👋",
+          text:
+            `Hey ${name}, welcome to Audiory!\n\n` +
+            `You can now upload beats, set prices, and start selling.\n\n` +
+            `— Audiory Team`,
+          html:
+            `<h2>Welcome to Audiory 👋</h2>` +
+            `<p>Hey ${name},</p>` +
+            `<p>You can now upload beats, set prices, and start selling.</p>` +
+            `<p style="margin-top:14px;">— Audiory Team</p>`,
+        });
+      }
+
+      await db.collection("users").doc(uid).set(
+        { welcomeEmailSent: true, welcomeEmailSentAt: Date.now() },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("onUserBecameProducer email error:", e);
+    }
+  }
+);
+
 exports.onPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
