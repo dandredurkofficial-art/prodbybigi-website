@@ -1,1 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Beat | Audiory</title>
 
+  <!-- ✅ Basic SEO -->
+  <meta name="description" content="Listen to beats on Audiory. View BPM, key, licenses, and explore more from the producer." />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    /* Light, isolated styling so it won't fight your CSS */
+    .beat-page{padding:18px 0}
+    .beat-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
+    .cardx{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:16px;padding:14px}
+    .muted{color:rgba(255,255,255,.68)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .title{font-weight:900;font-size:22px;margin:0}
+    .subline{margin:6px 0 0;font-size:13px}
+    .cover{
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:16px;
+      overflow:hidden;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      display:grid;
+      place-items:center;
+    }
+    .cover img{width:100%;height:100%;object-fit:cover;display:block}
+    .play-big{
+      width:54px;height:54px;border-radius:999px;border:none;
+      background:#3b82f6;color:#fff;font-weight:900;cursor:pointer;
+      display:grid;place-items:center;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      font-weight:900;cursor:pointer;user-select:none;
+    }
+    .pill.free{background:rgba(59,130,246,.16);border-color:rgba(59,130,246,.35)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+    .kv{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:14px;padding:10px}
+    .kv .k{font-size:12px;color:rgba(255,255,255,.6);font-weight:800}
+    .kv .v{margin-top:4px;font-size:14px;font-weight:900}
+    .lic-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+    .lic{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:12px;
+      display:flex;justify-content:space-between;gap:10px;align-items:center;
+    }
+    .lic strong{display:block}
+    .lic .lsub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
+    .btn{
+      border:none;border-radius:12px;padding:10px 12px;
+      font-weight:900;cursor:pointer;
+      background:#3b82f6;color:#fff;
+    }
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,.14);
+      color:#fff;
+    }
+    .more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    .mini{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .mini .mcover{aspect-ratio:1/1;background:rgba(255,255,255,.06);display:grid;place-items:center}
+    .mini .mcover img{width:100%;height:100%;object-fit:cover;display:block}
+    .mini .mbody{padding:10px}
+    .mini .mt{font-weight:900;font-size:13px;line-height:1.25;max-height:32px;overflow:hidden}
+    .mini .ms{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px}
+    @media (max-width: 900px){
+      .beat-wrap{grid-template-columns:1fr}
+      .more-grid{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width: 520px){
+      .more-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+
+      <!-- Logged OUT -->
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <!-- Logged IN -->
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+
+  <!-- Logged OUT -->
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <!-- Logged IN -->
+  <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container beat-page">
+  <div id="beatStatus" class="cardx">Loading beat…</div>
+
+  <section id="beatContent" class="beat-wrap" style="display:none;">
+    <!-- Left: cover + play + meta -->
+    <div class="cardx">
+      <div class="cover" id="beatCover"></div>
+
+      <div class="row" style="margin-top:12px;justify-content:space-between;">
+        <div style="min-width:0;flex:1">
+          <h1 class="title" id="beatTitle">Beat</h1>
+          <div class="subline muted">
+            by
+            <a id="beatProducerLink" href="#" style="color:#fff;font-weight:900;text-decoration:none;">Producer</a>
+            <span id="beatGenre" class="muted"></span>
+          </div>
+        </div>
+
+        <button class="play-big" id="beatPlayBtn" type="button" aria-label="Play preview">▶</button>
+      </div>
+
+      <div class="grid2">
+        <div class="kv">
+          <div class="k">BPM</div>
+          <div class="v" id="beatBpm">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Key</div>
+          <div class="v" id="beatKey">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Uploaded</div>
+          <div class="v" id="beatDate">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Plays</div>
+          <div class="v" id="beatPlays">—</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btn ghost" id="backToMarket" type="button">← Back to Marketplace</button>
+      </div>
+    </div>
+
+    <!-- Right: licenses + more from producer -->
+    <div>
+      <div class="cardx">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <div style="font-weight:900;font-size:16px;">Licensing</div>
+            <div class="muted" style="font-size:12px;margin-top:4px;">Choose a license to continue.</div>
+          </div>
+          <div id="beatPricePillWrap"></div>
+        </div>
+
+        <div class="lic-grid" id="licensesGrid"></div>
+      </div>
+
+      <div class="cardx" style="margin-top:14px;">
+        <div style="font-weight:900;font-size:16px;">More from this producer</div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">Explore other uploads.</div>
+        <div class="more-grid" id="moreGrid"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- License / Checkout Modal (re-use your existing modal system) -->
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Drawer (re-use) -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script>
+  window.PB_PAYPAL_CREATE_ORDER_URL =
+    "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL =
+    "https://captureorder-f65rhsquva-uc.a.run.app";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+
+  function qs(name){
+    const u = new URL(location.href);
+    return (u.searchParams.get(name) || "").trim();
+  }
+
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
+  function norm(s){ return String(s||"").toLowerCase().trim(); }
+
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
+    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:26px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function prettyProducerName(b){
+    if (b?.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b?.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function isFreeBeat(b){
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true) return true;
+    if (Number.isFinite(Number(b.price))) return Number(b.price) <= 0;
+
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    if (hasPaidLicense) return false;
+    return true;
+  }
+
+  /* ✅ analytics event logger (same behavior as marketplace) */
+  async function logAnalyticsEvent({ producerId, type, beatId=null }){
+    try{
+      if (!window.auth?.currentUser) return; // your rules require signed-in
+      if (!producerId || !type) return;
+      if (!window.db || !window.addDoc || !window.collection) return;
+
+      const ts =
+        (typeof window.serverTimestamp === "function")
+          ? window.serverTimestamp()
+          : Date.now();
+
+      await window.addDoc(window.collection(window.db,"analyticsEvents"), {
+        producerId: String(producerId),
+        type: String(type),
+        beatId: beatId ? String(beatId) : null,
+        actorUid: window.auth.currentUser.uid,
+        createdAt: ts
+      });
+    }catch(e){}
+  }
+  window.logAnalyticsEvent = logAnalyticsEvent;
+  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+
+  function formatDate(x){
+    try{
+      if (!x) return "—";
+      // Firestore Timestamp?
+      if (x?.toDate) return x.toDate().toLocaleDateString();
+      // millis
+      if (typeof x === "number") return new Date(x).toLocaleDateString();
+      // string
+      const d = new Date(x);
+      if (!isNaN(d.getTime())) return d.toLocaleDateString();
+      return "—";
+    }catch(e){ return "—"; }
+  }
+
+  function renderLicenses(beat){
+    const wrap = $("licensesGrid");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+
+    const lic = beat.licenses || {};
+    const tiers = [
+      { key:"basic", label:"Basic License", hint:"WAV/MP3" },
+      { key:"premium", label:"Premium License", hint:"WAV + STEMS" },
+      { key:"exclusive", label:"Exclusive", hint:"WAV + STEMS, full rights" }
+    ];
+
+    // If completely free, show a free pill and message.
+    if (isFreeBeat(beat)){
+      wrap.innerHTML = `
+        <div class="lic">
+          <div>
+            <strong>Free Download</strong>
+            <div class="lsub">This beat is free to download.</div>
+          </div>
+          <button class="btn" type="button" id="freeBtn">Free</button>
+        </div>
+      `;
+      // Free modal is on marketplace page only in your code, so here we just open license modal as fallback:
+      $("freeBtn")?.addEventListener("click", ()=>{
+        // If you later add the same FreeDL modal globally, connect it here.
+        alert("Free download is available from Marketplace currently. (We can add the same free modal here next.)");
+      });
+      return;
+    }
+
+    // Paid: show enabled tiers if present, otherwise show a default single option
+    let added = 0;
+
+    tiers.forEach(t=>{
+      const cfg = lic?.[t.key] || null;
+      const enabled = cfg?.enabled === true;
+      const price = cfg?.price != null ? Number(cfg.price) : null;
+
+      if (enabled || Number.isFinite(price)){
+        added++;
+        wrap.insertAdjacentHTML("beforeend", `
+          <div class="lic">
+            <div>
+              <strong>${t.label}</strong>
+              <div class="lsub">${t.hint}</div>
+            </div>
+            <button class="btn ghost price-pill" type="button" data-license="${t.key}">
+              ${money(price || beat.price || 0)}
+            </button>
+          </div>
+        `);
+      }
+    });
+
+    if (!added){
+      wrap.innerHTML = `
+        <div class="lic">
+          <div>
+            <strong>License</strong>
+            <div class="lsub">Choose license to continue.</div>
+          </div>
+          <button class="btn ghost price-pill" type="button">
+            ${money(beat.price || 0)}
+          </button>
+        </div>
+      `;
+    }
+
+    // Clicking any price-pill should open your license modal (license-modal.js)
+    // Your license-modal.js likely binds to .price-pill globally; if not, we can wire it later.
+  }
+
+  function renderMoreFromProducer(allBeats, beat){
+    const wrap = $("moreGrid");
+    if (!wrap) return;
+
+    const uid = String(beat.producerId || "");
+    const others = (allBeats || [])
+      .filter(b => String(b?.producerId||"") === uid && String(b?.id||"") !== String(beat.id||""))
+      .slice(0, 6);
+
+    if (!others.length){
+      wrap.innerHTML = `<div class="muted" style="grid-column:1/-1;">No more beats yet.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = "";
+    others.forEach((b)=>{
+      const url = `/beat/?id=${encodeURIComponent(String(b.id||""))}`;
+      const el = document.createElement("div");
+      el.className = "mini";
+      el.innerHTML = `
+        <div class="mcover">${coverHTML(b.artwork, b.title)}</div>
+        <div class="mbody">
+          <div class="mt">${b.title || "Beat"}</div>
+          <div class="ms">${b.genre ? b.genre : ""}</div>
+        </div>
+      `;
+      el.addEventListener("click", ()=>{ location.href = url; });
+      wrap.appendChild(el);
+    });
+  }
+
+  async function fetchBeatById(beatId){
+    // Prefer a dedicated FB helper if you have one; fallback to scanning latest beats cache.
+    if (window.FB && typeof window.FB.fetchBeatById === "function"){
+      return await window.FB.fetchBeatById(beatId);
+    }
+
+    // fallback: use marketplace cache if present
+    const cached = window.__LATEST_BEATS__;
+    if (Array.isArray(cached)){
+      return cached.find(b => String(b?.id||"") === String(beatId||"")) || null;
+    }
+
+    // last fallback: fetch list and find
+    if (window.FB && typeof window.FB.fetchBeats === "function"){
+      const beats = await window.FB.fetchBeats({ max: 120, force: false });
+      window.__LATEST_BEATS__ = beats;
+      return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
+    }
+
+    return null;
+  }
+
+  async function loadBeatPage(){
+    const beatId = qs("id");
+    const status = $("beatStatus");
+    const content = $("beatContent");
+
+    if (!beatId){
+      status.textContent = "Beat not found (missing id).";
+      return;
+    }
+
+    status.textContent = "Loading beat…";
+
+    try{
+      const beat = await fetchBeatById(beatId);
+      if (!beat){
+        status.textContent = "Beat not found.";
+        return;
+      }
+
+      // Fill UI
+      $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
+      $("beatTitle").textContent = beat.title || "Beat";
+
+      const prodName = prettyProducerName(beat);
+      const prodLink = $("beatProducerLink");
+      prodLink.textContent = prodName;
+      prodLink.href = `/producer-profile/?producerId=${encodeURIComponent(String(beat.producerId||""))}`;
+
+      $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
+
+      $("beatBpm").textContent = beat.bpm != null ? String(beat.bpm) : "—";
+      $("beatKey").textContent = beat.key != null ? String(beat.key) : "—";
+      $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
+
+      // plays shown here is optional; real play count can be computed from analyticsEvents later
+      $("beatPlays").textContent = "—";
+
+      // Price pill top-right
+      const pillWrap = $("beatPricePillWrap");
+      if (pillWrap){
+        if (isFreeBeat(beat)){
+          pillWrap.innerHTML = `<span class="pill free" title="Free">⬇️ Free</span>`;
+        } else {
+          pillWrap.innerHTML = `<span class="pill price-pill" title="Choose license">🛍️ ${money(beat.price || 0)}</span>`;
+        }
+      }
+
+      // Render licenses + more
+      renderLicenses(beat);
+
+      // Load more from producer (use cached list if possible)
+      const list = window.__LATEST_BEATS__ || (window.FB ? await window.FB.fetchBeats({ max: 120, force:false }) : []);
+      if (Array.isArray(list)) window.__LATEST_BEATS__ = list;
+      renderMoreFromProducer(list, beat);
+
+      // show content
+      status.style.display = "none";
+      content.style.display = "grid";
+
+      // back
+      $("backToMarket")?.addEventListener("click", ()=>{ location.href = "/marketplace/"; });
+
+      // Play preview
+      $("beatPlayBtn")?.addEventListener("click", ()=>{
+        // If your player.js listens to [data-play-btn], we can also mimic it
+        // Here we simply trigger an event and let you wire into player.js later if needed.
+        const audioUrl = beat.audio || "";
+        if (!audioUrl){
+          alert("No preview audio found for this beat.");
+          return;
+        }
+
+        // log play (once)
+        const producerId = String(beat.producerId||"");
+        const key = `${producerId}:${String(beat.id||"")}`;
+        if (producerId && beat.id && !window.__ANA_SENT__.play[key]){
+          window.__ANA_SENT__.play[key] = 1;
+          logAnalyticsEvent({ producerId, type:"play", beatId: String(beat.id) });
+        }
+
+        // If your player.js exposes a function, use it. Otherwise open audio directly.
+        if (typeof window.playPreview === "function"){
+          window.playPreview(audioUrl, beat);
+        } else {
+          // fallback simple audio
+          const a = new Audio(audioUrl);
+          a.play().catch(()=>alert("Tap again to play (browser blocked autoplay)."));
+        }
+      });
+
+      // log VIEW (once) when page loads
+      const producerId = String(beat.producerId||"");
+      const viewKey = `${producerId}:${String(beat.id||"")}`;
+      if (producerId && beat.id && !window.__ANA_SENT__.view[viewKey]){
+        window.__ANA_SENT__.view[viewKey] = 1;
+        logAnalyticsEvent({ producerId, type:"view", beatId: String(beat.id) });
+      }
+
+    }catch(err){
+      console.error(err);
+      status.textContent = "Failed to load beat. Check console.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", ()=> loadBeatPage());
+</script>
+
+</body>
+</html>
