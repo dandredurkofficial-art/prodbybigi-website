@@ -280,11 +280,10 @@
   }
   
   function coverOnly(url, title){
-    const u = String(url || "").trim();
-    const t = String(title || "K").trim();
-    if (u) return `<img src="${u}" alt="${t}" loading="lazy">`;
-    const initials = t.slice(0,2).toUpperCase();
-    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+    const safeUrl = String(url || "").trim();
+    const safeAlt = String(title || "Sound Kit").trim();
+    if (!safeUrl) return ""; // returns nothing if no cover
+    return `<img src="${safeUrl}" alt="${safeAlt}" loading="lazy">`;
   }
 
   function getParam(name){
