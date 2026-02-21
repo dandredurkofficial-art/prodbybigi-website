@@ -272,6 +272,8 @@
 <script src="/js/cookie-banner.js"></script>
 
 <script>
+  const $ = (id)=>document.getElementById(id);
+  
   function money(n){ 
     const v=Number(n||0); 
     return "$"+(isFinite(v)?v.toFixed(2):"0.00"); 
@@ -281,6 +283,10 @@
     if (url) return `<img src="${url}" alt="${title||"Sound Kit"}" loading="lazy" />`;
     const initials = String(title||"K").trim().slice(0,2).toUpperCase();
     return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function getParam(name){
+    return new URLSearchParams(location.search).get(name) || "";
   }
 
   function normalizeKit(docId, data){
