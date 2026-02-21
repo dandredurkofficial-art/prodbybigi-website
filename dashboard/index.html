@@ -1090,6 +1090,74 @@ async function uploadToStorage({ file, path, onProgress }){
   });
 }
 
+async function loadAdvancedAnalyticsReal(){
+  if (!window.currentUser) return;
+
+  // only show real numbers when unlocked
+  if (!isPro()){
+    if ($("statViews")) $("statViews").textContent = "0";
+    if ($("statPlays")) $("statPlays").textContent = "0";
+    if ($("statConv")) $("statConv").textContent = "0%";
+    return;
+  }
+
+  const uid = window.currentUser.uid;
+
+  try{
+    // FAST counts (no downloading all docs)
+    const viewsQ = window.query(
+      window.collection(window.db,"analyticsEvents"),
+      window.where("producerId","==",uid),
+      window.where("type","==","view")
+    );
+
+    const playsQ = window.query(
+      window.collection(window.db,"analyticsEvents"),
+      window.where("producerId","==",uid),
+      window.where("type","==","play")
+    );
+
+    const [viewsAgg, playsAgg] = await Promise.all([
+      window.getCountFromServer(viewsQ),
+      window.getCountFromServer(playsQ),
+    ]);
+
+    const views = viewsAgg.data().count || 0;
+    const plays = playsAgg.data().count || 0;
+
+    if ($("statViews")) $("statViews").textContent = String(views);
+    if ($("statPlays")) $("statPlays").textContent = String(plays);
+
+    // Conversion: completed orders / plays (fallback to views if plays=0)
+    let orders = 0;
+    try{
+      // If your orders store status = "paid" or "completed", keep this.
+      // If not, we fallback to scanning orders below.
+      const oQ = window.query(
+        window.collection(window.db,"orders"),
+        window.where("producerId","==",uid)
+      );
+      const oSnap = await window.getDocs(oQ);
+
+      oSnap.forEach(d=>{
+        const o = d.data() || {};
+        const s = String(o.status || o.state || "").toLowerCase();
+        // counts only paid/completed, but if you don’t store status we count all
+        if (!s || s.includes("paid") || s.includes("completed")) orders++;
+      });
+    }catch(e){}
+
+    const denom = plays > 0 ? plays : (views > 0 ? views : 0);
+    const conv = denom > 0 ? Math.round((orders / denom) * 100) : 0;
+
+    if ($("statConv")) $("statConv").textContent = `${conv}%`;
+  }catch(err){
+    console.error("loadAdvancedAnalyticsReal:", err);
+    // don’t crash UI
+  }
+}
+window.loadAdvancedAnalyticsReal = loadAdvancedAnalyticsReal;
+
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
