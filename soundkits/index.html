@@ -279,9 +279,11 @@
     return "$"+(isFinite(v)?v.toFixed(2):"0.00"); 
   }
   
-  function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title||"Sound Kit"}" loading="lazy" />`;
-    const initials = String(title||"K").trim().slice(0,2).toUpperCase();
+  function coverOnly(url, title){
+    const u = String(url || "").trim();
+    const t = String(title || "K").trim();
+    if (u) return `<img src="${u}" alt="${t}" loading="lazy">`;
+    const initials = t.slice(0,2).toUpperCase();
     return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
