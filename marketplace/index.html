@@ -194,33 +194,6 @@
         min-width:0;
       }
     }
-
-    /* ✅ BPM / KEY / PLAYS chips */
-    .beat-mini-stats{
-      margin-top:8px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      color:rgba(255,255,255,.65);
-      font-size:12px;
-      line-height:1;
-    }
-    .beat-mini-stats span{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-      white-space:nowrap;
-    }
-
-    /* ✅ Play button state */
-    .play-fab.is-playing{
-      outline:2px solid rgba(59,130,246,.55);
-      box-shadow:0 0 0 6px rgba(59,130,246,.12);
-    }
   </style>
 </head>
 <body>
@@ -663,46 +636,46 @@
     </button>`;
   }
 
-  /* ✅ Beat page link */
+  /* =========================================================
+     ✅ Beat Page routing (BeatStars-like)
+     - Clicking cover/title/card opens a dedicated beat page
+     - Price pill still opens license modal (handled by license-modal.js)
+     - Play button still previews (player.js)
+     - Free pill opens free modal (already)
+     NOTE: This assumes you will have a page like:
+           /beat/?id=<beatId>
+           (we'll build/confirm that page next)
+  ========================================================== */
   function beatPageUrl(beat){
     const id = beat?.id ? String(beat.id) : "";
     return `/beat/?id=${encodeURIComponent(id)}`;
   }
 
-  /* ✅ BPM/KEY/PLAYS renderer (shows only if values exist) */
-  function miniStatsHTML(b){
-    const bpm = b?.bpm ?? b?.BPM ?? b?.tempo ?? b?.Tempo ?? null;
-    const key = b?.key ?? b?.Key ?? b?.scale ?? b?.Scale ?? null;
-    const plays = b?.plays ?? b?.playCount ?? b?.playsCount ?? b?.streamCount ?? null;
-
-    const out = [];
-    if (bpm !== null && bpm !== undefined && String(bpm).trim() !== "") out.push(`<span>⚡ ${String(bpm)} BPM</span>`);
-    if (key !== null && key !== undefined && String(key).trim() !== "") out.push(`<span>🎼 ${String(key)}</span>`);
-    if (plays !== null && plays !== undefined && String(plays).trim() !== "") out.push(`<span>▶ ${String(plays)} plays</span>`);
-
-    if (!out.length) return "";
-    return `<div class="beat-mini-stats">${out.join("")}</div>`;
-  }
-
   /* =========================================================
-     ✅ Analytics (play only on marketplace)
-     - uses your firebase.js exposures (window.FB.*)
-     - requires signed-in (matches your Firestore rules)
+     ✅ ADVANCED ANALYTICS (REAL) — events
+     - "view" : when user opens the beat page from marketplace
+     - "play" : when user starts preview from marketplace (click play)
+     IMPORTANT:
+     - Your rules require signed-in users for analyticsEvents create.
+     - For timestamp, we prefer serverTimestamp() if your firebase.js exposes it.
+       Fallback: Date.now()
   ========================================================== */
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
-      const FB = window.FB;
-      if (!FB?.auth?.currentUser) return;
+      if (!window.auth?.currentUser) return; // requires signed-in (matches your rules)
       if (!producerId || !type) return;
-      if (!FB?.db || !FB?.addDoc || !FB?.collection) return;
+      if (!window.db || !window.addDoc || !window.collection) return;
 
-      const ts = (typeof FB.serverTimestamp === "function") ? FB.serverTimestamp() : Date.now();
+      const ts =
+        (typeof window.serverTimestamp === "function")
+          ? window.serverTimestamp()
+          : Date.now();
 
-      await FB.addDoc(FB.collection(FB.db,"analyticsEvents"), {
+      await window.addDoc(window.collection(window.db,"analyticsEvents"), {
         producerId: String(producerId),
-        type: String(type),          // "play" (marketplace). "view" will be done on /beat/
+        type: String(type),          // "view" | "play"
         beatId: beatId ? String(beatId) : null,
-        actorUid: FB.auth.currentUser.uid,
+        actorUid: window.auth.currentUser.uid,
         createdAt: ts
       });
     }catch(e){
@@ -711,108 +684,8 @@
   }
   window.logAnalyticsEvent = logAnalyticsEvent;
 
-  // prevent spamming play events per session
-  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{} };
-
-  /* =========================================================
-     ✅ Marketplace preview player (toggle play/pause)
-     - DOES NOT touch player.js
-     - We intercept the click on play button in CAPTURE phase
-       and stop player.js from handling it.
-  ========================================================== */
-  const MPPreview = (() => {
-    const state = {
-      audio: null,
-      btn: null,
-      beatId: null,
-      producerId: null,
-      url: null
-    };
-
-    function setBtnPlaying(btn, isPlaying){
-      if (!btn) return;
-      const ic = btn.querySelector(".playIcon");
-      if (ic) ic.textContent = isPlaying ? "⏸" : "▶";
-      btn.classList.toggle("is-playing", !!isPlaying);
-      btn.setAttribute("aria-label", isPlaying ? "Pause" : "Play");
-    }
-
-    function stop(){
-      try{
-        if (state.audio){
-          state.audio.pause();
-          state.audio.currentTime = 0;
-        }
-      }catch{}
-      setBtnPlaying(state.btn, false);
-      state.audio = null;
-      state.btn = null;
-      state.beatId = null;
-      state.producerId = null;
-      state.url = null;
-    }
-
-    async function play(btn, url, { beatId="", producerId="" } = {}){
-      if (!url) return;
-
-      // same track toggle
-      if (state.audio && state.url === url){
-        if (!state.audio.paused){
-          state.audio.pause();
-          setBtnPlaying(btn, false);
-          return;
-        }
-        try{
-          await state.audio.play();
-          setBtnPlaying(btn, true);
-          return;
-        }catch(err){
-          console.error("Audio resume failed:", err);
-          stop();
-          return;
-        }
-      }
-
-      // different track: stop previous
-      stop();
-
-      const audio = new Audio(url);
-      audio.preload = "none";
-      audio.crossOrigin = "anonymous";
-
-      state.audio = audio;
-      state.btn = btn;
-      state.beatId = beatId;
-      state.producerId = producerId;
-      state.url = url;
-
-      audio.addEventListener("ended", ()=>stop());
-      audio.addEventListener("pause", ()=>{
-        // if paused by browser etc
-        if (state.audio === audio) setBtnPlaying(btn, false);
-      });
-      audio.addEventListener("play", ()=>{
-        if (state.audio === audio) setBtnPlaying(btn, true);
-      });
-
-      try{
-        await audio.play();
-        setBtnPlaying(btn, true);
-
-        // ✅ log PLAY only once per beat per session (and only when play succeeds)
-        const key = `${String(producerId||"")}:${String(beatId||"")}`;
-        if (producerId && beatId && !window.__ANA_SENT__.play[key]){
-          window.__ANA_SENT__.play[key] = 1;
-          logAnalyticsEvent({ producerId, type:"play", beatId });
-        }
-      }catch(err){
-        console.error("Audio play failed:", err);
-        stop();
-      }
-    }
-
-    return { play, stop, _state: state };
-  })();
+  // Prevent spamming same event in one session
+  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
 
   async function loadMarketplace(){
     const status = document.getElementById("marketStatus");
@@ -837,7 +710,9 @@
       status.textContent = "Loading marketplace…";
       status.classList.remove("hidden");
 
+      // ✅ Force refresh once to avoid old cached “free”
       const beats = await window.FB.fetchBeats({ max: 60, force: true });
+
       window.__LATEST_BEATS__ = beats;
 
       const filtered = filterBeats(beats, params);
@@ -901,10 +776,10 @@
               </a>
 
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
-              ${miniStatsHTML(b)}
             </div>
 
             ${
+              // keep Free as-is, but keep paid pill as .price-pill so license-modal.js still works
               (isFreeBeat(b))
                 ? pillHTML(b)
                 : `<button class="pb-pill price-pill" type="button"
@@ -927,35 +802,50 @@
           FreeDL.open(b);
         });
 
-        // ✅ Beat page open on cover/title click + card body click (but not on play/pills/producer)
+        // ✅ Beat page open (cover/title/card click)
         card.addEventListener("click", (e)=>{
+          // Don't hijack clicks for these:
           if (e.target.closest("[data-free-download='1']")) return;     // free modal
           if (e.target.closest(".price-pill")) return;                  // license modal
           if (e.target.closest("[data-play-btn]")) return;              // preview
           if (e.target.closest("a.producer")) return;                   // producer page
 
-          // Let anchors work naturally
+          // If clicked on a beat open link OR anywhere on card body, open beat page:
           const openLink = e.target.closest("[data-open-beat='1']");
-          if (openLink) return;
+          const url = pageUrl;
 
-          window.location.href = pageUrl;
+          // log VIEW when user opens beat page
+          const producerId = String(b.producerId||"");
+          const beatId = String(b.id||"");
+          const key = `${producerId}:${beatId}`;
+          if (producerId && beatId && !window.__ANA_SENT__.view[key]){
+            window.__ANA_SENT__.view[key] = 1;
+            logAnalyticsEvent({ producerId, type:"view", beatId });
+          }
+
+          // open
+          if (openLink){
+            // let <a href> navigate naturally
+            return;
+          }
+          window.location.href = url;
         });
 
-        // ✅ Intercept play button BEFORE player.js sees it (capture phase)
-        card.addEventListener("click", async (e)=>{
-          const playBtn = e.target.closest("[data-play-btn]");
-          if (!playBtn) return;
+        // ✅ log PLAY when preview is clicked (best we can do from here)
+        // (Actual "when audio starts" can be done inside player.js later)
+        card.addEventListener("click", (e)=>{
+          const btn = e.target.closest("[data-play-btn]");
+          if (!btn) return;
 
-          // stop other handlers (including player.js global handler)
-          e.preventDefault();
-          e.stopPropagation();
-          if (typeof e.stopImmediatePropagation === "function") e.stopImmediatePropagation();
+          const producerId = btn.getAttribute("data-producer-id") || "";
+          const beatId = btn.getAttribute("data-beat-id") || "";
+          if (!producerId || !beatId) return;
 
-          const url = playBtn.getAttribute("data-audio-url") || "";
-          const producerId = playBtn.getAttribute("data-producer-id") || "";
-          const beatId = playBtn.getAttribute("data-beat-id") || "";
+          const key = `${producerId}:${beatId}`;
+          if (window.__ANA_SENT__.play[key]) return;
+          window.__ANA_SENT__.play[key] = 1;
 
-          await MPPreview.play(playBtn, url, { producerId, beatId });
+          logAnalyticsEvent({ producerId, type:"play", beatId });
         }, true);
 
         grid.appendChild(card);
@@ -970,9 +860,6 @@
   window.addEventListener("firebase-ready", () => {
     if (window.FB && typeof window.FB.fetchBeats === "function") loadMarketplace();
   });
-
-  // If user leaves the page while playing
-  window.addEventListener("beforeunload", ()=>{ try{ MPPreview.stop(); }catch{} });
 </script>
 
 </body>
