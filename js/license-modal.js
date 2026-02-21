@@ -385,6 +385,7 @@
   // ✅ CLICK HANDLER:
   // - NEVER open modal when clicking play button
   // - Open modal when clicking price pill OR card (but not links/buttons)
+  // ✅ FIX: support beat page pills (not inside .beat-card/.trend-card)
   document.addEventListener("click", (e) => {
     const playBtn = e.target.closest("[data-play-btn]");
     if (playBtn) return;
@@ -400,10 +401,17 @@
     const clickable = e.target.closest("a, button");
     if (clickable && !pill) return;
 
-    const wrap = pill ? pill.closest(".beat-card, .trend-card") : card;
-    if (!wrap) return;
+    // ✅ FIX: on beat page, pill itself contains data-beat-id/data-producer-id
+    // fallback: any ancestor with data-beat-id
+    const wrap =
+      (pill && pill.closest(".beat-card, .trend-card")) ||
+      card ||
+      (pill && pill.closest("[data-beat-id]")) ||
+      null;
 
-    const beatId = String(wrap.getAttribute("data-beat-id") || "").trim();
+    const beatId =
+      String(pill?.getAttribute("data-beat-id") || "").trim() ||
+      String(wrap?.getAttribute("data-beat-id") || "").trim();
 
     const list = window.__LATEST_BEATS__ || [];
     let beat = null;
@@ -412,16 +420,30 @@
       beat = list.find((b) => String(b.id) === String(beatId)) || null;
     }
 
+    // ✅ Extra safe: if beat page stored current beat, use it
+    // (Your beat page can set window.__CURRENT_BEAT__ = beat)
+    if (!beat && window.__CURRENT_BEAT__ && resolveBeatId(window.__CURRENT_BEAT__) === beatId) {
+      beat = window.__CURRENT_BEAT__;
+    }
+
+    // If still not found, build minimal beat object
     if (!beat) {
       const title = (
-        wrap.querySelector("h3")?.textContent ||
-        wrap.querySelector(".t")?.textContent ||
+        wrap?.querySelector("h3")?.textContent ||
+        wrap?.querySelector(".t")?.textContent ||
+        (pill?.getAttribute("data-title") || "") ||
         "Beat"
       ).trim();
+
+      // ✅ FIX: preserve producerId if pill has it (beat page pills do)
+      const producerId =
+        String(pill?.getAttribute("data-producer-id") || "").trim() ||
+        String(wrap?.getAttribute("data-producer-id") || "").trim();
 
       beat = {
         id: beatId,
         title,
+        producerId,
         artwork: "",
         audio: "",
         fullAudio: "",
