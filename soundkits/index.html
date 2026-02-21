@@ -50,14 +50,16 @@
     }
     .tools select{ width: 200px; }
 
+    /* ✅ GRID: 2 columns on mobile, 5 columns on desktop */
     .kits-grid{
       display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr)); /* mobile default */
       gap: 14px;
       padding-bottom: 22px;
     }
-    @media (max-width: 980px){ .kits-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 620px){ .kits-grid{ grid-template-columns: 1fr; } }
+    @media (min-width: 981px){
+      .kits-grid{ grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    }
 
     .kit-card{ padding: 12px; border-radius: 20px; }
     .kit-cover{
@@ -69,6 +71,7 @@
       border: 1px solid rgba(255,255,255,.08);
       display:grid;
       place-items:center;
+      cursor:pointer;
     }
     .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
 
@@ -77,15 +80,31 @@
     .kit-desc{ margin-top:6px; color: var(--muted); font-size: 12px; line-height:1.35; }
 
     .kit-actions{ margin-top: 12px; display:flex; justify-content:space-between; gap:10px; align-items:center; }
-    .price-pill{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 8px 10px;
+
+    /* ✅ Replace "Get kit" with a real price pill button */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-width: 92px;
+      padding: 10px 12px;
       border-radius: 999px;
       font-weight: 900;
       font-size: 13px;
-      white-space: nowrap;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
     }
+    .pb-pill:hover{ background: rgba(255,255,255,.10); }
+    .pb-pill.free{
+      background: rgba(59,130,246,.16);
+      border-color: rgba(59,130,246,.35);
+    }
+
     .btn{
       background: rgba(255,255,255,.10);
       border: 1px solid rgba(255,255,255,.14);
@@ -98,11 +117,27 @@
       gap:8px;
       align-items:center;
     }
-    .btn.primary{
-      background: rgba(255,255,255,.92);
-      color: #111;
-      border: 1px solid rgba(255,255,255,.92);
+
+    /* ✅ Preview button (same style as beats) */
+    .play-fab{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      background:rgba(255,255,255,.92);
+      color:#111;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
     }
+    .play-fab:active{ transform:scale(.98); }
+    .cover-wrap{ position:relative; }
+
     .loading-box{
       margin: 14px 0;
       padding: 14px;
@@ -135,7 +170,7 @@
       <a href="/marketplace/">Tracks</a>
       <a href="/soundkits/">Sound Kits</a>
       <a href="/producers/">Producers</a>
-      
+
       <!-- Logged OUT -->
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
@@ -270,7 +305,7 @@
 <script>
   window.PB_PAYPAL_CREATE_ORDER_URL =
     "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL = 
+  window.PB_PAYPAL_CAPTURE_ORDER_URL =
     "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
 
@@ -298,13 +333,14 @@
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || ""
+      downloadUrl: data.downloadUrl || data.downloadURL || "",
+      previewUrl: data.previewUrl || data.preview || data.audioPreview || data.audio || "" // ✅ preview support
     };
   }
 
   // Fallback fetcher (only used if FB.fetchSoundKits is not defined)
   async function fallbackFetchSoundKits(){
-    const { collection, getDocs, query, limit, where } = window.FB; // ✅ added where
+    const { collection, getDocs, query, limit, where } = window.FB;
 
     const names = ["soundKits", "soundkits", "sound_kits", "kits"];
     let lastErr = null;
@@ -312,10 +348,7 @@
     for (const name of names){
       try{
         const ref = collection(window.FB.db, name);
-
-        // ✅ FIX: only request published docs (matches your rules)
         const qy = query(ref, where("published", "==", true), limit(120));
-
         const snap = await getDocs(qy);
 
         if (snap.empty) continue;
@@ -338,6 +371,64 @@
 
   let ALL_KITS = [];
 
+  /* ✅ Simple preview player (no extra files) */
+  let __KIT_AUDIO__ = null;
+  let __KIT_PLAYING_ID__ = null;
+
+  function stopPreview(){
+    try{ __KIT_AUDIO__?.pause?.(); }catch{}
+    __KIT_AUDIO__ = null;
+    __KIT_PLAYING_ID__ = null;
+    document.querySelectorAll("[data-preview]").forEach(btn=>{
+      btn.textContent = "▶";
+      btn.setAttribute("aria-label","Preview");
+    });
+  }
+
+  function togglePreview(kit){
+    const id = String(kit?.id || "");
+    const url = String(kit?.previewUrl || "").trim();
+    if (!url){
+      alert("No preview audio found for this kit. Add previewUrl in Firestore ✅");
+      return;
+    }
+
+    // switch off if same kit
+    if (__KIT_PLAYING_ID__ === id && __KIT_AUDIO__){
+      stopPreview();
+      return;
+    }
+
+    stopPreview();
+
+    __KIT_AUDIO__ = new Audio(url);
+    __KIT_PLAYING_ID__ = id;
+
+    // update UI
+    const btn = document.querySelector(`[data-preview="${CSS.escape(id)}"]`);
+    if (btn){
+      btn.textContent = "❚❚";
+      btn.setAttribute("aria-label","Pause preview");
+    }
+
+    __KIT_AUDIO__.addEventListener("ended", stopPreview);
+    __KIT_AUDIO__.play().catch(()=>{
+      alert("Tap again to play preview (browser blocked autoplay).");
+    });
+  }
+
+  function pillHTMLKit(k){
+    const price = Number(k.price || 0);
+    if (price <= 0){
+      return `<button class="pb-pill free" type="button" data-buy="${k.id}" aria-label="Free download">
+        <span>⬇️</span><span>Free</span>
+      </button>`;
+    }
+    return `<button class="pb-pill price-pill" type="button" data-buy="${k.id}" aria-label="Buy kit">
+      <span>🛍️</span><span>${money(price)}</span>
+    </button>`;
+  }
+
   function renderKits(list){
     const grid = document.getElementById("kitsGrid");
     const status = document.getElementById("kitStatus");
@@ -353,20 +444,26 @@
     list.forEach(k=>{
       const el = document.createElement("div");
       el.className = "card kit-card";
+
       el.innerHTML = `
-        <div class="kit-cover">${coverHTML(k.cover, k.title)}</div>
+        <div class="cover-wrap">
+          <div class="kit-cover" data-open="${k.id}" role="button" tabindex="0" aria-label="Open kit details">
+            ${coverHTML(k.cover, k.title)}
+          </div>
+
+          <button class="play-fab" type="button" data-preview="${k.id}" aria-label="Preview">▶</button>
+        </div>
+
         <div class="kit-meta">
           <div style="min-width:0;">
             <div class="kit-title">${k.title}</div>
             <div class="kit-desc">${(k.description || "").slice(0, 110)}</div>
           </div>
-          <div class="price-pill">${k.price ? money(k.price) : "Free"}</div>
         </div>
+
         <div class="kit-actions">
           <button class="btn" type="button" data-open="${k.id}">Details</button>
-          <button class="btn primary" type="button" data-buy="${k.id}">
-            <span>🛍️</span><span>${k.price ? "Get kit" : "Download"}</span>
-          </button>
+          ${pillHTMLKit(k)}
         </div>
       `;
       grid.appendChild(el);
@@ -393,7 +490,6 @@
     const msg  = err?.message ? String(err.message) : String(err || "");
     status.classList.remove("hidden");
 
-    // ✅ show exact problem
     status.textContent =
       "Could not load sound kits.\n\n" +
       (code ? ("Error code: " + code + "\n") : "") +
@@ -409,7 +505,6 @@
     status.classList.remove("hidden");
 
     try{
-      // ✅ prefer firebase.js helper if you added it
       if (window.FB && typeof window.FB.fetchSoundKits === "function"){
         ALL_KITS = await window.FB.fetchSoundKits({ max: 120 });
       } else {
@@ -422,36 +517,53 @@
     }
   }
 
-  document.addEventListener("click", (e)=>{
+  document.addEventListener("click", async (e)=>{
     const buy = e.target.closest("[data-buy]");
     const open = e.target.closest("[data-open]");
-    if (!buy && !open) return;
+    const prev = e.target.closest("[data-preview]");
 
-    const id = (buy || open).getAttribute(buy ? "data-buy" : "data-open");
-    const kit = ALL_KITS.find(x=>x.id===id);
+    if (!buy && !open && !prev) return;
+
+    const id =
+      (buy?.getAttribute("data-buy")) ||
+      (open?.getAttribute("data-open")) ||
+      (prev?.getAttribute("data-preview"));
+
+    const kit = ALL_KITS.find(x=>String(x.id)===String(id));
     if (!kit) return;
 
+    if (prev){
+      e.preventDefault(); e.stopPropagation();
+      togglePreview(kit);
+      return;
+    }
+
     if (buy){
-      // ✅ Paid kit => DO NOT direct download
+      e.preventDefault(); e.stopPropagation();
+
+      // ✅ Paid kit => add to cart + open cart (works with your cart-ui.js if present)
       if (Number(kit.price || 0) > 0){
-        // If you already have cart logic, push this item into cart.
-        // Minimal: show message so you wire to your cart/checkout next.
-        alert("This kit is paid. Add it to cart / checkout instead of direct download.");
+        if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
+          alert("Cart not loaded. Make sure /js/cart.js is included.");
+          return;
+        }
 
-        // OPTIONAL (if your cart.js supports adding custom items)
-        // window.PBCart?.addItem?.({
-        //   type: "soundkit",
-        //   id: kit.id,
-        //   title: kit.title,
-        //   price: Number(kit.price || 0),
-        //   cover: kit.cover,
-        //   downloadUrl: kit.downloadUrl || ""
-        // });
+        window.PB_CART.add({
+          type: "soundkit",
+          kitId: String(kit.id),
+          title: String(kit.title || "Sound Kit"),
+          artwork: String(kit.cover || ""),
+          price: Number(kit.price || 0),
+          downloadUrl: String(kit.downloadUrl || ""),
+        });
 
+        // Optional open drawer if your cart-ui exposes it
+        if (typeof window.PB_CART_UI_OPEN === "function") window.PB_CART_UI_OPEN();
+        else alert("Added to cart ✅");
         return;
       }
 
-      // ✅ Free kit => allow download
+      // ✅ Free kit => direct download
       if (kit.downloadUrl){
         window.open(kit.downloadUrl, "_blank");
       } else {
@@ -460,11 +572,20 @@
       return;
     }
 
+    // Details
     alert(
       `${kit.title}\n\n${kit.description || "No description."}\n\n` +
       `Category: ${kit.category || "—"}\n` +
-      `Price: ${kit.price ? money(kit.price) : "Free"}`
+      `Price: ${Number(kit.price||0) > 0 ? money(kit.price) : "Free"}`
     );
+  });
+
+  // keyboard open on cover
+  document.addEventListener("keydown", (e)=>{
+    if (e.key !== "Enter") return;
+    const open = document.activeElement?.closest?.("[data-open]");
+    if (!open) return;
+    open.click();
   });
 
   document.getElementById("kitSearch").addEventListener("input", applyFilters);
@@ -473,6 +594,9 @@
   window.addEventListener("firebase-ready", () => {
     if (window.FB?.db) loadKits();
   });
+
+  // stop preview when leaving page
+  window.addEventListener("pagehide", stopPreview);
 </script>
 
 </body>
