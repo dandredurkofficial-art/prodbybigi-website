@@ -316,7 +316,14 @@ function parseAmountFromPayPalEvent(event) {
   return { value: 0, currency: "USD" };
 }
 
-async function creditProducerWallet({ producerId, orderId, grossAmount, currency, source }) {
+async function creditProducerWallet({
+  producerId,
+  orderId,
+  grossAmount,
+  currency,
+  source,
+  revenueId, // ✅ optional: unique revenue doc id per cart item
+}) {
   const gross = Number(grossAmount || 0);
   const fee = Math.round(gross * 0.10 * 100) / 100;
   const net = Math.round((gross - fee) * 100) / 100;
@@ -336,10 +343,12 @@ async function creditProducerWallet({ producerId, orderId, grossAmount, currency
       { merge: true }
     );
 
-    const revRef = db.collection("platformRevenue").doc(orderId);
+    const revDocId = safeStr(revenueId || orderId);
+    const revRef = db.collection("platformRevenue").doc(revDocId);
     tx.set(
       revRef,
       {
+        revenueId: revDocId,
         orderId,
         producerId,
         gross,
