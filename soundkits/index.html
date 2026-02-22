@@ -273,21 +273,17 @@
 
 <script>
   const $ = (id)=>document.getElementById(id);
-  
-  function money(n){ 
-    const v=Number(n||0); 
-    return "$"+(isFinite(v)?v.toFixed(2):"0.00"); 
+
+  function money(n){
+    const v=Number(n||0);
+    return "$"+(isFinite(v)?v.toFixed(2):"0.00");
   }
-  
+
   function coverOnly(url, title){
     const safeUrl = String(url || "").trim();
     const safeAlt = String(title || "Sound Kit").trim();
-    if (!safeUrl) return ""; // returns nothing if no cover
+    if (!safeUrl) return "";
     return `<img src="${safeUrl}" alt="${safeAlt}" loading="lazy">`;
-  }
-
-  function getParam(name){
-    return new URLSearchParams(location.search).get(name) || "";
   }
 
   function normalizeKit(docId, data){
@@ -333,12 +329,17 @@
   }
 
   let ALL_KITS = [];
-  let __kitAudio = null;
-  let __kitPlayingId = null;
+
+  function goToKit(id){
+    const kitId = String(id || "").trim();
+    if (!kitId) return;
+    // ✅ Uses your existing /soundkit/index.html page
+    window.location.href = `/soundkit/?id=${encodeURIComponent(kitId)}`;
+  }
 
   function renderKits(list){
-    const grid = document.getElementById("kitsGrid");
-    const status = document.getElementById("kitStatus");
+    const grid = $("kitsGrid");
+    const status = $("kitStatus");
     grid.innerHTML = "";
 
     if (!list.length){
@@ -354,7 +355,7 @@
       el.setAttribute("data-kit-id", k.id);
 
       el.innerHTML = `
-        <!-- ✅ COVER ONLY -->
+        <!-- ✅ COVER CLICKABLE (NO AUDIO PREVIEW) -->
         <div class="kit-cover" data-go="${k.id}">
           ${coverOnly(k.cover, k.title)}
         </div>
@@ -379,10 +380,10 @@
       grid.appendChild(el);
     });
   }
-  
+
   function applyFilters(){
-    const q = (document.getElementById("kitSearch").value || "").trim().toLowerCase();
-    const cat = (document.getElementById("kitCategory").value || "").trim().toLowerCase();
+    const q = ($("kitSearch").value || "").trim().toLowerCase();
+    const cat = ($("kitCategory").value || "").trim().toLowerCase();
 
     const filtered = ALL_KITS.filter(k=>{
       const hay = `${k.title} ${k.description} ${k.category}`.toLowerCase();
@@ -395,7 +396,7 @@
   }
 
   function showFirebaseError(err){
-    const status = document.getElementById("kitStatus");
+    const status = $("kitStatus");
     const code = err?.code ? String(err.code) : "";
     const msg  = err?.message ? String(err.message) : String(err || "");
     status.classList.remove("hidden");
@@ -410,7 +411,7 @@
   }
 
   async function loadKits(){
-    const status = document.getElementById("kitStatus");
+    const status = $("kitStatus");
     status.textContent = "Loading sound kits…";
     status.classList.remove("hidden");
 
@@ -428,13 +429,14 @@
   }
 
   // ✅ handlers
-  document.addEventListener("click", async (e)=>{
+  document.addEventListener("click", (e)=>{
     const go = e.target.closest("[data-go]");
     const add = e.target.closest("[data-add]");
     const open = e.target.closest("[data-open]");
 
     if (!go && !add && !open) return;
 
+    // cover click -> go to kit page
     if (go){
       const id = go.getAttribute("data-go");
       goToKit(id);
@@ -465,11 +467,11 @@
         return;
       }
 
-      // Use a unique id so it doesn't collide with beats
-      const cartId = `kit:${kit.id}`;
-
+      // ✅ IMPORTANT FIX:
+      // For sound kits, beatId MUST be the real Firestore kit doc id (NO "kit:" prefix)
+      // Backend uses (beatId) as kitId when licenseKey="soundkit"
       window.PB_CART.add({
-        beatId: cartId,                 // cart expects beatId in your current system
+        beatId: String(kit.id),
         title: kit.title,
         artwork: kit.cover,
         price: Number(kit.price || 0),
@@ -477,18 +479,16 @@
         licenseName: "Sound Kit",
         producerId: "",
         producerName: "",
-        // optional: keep downloadUrl for later checkout fulfillment
         downloadUrl: String(kit.downloadUrl || "")
       });
 
-      // ✅ confirm in a simple way (cart drawer will show it)
       alert("Added to cart ✅");
       return;
     }
   });
 
-  document.getElementById("kitSearch").addEventListener("input", applyFilters);
-  document.getElementById("kitCategory").addEventListener("change", applyFilters);
+  $("kitSearch").addEventListener("input", applyFilters);
+  $("kitCategory").addEventListener("change", applyFilters);
 
   window.addEventListener("firebase-ready", () => {
     if (window.FB?.db) loadKits();
