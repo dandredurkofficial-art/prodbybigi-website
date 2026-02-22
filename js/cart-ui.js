@@ -46,9 +46,10 @@
       );
 
       const firebaseConfig = {
-        apiKey: "AIzaSyAlh6_jXAJ2Wdyfw04Ieb9NqIoa8ZziuxE",
-        authDomain: "prodbybigi.firebaseapp.com",
-        projectId: "prodbybigi",
+        apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+        authDomain: "audiory-beat-store.firebaseapp.com",
+        projectId: "audiory-beat-store",
+        storageBucket: "audiory-beat-store.firebasestorage.app",
       };
 
       const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
