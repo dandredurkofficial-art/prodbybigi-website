@@ -960,8 +960,6 @@ exports.paypalWebhook = onRequest(
     applyCors(req, res);
 
     try {
-      if (applyCors(req, res)) return;
-
       if (req.method !== "POST") return res.status(405).send("Use POST");
 
       const ok = await verifyPayPalWebhookSignature(req);
@@ -1030,8 +1028,6 @@ exports.paypalWebhook = onRequest(
         const beatSnap = await db.collection("beats").doc(beatId).get();
         if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
       }
-
-      const { value, currency } = parseAmountFromPayPalEvent(event);
 
       const orderRef = db.collection("orders").doc(orderId);
       const existing = await orderRef.get();
@@ -1107,79 +1103,6 @@ exports.paypalWebhook = onRequest(
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
           });
         }
-      }
-
-      const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
-      const orderRef = db.collection("orders").doc(orderId);
-
-      const existing = await orderRef.get();
-      if (!existing.exists) {
-        await orderRef.set({
-          orderId,
-          provider: "paypal",
-          providerEventId: safeStr(event.id),
-          providerCaptureId: safeStr(resource.id),
-          providerStatus: safeStr(resource.status),
-          beatId: beatId || null,
-          producerId: producerId || null,
-          amount: Number(value || 0),
-          currency: currency || "USD",
-          status: "PAID",
-          payerEmail: safeStr(resource?.payer?.email_address),
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          raw: event,
-        });
-      } else {
-        await orderRef.set(
-          {
-            providerStatus: safeStr(resource.status),
-            status: "PAID",
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-      }
-
-      if (beatId && producerId) {
-        await db.collection("unlocks").doc(orderId).set(
-          {
-            orderId,
-            beatId,
-            phone: null,
-            amount: Number(value || 0),
-            receipt: safeStr(resource.id),
-            transactionDate: Date.now(),
-            checkoutRequestId: null,
-            provider: "paypal",
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
-          { merge: true }
-        );
-
-        // idempotent wallet credit marker
-        await db.runTransaction(async (tx) => {
-          const snap = await tx.get(orderRef);
-          const d = snap.data() || {};
-          if (d.walletCredited === true) return;
-
-          tx.set(
-            orderRef,
-            {
-              walletCredited: true,
-              walletCreditedAt: admin.firestore.FieldValue.serverTimestamp(),
-            },
-            { merge: true }
-          );
-        });
-
-        await creditProducerWallet({
-          producerId,
-          orderId,
-          grossAmount: Number(value || 0),
-          currency,
-          source: "paypal",
-        });
       }
 
       return res.status(200).json({ received: true, eventType });
@@ -1354,8 +1277,6 @@ exports.paypalPayoutStatus = onRequest(
     applyCors(req, res);
 
     try {
-      if (applyCors(req, res)) return;
-
       const payoutBatchId = safeStr(req.query?.payoutBatchId).trim();
       if (!payoutBatchId) return res.status(400).json({ error: "payoutBatchId is required" });
 
@@ -1398,8 +1319,6 @@ exports.stkpush = onRequest(
     applyCors(req, res);
 
     try {
-      if (applyCors(req, res)) return;
-
       if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
       const { phone, amount, beatId } = req.body || {};
