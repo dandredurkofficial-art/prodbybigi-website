@@ -1701,13 +1701,13 @@ exports.onUserBecameProducer = onDocumentWritten(
       if (email) {
         await sendEmail({
           to: email,
-          subject: "Welcome to Audiory 👋",
+          subject: "Welcome to Audiory",
           text:
             `Hey ${name}, welcome to Audiory!\n\n` +
             `You can now upload beats, set prices, and start selling.\n\n` +
             `— Audiory Team`,
           html:
-            `<h2>Welcome to Audiory 👋</h2>` +
+            `<h2>Welcome to Audiory</h2>` +
             `<p>Hey ${name},</p>` +
             `<p>You can now upload beats, set prices, and start selling.</p>` +
             `<p style="margin-top:14px;">— Audiory Team</p>`,
