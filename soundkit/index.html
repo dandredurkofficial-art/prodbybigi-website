@@ -3,189 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
   <title>Sound Kit | Audiory</title>
-
-  <!-- SEO -->
-  <meta name="robots" content="index, follow" />
-  <link rel="icon" type="image/webp" href="/audioryfavicon.web" />
 
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/cart.css">
 
   <style>
-    .wrap{ padding: 18px 0 26px; }
-
-    .kit-hero{
-      display:grid;
-      grid-template-columns: 300px 1fr;
-      gap: 18px;
-      align-items:start;
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    .cardx{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px}
+    .grid{display:grid;grid-template-columns: 360px 1fr;gap:16px;align-items:start}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}}
+    .cover{
+      aspect-ratio:1/1;border-radius:18px;overflow:hidden;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
     }
-    @media (max-width: 860px){
-      .kit-hero{ grid-template-columns: 1fr; }
+    .cover img{width:100%;height:100%;object-fit:cover;display:block}
+    .title{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:2px 0 8px}
+    .muted{color:rgba(255,255,255,.70)}
+    .desc{margin-top:10px;line-height:1.45;color:rgba(255,255,255,.86);white-space:pre-wrap}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+    .pill{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 12px;border-radius:999px;font-weight:900;
+      display:inline-flex;gap:8px;align-items:center
     }
-
-    .kit-cover{
-      width: 100%;
-      aspect-ratio: 1/1;
-      border-radius: 22px;
-      overflow:hidden;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      display:grid;
-      place-items:center;
+    .btn{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.92);
+      padding:10px 14px;border-radius:999px;font-weight:900;cursor:pointer
     }
-    .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
-
-    .kit-title{
-      font-size: 28px;
-      font-weight: 950;
-      letter-spacing: -.02em;
-      line-height: 1.05;
-      margin: 0;
-    }
-    .kit-sub{
-      color: var(--muted);
-      margin-top: 8px;
-      line-height: 1.45;
-      max-width: 62ch;
-    }
-
-    .kit-top-actions{
-      margin-top: 14px;
-      display:flex;
-      gap: 10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .price-pill-btn{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.14);
-      padding: 12px 14px;
-      border-radius: 999px;
-      font-weight: 950;
-      font-size: 14px;
-      white-space: nowrap;
-      cursor:pointer;
-      color:#fff;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-    }
-    .price-pill-btn:hover{ background: rgba(255,255,255,.11); }
-    .price-pill-btn:active{ transform: translateY(1px); }
-
-    .ghost-btn{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.12);
-      color: rgba(255,255,255,.92);
-      padding: 12px 14px;
-      border-radius: 999px;
-      font-weight: 900;
-      cursor:pointer;
-    }
-    .ghost-btn:hover{ background: rgba(255,255,255,.09); }
-
-    .divider{
-      height:1px;
-      background: rgba(255,255,255,.10);
-      margin: 18px 0;
-    }
-
-    .section-title{
-      font-size: 14px;
-      font-weight: 950;
-      letter-spacing: .02em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,.86);
-      margin: 0 0 12px;
-    }
-
-    /* ====== Preview list (matches screenshot vibe) ====== */
-    .preview-list{ display:flex; flex-direction:column; gap: 14px; }
-
-    .preview-row{
-      display:grid;
-      grid-template-columns: 46px 1fr;
-      gap: 14px;
-      align-items:center;
-      padding: 12px 12px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-    .preview-row:hover{ border-color: rgba(255,255,255,.14); background: rgba(255,255,255,.05); }
-
-    .play-btn{
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.10);
-      color: rgba(255,255,255,.92);
-      cursor:pointer;
-      display:grid;
-      place-items:center;
-      font-weight: 950;
-      user-select:none;
-    }
-    .play-btn:active{ transform: translateY(1px); }
-    .preview-row.is-playing .play-btn{
-      background: rgba(59,130,246,.22);
-      border-color: rgba(59,130,246,.45);
-    }
-
-    .wave-block{
-      min-width:0;
-      display:flex;
-      flex-direction:column;
-      gap: 10px;
-    }
-
-    /* fake waveform look */
-    .wave{
-      height: 52px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.10);
-      background:
-        linear-gradient(to bottom, rgba(255,255,255,.02), rgba(255,255,255,.03)),
-        repeating-linear-gradient(
-          to right,
-          rgba(255,255,255,.65) 0 2px,
-          rgba(255,255,255,0) 2px 6px
-        );
-      opacity: .85;
-      mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-      position:relative;
-      overflow:hidden;
-    }
-    /* add random-ish “energy” overlay */
-    .wave::after{
-      content:"";
-      position:absolute; inset:-40% 0 -40% 0;
-      background:
-        radial-gradient(circle at 12% 60%, rgba(255,255,255,.22) 0 22%, transparent 23%),
-        radial-gradient(circle at 35% 45%, rgba(255,255,255,.18) 0 18%, transparent 19%),
-        radial-gradient(circle at 60% 55%, rgba(255,255,255,.24) 0 24%, transparent 25%),
-        radial-gradient(circle at 82% 40%, rgba(255,255,255,.16) 0 16%, transparent 17%);
-      filter: blur(1px);
-      opacity: .7;
-      pointer-events:none;
-    }
-
-    .meta-line{
-      text-align:center;
-      color: rgba(255,255,255,.55);
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: none;
-      font-size: 13px;
-    }
-
+    .btn.primary{background:#2b6cff;border-color:#2b6cff;color:#fff}
     .loading-box{
       margin: 14px 0;
       padding: 14px;
@@ -196,21 +45,10 @@
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .hidden{ display:none !important; }
-
-    .backlink{
-      display:inline-flex;
-      align-items:center;
-      gap:10px;
-      color: rgba(255,255,255,.85);
-      text-decoration:none;
-      font-weight: 900;
-      margin-bottom: 12px;
-      opacity: .9;
-    }
-    .backlink:hover{ opacity: 1; text-decoration: underline; }
+    .hidden{display:none!important}
   </style>
 </head>
+
 <body>
 
 <header class="topbar">
@@ -225,10 +63,8 @@
       <a href="/marketplace/">Tracks</a>
       <a href="/soundkits/">Sound Kits</a>
       <a href="/producers/">Producers</a>
-
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
-
       <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard">Dashboard</a>
       <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
@@ -256,34 +92,34 @@
   <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
 
-<main class="container wrap">
-  <a class="backlink" href="/soundkits/"><span>←</span><span>Back to Sound Kits</span></a>
+<main class="wrap">
+  <a href="/soundkits/" class="muted" style="text-decoration:none;display:inline-block;margin:10px 0 14px;">← Back to Sound Kits</a>
 
   <div id="status" class="loading-box">Loading sound kit…</div>
 
-  <section id="kitHero" class="kit-hero hidden">
-    <div class="kit-cover" id="kitCover"></div>
+  <section id="kitCard" class="cardx hidden">
+    <div class="grid">
+      <div class="cover" id="kitCover"></div>
 
-    <div>
-      <h1 class="kit-title" id="kitTitle">Sound Kit</h1>
-      <div class="kit-sub" id="kitDesc"></div>
+      <div>
+        <div class="title" id="kitTitle">—</div>
 
-      <div class="kit-top-actions">
-        <button class="price-pill-btn" id="addToCartBtn" type="button">
-          <span>🛒</span><span id="kitPrice">$0.00</span>
-        </button>
+        <div class="row">
+          <div class="pill"><span class="muted">Category:</span> <span id="kitCategory">—</span></div>
+          <div class="pill"><span class="muted">Price:</span> <span id="kitPrice">—</span></div>
+        </div>
 
-        <button class="ghost-btn" id="copyLinkBtn" type="button">Copy link</button>
+        <div class="desc" id="kitDesc"></div>
+
+        <div class="row">
+          <button class="btn primary" id="addBtn" type="button">🛒 Add to cart</button>
+          <button class="btn" id="detailsBtn" type="button">Details</button>
+        </div>
+
+        <div class="muted" style="margin-top:10px;font-size:13px;">
+          License: <b>Sound Kit</b>
+        </div>
       </div>
-
-      <div class="divider"></div>
-
-      <h2 class="section-title">Preview Samples</h2>
-      <div id="previewEmpty" class="loading-box hidden">
-        No preview samples yet. Add a <b>samples</b> array in Firestore (see note in code).
-      </div>
-
-      <div id="previewList" class="preview-list"></div>
     </div>
   </section>
 </main>
@@ -313,10 +149,7 @@
 
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
-  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
-
 <script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
@@ -326,327 +159,116 @@
   const $ = (id)=>document.getElementById(id);
 
   function money(n){
-    const v = Number(n);
-    if (!Number.isFinite(v)) return "$0.00";
-    return "$" + v.toFixed(2);
-  }
-
-  function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title||"Sound Kit"}" loading="lazy" />`;
-    const initials = String(title||"K").trim().slice(0,2).toUpperCase();
-    return `<div style="height:100%;display:grid;place-items:center;font-weight:950;font-size:26px;color:rgba(255,255,255,.9)">${initials}</div>`;
+    const v = Number(n || 0);
+    return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
   }
 
   function getParam(name){
     return new URLSearchParams(location.search).get(name) || "";
   }
 
-  // Normalize kit fields from Firestore
   function normalizeKit(docId, data){
-    const samples =
-      data.samples ||
-      data.previewSamples ||
-      data.previews ||
-      data.tracks ||
-      data.demoTracks ||
-      [];
-
-    const previewUrl =
-      data.previewUrl || data.previewURL || data.previewAudio || data.audioPreview || data.preview || "";
-
     return {
       id: docId,
       title: data.title || data.name || "Untitled Kit",
       cover: data.cover || data.coverUrl || data.image || data.artwork || "",
       description: data.description || data.desc || "",
+      category: String(data.category || "").toLowerCase(),
       price: Number(data.price ?? 0) || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || "",
-      // Samples can be:
-      // samples: [{ title, bpm, key, url }] or [{ name, audioUrl, ... }]
-      samples: Array.isArray(samples) ? samples : [],
-      // single preview file fallback
-      previewUrl: String(previewUrl || "").trim()
+      published: data.published !== false,
+      createdAt: data.createdAt || 0,
+      downloadUrl: data.downloadUrl || data.downloadURL || ""
     };
   }
 
-  async function findKitDocById(kitId){
-    // Try common collection names
-    const { collection, doc, getDoc } = window.FB;
-    const names = ["soundKits", "soundkits", "sound_kits", "kits"];
+  async function getKitById(kitId){
+    // Uses window.FB from /js/firebase.js
+    const { doc, getDoc, collection } = window.FB;
 
-    for (const name of names){
-      try{
-        const ref = doc(collection(window.FB.db, name), kitId);
-        const snap = await getDoc(ref);
-        if (snap.exists()){
-          return { id: snap.id, data: snap.data(), collection: name };
-        }
-      }catch(e){}
+    const cols = ["soundKits", "soundkits"];
+    for (const col of cols){
+      const ref = doc(collection(window.FB.db, col), String(kitId));
+      const snap = await getDoc(ref);
+      if (snap.exists()){
+        return normalizeKit(snap.id, snap.data());
+      }
     }
     return null;
   }
 
-  // ====== Audio Player for sample list ======
-  let __audio = null;
-  let __playingId = null;
+  async function load(){
+    const status = $("status");
+    const card = $("kitCard");
 
-  function stopAudio(){
-    if (__audio){
-      try{ __audio.pause(); }catch{}
-      __audio = null;
-    }
-    __playingId = null;
-    document.querySelectorAll(".preview-row").forEach(r=> r.classList.remove("is-playing"));
-    document.querySelectorAll("[data-play]").forEach(b=> b.textContent = "▶");
-  }
-
-  function safeText(s){
-    return String(s || "").replace(/[&<>"']/g, (m)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[m]));
-  }
-
-  function fmtMeta(sample){
-    const name = sample.title || sample.name || sample.label || "Sample";
-    const bpm  = sample.bpm ? `${sample.bpm} BPM` : "";
-    const key  = sample.key ? `${sample.key}` : (sample.scale ? `${sample.scale}` : "");
-    const extra = [bpm, key].filter(Boolean).join(" ");
-    return extra ? `${name} - ${extra}` : name;
-  }
-
-  function extractSampleUrl(sample){
-    return (
-      sample.url ||
-      sample.audio ||
-      sample.audioUrl ||
-      sample.previewUrl ||
-      sample.file ||
-      sample.src ||
-      ""
-    );
-  }
-
-  // ====== Cart add (multi-support like before) ======
-  function addKitToCart(kit){
-    const item = {
-      id: `kit:${kit.id}`,
-      type: "soundkit",
-      title: kit.title,
-      artwork: kit.cover,
-      price: Number(kit.price || 0),
-      qty: 1,
-      downloadUrl: String(kit.downloadUrl || "")
-    };
-
-    const tries = [
-      () => window.PBCart?.addItem?.(item),
-      () => window.PBCart?.add?.(item),
-      () => window.PB_CART?.add?.({
-        beatId: item.id,
-        title: item.title,
-        artwork: item.artwork,
-        price: item.price,
-        licenseKey: "soundkit",
-        licenseName: "Sound Kit",
-        producerId: "",
-        producerName: "",
-        downloadUrl: item.downloadUrl
-      }),
-      () => window.cart?.add?.(item)
-    ];
-
-    for (const fn of tries){
-      try{
-        fn();
-        return true;
-      }catch(e){}
-    }
-    return false;
-  }
-
-  function renderSamples(samples){
-    const list = $("previewList");
-    const empty = $("previewEmpty");
-
-    list.innerHTML = "";
-
-    if (!samples.length){
-      empty.classList.remove("hidden");
-      return;
-    }
-    empty.classList.add("hidden");
-
-    samples.forEach((s, idx)=>{
-      const rowId = `s_${idx}`;
-      const url = String(extractSampleUrl(s) || "").trim();
-
-      const row = document.createElement("div");
-      row.className = "preview-row";
-      row.setAttribute("data-row", rowId);
-
-      row.innerHTML = `
-        <button class="play-btn" type="button" data-play="${safeText(rowId)}" ${url ? "" : "disabled"} aria-label="Play sample">
-          ▶
-        </button>
-        <div class="wave-block">
-          <div class="wave"></div>
-          <div class="meta-line">${safeText(fmtMeta(s))}</div>
-        </div>
-      `;
-
-      // Click anywhere on row (except button) plays too
-      row.addEventListener("click", (e)=>{
-        const btn = e.target.closest("[data-play]");
-        if (btn) return;
-        const playBtn = row.querySelector("[data-play]");
-        playBtn?.click();
-      });
-
-      // Attach URL in dataset
-      row.dataset.url = url;
-
-      list.appendChild(row);
-    });
-  }
-
-  async function loadSoundKit(){
-    const kitId = getParam("id");
+    const kitId = String(getParam("id")).trim();
     if (!kitId){
-      $("status").textContent = "Missing kit id.\nOpen a kit from /soundkits/ (tap the cover).";
+      status.textContent = "Missing kit id.\n\nOpen this page like:\n/soundkit/?id=YOUR_KIT_ID";
       return;
     }
 
-    $("status").textContent = "Loading sound kit…";
-    $("status").classList.remove("hidden");
-    $("kitHero").classList.add("hidden");
+    status.textContent = "Loading sound kit…";
+    status.classList.remove("hidden");
 
     try{
-      const found = await findKitDocById(kitId);
-      if (!found){
-        $("status").textContent = "Sound kit not found.\nMake sure the id exists in Firestore.";
+      const kit = await getKitById(kitId);
+      if (!kit){
+        status.textContent = `Sound kit not found: ${kitId}`;
         return;
       }
 
-      const kit = normalizeKit(found.id, found.data);
-
-      document.title = `${kit.title} | Audiory`;
-
-      $("kitCover").innerHTML = coverHTML(kit.cover, kit.title);
+      // Render UI
       $("kitTitle").textContent = kit.title;
-      $("kitDesc").textContent = kit.description || "—";
-      $("kitPrice").textContent = kit.price > 0 ? money(kit.price) : "Free";
+      $("kitCategory").textContent = kit.category || "—";
+      $("kitPrice").textContent = kit.price ? money(kit.price) : "Free";
+      $("kitDesc").textContent = kit.description || "No description.";
 
-      // Build sample list:
-      // 1) If Firestore has samples array -> use it
-      // 2) else if previewUrl exists -> create one sample from it
-      let samples = [];
-      if (Array.isArray(kit.samples) && kit.samples.length){
-        samples = kit.samples;
-      } else if (kit.previewUrl){
-        samples = [{ title: "Preview", bpm: "", key: "", url: kit.previewUrl }];
-      }
+      $("kitCover").innerHTML = kit.cover
+        ? `<img src="${kit.cover}" alt="${kit.title}" loading="lazy">`
+        : "";
 
-      renderSamples(samples);
+      // Buttons
+      $("detailsBtn").onclick = () => {
+        alert(
+          `${kit.title}\n\n${kit.description || "No description."}\n\n` +
+          `Category: ${kit.category || "—"}\n` +
+          `Price: ${kit.price ? money(kit.price) : "Free"}`
+        );
+      };
 
-      // Actions
-      $("addToCartBtn").onclick = ()=>{
-        const ok = addKitToCart(kit);
-        if (!ok){
-          alert("Cart add failed ❌\nSend me your /js/cart.js and I’ll connect to the exact cart API you use.");
+      $("addBtn").onclick = () => {
+        if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
+          alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
           return;
         }
+
+        // ✅ IMPORTANT: beatId must be real kit doc id (NO "kit:" prefix)
+        window.PB_CART.add({
+          beatId: String(kit.id),
+          title: kit.title,
+          artwork: kit.cover,
+          price: Number(kit.price || 0),
+          licenseKey: "soundkit",
+          licenseName: "Sound Kit",
+          producerId: "",
+          producerName: "",
+          downloadUrl: String(kit.downloadUrl || "")
+        });
+
         alert("Added to cart ✅");
       };
 
-      $("copyLinkBtn").onclick = async ()=>{
-        try{
-          await navigator.clipboard.writeText(location.href);
-          alert("Link copied ✅");
-        }catch{
-          // fallback
-          const ta = document.createElement("textarea");
-          ta.value = location.href;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          ta.remove();
-          alert("Link copied ✅");
-        }
-      };
-
-      // Show UI
-      $("status").classList.add("hidden");
-      $("kitHero").classList.remove("hidden");
-
-      // Click handlers for play buttons
-      document.addEventListener("click", async (e)=>{
-        const btn = e.target.closest("[data-play]");
-        if (!btn) return;
-
-        const rowId = btn.getAttribute("data-play");
-        const row = document.querySelector(`[data-row="${CSS.escape(rowId)}"]`);
-        if (!row) return;
-
-        const url = String(row.dataset.url || "").trim();
-        if (!url) return;
-
-        // toggle if same
-        if (__audio && __playingId === rowId && !__audio.paused){
-          stopAudio();
-          return;
-        }
-
-        // stop old
-        stopAudio();
-
-        // start new
-        __audio = new Audio(url);
-        __playingId = rowId;
-
-        row.classList.add("is-playing");
-        btn.textContent = "⏸";
-
-        __audio.addEventListener("ended", stopAudio);
-        __audio.addEventListener("pause", ()=>{
-          if (__playingId === rowId) stopAudio();
-        });
-
-        await __audio.play().catch(()=>{
-          stopAudio();
-          alert("Could not play this preview. Check the sample URL.");
-        });
-      }, { passive: true });
-
+      status.classList.add("hidden");
+      card.classList.remove("hidden");
     }catch(err){
       console.error(err);
-      $("status").textContent = "Failed to load kit.\n\n" + (err?.message || String(err));
+      status.textContent = "Load failed.\n\n" + (err?.message || String(err));
     }
   }
 
   window.addEventListener("firebase-ready", () => {
-    if (window.FB?.db) loadSoundKit();
+    if (window.FB?.db) load();
   });
-
-  // stop audio when leaving
-  window.addEventListener("pagehide", stopAudio);
 </script>
 
-<!--
-✅ Firestore sample format recommended:
-
-soundKits/{kitId} {
-  title: "Bigi Beats Drums 1",
-  cover: "https://...",
-  price: 5,
-  description: "...",
-  samples: [
-    { title: "Airsoft", bpm: 130, key: "D Min", url: "https://.../airsoft.mp3" },
-    { title: "Armin", bpm: 145, key: "G# Min", url: "https://.../armin.mp3" }
-  ]
-}
-
-If you only have one preview file, set:
-previewUrl: "https://.../preview.mp3"
--->
 </body>
 </html>
