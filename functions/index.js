@@ -385,6 +385,37 @@ async function creditProducerWallet({
   return { gross, fee, net };
 }
 
+exports.testEmail = onRequest(
+  {
+    region: "us-central1",
+    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+  },
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
+    try {
+      const to =
+        (req.query?.to ? String(req.query.to) : "") || ADMIN_NOTIFY_EMAIL.value();
+      if (!to) return res.status(400).json({ error: "Missing to" });
+
+      await sendEmail({
+        to,
+        subject: "✅ Audiory SendGrid Test",
+        text: "If you received this, SendGrid is working.",
+        html: "<h2>✅ Audiory SendGrid Test</h2><p>If you received this, SendGrid is working.</p>",
+      });
+
+      return res.json({ ok: true, sentTo: to, from: SENDGRID_FROM.value() });
+    } catch (e) {
+      console.error("testEmail error:", e?.message || e);
+      if (e?.response?.body) console.error("SendGrid body:", e.response.body);
+      return res.status(500).json({ ok: false, error: e.message });
+    }
+  }
+);
+
 exports.verifySubscription = onRequest(
   {
     region: "us-central1",
