@@ -1,13 +1,17 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Payment cancelled - Audiory</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payment canceled</title>
 </head>
-<body style="font-family:system-ui; padding:24px;">
-  <h2>Payment cancelled ❌</h2>
-  <p>No worries — you can try again.</p>
-  <a href="/marketplace/">Back to Marketplace</a>
+<body>
+  <p style="font-family:system-ui;padding:20px;">Payment canceled. Returning…</p>
+  <script>
+    // Keep the order id if you want, OR remove it:
+    // localStorage.removeItem("pb_last_order_id");
+    localStorage.removeItem("pb_last_order_id");
+    window.location.href = "/marketplace/?canceled=1";
+  </script>
 </body>
 </html>
