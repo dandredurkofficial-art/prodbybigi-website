@@ -9,16 +9,15 @@
   <p style="font-family:system-ui;padding:20px;">Completing payment…</p>
 
   <script>
-    window.PB_PAYPAL_CREATE_ORDER_URL =
-      "https://createorder-f65rhsquva-uc.a.run.app";
+    // ✅ These should be the EXACT deployed URLs of your HTTPS functions
+    // If you’re using Cloud Run proxy URLs, put them here exactly.
     window.PB_PAYPAL_CAPTURE_ORDER_URL =
-      "https://captureorder-f65rhsquva-uc.a.run.app";
+      "https://captureorder-f65rhsquva-uc.a.run.app"; // <-- your capture endpoint
   </script>
 
   <script type="module">
-    // Firebase config (same project)
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
@@ -29,47 +28,53 @@
     const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    async function capture() {
-      const orderId = localStorage.getItem("pb_last_order_id");
-      if (!orderId) {
-        window.location.href = "/marketplace/?error=missing_order";
-        return;
-      }
+    function getOrderIdFromUrl() {
+      const qs = new URLSearchParams(location.search);
+      // PayPal returns order id in "token"
+      return (qs.get("token") || "").trim();
+    }
 
-      // Buyer must be logged in so we can send token
-      const user = auth.currentUser;
-      if (!user) {
-        // force login then user can come back
-        window.location.href = "/login/?next=/success.html";
+    async function doCapture(user) {
+      const orderId = getOrderIdFromUrl();
+      if (!orderId) {
+        window.location.href = "/marketplace/?error=missing_token";
         return;
       }
 
       const token = await user.getIdToken();
 
-      const r = await fetch(`${window.PB_PAYPAL_CREATE_ORDER_URL}capture-order`, {
+      const r = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ orderId })
+        body: JSON.stringify({ orderId }),
       });
 
-      const data = await r.json().catch(()=>({}));
+      const data = await r.json().catch(() => ({}));
       if (!r.ok) {
-        console.error(data);
+        console.error("Capture failed:", data);
         window.location.href = "/marketplace/?error=capture_failed";
         return;
       }
 
-      // success
-      localStorage.removeItem("pb_last_order_id");
-
-      // ✅ send them to dashboard after payment
-      window.location.href = "/buyer-dashboard/?paid=1";
+      // ✅ Let webhook do the unlock + wallet credit
+      // Give it a moment then send buyer to dashboard
+      setTimeout(() => {
+        window.location.href = "/buyer-dashboard/?paid=1";
+      }, 1200);
     }
 
-    capture();
+    // Require login so buyer dashboard can show their stuff
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        const next = encodeURIComponent(location.pathname + location.search);
+        window.location.href = `/login/?next=${next}`;
+        return;
+      }
+      doCapture(user);
+    });
   </script>
 </body>
 </html>
