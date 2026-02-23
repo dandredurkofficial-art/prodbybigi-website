@@ -1,211 +1,688 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Audiory Support Admin</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Audiory Support Admin</title>
   <style>
-    body {
+    :root{
+      --bg:#0b0f14;
+      --panel:#0f1622;
+      --panel2:#111b2a;
+      --text:#e7eefc;
+      --muted:#9bb0d1;
+      --border: rgba(255,255,255,.10);
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    body{
       margin:0;
-      font-family:system-ui;
-      background:#0e111a;
-      color:white;
-      display:flex;
-      height:100vh;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 600px at 30% 10%, rgba(34,197,94,.10), transparent 60%),
+                  radial-gradient(900px 600px at 80% 40%, rgba(59,130,246,.10), transparent 60%),
+                  var(--bg);
+      color:var(--text);
     }
-
-    .sidebar {
-      width:340px;
-      border-right:1px solid rgba(255,255,255,.1);
-      overflow:auto;
+    a{color:inherit}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid var(--border);
+      background: rgba(15,22,34,.75);
+      backdrop-filter: blur(10px);
+      position: sticky; top:0; z-index:10;
     }
-
-    .thread {
-      padding:14px;
-      border-bottom:1px solid rgba(255,255,255,.05);
+    .brand{
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      color:var(--muted);
+      background: rgba(255,255,255,.03);
+    }
+    .btn{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:10px;
       cursor:pointer;
+      font-weight:600;
     }
-
-    .thread:hover {
-      background:rgba(255,255,255,.05);
+    .btn:hover{background: rgba(255,255,255,.10)}
+    .btn.primary{border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.12)}
+    .btn.primary:hover{background: rgba(34,197,94,.18)}
+    .btn.danger{border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.10)}
+    .btn.danger:hover{background: rgba(239,68,68,.16)}
+    .wrap{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap: 14px;
+      padding: 14px;
+      height: calc(100vh - 58px);
     }
-
-    .main {
-      flex:1;
-      display:flex;
-      flex-direction:column;
+    .card{
+      border:1px solid var(--border);
+      background: rgba(15,22,34,.70);
+      border-radius:16px;
+      overflow:hidden;
+      min-height: 0;
     }
-
-    .messages {
-      flex:1;
-      overflow:auto;
-      padding:20px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-
-    .bubble {
-      padding:10px 14px;
-      border-radius:12px;
-      max-width:70%;
-      line-height:1.5;
-    }
-
-    .user {
-      background:#1f2937;
-      align-self:flex-start;
-    }
-
-    .admin {
-      background:#2563eb;
-      align-self:flex-end;
-    }
-
-    .replyBox {
-      padding:14px;
-      border-top:1px solid rgba(255,255,255,.1);
-      display:flex;
+    .cardHeader{
+      padding:12px 12px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
       gap:10px;
+      background: rgba(255,255,255,.02);
     }
-
-    textarea {
-      flex:1;
-      padding:10px;
-      border-radius:10px;
-      border:0;
-      resize:none;
-      min-height:60px;
+    .searchRow{
+      padding: 12px;
+      border-bottom:1px solid var(--border);
+      display:flex; gap:10px;
     }
-
-    button {
-      background:#22c55e;
-      border:0;
-      padding:10px 16px;
-      border-radius:10px;
-      cursor:pointer;
-      font-weight:bold;
+    input, select, textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      outline:none;
     }
-
-    .topbar {
+    textarea{min-height:44px; resize: vertical}
+    .muted{color:var(--muted); font-size:12px}
+    .list{
+      overflow:auto;
+      max-height: calc(100vh - 58px - 14px - 16px);
+    }
+    .thread{
       padding:12px;
-      border-bottom:1px solid rgba(255,255,255,.1);
+      border-bottom:1px solid var(--border);
+      cursor:pointer;
+    }
+    .thread:hover{background: rgba(255,255,255,.04)}
+    .thread.active{background: rgba(34,197,94,.08)}
+    .row{display:flex; align-items:center; justify-content:space-between; gap:10px}
+    .title{font-weight:700; font-size:14px}
+    .badge{
+      font-size:11px; padding:4px 8px; border-radius:999px;
+      border:1px solid var(--border);
+      color: var(--muted);
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+    .badge.open{border-color: rgba(245,158,11,.35); color:#ffd19a; background: rgba(245,158,11,.10)}
+    .badge.pending{border-color: rgba(59,130,246,.35); color:#b6d3ff; background: rgba(59,130,246,.10)}
+    .badge.closed{border-color: rgba(148,163,184,.35); color:#cbd5e1; background: rgba(148,163,184,.10)}
+    .small{font-size:12px; color:var(--muted); margin-top:6px}
+    .chat{
+      display:flex; flex-direction:column;
+      height: 100%;
+      min-height: 0;
+    }
+    .chatHeader{
+      padding:12px;
+      border-bottom:1px solid var(--border);
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      background: rgba(255,255,255,.02);
+    }
+    .chatMeta{
+      display:flex; flex-direction:column; gap:2px; min-width: 0;
+    }
+    .chatMeta .title{font-size:15px}
+    .chatMeta .small{margin:0}
+    .chatBody{
+      padding:12px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+      background: rgba(17,27,42,.35);
+    }
+    .bubble{
+      max-width: 72%;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      margin: 8px 0;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bubble.user{
+      background: rgba(255,255,255,.06);
+      margin-right:auto;
+      border-top-left-radius: 6px;
+    }
+    .bubble.admin{
+      background: rgba(34,197,94,.12);
+      margin-left:auto;
+      border-top-right-radius: 6px;
+      border-color: rgba(34,197,94,.28);
+    }
+    .bubble .meta{
+      margin-top:6px;
+      font-size:11px;
+      color: var(--muted);
       display:flex;
       justify-content:space-between;
-      align-items:center;
+      gap:10px;
     }
-
-    .loginBtn {
-      background:#2563eb;
+    .chatComposer{
+      padding:12px;
+      border-top:1px solid var(--border);
+      display:flex; gap:10px; align-items:flex-end;
+      background: rgba(255,255,255,.02);
     }
+    .loginWrap{
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 0 14px;
+    }
+    .loginCard{
+      border:1px solid var(--border);
+      background: rgba(15,22,34,.80);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .loginCard .head{
+      padding:14px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between;
+      background: rgba(255,255,255,.02);
+    }
+    .loginCard .body{padding:14px}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .hidden{display:none !important}
+    .toast{
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: rgba(15,22,34,.92);
+      color: var(--text);
+      max-width: 360px;
+      z-index: 999;
+      display:none;
+    }
+    .toast.show{display:block}
+    .toast .t{font-weight:700; margin-bottom:4px}
   </style>
 </head>
 <body>
 
-<div class="sidebar" id="threadList"></div>
-
-<div class="main">
   <div class="topbar">
-    <div><strong>Audiory Support Admin</strong></div>
-    <button class="loginBtn" id="loginBtn">Login</button>
+    <div class="brand">Audiory Support Admin</div>
+    <div class="row" style="gap:8px">
+      <span id="who" class="pill">Not signed in</span>
+      <button id="logoutBtn" class="btn danger hidden">Logout</button>
+    </div>
   </div>
 
-  <div class="messages" id="messages"></div>
+  <!-- LOGIN -->
+  <div id="loginView" class="loginWrap">
+    <div class="loginCard">
+      <div class="head">
+        <div>
+          <div style="font-weight:800">Admin Login</div>
+          <div class="muted">Sign in with email & password (Firebase Auth)</div>
+        </div>
+        <span class="pill">support</span>
+      </div>
+      <div class="body">
+        <div style="display:grid; gap:10px">
+          <label class="muted">Email</label>
+          <input id="email" type="email" placeholder="support@audiory.site" autocomplete="email" />
+          <label class="muted">Password</label>
+          <input id="password" type="password" placeholder="••••••••" autocomplete="current-password" />
 
-  <div class="replyBox">
-    <textarea id="replyInput" placeholder="Type reply..."></textarea>
-    <button id="sendReply">Send</button>
+          <div class="row" style="margin-top:4px">
+            <button id="loginBtn" class="btn primary">Login</button>
+            <button id="resetBtn" class="btn">Forgot password</button>
+          </div>
+
+          <div id="loginErr" class="muted" style="color:#ffb4b4"></div>
+          <div class="muted">
+            ✅ Make sure this user has <b>isAdmin: true</b> in <code>users/{uid}</code>.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  <!-- APP -->
+  <div id="appView" class="wrap hidden">
 
-// 🔥 PASTE SAME FIREBASE CONFIG HERE
-const firebaseConfig = {
-  apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
-  authDomain: "audiory-beat-store.firebaseapp.com",
-  projectId: "audiory-beat-store",
-  storageBucket: "audiory-beat-store.firebasestorage.app",
-  messagingSenderId: "688272560511",
-  appId: "1:688272560511:web:9031e6ce215d6f08764a4a"
-};
+    <!-- LEFT: THREADS -->
+    <div class="card">
+      <div class="cardHeader">
+        <div style="display:flex;flex-direction:column;gap:2px">
+          <div class="title">Inbox</div>
+          <div class="muted" id="countLabel">—</div>
+        </div>
+        <button id="refreshBtn" class="btn">Refresh</button>
+      </div>
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+      <div class="searchRow">
+        <input id="search" placeholder="Search name/email/subject…" />
+        <select id="statusFilter" style="max-width:140px">
+          <option value="all">All</option>
+          <option value="open">Open</option>
+          <option value="pending">Pending</option>
+          <option value="closed">Closed</option>
+        </select>
+      </div>
 
-let currentThread = null;
+      <div id="threads" class="list"></div>
+    </div>
 
-// Login
-document.getElementById("loginBtn").onclick = async () => {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-};
+    <!-- RIGHT: CHAT -->
+    <div class="card chat">
+      <div class="chatHeader">
+        <div class="chatMeta">
+          <div class="title" id="chatTitle">Select a thread</div>
+          <div class="small" id="chatSub">—</div>
+        </div>
+        <div class="row" style="gap:8px">
+          <select id="setStatus" style="max-width:160px">
+            <option value="open">Open</option>
+            <option value="pending">Pending</option>
+            <option value="closed">Closed</option>
+          </select>
+          <button id="saveStatusBtn" class="btn">Save</button>
+        </div>
+      </div>
 
-// Load threads
-async function loadThreads() {
-  const snapshot = await getDocs(collection(db, "supportThreads"));
-  const list = document.getElementById("threadList");
-  list.innerHTML = "";
+      <div id="chatBody" class="chatBody">
+        <div class="muted">No thread selected.</div>
+      </div>
 
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "thread";
-    div.innerHTML = `
-      <strong>${data.name || "Unknown"}</strong><br/>
-      <small>${data.email || ""}</small>
-    `;
-    div.onclick = () => openThread(docSnap.id);
-    list.appendChild(div);
-  });
-}
+      <div class="chatComposer">
+        <textarea id="reply" placeholder="Type reply…" disabled></textarea>
+        <button id="sendBtn" class="btn primary" disabled>Send</button>
+      </div>
+    </div>
 
-function openThread(threadId) {
-  currentThread = threadId;
-  const messagesDiv = document.getElementById("messages");
-  messagesDiv.innerHTML = "";
+  </div>
 
-  const q = query(
-    collection(db, "supportThreads", threadId, "messages"),
-    orderBy("createdAt")
-  );
+  <div id="toast" class="toast">
+    <div class="t" id="toastTitle">Info</div>
+    <div class="muted" id="toastMsg"></div>
+  </div>
 
-  onSnapshot(q, snapshot => {
-    messagesDiv.innerHTML = "";
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const bubble = document.createElement("div");
-      bubble.className = "bubble " + (data.sender === "admin" ? "admin" : "user");
-      bubble.innerText = data.message;
-      messagesDiv.appendChild(bubble);
-    });
-  });
-}
+  <!-- Firebase (modular v9 CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      sendPasswordResetEmail,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      orderBy,
+      limit,
+      onSnapshot,
+      getDocs,
+      addDoc,
+      setDoc,
+      updateDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-document.getElementById("sendReply").onclick = async () => {
-  const text = document.getElementById("replyInput").value;
-  if (!text || !currentThread) return;
+    // ✅ TODO: PUT YOUR REAL FIREBASE CONFIG HERE (same as audiory site)
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-  await addDoc(
-    collection(db, "supportThreads", currentThread, "messages"),
-    {
-      sender: "admin",
-      message: text,
-      createdAt: new Date()
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // UI refs
+    const loginView = document.getElementById("loginView");
+    const appView = document.getElementById("appView");
+    const who = document.getElementById("who");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    const emailEl = document.getElementById("email");
+    const passEl = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const loginErr = document.getElementById("loginErr");
+
+    const threadsEl = document.getElementById("threads");
+    const searchEl = document.getElementById("search");
+    const statusFilterEl = document.getElementById("statusFilter");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const countLabel = document.getElementById("countLabel");
+
+    const chatTitle = document.getElementById("chatTitle");
+    const chatSub = document.getElementById("chatSub");
+    const chatBody = document.getElementById("chatBody");
+    const replyEl = document.getElementById("reply");
+    const sendBtn = document.getElementById("sendBtn");
+    const setStatusEl = document.getElementById("setStatus");
+    const saveStatusBtn = document.getElementById("saveStatusBtn");
+
+    const toast = document.getElementById("toast");
+    const toastTitle = document.getElementById("toastTitle");
+    const toastMsg = document.getElementById("toastMsg");
+
+    function showToast(title, msg){
+      toastTitle.textContent = title;
+      toastMsg.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(()=> toast.classList.remove("show"), 3500);
     }
-  );
 
-  document.getElementById("replyInput").value = "";
-};
+    function fmtTime(v){
+      try{
+        if (!v) return "";
+        // supports Firestore Timestamp or millis
+        const d = v.toDate ? v.toDate() : new Date(Number(v));
+        return d.toLocaleString();
+      }catch(_){ return ""; }
+    }
 
-onAuthStateChanged(auth, user => {
-  if (user) loadThreads();
-});
-</script>
+    function safeStr(x){ return (x === null || x === undefined) ? "" : String(x); }
 
+    async function ensureAdmin(user){
+      // reads users/{uid}.isAdmin == true
+      const us = await getDoc(doc(db, "users", user.uid));
+      if (!us.exists()) return false;
+      return us.data()?.isAdmin === true;
+    }
+
+    // Auth UI
+    loginBtn.onclick = async () => {
+      loginErr.textContent = "";
+      try{
+        const email = emailEl.value.trim();
+        const password = passEl.value;
+        if(!email || !password) throw new Error("Enter email & password");
+        await signInWithEmailAndPassword(auth, email, password);
+      }catch(e){
+        loginErr.textContent = e?.message || String(e);
+      }
+    };
+
+    resetBtn.onclick = async () => {
+      loginErr.textContent = "";
+      try{
+        const email = emailEl.value.trim();
+        if(!email) throw new Error("Enter your email first");
+        await sendPasswordResetEmail(auth, email);
+        showToast("Password reset", "Email sent. Check your inbox/spam.");
+      }catch(e){
+        loginErr.textContent = e?.message || String(e);
+      }
+    };
+
+    logoutBtn.onclick = async () => {
+      await signOut(auth);
+    };
+
+    // State
+    let isAdminUser = false;
+    let threadsUnsub = null;
+    let messagesUnsub = null;
+    let currentThreadId = null;
+    let threadsCache = [];
+
+    function setViewAuthed(user){
+      loginView.classList.add("hidden");
+      appView.classList.remove("hidden");
+      logoutBtn.classList.remove("hidden");
+      who.textContent = user.email || user.uid;
+    }
+
+    function setViewLoggedOut(){
+      loginView.classList.remove("hidden");
+      appView.classList.add("hidden");
+      logoutBtn.classList.add("hidden");
+      who.textContent = "Not signed in";
+      currentThreadId = null;
+      threadsEl.innerHTML = "";
+      chatBody.innerHTML = '<div class="muted">No thread selected.</div>';
+      replyEl.value = "";
+      replyEl.disabled = true;
+      sendBtn.disabled = true;
+      if (threadsUnsub) threadsUnsub();
+      if (messagesUnsub) messagesUnsub();
+      threadsUnsub = null;
+      messagesUnsub = null;
+      threadsCache = [];
+    }
+
+    function renderThreads(){
+      const q = (searchEl.value || "").trim().toLowerCase();
+      const sf = statusFilterEl.value;
+
+      const filtered = threadsCache.filter(t=>{
+        const name = safeStr(t.name).toLowerCase();
+        const email = safeStr(t.email).toLowerCase();
+        const subject = safeStr(t.subject).toLowerCase();
+        const status = safeStr(t.status || "open").toLowerCase();
+        const okText = !q || name.includes(q) || email.includes(q) || subject.includes(q);
+        const okStatus = (sf === "all") || status === sf;
+        return okText && okStatus;
+      });
+
+      countLabel.textContent = `${filtered.length} thread(s)`;
+
+      threadsEl.innerHTML = filtered.map(t=>{
+        const status = safeStr(t.status || "open").toLowerCase();
+        const active = (t.id === currentThreadId) ? "active" : "";
+        const badgeClass = status === "open" ? "open" : (status === "pending" ? "pending" : "closed");
+        const title = safeStr(t.subject || t.name || "Support Thread");
+        const sub = [safeStr(t.email), fmtTime(t.lastMessageAt || t.createdAt)].filter(Boolean).join(" • ");
+        const preview = safeStr(t.lastMessagePreview || "").slice(0, 90);
+        return `
+          <div class="thread ${active}" data-id="${t.id}">
+            <div class="row">
+              <div class="title" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(title)}</div>
+              <span class="badge ${badgeClass}">${escapeHtml(status)}</span>
+            </div>
+            <div class="small" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(sub || "")}</div>
+            <div class="small" style="margin-top:8px">${escapeHtml(preview)}</div>
+          </div>
+        `;
+      }).join("");
+
+      [...threadsEl.querySelectorAll(".thread")].forEach(el=>{
+        el.onclick = ()=> openThread(el.dataset.id);
+      });
+    }
+
+    function escapeHtml(str){
+      return safeStr(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    async function openThread(threadId){
+      currentThreadId = threadId;
+      renderThreads();
+
+      const t = threadsCache.find(x=>x.id===threadId);
+      chatTitle.textContent = t ? (t.subject || t.name || "Support Thread") : "Support Thread";
+      chatSub.textContent = t ? `${safeStr(t.email || "")} • ${fmtTime(t.createdAt || "")}` : "—";
+      setStatusEl.value = safeStr((t && t.status) ? t.status : "open").toLowerCase();
+
+      replyEl.disabled = false;
+      sendBtn.disabled = false;
+
+      // messages listener
+      if(messagesUnsub) messagesUnsub();
+      chatBody.innerHTML = '<div class="muted">Loading messages…</div>';
+
+      const msgsRef = collection(db, "supportThreads", threadId, "messages");
+      const qy = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
+
+      messagesUnsub = onSnapshot(qy, (snap)=>{
+        const msgs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+        chatBody.innerHTML = msgs.length ? msgs.map(m=>{
+          const sender = safeStr(m.sender || "user").toLowerCase();
+          const klass = sender === "admin" ? "admin" : "user";
+          return `
+            <div class="bubble ${klass}">
+              ${escapeHtml(m.message || "")}
+              <div class="meta">
+                <span>${escapeHtml(sender)}</span>
+                <span>${escapeHtml(fmtTime(m.createdAt || ""))}</span>
+              </div>
+            </div>
+          `;
+        }).join("") : '<div class="muted">No messages yet.</div>';
+
+        // auto-scroll to bottom
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }, (err)=>{
+        chatBody.innerHTML = `<div class="muted" style="color:#ffb4b4">Error: ${escapeHtml(err.message || String(err))}</div>`;
+      });
+    }
+
+    async function sendReply(){
+      const text = replyEl.value.trim();
+      if(!text) return;
+
+      if(!currentThreadId){
+        showToast("No thread", "Select a thread first.");
+        return;
+      }
+
+      sendBtn.disabled = true;
+
+      try{
+        // Add message
+        await addDoc(collection(db, "supportThreads", currentThreadId, "messages"), {
+          sender: "admin",
+          message: text,
+          createdAt: Date.now()
+        });
+
+        // Update thread metadata (optional but nice)
+        await updateDoc(doc(db, "supportThreads", currentThreadId), {
+          status: "pending",
+          lastMessageAt: Date.now(),
+          lastMessagePreview: text.slice(0, 120)
+        });
+
+        replyEl.value = "";
+      }catch(e){
+        showToast("Send failed", e?.message || String(e));
+      }finally{
+        sendBtn.disabled = false;
+      }
+    }
+
+    sendBtn.onclick = sendReply;
+    replyEl.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" && (e.ctrlKey || e.metaKey)){
+        e.preventDefault();
+        sendReply();
+      }
+    });
+
+    async function saveStatus(){
+      if(!currentThreadId) return;
+      const status = setStatusEl.value;
+      try{
+        await updateDoc(doc(db, "supportThreads", currentThreadId), {
+          status,
+          updatedAt: Date.now()
+        });
+        showToast("Saved", `Status updated to ${status}`);
+      }catch(e){
+        showToast("Save failed", e?.message || String(e));
+      }
+    }
+    saveStatusBtn.onclick = saveStatus;
+
+    searchEl.oninput = renderThreads;
+    statusFilterEl.onchange = renderThreads;
+
+    refreshBtn.onclick = async ()=> {
+      // simple re-render; listener already live
+      renderThreads();
+      showToast("Refreshed", "Inbox updated.");
+    };
+
+    function startThreadsListener(){
+      if(threadsUnsub) threadsUnsub();
+
+      // order by lastMessageAt (fallback to createdAt)
+      // (Firestore doesn't support coalesce, so we use lastMessageAt only;
+      // make sure your thread creator sets lastMessageAt on create)
+      const colRef = collection(db, "supportThreads");
+      const qy = query(colRef, orderBy("lastMessageAt", "desc"), limit(200));
+
+      threadsUnsub = onSnapshot(qy, (snap)=>{
+        threadsCache = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+        renderThreads();
+        // if selected thread missing, reset chat
+        if(currentThreadId && !threadsCache.some(t=>t.id===currentThreadId)){
+          currentThreadId = null;
+          chatTitle.textContent = "Select a thread";
+          chatSub.textContent = "—";
+          chatBody.innerHTML = '<div class="muted">No thread selected.</div>';
+          replyEl.disabled = true;
+          sendBtn.disabled = true;
+        }
+      }, (err)=>{
+        showToast("Inbox error", err?.message || String(err));
+      });
+    }
+
+    // Auth watcher
+    onAuthStateChanged(auth, async (user)=>{
+      if(!user){
+        isAdminUser = false;
+        setViewLoggedOut();
+        return;
+      }
+
+      try{
+        const ok = await ensureAdmin(user);
+        if(!ok){
+          await signOut(auth);
+          loginErr.textContent = "This account is not admin (users/{uid}.isAdmin != true).";
+          return;
+        }
+
+        isAdminUser = true;
+        setViewAuthed(user);
+        startThreadsListener();
+        showToast("Welcome", "Admin access granted.");
+
+      }catch(e){
+        await signOut(auth);
+        loginErr.textContent = e?.message || String(e);
+      }
+    });
+  </script>
 </body>
 </html>
