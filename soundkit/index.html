@@ -163,11 +163,17 @@
     return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
   }
 
-  function getParam(name){
-    return new URLSearchParams(location.search).get(name) || "";
+  function getKitIdFromUrl(){
+    const qs = new URLSearchParams(location.search);
+    return (
+      (qs.get("id") || "").trim() ||
+      (qs.get("kitId") || "").trim() ||
+      (qs.get("soundkitId") || "").trim()
+    );
   }
 
   function normalizeKit(docId, data){
+    data = data || {};
     return {
       id: docId,
       title: data.title || data.name || "Untitled Kit",
@@ -181,18 +187,37 @@
     };
   }
 
-  async function getKitById(kitId){
-    // Uses window.FB from /js/firebase.js
-    const { doc, getDoc, collection } = window.FB;
+  async function getKitByIdAnyCollection(kitId){
+    // ✅ IMPORTANT:
+    // - try the collection you actually use FIRST: "soundkits"
+    // - catch errors per collection so we can try the next one
+    const { doc, getDoc } = window.FB;
 
-    const cols = ["soundKits", "soundkits"];
+    const cols = ["soundkits", "soundKits"];
+    let lastErr = null;
+
     for (const col of cols){
-      const ref = doc(collection(window.FB.db, col), String(kitId));
-      const snap = await getDoc(ref);
-      if (snap.exists()){
-        return normalizeKit(snap.id, snap.data());
+      try{
+        const ref = doc(window.FB.db, col, String(kitId));
+        const snap = await getDoc(ref);
+
+        if (snap.exists()){
+          return normalizeKit(snap.id, snap.data());
+        }
+
+        // If it doesn't exist, just continue
+      }catch(err){
+        // permission-denied / not-found on wrong collection should NOT stop us
+        lastErr = err;
+        continue;
       }
     }
+
+    if (lastErr) {
+      // If both collections fail, surface the real error
+      throw lastErr;
+    }
+
     return null;
   }
 
@@ -200,7 +225,7 @@
     const status = $("status");
     const card = $("kitCard");
 
-    const kitId = String(getParam("id")).trim();
+    const kitId = getKitIdFromUrl();
     if (!kitId){
       status.textContent = "Missing kit id.\n\nOpen this page like:\n/soundkit/?id=YOUR_KIT_ID";
       return;
@@ -210,7 +235,7 @@
     status.classList.remove("hidden");
 
     try{
-      const kit = await getKitById(kitId);
+      const kit = await getKitByIdAnyCollection(kitId);
       if (!kit){
         status.textContent = `Sound kit not found: ${kitId}`;
         return;
@@ -241,9 +266,11 @@
           return;
         }
 
-        // ✅ IMPORTANT: beatId must be real kit doc id (NO "kit:" prefix)
+        // ✅ Keep kit prefix so backend can detect kits vs beats
+        const cartId = `kit:${String(kit.id)}`;
+
         window.PB_CART.add({
-          beatId: String(kit.id),
+          beatId: cartId,
           title: kit.title,
           artwork: kit.cover,
           price: Number(kit.price || 0),
@@ -261,7 +288,13 @@
       card.classList.remove("hidden");
     }catch(err){
       console.error(err);
-      status.textContent = "Load failed.\n\n" + (err?.message || String(err));
+      const code = err?.code ? String(err.code) : "";
+      const msg = err?.message ? String(err.message) : String(err || "");
+      status.textContent =
+        "Load failed.\n\n" +
+        (code ? ("Code: " + code + "\n") : "") +
+        "Message: " + msg + "\n\n" +
+        "Most common cause: page tried wrong collection first. This file now safely tries both.";
     }
   }
 
