@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Audiory Support</title>
+  <meta name="description" content="Audiory Help Center, FAQs, and contact support." />
+  <style>
+    :root{
+      --bg:#07080c;
+      --card:#0e111a;
+      --muted:#9aa4b2;
+      --text:#e7ecf3;
+      --line:rgba(255,255,255,.08);
+      --accent:#22c55e;
+      --accent2:#60a5fa;
+      --shadow:0 20px 60px rgba(0,0,0,.45);
+      --radius:18px;
+      --max:1100px;
+      font-synthesis-weight:none;
+      text-rendering:optimizeLegibility;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(96,165,250,.18), transparent 55%),
+        radial-gradient(900px 500px at 80% 10%, rgba(34,197,94,.14), transparent 55%),
+        linear-gradient(180deg, #05060a, #080a12 40%, #07080c);
+      min-height:100vh;
+    }
+    a{color:inherit; text-decoration:none}
+    .wrap{max-width:var(--max); margin:0 auto; padding:24px;}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
+      position:sticky; top:0; backdrop-filter: blur(10px);
+      background: rgba(7,8,12,.55);
+      border-bottom:1px solid var(--line);
+      padding:14px 24px;
+      z-index:10;
+    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;}
+    .logo{
+      width:34px;height:34px;border-radius:10px;
+      background: linear-gradient(135deg, rgba(34,197,94,.9), rgba(96,165,250,.9));
+      box-shadow:0 10px 30px rgba(0,0,0,.3);
+    }
+    nav{display:flex; gap:16px; flex-wrap:wrap; align-items:center;}
+    nav a{color:var(--muted); font-weight:600; font-size:14px;}
+    nav a:hover{color:var(--text)}
+    .hero{
+      padding:48px 0 18px;
+    }
+    .heroCard{
+      border:1px solid var(--line);
+      background: linear-gradient(180deg, rgba(14,17,26,.9), rgba(14,17,26,.6));
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:34px;
+      overflow:hidden;
+      position:relative;
+    }
+    .heroCard:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(800px 200px at 30% 0%, rgba(96,165,250,.22), transparent 60%),
+                  radial-gradient(700px 220px at 70% 0%, rgba(34,197,94,.18), transparent 60%);
+      pointer-events:none;
+    }
+    .heroInner{position:relative}
+    h1{margin:0 0 10px; font-size:32px; letter-spacing:-.4px}
+    .sub{color:var(--muted); margin:0 0 22px; line-height:1.5}
+    .searchRow{display:flex; gap:10px; flex-wrap:wrap}
+    .search{
+      flex:1;
+      min-width:240px;
+      display:flex; align-items:center; gap:10px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+    }
+    .search input{
+      width:100%;
+      background:transparent;
+      border:0;
+      outline:none;
+      color:var(--text);
+      font-size:14px;
+    }
+    .btn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      padding:12px 14px;
+      border-radius:14px;
+      color:var(--text);
+      font-weight:700;
+      font-size:14px;
+      cursor:pointer;
+      transition:.2s;
+      display:inline-flex; align-items:center; gap:8px;
+    }
+    .btn:hover{transform:translateY(-1px); background: rgba(255,255,255,.09)}
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(96,165,250,.85));
+      border:0;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+    .tile{
+      grid-column: span 6;
+      border:1px solid var(--line);
+      background: rgba(14,17,26,.55);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 12px 40px rgba(0,0,0,.25);
+    }
+    .tile h3{margin:0 0 8px; font-size:16px}
+    .tile p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
+    @media (min-width:900px){
+      .tile{grid-column: span 3;}
+    }
+
+    .sectionTitle{margin:26px 0 12px; font-size:16px; color:var(--muted); font-weight:800; letter-spacing:.2px;}
+    .list{
+      border:1px solid var(--line);
+      background: rgba(14,17,26,.45);
+      border-radius:var(--radius);
+      overflow:hidden;
+    }
+    .item{
+      display:flex; justify-content:space-between; gap:14px;
+      padding:14px 16px;
+      border-top:1px solid var(--line);
+      align-items:center;
+    }
+    .item:first-child{border-top:0}
+    .item .meta{display:flex; flex-direction:column; gap:3px}
+    .item .meta strong{font-size:14px}
+    .item .meta span{font-size:13px; color:var(--muted)}
+    .pill{
+      font-size:12px; color:#0b1220;
+      background: rgba(34,197,94,.9);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .pill.blue{background: rgba(96,165,250,.9)}
+    .pill.gray{background: rgba(255,255,255,.18); color:var(--text); border:1px solid var(--line)}
+    footer{
+      margin:28px 0 10px;
+      color:var(--muted);
+      font-size:13px;
+      display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
+    }
+
+    /* Floating Support Button */
+    .support-fab{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:9999;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(14,17,26,.9);
+      box-shadow:0 18px 50px rgba(0,0,0,.45);
+      cursor:pointer;
+      user-select:none;
+      transition:.2s;
+    }
+    .support-fab:hover{transform:translateY(-1px)}
+    .support-dot{
+      width:10px;height:10px;border-radius:50%;
+      background: var(--accent);
+      box-shadow:0 0 0 6px rgba(34,197,94,.15);
+    }
+    .support-fab b{font-size:14px}
+    .support-fab span{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="https://audiory.site/">
+      <div class="logo"></div>
+      <div>Audiory Support</div>
+    </a>
+    <nav>
+      <a href="#kb">Knowledge Base</a>
+      <a href="#faq">FAQ</a>
+      <a href="#contact">Contact</a>
+      <a href="https://audiory.tawk.help/" target="_blank" rel="noopener">Open Helpdesk</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <div class="heroCard">
+        <div class="heroInner">
+          <h1>Need help?</h1>
+          <p class="sub">Search common questions, read quick guides, or contact us. If you want live support, open the helpdesk.</p>
+
+          <div class="searchRow">
+            <div class="search">
+              🔎
+              <input id="q" placeholder="Search: payments, downloads, producer payout, login..." />
+            </div>
+            <button class="btn primary" id="searchBtn">Search Articles</button>
+            <a class="btn" href="https://audiory.tawk.help/" target="_blank" rel="noopener">Open Helpdesk</a>
+          </div>
+
+          <div class="grid">
+            <a class="tile" href="#kb">
+              <h3>Getting Started</h3>
+              <p>Create an account, choose producer/buyer, and set up your profile.</p>
+            </a>
+            <a class="tile" href="#kb">
+              <h3>Buying & Downloads</h3>
+              <p>Pay, get your files, and access your orders.</p>
+            </a>
+            <a class="tile" href="#kb">
+              <h3>Producer Uploads</h3>
+              <p>Upload beats/kits, set licenses, and publish.</p>
+            </a>
+            <a class="tile" href="#kb">
+              <h3>Payouts</h3>
+              <p>Understand balances, fees, and withdrawals.</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <h2 class="sectionTitle" id="kb">Featured articles</h2>
+    <div class="list" id="articles">
+      <a class="item" href="https://audiory.tawk.help/article/how-buyers-download-after-payment" target="_blank" rel="noopener">
+        <div class="meta">
+          <strong>How buyers download after payment</strong>
+          <span>Orders → downloads → troubleshooting</span>
+        </div>
+        <div class="pill">BUYERS</div>
+      </a>
+
+      <a class="item" href="https://audiory.tawk.help/article/how-producers-get-credited" target="_blank" rel="noopener">
+        <div class="meta">
+          <strong>How producers get credited</strong>
+          <span>Wallet crediting, fees, and balance</span>
+        </div>
+        <div class="pill blue">PRODUCERS</div>
+      </a>
+
+      <a class="item" href="https://audiory.tawk.help/article/payments-paypal-mpesa" target="_blank" rel="noopener">
+        <div class="meta">
+          <strong>Payments: PayPal & M-Pesa</strong>
+          <span>What happens after checkout + common issues</span>
+        </div>
+        <div class="pill gray">PAYMENTS</div>
+      </a>
+
+      <a class="item" href="https://audiory.tawk.help/article/account-login-issues" target="_blank" rel="noopener">
+        <div class="meta">
+          <strong>Account & login issues</strong>
+          <span>Password reset, email verification, session problems</span>
+        </div>
+        <div class="pill gray">ACCOUNT</div>
+      </a>
+    </div>
+
+    <h2 class="sectionTitle" id="faq">FAQ</h2>
+    <div class="list">
+      <div class="item">
+        <div class="meta">
+          <strong>Where do I find my purchases?</strong>
+          <span>Buyer Dashboard → Orders. If a payment is successful, your order appears there.</span>
+        </div>
+        <div class="pill">A</div>
+      </div>
+      <div class="item">
+        <div class="meta">
+          <strong>Why did PayPal reverse my money?</strong>
+          <span>This usually happens if the capture didn’t complete or PayPal flagged the transaction. Contact support with the order ID.</span>
+        </div>
+        <div class="pill">A</div>
+      </div>
+      <div class="item">
+        <div class="meta">
+          <strong>How do producers withdraw money?</strong>
+          <span>Producer Dashboard → Wallet → Withdraw. Your balance updates after orders are confirmed.</span>
+        </div>
+        <div class="pill">A</div>
+      </div>
+    </div>
+
+    <h2 class="sectionTitle" id="contact">Contact support</h2>
+    <div class="list">
+      <div class="item" style="align-items:flex-start;">
+        <div class="meta">
+          <strong>Fastest way</strong>
+          <span>Use the Helpdesk to create a ticket (recommended).</span>
+        </div>
+        <a class="btn primary" href="https://audiory.tawk.help/" target="_blank" rel="noopener">Create a Ticket</a>
+      </div>
+
+      <div class="item" style="align-items:flex-start;">
+        <div class="meta">
+          <strong>Email</strong>
+          <span>If you prefer email, include: your account email + order ID + screenshot.</span>
+        </div>
+        <a class="btn" href="mailto:support@audiory.site">support@audiory.site</a>
+      </div>
+    </div>
+
+    <footer>
+      <div>© <span id="y"></span> Audiory</div>
+      <div>
+        <a href="https://audiory.site/" style="color:var(--muted)">Home</a> ·
+        <a href="https://audiory.tawk.help/" style="color:var(--muted)">Helpdesk</a>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Floating support button -->
+  <div class="support-fab" id="supportFab" title="Get help">
+    <div class="support-dot"></div>
+    <div>
+      <b>Support</b><br/>
+      <span>Get help now</span>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    // Simple "search": send query to your helpdesk search page
+    function goSearch(){
+      const q = (document.getElementById("q").value || "").trim();
+      const url = q
+        ? ("https://audiory.tawk.help/search?query=" + encodeURIComponent(q))
+        : "https://audiory.tawk.help/";
+      window.open(url, "_blank", "noopener");
+    }
+    document.getElementById("searchBtn").addEventListener("click", goSearch);
+    document.getElementById("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
+
+    // Floating button -> go to helpdesk (or open chat)
+    document.getElementById("supportFab").addEventListener("click", ()=>{
+      window.open("https://audiory.tawk.help/", "_blank", "noopener");
+    });
+  </script>
+</body>
+</html>
