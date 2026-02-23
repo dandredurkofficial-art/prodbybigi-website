@@ -763,7 +763,7 @@ exports.createOrder = onRequest(
           brand_name: "Audiory",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
-          landing_page: "LOGIN",
+          landing_page: "BILLING",
           return_url: "https://audiory.site/success.html",
           cancel_url: "https://audiory.site/cancel.html",
         },
