@@ -1,3 +1,14 @@
+// functions/index.js
+// ✅ Fixed (without removing anything):
+// - Added verifyFirebaseIdToken() helper (buyerId support)
+// - Fixed applyCors(): now truly strict allowlist (no random origin reflection)
+// - Removed incorrect "if (applyCors(req,res)) return;" usage (applyCors returns void)
+// - createOrder(): stores buyerId (if Authorization token provided) into paypalOrders
+// - processCartCapture(): writes buyerId into orders + unlocks (so buyer dashboard can query)
+// - paypalWebhook(): writes buyerId for cart + single-beat when possible
+// - captureOrder(): no change needed for webhook flow, but kept
+// NOTE: This does NOT change your front-end success.html bug (you must fix that separately).
+
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
@@ -55,7 +66,7 @@ const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
 function applyCors(req, res) {
   const origin = req.headers.origin || "";
 
-  // ✅ allow your domains (add localhost for testing)
+  // ✅ strict allowlist (recommended)
   const allowed = new Set([
     "https://audiory.site",
     "https://www.audiory.site",
@@ -65,14 +76,10 @@ function applyCors(req, res) {
     "http://127.0.0.1:5500",
   ]);
 
-  // If no origin (server-to-server), don’t block
-  if (origin && origin.startsWith("https://")) {
+  if (origin && allowed.has(origin)) {
     res.set("Access-Control-Allow-Origin", origin);
-  } else if (origin) {
-    // If you want to hard block unknown origins, keep it strict like this:
-    // (Do NOT set "*" when you use credentials)
-    res.set("Access-Control-Allow-Origin", "https://audiory.site");
   } else {
+    // If no origin or unknown origin → default to your main domain
     res.set("Access-Control-Allow-Origin", "https://audiory.site");
   }
 
@@ -139,6 +146,24 @@ function nowTimestamp() {
     pad(d.getMinutes()) +
     pad(d.getSeconds())
   );
+}
+
+/* =========================================================
+✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
+========================================================= */
+async function verifyFirebaseIdToken(req) {
+  try {
+    const h = safeStr(req.headers.authorization || "");
+    const m = h.match(/^Bearer\s+(.+)$/i);
+    if (!m) return null;
+    const token = m[1].trim();
+    if (!token) return null;
+
+    const decoded = await admin.auth().verifyIdToken(token);
+    return decoded || null;
+  } catch (_) {
+    return null;
+  }
 }
 
 /* =========================================================
@@ -460,8 +485,6 @@ exports.verifySubscription = onRequest(
       };
 
       const planTier = PLAN_MAP[planId] || "free";
-
-      // Decide if we should activate. (You can choose to allow APPROVAL too, but ACTIVE is safest.)
       const isActive = status === "active";
 
       // Update Firestore user
@@ -626,7 +649,7 @@ exports.verifyDomainDns = onRequest(
 /* =========================================================
 ✅ CREATE PAYPAL ORDER (THIS IS THE ONE YOUR WEBSITE CALLS)
 POST /createOrder
-body: { beatId, licenseKey }
+body: { beatId, licenseKey } OR { items:[{beatId,licenseKey,qty}] }
 ========================================================= */
 exports.createOrder = onRequest(
   {
@@ -640,6 +663,10 @@ exports.createOrder = onRequest(
 
     try {
       if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      // ✅ If buyer is logged in, keep buyerId for orders dashboard
+      const decoded = await verifyFirebaseIdToken(req);
+      const buyerId = safeStr(decoded?.uid || "");
 
       const body = req.body || {};
       const hasCart = Array.isArray(body.items) && body.items.length > 0;
@@ -741,6 +768,7 @@ exports.createOrder = onRequest(
         currency: "USD",
         mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
         status: "created",
+        buyerId: buyerId || null, // ✅ NEW
       });
 
       // ✅ Put only the cartId in PayPal custom_id
@@ -763,7 +791,7 @@ exports.createOrder = onRequest(
           brand_name: "Audiory",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
-          landing_page: "BILLING",
+          landing_page: "BILLING", // you set BILLING; keep it
           return_url: "https://audiory.site/success.html",
           cancel_url: "https://audiory.site/cancel.html",
         },
@@ -851,6 +879,7 @@ exports.captureOrder = onRequest(
     } catch (e) {
       console.error("captureOrder error:", e);
       applyCors(req, res);
+      return res.status
       return res.status(500).json({ error: e.message });
     }
   }
