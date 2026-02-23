@@ -739,7 +739,7 @@ exports.createOrder = onRequest(
         items: resolved,
         total: Number(total.toFixed(2)),
         currency: "USD",
-        mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
+        mode: safeStr(PAYPAL_MODE.value() || "live"),
         status: "created",
       });
 
@@ -805,7 +805,7 @@ exports.createOrder = onRequest(
         approveLinks: data.links || [],
         approveUrl: approve?.href || null,
         cartId,
-        mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
+        mode: safeStr(PAYPAL_MODE.value() || "live"),
       });
     } catch (e) {
       console.error("createOrder error:", e);
