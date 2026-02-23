@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Audiory Support</title>
-  <meta name="description" content="Audiory Help Center, FAQs, and contact support." />
+  <title>Audiory Help Center</title>
+  <meta name="description" content="Audiory Help Center: Guides, FAQs, and contact support." />
   <style>
     :root{
       --bg:#07080c;
@@ -14,6 +14,7 @@
       --line:rgba(255,255,255,.08);
       --accent:#22c55e;
       --accent2:#60a5fa;
+      --danger:#ef4444;
       --shadow:0 20px 60px rgba(0,0,0,.45);
       --radius:18px;
       --max:1100px;
@@ -43,18 +44,16 @@
       padding:14px 24px;
       z-index:10;
     }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.2px;}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px;}
     .logo{
       width:34px;height:34px;border-radius:10px;
       background: linear-gradient(135deg, rgba(34,197,94,.9), rgba(96,165,250,.9));
       box-shadow:0 10px 30px rgba(0,0,0,.3);
     }
     nav{display:flex; gap:16px; flex-wrap:wrap; align-items:center;}
-    nav a{color:var(--muted); font-weight:600; font-size:14px;}
+    nav a{color:var(--muted); font-weight:700; font-size:14px;}
     nav a:hover{color:var(--text)}
-    .hero{
-      padding:48px 0 18px;
-    }
+    .hero{padding:48px 0 18px;}
     .heroCard{
       border:1px solid var(--line);
       background: linear-gradient(180deg, rgba(14,17,26,.9), rgba(14,17,26,.6));
@@ -76,8 +75,7 @@
     .sub{color:var(--muted); margin:0 0 22px; line-height:1.5}
     .searchRow{display:flex; gap:10px; flex-wrap:wrap}
     .search{
-      flex:1;
-      min-width:240px;
+      flex:1; min-width:240px;
       display:flex; align-items:center; gap:10px;
       padding:12px 14px;
       border-radius:14px;
@@ -98,7 +96,7 @@
       padding:12px 14px;
       border-radius:14px;
       color:var(--text);
-      font-weight:700;
+      font-weight:800;
       font-size:14px;
       cursor:pointer;
       transition:.2s;
@@ -109,6 +107,11 @@
       background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(96,165,250,.85));
       border:0;
     }
+    .btn.danger{
+      background: rgba(239,68,68,.14);
+      border:1px solid rgba(239,68,68,.35);
+    }
+
     .grid{
       display:grid;
       grid-template-columns: repeat(12, 1fr);
@@ -122,40 +125,105 @@
       border-radius:var(--radius);
       padding:16px;
       box-shadow:0 12px 40px rgba(0,0,0,.25);
+      cursor:pointer;
     }
     .tile h3{margin:0 0 8px; font-size:16px}
     .tile p{margin:0; color:var(--muted); font-size:14px; line-height:1.5}
-    @media (min-width:900px){
-      .tile{grid-column: span 3;}
+    @media (min-width:900px){ .tile{grid-column: span 3;} }
+
+    .sectionTitle{
+      margin:26px 0 12px;
+      font-size:16px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.2px;
     }
 
-    .sectionTitle{margin:26px 0 12px; font-size:16px; color:var(--muted); font-weight:800; letter-spacing:.2px;}
-    .list{
+    .card{
       border:1px solid var(--line);
       background: rgba(14,17,26,.45);
       border-radius:var(--radius);
       overflow:hidden;
+      box-shadow:0 12px 40px rgba(0,0,0,.18);
     }
-    .item{
-      display:flex; justify-content:space-between; gap:14px;
+
+    .article{
       padding:14px 16px;
       border-top:1px solid var(--line);
-      align-items:center;
     }
-    .item:first-child{border-top:0}
-    .item .meta{display:flex; flex-direction:column; gap:3px}
-    .item .meta strong{font-size:14px}
-    .item .meta span{font-size:13px; color:var(--muted)}
-    .pill{
-      font-size:12px; color:#0b1220;
-      background: rgba(34,197,94,.9);
+    .article:first-child{border-top:0}
+    .articleTop{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      cursor:pointer;
+    }
+    .article strong{font-size:14px}
+    .article small{color:var(--muted); display:block; margin-top:3px; font-size:13px; line-height:1.4}
+    .tag{
+      font-size:12px;
       padding:6px 10px;
       border-radius:999px;
       font-weight:900;
       white-space:nowrap;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
     }
-    .pill.blue{background: rgba(96,165,250,.9)}
-    .pill.gray{background: rgba(255,255,255,.18); color:var(--text); border:1px solid var(--line)}
+    .tag.green{background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.35)}
+    .tag.blue{background: rgba(96,165,250,.18); border-color: rgba(96,165,250,.35)}
+    .tag.gray{background: rgba(255,255,255,.06)}
+    .body{
+      display:none;
+      margin-top:10px;
+      color:var(--text);
+      line-height:1.65;
+      font-size:14px;
+    }
+    .body ul{margin:10px 0 0 18px}
+    .body code{
+      background: rgba(0,0,0,.25);
+      padding:2px 6px;
+      border-radius:8px;
+      border:1px solid var(--line);
+    }
+    .article.open .body{display:block}
+
+    /* Contact form */
+    .form{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .form .full{grid-column: 1 / -1}
+    label{font-size:12px; color:var(--muted); font-weight:800; display:block; margin:0 0 6px}
+    input, textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      padding:12px 12px;
+      outline:none;
+      font-size:14px;
+    }
+    textarea{min-height:120px; resize:vertical}
+    .hint{font-size:12px; color:var(--muted); margin-top:6px; line-height:1.4}
+    .formActions{
+      grid-column: 1 / -1;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      padding-top:6px;
+    }
+    .status{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .status.ok{color: rgba(34,197,94,.95)}
+    .status.err{color: rgba(239,68,68,.95)}
+
     footer{
       margin:28px 0 10px;
       color:var(--muted);
@@ -163,45 +231,106 @@
       display:flex; flex-wrap:wrap; gap:10px; justify-content:space-between;
     }
 
-    /* Floating Support Button */
+    /* Floating Support Button + Chat Drawer */
     .support-fab{
-      position:fixed;
-      right:18px;
-      bottom:18px;
-      z-index:9999;
-      display:flex;
-      align-items:center;
-      gap:10px;
+      position:fixed; right:18px; bottom:18px; z-index:9999;
+      display:flex; align-items:center; gap:10px;
       padding:12px 14px;
       border-radius:999px;
       border:1px solid var(--line);
-      background: rgba(14,17,26,.9);
+      background: rgba(14,17,26,.92);
       box-shadow:0 18px 50px rgba(0,0,0,.45);
       cursor:pointer;
       user-select:none;
       transition:.2s;
     }
     .support-fab:hover{transform:translateY(-1px)}
-    .support-dot{
-      width:10px;height:10px;border-radius:50%;
-      background: var(--accent);
-      box-shadow:0 0 0 6px rgba(34,197,94,.15);
-    }
+    .support-dot{width:10px;height:10px;border-radius:50%;background: var(--accent); box-shadow:0 0 0 6px rgba(34,197,94,.15);}
     .support-fab b{font-size:14px}
     .support-fab span{font-size:12px;color:var(--muted)}
+
+    .drawerBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(6px);
+      z-index:9998;
+      display:none;
+    }
+    .drawer{
+      position:fixed;
+      right:18px;
+      bottom:76px;
+      width:min(420px, calc(100vw - 36px));
+      max-height:72vh;
+      z-index:9999;
+      border:1px solid var(--line);
+      background: rgba(14,17,26,.96);
+      border-radius:18px;
+      box-shadow:0 18px 60px rgba(0,0,0,.6);
+      overflow:hidden;
+      display:none;
+      flex-direction:column;
+    }
+    .drawerHeader{
+      padding:14px 14px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+    }
+    .drawerHeader strong{font-size:14px}
+    .drawerHeader small{display:block; color:var(--muted); font-size:12px; margin-top:2px}
+    .xbtn{
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:900;
+      color:var(--text);
+    }
+    .xbtn:hover{background: rgba(255,255,255,.09)}
+    .chatBody{
+      padding:12px 14px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .bubble{
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      border-radius:14px;
+      padding:10px 10px;
+      line-height:1.5;
+      font-size:13px;
+    }
+    .bubble.me{border-color: rgba(96,165,250,.35); background: rgba(96,165,250,.10)}
+    .bubble .meta{color:var(--muted); font-size:11px; margin-top:6px}
+    .chatForm{
+      border-top:1px solid var(--line);
+      padding:12px 14px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .chatForm .full{grid-column:1/-1}
+    .chatForm textarea{min-height:90px}
+    .chatActions{
+      grid-column: 1 / -1;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+    .tiny{font-size:12px; color:var(--muted)}
   </style>
 </head>
 <body>
   <header>
     <a class="brand" href="https://audiory.site/">
       <div class="logo"></div>
-      <div>Audiory Support</div>
+      <div>Audiory Help</div>
     </a>
     <nav>
-      <a href="#kb">Knowledge Base</a>
+      <a href="#articles">Articles</a>
       <a href="#faq">FAQ</a>
       <a href="#contact">Contact</a>
-      <a href="https://audiory.tawk.help/" target="_blank" rel="noopener">Open Helpdesk</a>
     </nav>
   </header>
 
@@ -210,115 +339,210 @@
       <div class="heroCard">
         <div class="heroInner">
           <h1>Need help?</h1>
-          <p class="sub">Search common questions, read quick guides, or contact us. If you want live support, open the helpdesk.</p>
+          <p class="sub">Search our guides, check FAQs, or leave a message. We reply as soon as we can.</p>
 
           <div class="searchRow">
             <div class="search">
               🔎
-              <input id="q" placeholder="Search: payments, downloads, producer payout, login..." />
+              <input id="q" placeholder="Search: payments, downloads, producer payouts, login..." />
             </div>
-            <button class="btn primary" id="searchBtn">Search Articles</button>
-            <a class="btn" href="https://audiory.tawk.help/" target="_blank" rel="noopener">Open Helpdesk</a>
+            <button class="btn primary" id="searchBtn">Search</button>
+            <button class="btn" id="openChatBtn">Live chat (leave message)</button>
           </div>
 
           <div class="grid">
-            <a class="tile" href="#kb">
-              <h3>Getting Started</h3>
-              <p>Create an account, choose producer/buyer, and set up your profile.</p>
-            </a>
-            <a class="tile" href="#kb">
+            <div class="tile" data-scroll="#articles" data-filter="buyer">
               <h3>Buying & Downloads</h3>
-              <p>Pay, get your files, and access your orders.</p>
-            </a>
-            <a class="tile" href="#kb">
+              <p>Pay, get your files, and troubleshoot downloads.</p>
+            </div>
+            <div class="tile" data-scroll="#articles" data-filter="producer">
               <h3>Producer Uploads</h3>
               <p>Upload beats/kits, set licenses, and publish.</p>
-            </a>
-            <a class="tile" href="#kb">
-              <h3>Payouts</h3>
-              <p>Understand balances, fees, and withdrawals.</p>
-            </a>
+            </div>
+            <div class="tile" data-scroll="#articles" data-filter="payments">
+              <h3>Payments</h3>
+              <p>PayPal + M-Pesa flows and common issues.</p>
+            </div>
+            <div class="tile" data-scroll="#articles" data-filter="account">
+              <h3>Account</h3>
+              <p>Login, verification, password reset.</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <h2 class="sectionTitle" id="kb">Featured articles</h2>
-    <div class="list" id="articles">
-      <a class="item" href="https://audiory.tawk.help/article/how-buyers-download-after-payment" target="_blank" rel="noopener">
-        <div class="meta">
-          <strong>How buyers download after payment</strong>
-          <span>Orders → downloads → troubleshooting</span>
+    <h2 class="sectionTitle">Articles</h2>
+    <div class="card" id="articlesCard">
+      <!-- ARTICLES (All inside this page) -->
+      <div class="article" data-tags="buyer payments downloads">
+        <div class="articleTop">
+          <div>
+            <strong>How buyers download after payment</strong>
+            <small>Where to find your files, what to do if download fails.</small>
+          </div>
+          <span class="tag green">BUYERS</span>
         </div>
-        <div class="pill">BUYERS</div>
-      </a>
+        <div class="body">
+          <p><b>After payment</b>, your order is saved and your download unlock is created.</p>
+          <ul>
+            <li>Go to <code>Dashboard → Orders</code></li>
+            <li>Open your latest order</li>
+            <li>Click <code>Download</code> (Beat file) and <code>License</code> (PDF)</li>
+          </ul>
+          <p><b>If download fails:</b></p>
+          <ul>
+            <li>Refresh and try again</li>
+            <li>Use a different browser</li>
+            <li>Send us your order ID using the chat button</li>
+          </ul>
+        </div>
+      </div>
 
-      <a class="item" href="https://audiory.tawk.help/article/how-producers-get-credited" target="_blank" rel="noopener">
-        <div class="meta">
-          <strong>How producers get credited</strong>
-          <span>Wallet crediting, fees, and balance</span>
+      <div class="article" data-tags="payments paypal mpesa">
+        <div class="articleTop">
+          <div>
+            <strong>Payments: PayPal & M-Pesa (what happens)</strong>
+            <small>What “paid” means and why a payment may not unlock instantly.</small>
+          </div>
+          <span class="tag gray">PAYMENTS</span>
         </div>
-        <div class="pill blue">PRODUCERS</div>
-      </a>
+        <div class="body">
+          <p><b>PayPal:</b> you approve → PayPal captures → Audiory creates unlocks.</p>
+          <p><b>M-Pesa:</b> you confirm STK → callback updates order status → unlock created.</p>
+          <p><b>If you paid but didn’t unlock</b>, message support with:</p>
+          <ul>
+            <li>Your account email</li>
+            <li>Order ID (or receipt)</li>
+            <li>Screenshot of the payment</li>
+          </ul>
+        </div>
+      </div>
 
-      <a class="item" href="https://audiory.tawk.help/article/payments-paypal-mpesa" target="_blank" rel="noopener">
-        <div class="meta">
-          <strong>Payments: PayPal & M-Pesa</strong>
-          <span>What happens after checkout + common issues</span>
+      <div class="article" data-tags="producer uploads beats soundkits">
+        <div class="articleTop">
+          <div>
+            <strong>How producers upload beats / kits</strong>
+            <small>Upload, set license prices, publish.</small>
+          </div>
+          <span class="tag blue">PRODUCERS</span>
         </div>
-        <div class="pill gray">PAYMENTS</div>
-      </a>
+        <div class="body">
+          <ul>
+            <li>Go to <code>Producer Dashboard → Upload</code></li>
+            <li>Add title, BPM, genre, mood</li>
+            <li>Upload audio file + artwork (optional)</li>
+            <li>Set license prices (Basic / Pro / Exclusive)</li>
+            <li>Click <code>Publish</code></li>
+          </ul>
+          <p><b>Tip:</b> Keep your filenames clean and short (no weird symbols).</p>
+        </div>
+      </div>
 
-      <a class="item" href="https://audiory.tawk.help/article/account-login-issues" target="_blank" rel="noopener">
-        <div class="meta">
-          <strong>Account & login issues</strong>
-          <span>Password reset, email verification, session problems</span>
+      <div class="article" data-tags="producer payouts wallet">
+        <div class="articleTop">
+          <div>
+            <strong>Wallet, fees, and payouts</strong>
+            <small>How your balance grows and when you can withdraw.</small>
+          </div>
+          <span class="tag blue">PRODUCERS</span>
         </div>
-        <div class="pill gray">ACCOUNT</div>
-      </a>
+        <div class="body">
+          <p>When a beat/kit is paid, Audiory credits your wallet (after platform fee).</p>
+          <ul>
+            <li>Balance shows in <code>Producer Dashboard → Wallet</code></li>
+            <li>Withdraw when you reach your minimum amount</li>
+          </ul>
+          <p>If a payout is stuck, send your payout ID using chat.</p>
+        </div>
+      </div>
+
+      <div class="article" data-tags="account login verification">
+        <div class="articleTop">
+          <div>
+            <strong>Account & login issues</strong>
+            <small>Reset password, verify email, fix session problems.</small>
+          </div>
+          <span class="tag gray">ACCOUNT</span>
+        </div>
+        <div class="body">
+          <ul>
+            <li>Try <code>Forgot password</code> on the login page</li>
+            <li>Check spam folder for verification emails</li>
+            <li>Logout and login again</li>
+          </ul>
+          <p>If you’re blocked, send your email + screenshot in chat.</p>
+        </div>
+      </div>
     </div>
 
     <h2 class="sectionTitle" id="faq">FAQ</h2>
-    <div class="list">
-      <div class="item">
-        <div class="meta">
-          <strong>Where do I find my purchases?</strong>
-          <span>Buyer Dashboard → Orders. If a payment is successful, your order appears there.</span>
+    <div class="card">
+      <div class="article">
+        <div class="articleTop">
+          <div>
+            <strong>Where do I find my purchases?</strong>
+            <small>Dashboard → Orders (latest order will appear after payment).</small>
+          </div>
+          <span class="tag green">A</span>
         </div>
-        <div class="pill">A</div>
+        <div class="body">
+          <p>Open your order and download the beat file + license PDF.</p>
+        </div>
       </div>
-      <div class="item">
-        <div class="meta">
-          <strong>Why did PayPal reverse my money?</strong>
-          <span>This usually happens if the capture didn’t complete or PayPal flagged the transaction. Contact support with the order ID.</span>
+
+      <div class="article">
+        <div class="articleTop">
+          <div>
+            <strong>I paid but nothing unlocked. What now?</strong>
+            <small>Send order ID/receipt and screenshot through chat.</small>
+          </div>
+          <span class="tag green">A</span>
         </div>
-        <div class="pill">A</div>
+        <div class="body">
+          <p>Sometimes providers confirm late. Message us and we’ll verify quickly.</p>
+        </div>
       </div>
-      <div class="item">
-        <div class="meta">
-          <strong>How do producers withdraw money?</strong>
-          <span>Producer Dashboard → Wallet → Withdraw. Your balance updates after orders are confirmed.</span>
+
+      <div class="article">
+        <div class="articleTop">
+          <div>
+            <strong>How long does support take to reply?</strong>
+            <small>Usually within 24 hours (often faster).</small>
+          </div>
+          <span class="tag green">A</span>
         </div>
-        <div class="pill">A</div>
+        <div class="body">
+          <p>Leave your email and clear details so we can reply immediately.</p>
+        </div>
       </div>
     </div>
 
     <h2 class="sectionTitle" id="contact">Contact support</h2>
-    <div class="list">
-      <div class="item" style="align-items:flex-start;">
-        <div class="meta">
-          <strong>Fastest way</strong>
-          <span>Use the Helpdesk to create a ticket (recommended).</span>
+    <div class="card">
+      <div class="form">
+        <div>
+          <label>Your name</label>
+          <input id="cName" placeholder="e.g. John" />
         </div>
-        <a class="btn primary" href="https://audiory.tawk.help/" target="_blank" rel="noopener">Create a Ticket</a>
-      </div>
+        <div>
+          <label>Email (so we can reply)</label>
+          <input id="cEmail" type="email" placeholder="you@email.com" />
+        </div>
 
-      <div class="item" style="align-items:flex-start;">
-        <div class="meta">
-          <strong>Email</strong>
-          <span>If you prefer email, include: your account email + order ID + screenshot.</span>
+        <div class="full">
+          <label>Message</label>
+          <textarea id="cMsg" placeholder="Tell us what happened. Add order ID / receipt if you have it."></textarea>
+          <div class="hint">Tip: If it’s a payment issue, include order ID + screenshot.</div>
         </div>
-        <a class="btn" href="mailto:support@audiory.site">support@audiory.site</a>
+
+        <div class="formActions">
+          <div class="status" id="contactStatus">Messages are sent to Audiory support.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn" id="clearBtn" type="button">Clear</button>
+            <button class="btn primary" id="sendBtn" type="button">Send message</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -326,38 +550,256 @@
       <div>© <span id="y"></span> Audiory</div>
       <div>
         <a href="https://audiory.site/" style="color:var(--muted)">Home</a> ·
-        <a href="https://audiory.tawk.help/" style="color:var(--muted)">Helpdesk</a>
+        <a href="#contact" style="color:var(--muted)">Contact</a>
       </div>
     </footer>
   </main>
 
-  <!-- Floating support button -->
+  <!-- Floating Support Button -->
   <div class="support-fab" id="supportFab" title="Get help">
     <div class="support-dot"></div>
     <div>
       <b>Support</b><br/>
-      <span>Get help now</span>
+      <span>Leave a message</span>
     </div>
   </div>
 
-  <script>
+  <!-- Chat Drawer -->
+  <div class="drawerBackdrop" id="drawerBackdrop"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawerHeader">
+      <div>
+        <strong>Live chat (offline)</strong>
+        <small>Leave a message — we reply later</small>
+      </div>
+      <button class="xbtn" id="closeDrawer">✕</button>
+    </div>
+
+    <div class="chatBody" id="chatBody">
+      <div class="bubble">
+        Hi 👋 Tell us what you need help with. Add your email so we can reply.
+        <div class="meta">Audiory Support</div>
+      </div>
+    </div>
+
+    <div class="chatForm">
+      <div>
+        <label>Name</label>
+        <input id="chName" placeholder="Optional" />
+      </div>
+      <div>
+        <label>Email</label>
+        <input id="chEmail" type="email" placeholder="So we can reply" />
+      </div>
+      <div class="full">
+        <label>Your message</label>
+        <textarea id="chMsg" placeholder="Write your message..."></textarea>
+      </div>
+      <div class="chatActions">
+        <div class="tiny" id="chatStatus">Saved to Audiory support inbox.</div>
+        <button class="btn primary" id="chSend" type="button">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (CDN) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    // ✅ 1) PASTE YOUR FIREBASE WEB CONFIG HERE
+    // Firebase Console → Project settings → Your apps → (Web app) → Config
+    const firebaseConfig = {
+      apiKey: "PASTE_HERE",
+      authDomain: "PASTE_HERE",
+      projectId: "PASTE_HERE",
+      storageBucket: "PASTE_HERE",
+      messagingSenderId: "PASTE_HERE",
+      appId: "PASTE_HERE"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Year
     document.getElementById("y").textContent = new Date().getFullYear();
 
-    // Simple "search": send query to your helpdesk search page
-    function goSearch(){
-      const q = (document.getElementById("q").value || "").trim();
-      const url = q
-        ? ("https://audiory.tawk.help/search?query=" + encodeURIComponent(q))
-        : "https://audiory.tawk.help/";
-      window.open(url, "_blank", "noopener");
-    }
-    document.getElementById("searchBtn").addEventListener("click", goSearch);
-    document.getElementById("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
+    // ---------- UI helpers ----------
+    const $ = (id) => document.getElementById(id);
+    const setStatus = (el, msg, kind) => {
+      el.textContent = msg;
+      el.classList.remove("ok","err");
+      if (kind) el.classList.add(kind);
+    };
 
-    // Floating button -> go to helpdesk (or open chat)
-    document.getElementById("supportFab").addEventListener("click", ()=>{
-      window.open("https://audiory.tawk.help/", "_blank", "noopener");
+    // Expand/collapse article + FAQ items
+    document.querySelectorAll(".articleTop").forEach((top) => {
+      top.addEventListener("click", () => {
+        top.parentElement.classList.toggle("open");
+      });
     });
+
+    // Scroll tiles
+    document.querySelectorAll(".tile").forEach((t) => {
+      t.addEventListener("click", () => {
+        const to = t.getAttribute("data-scroll");
+        const filter = t.getAttribute("data-filter");
+        if (to) document.querySelector(to)?.scrollIntoView({ behavior: "smooth" });
+        if (filter) {
+          $("q").value = filter;
+          runSearch();
+        }
+      });
+    });
+
+    // Search articles (client-side)
+    const runSearch = () => {
+      const q = ($("q").value || "").trim().toLowerCase();
+      const articles = document.querySelectorAll("#articlesCard .article");
+      let shown = 0;
+
+      articles.forEach((a) => {
+        const text = (a.innerText || "").toLowerCase();
+        const tags = (a.getAttribute("data-tags") || "").toLowerCase();
+        const ok = !q || text.includes(q) || tags.includes(q);
+        a.style.display = ok ? "" : "none";
+        if (ok) shown++;
+      });
+
+      // auto open first visible when searching
+      if (q) {
+        const first = Array.from(articles).find((a)=>a.style.display !== "none");
+        if (first) first.classList.add("open");
+      }
+    };
+
+    $("searchBtn").addEventListener("click", runSearch);
+    $("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runSearch(); });
+
+    // ---------- Support inbox: session id ----------
+    const getSessionId = () => {
+      const k = "audiory_support_session";
+      let v = localStorage.getItem(k);
+      if (!v) {
+        v = "sess_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
+        localStorage.setItem(k, v);
+      }
+      return v;
+    };
+
+    // ---------- Save message to Firestore ----------
+    async function saveSupportMessage({ name, email, message, source }) {
+      const sessionId = getSessionId();
+      const payload = {
+        sessionId,
+        name: (name || "").trim(),
+        email: (email || "").trim(),
+        message: (message || "").trim(),
+        source: source || "help",
+        pageUrl: location.href,
+        userAgent: navigator.userAgent,
+        createdAt: serverTimestamp(),
+        status: "new"
+      };
+
+      // store in: supportMessages
+      return await addDoc(collection(db, "supportMessages"), payload);
+    }
+
+    // ---------- Contact form ----------
+    $("clearBtn").addEventListener("click", ()=>{
+      $("cName").value = "";
+      $("cEmail").value = "";
+      $("cMsg").value = "";
+      setStatus($("contactStatus"), "Cleared.", "ok");
+      setTimeout(()=>setStatus($("contactStatus"), "Messages are sent to Audiory support.", ""), 1200);
+    });
+
+    $("sendBtn").addEventListener("click", async ()=>{
+      const name = $("cName").value;
+      const email = $("cEmail").value;
+      const msg = $("cMsg").value;
+
+      if (!msg.trim()) {
+        setStatus($("contactStatus"), "Please write a message first.", "err");
+        return;
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setStatus($("contactStatus"), "Please enter a valid email.", "err");
+        return;
+      }
+
+      setStatus($("contactStatus"), "Sending...", "");
+      try{
+        await saveSupportMessage({ name, email, message: msg, source: "contact_form" });
+        setStatus($("contactStatus"), "✅ Sent! We’ll reply soon.", "ok");
+        $("cMsg").value = "";
+      }catch(e){
+        console.error(e);
+        setStatus($("contactStatus"), "❌ Failed to send. Try again.", "err");
+      }
+    });
+
+    // ---------- Chat drawer ----------
+    const openDrawer = () => {
+      $("drawerBackdrop").style.display = "block";
+      $("drawer").style.display = "flex";
+      setTimeout(()=> $("chMsg").focus(), 50);
+    };
+    const closeDrawer = () => {
+      $("drawerBackdrop").style.display = "none";
+      $("drawer").style.display = "none";
+    };
+
+    $("supportFab").addEventListener("click", openDrawer);
+    $("openChatBtn").addEventListener("click", openDrawer);
+    $("drawerBackdrop").addEventListener("click", closeDrawer);
+    $("closeDrawer").addEventListener("click", closeDrawer);
+
+    const addBubble = (text) => {
+      const div = document.createElement("div");
+      div.className = "bubble me";
+      div.innerHTML = `${escapeHtml(text)}<div class="meta">You</div>`;
+      $("chatBody").appendChild(div);
+      $("chatBody").scrollTop = $("chatBody").scrollHeight;
+    };
+
+    function escapeHtml(str){
+      return (str || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;")
+        .replaceAll("\n","<br/>");
+    }
+
+    $("chSend").addEventListener("click", async ()=>{
+      const name = $("chName").value;
+      const email = $("chEmail").value;
+      const msg = $("chMsg").value;
+
+      if (!msg.trim()) {
+        setStatus($("chatStatus"), "Write a message first.", "err");
+        return;
+      }
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+        setStatus($("chatStatus"), "Enter a valid email so we can reply.", "err");
+        return;
+      }
+
+      setStatus($("chatStatus"), "Sending...", "");
+      try{
+        addBubble(msg);
+        $("chMsg").value = "";
+        await saveSupportMessage({ name, email, message: msg, source: "chat_widget" });
+        setStatus($("chatStatus"), "✅ Sent. We’ll reply soon.", "ok");
+      }catch(e){
+        console.error(e);
+        setStatus($("chatStatus"), "❌ Failed to send. Try again.", "err");
+      }
+    });
+
   </script>
 </body>
 </html>
