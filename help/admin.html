@@ -34,10 +34,7 @@
       backdrop-filter: blur(10px);
       position: sticky; top:0; z-index:10;
     }
-    .brand{
-      font-weight:700;
-      letter-spacing:.2px;
-    }
+    .brand{font-weight:700;letter-spacing:.2px;}
     .pill{
       font-size:12px;
       padding:6px 10px;
@@ -117,8 +114,8 @@
       background: rgba(255,255,255,.03);
       white-space:nowrap;
     }
+    .badge.new{border-color: rgba(59,130,246,.35); color:#b6d3ff; background: rgba(59,130,246,.10)}
     .badge.open{border-color: rgba(245,158,11,.35); color:#ffd19a; background: rgba(245,158,11,.10)}
-    .badge.pending{border-color: rgba(59,130,246,.35); color:#b6d3ff; background: rgba(59,130,246,.10)}
     .badge.closed{border-color: rgba(148,163,184,.35); color:#cbd5e1; background: rgba(148,163,184,.10)}
     .small{font-size:12px; color:var(--muted); margin-top:6px}
     .chat{
@@ -197,7 +194,6 @@
       background: rgba(255,255,255,.02);
     }
     .loginCard .body{padding:14px}
-    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
     .hidden{display:none !important}
     .toast{
       position: fixed;
@@ -260,7 +256,7 @@
   <!-- APP -->
   <div id="appView" class="wrap hidden">
 
-    <!-- LEFT: THREADS -->
+    <!-- LEFT: INBOX (supportMessages) -->
     <div class="card">
       <div class="cardHeader">
         <div style="display:flex;flex-direction:column;gap:2px">
@@ -271,11 +267,11 @@
       </div>
 
       <div class="searchRow">
-        <input id="search" placeholder="Search name/email/subject…" />
+        <input id="search" placeholder="Search name/email/message…" />
         <select id="statusFilter" style="max-width:140px">
           <option value="all">All</option>
+          <option value="new">New</option>
           <option value="open">Open</option>
-          <option value="pending">Pending</option>
           <option value="closed">Closed</option>
         </select>
       </div>
@@ -283,17 +279,17 @@
       <div id="threads" class="list"></div>
     </div>
 
-    <!-- RIGHT: CHAT -->
+    <!-- RIGHT: MESSAGE + REPLIES -->
     <div class="card chat">
       <div class="chatHeader">
         <div class="chatMeta">
-          <div class="title" id="chatTitle">Select a thread</div>
+          <div class="title" id="chatTitle">Select a message</div>
           <div class="small" id="chatSub">—</div>
         </div>
         <div class="row" style="gap:8px">
           <select id="setStatus" style="max-width:160px">
+            <option value="new">New</option>
             <option value="open">Open</option>
-            <option value="pending">Pending</option>
             <option value="closed">Closed</option>
           </select>
           <button id="saveStatusBtn" class="btn">Save</button>
@@ -301,7 +297,7 @@
       </div>
 
       <div id="chatBody" class="chatBody">
-        <div class="muted">No thread selected.</div>
+        <div class="muted">No message selected.</div>
       </div>
 
       <div class="chatComposer">
@@ -317,7 +313,6 @@
     <div class="muted" id="toastMsg"></div>
   </div>
 
-  <!-- Firebase (modular v9 CDN) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
     import {
@@ -337,14 +332,12 @@
       orderBy,
       limit,
       onSnapshot,
-      getDocs,
       addDoc,
-      setDoc,
       updateDoc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // ✅ TODO: PUT YOUR REAL FIREBASE CONFIG HERE (same as audiory site)
+    // ✅ same config as your site
     const firebaseConfig = {
       apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
       authDomain: "audiory-beat-store.firebaseapp.com",
@@ -395,19 +388,26 @@
       setTimeout(()=> toast.classList.remove("show"), 3500);
     }
 
+    function safeStr(x){ return (x === null || x === undefined) ? "" : String(x); }
+
+    function escapeHtml(str){
+      return safeStr(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
     function fmtTime(v){
       try{
         if (!v) return "";
-        // supports Firestore Timestamp or millis
         const d = v.toDate ? v.toDate() : new Date(Number(v));
         return d.toLocaleString();
       }catch(_){ return ""; }
     }
 
-    function safeStr(x){ return (x === null || x === undefined) ? "" : String(x); }
-
     async function ensureAdmin(user){
-      // reads users/{uid}.isAdmin == true
       const us = await getDoc(doc(db, "users", user.uid));
       if (!us.exists()) return false;
       return us.data()?.isAdmin === true;
@@ -438,16 +438,14 @@
       }
     };
 
-    logoutBtn.onclick = async () => {
-      await signOut(auth);
-    };
+    logoutBtn.onclick = async () => { await signOut(auth); };
 
     // State
-    let isAdminUser = false;
-    let threadsUnsub = null;
-    let messagesUnsub = null;
-    let currentThreadId = null;
-    let threadsCache = [];
+    let inboxUnsub = null;
+    let repliesUnsub = null;
+    let currentMsgId = null;
+    let inboxCache = [];
+    let currentMsg = null;
 
     function setViewAuthed(user){
       loginView.classList.add("hidden");
@@ -461,105 +459,159 @@
       appView.classList.add("hidden");
       logoutBtn.classList.add("hidden");
       who.textContent = "Not signed in";
-      currentThreadId = null;
+
+      currentMsgId = null;
+      currentMsg = null;
+
       threadsEl.innerHTML = "";
-      chatBody.innerHTML = '<div class="muted">No thread selected.</div>';
+      chatBody.innerHTML = '<div class="muted">No message selected.</div>';
       replyEl.value = "";
       replyEl.disabled = true;
       sendBtn.disabled = true;
-      if (threadsUnsub) threadsUnsub();
-      if (messagesUnsub) messagesUnsub();
-      threadsUnsub = null;
-      messagesUnsub = null;
-      threadsCache = [];
+
+      if (inboxUnsub) inboxUnsub();
+      if (repliesUnsub) repliesUnsub();
+      inboxUnsub = null;
+      repliesUnsub = null;
+
+      inboxCache = [];
     }
 
-    function renderThreads(){
+    function renderInbox(){
       const q = (searchEl.value || "").trim().toLowerCase();
       const sf = statusFilterEl.value;
 
-      const filtered = threadsCache.filter(t=>{
-        const name = safeStr(t.name).toLowerCase();
-        const email = safeStr(t.email).toLowerCase();
-        const subject = safeStr(t.subject).toLowerCase();
-        const status = safeStr(t.status || "open").toLowerCase();
-        const okText = !q || name.includes(q) || email.includes(q) || subject.includes(q);
+      const filtered = inboxCache.filter(m=>{
+        const name = safeStr(m.name).toLowerCase();
+        const email = safeStr(m.email).toLowerCase();
+        const msg = safeStr(m.message).toLowerCase();
+        const status = safeStr(m.status || "new").toLowerCase();
+
+        const okText = !q || name.includes(q) || email.includes(q) || msg.includes(q);
         const okStatus = (sf === "all") || status === sf;
         return okText && okStatus;
       });
 
-      countLabel.textContent = `${filtered.length} thread(s)`;
+      countLabel.textContent = `${filtered.length} message(s)`;
 
-      threadsEl.innerHTML = filtered.map(t=>{
-        const status = safeStr(t.status || "open").toLowerCase();
-        const active = (t.id === currentThreadId) ? "active" : "";
-        const badgeClass = status === "open" ? "open" : (status === "pending" ? "pending" : "closed");
-        const title = safeStr(t.subject || t.name || "Support Thread");
-        const sub = [safeStr(t.email), fmtTime(t.lastMessageAt || t.createdAt)].filter(Boolean).join(" • ");
-        const preview = safeStr(t.lastMessagePreview || "").slice(0, 90);
+      threadsEl.innerHTML = filtered.map(m=>{
+        const status = safeStr(m.status || "new").toLowerCase();
+        const active = (m.id === currentMsgId) ? "active" : "";
+        const badgeClass = status === "open" ? "open" : (status === "closed" ? "closed" : "new");
+
+        const title = safeStr(m.email || m.name || "Anonymous");
+        const sub = [
+          safeStr(m.source || ""),
+          fmtTime(m.createdAt || "")
+        ].filter(Boolean).join(" • ");
+
+        const preview = safeStr(m.message || "").slice(0, 90);
+
         return `
-          <div class="thread ${active}" data-id="${t.id}">
+          <div class="thread ${active}" data-id="${m.id}">
             <div class="row">
               <div class="title" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(title)}</div>
               <span class="badge ${badgeClass}">${escapeHtml(status)}</span>
             </div>
-            <div class="small" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(sub || "")}</div>
+            <div class="small" style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(sub)}</div>
             <div class="small" style="margin-top:8px">${escapeHtml(preview)}</div>
           </div>
         `;
       }).join("");
 
       [...threadsEl.querySelectorAll(".thread")].forEach(el=>{
-        el.onclick = ()=> openThread(el.dataset.id);
+        el.onclick = ()=> openMessage(el.dataset.id);
       });
     }
 
-    function escapeHtml(str){
-      return safeStr(str)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;");
+    function renderChat({ msg, replies }){
+      if(!msg){
+        chatBody.innerHTML = '<div class="muted">No message selected.</div>';
+        return;
+      }
+
+      const headerLine = [
+        safeStr(msg.email || ""),
+        safeStr(msg.name || "")
+      ].filter(Boolean).join(" • ");
+
+      chatTitle.textContent = msg.email || msg.name || "Message";
+      chatSub.textContent = `${headerLine || "—"} • ${fmtTime(msg.createdAt || "")}`;
+      setStatusEl.value = safeStr(msg.status || "new").toLowerCase();
+
+      const userBubble = `
+        <div class="bubble user">
+          ${escapeHtml(msg.message || "")}
+          <div class="meta">
+            <span>${escapeHtml("user")}</span>
+            <span>${escapeHtml(fmtTime(msg.createdAt || ""))}</span>
+          </div>
+        </div>
+      `;
+
+      const replyBubbles = (replies || []).map(r=>{
+        return `
+          <div class="bubble admin">
+            ${escapeHtml(r.message || "")}
+            <div class="meta">
+              <span>${escapeHtml("admin")}</span>
+              <span>${escapeHtml(fmtTime(r.createdAt || ""))}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const extra = `
+        <div class="muted" style="margin-top:10px">
+          Source: <b>${escapeHtml(msg.source || "—")}</b><br/>
+          Session: <code>${escapeHtml(msg.sessionId || "—")}</code><br/>
+          Page: <span style="word-break:break-all">${escapeHtml(msg.pageUrl || "—")}</span>
+        </div>
+      `;
+
+      chatBody.innerHTML = userBubble + replyBubbles + extra;
+      chatBody.scrollTop = chatBody.scrollHeight;
     }
 
-    async function openThread(threadId){
-      currentThreadId = threadId;
-      renderThreads();
-
-      const t = threadsCache.find(x=>x.id===threadId);
-      chatTitle.textContent = t ? (t.subject || t.name || "Support Thread") : "Support Thread";
-      chatSub.textContent = t ? `${safeStr(t.email || "")} • ${fmtTime(t.createdAt || "")}` : "—";
-      setStatusEl.value = safeStr((t && t.status) ? t.status : "open").toLowerCase();
+    async function openMessage(msgId){
+      currentMsgId = msgId;
+      currentMsg = inboxCache.find(x=>x.id===msgId) || null;
+      renderInbox();
 
       replyEl.disabled = false;
       sendBtn.disabled = false;
 
-      // messages listener
-      if(messagesUnsub) messagesUnsub();
-      chatBody.innerHTML = '<div class="muted">Loading messages…</div>';
+      // Mark as open automatically when opened (optional)
+      try{
+        if(currentMsg && (currentMsg.status === "new" || !currentMsg.status)){
+          await updateDoc(doc(db, "supportMessages", msgId), { status: "open" });
+        }
+      }catch(_){}
 
-      const msgsRef = collection(db, "supportThreads", threadId, "messages");
-      const qy = query(msgsRef, orderBy("createdAt", "asc"), limit(200));
+      // Listen to replies for this msg (no orderBy to avoid needing an index)
+      if(repliesUnsub) repliesUnsub();
+      chatBody.innerHTML = '<div class="muted">Loading…</div>';
 
-      messagesUnsub = onSnapshot(qy, (snap)=>{
-        const msgs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-        chatBody.innerHTML = msgs.length ? msgs.map(m=>{
-          const sender = safeStr(m.sender || "user").toLowerCase();
-          const klass = sender === "admin" ? "admin" : "user";
-          return `
-            <div class="bubble ${klass}">
-              ${escapeHtml(m.message || "")}
-              <div class="meta">
-                <span>${escapeHtml(sender)}</span>
-                <span>${escapeHtml(fmtTime(m.createdAt || ""))}</span>
-              </div>
-            </div>
-          `;
-        }).join("") : '<div class="muted">No messages yet.</div>';
+      const repliesQ = query(
+        collection(db, "supportReplies"),
+        where("msgId","==", msgId),
+        limit(200)
+      );
 
-        // auto-scroll to bottom
-        chatBody.scrollTop = chatBody.scrollHeight;
+      repliesUnsub = onSnapshot(repliesQ, (snap)=>{
+        const replies = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+
+        // Sort client-side by createdAt
+        replies.sort((a,b)=>{
+          const ta = a?.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt || 0);
+          const tb = b?.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt || 0);
+          return ta - tb;
+        });
+
+        // Refresh current message from cache (in case status changed)
+        currentMsg = inboxCache.find(x=>x.id===msgId) || currentMsg;
+
+        renderChat({ msg: currentMsg, replies });
       }, (err)=>{
         chatBody.innerHTML = `<div class="muted" style="color:#ffb4b4">Error: ${escapeHtml(err.message || String(err))}</div>`;
       });
@@ -569,29 +621,34 @@
       const text = replyEl.value.trim();
       if(!text) return;
 
-      if(!currentThreadId){
-        showToast("No thread", "Select a thread first.");
+      if(!currentMsgId || !currentMsg){
+        showToast("No message", "Select a message first.");
         return;
       }
 
       sendBtn.disabled = true;
 
       try{
-        // Add message
-        await addDoc(collection(db, "supportThreads", currentThreadId, "messages"), {
-          sender: "admin",
+        // Write reply
+        await addDoc(collection(db, "supportReplies"), {
+          msgId: currentMsgId,
+          sessionId: safeStr(currentMsg.sessionId || ""),
+          email: safeStr(currentMsg.email || ""),
+          name: safeStr(currentMsg.name || ""),
           message: text,
-          createdAt: Date.now()
+          sender: "admin",
+          createdAt: serverTimestamp()
         });
 
-        // Update thread metadata (optional but nice)
-        await updateDoc(doc(db, "supportThreads", currentThreadId), {
-          status: "pending",
-          lastMessageAt: Date.now(),
-          lastMessagePreview: text.slice(0, 120)
+        // Update message status + reply preview
+        await updateDoc(doc(db, "supportMessages", currentMsgId), {
+          status: "open",
+          lastReplyAt: serverTimestamp(),
+          lastReplyPreview: text.slice(0, 120)
         });
 
         replyEl.value = "";
+        showToast("Sent", "Reply saved.");
       }catch(e){
         showToast("Send failed", e?.message || String(e));
       }finally{
@@ -600,6 +657,7 @@
     }
 
     sendBtn.onclick = sendReply;
+
     replyEl.addEventListener("keydown", (e)=>{
       if(e.key === "Enter" && (e.ctrlKey || e.metaKey)){
         e.preventDefault();
@@ -608,12 +666,12 @@
     });
 
     async function saveStatus(){
-      if(!currentThreadId) return;
+      if(!currentMsgId) return;
       const status = setStatusEl.value;
       try{
-        await updateDoc(doc(db, "supportThreads", currentThreadId), {
+        await updateDoc(doc(db, "supportMessages", currentMsgId), {
           status,
-          updatedAt: Date.now()
+          updatedAt: serverTimestamp()
         });
         showToast("Saved", `Status updated to ${status}`);
       }catch(e){
@@ -622,35 +680,40 @@
     }
     saveStatusBtn.onclick = saveStatus;
 
-    searchEl.oninput = renderThreads;
-    statusFilterEl.onchange = renderThreads;
+    searchEl.oninput = renderInbox;
+    statusFilterEl.onchange = renderInbox;
 
     refreshBtn.onclick = async ()=> {
-      // simple re-render; listener already live
-      renderThreads();
+      renderInbox();
       showToast("Refreshed", "Inbox updated.");
     };
 
-    function startThreadsListener(){
-      if(threadsUnsub) threadsUnsub();
+    function startInboxListener(){
+      if(inboxUnsub) inboxUnsub();
 
-      // order by lastMessageAt (fallback to createdAt)
-      // (Firestore doesn't support coalesce, so we use lastMessageAt only;
-      // make sure your thread creator sets lastMessageAt on create)
-      const colRef = collection(db, "supportThreads");
-      const qy = query(colRef, orderBy("lastMessageAt", "desc"), limit(200));
+      const qy = query(
+        collection(db, "supportMessages"),
+        orderBy("createdAt", "desc"),
+        limit(200)
+      );
 
-      threadsUnsub = onSnapshot(qy, (snap)=>{
-        threadsCache = snap.docs.map(d=>({ id:d.id, ...d.data() }));
-        renderThreads();
-        // if selected thread missing, reset chat
-        if(currentThreadId && !threadsCache.some(t=>t.id===currentThreadId)){
-          currentThreadId = null;
-          chatTitle.textContent = "Select a thread";
+      inboxUnsub = onSnapshot(qy, (snap)=>{
+        inboxCache = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+        renderInbox();
+
+        // keep current selection
+        if(currentMsgId && !inboxCache.some(m=>m.id===currentMsgId)){
+          currentMsgId = null;
+          currentMsg = null;
+          if(repliesUnsub) repliesUnsub();
+          repliesUnsub = null;
+          chatTitle.textContent = "Select a message";
           chatSub.textContent = "—";
-          chatBody.innerHTML = '<div class="muted">No thread selected.</div>';
+          chatBody.innerHTML = '<div class="muted">No message selected.</div>';
           replyEl.disabled = true;
           sendBtn.disabled = true;
+        } else if(currentMsgId){
+          currentMsg = inboxCache.find(m=>m.id===currentMsgId) || currentMsg;
         }
       }, (err)=>{
         showToast("Inbox error", err?.message || String(err));
@@ -660,7 +723,6 @@
     // Auth watcher
     onAuthStateChanged(auth, async (user)=>{
       if(!user){
-        isAdminUser = false;
         setViewLoggedOut();
         return;
       }
@@ -673,11 +735,9 @@
           return;
         }
 
-        isAdminUser = true;
         setViewAuthed(user);
-        startThreadsListener();
+        startInboxListener();
         showToast("Welcome", "Admin access granted.");
-
       }catch(e){
         await signOut(auth);
         loginErr.textContent = e?.message || String(e);
