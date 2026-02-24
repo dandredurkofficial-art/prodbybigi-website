@@ -607,15 +607,11 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
   import {
     getFirestore,
-    doc,
-    setDoc,
-    updateDoc,
-    getDoc,
     addDoc,
-    collection
+    collection,
+    serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  // ✅ PASTE YOUR FIREBASE WEB CONFIG HERE
   const firebaseConfig = {
     apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
     authDomain: "audiory-beat-store.firebaseapp.com",
@@ -656,20 +652,7 @@
     });
   });
 
-  // Scroll tiles
-  document.querySelectorAll(".tile").forEach((t) => {
-    t.addEventListener("click", () => {
-      const to = t.getAttribute("data-scroll");
-      const filter = t.getAttribute("data-filter");
-      if (to) document.querySelector(to)?.scrollIntoView({ behavior: "smooth" });
-      if (filter) {
-        $("q").value = filter;
-        runSearch();
-      }
-    });
-  });
-
-  // Search articles (client-side)
+  // Search
   const runSearch = () => {
     const q = ($("q").value || "").trim().toLowerCase();
     const articles = document.querySelectorAll("#articlesCard .article");
@@ -690,7 +673,7 @@
   $("searchBtn").addEventListener("click", runSearch);
   $("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runSearch(); });
 
-  // ---------- Thread/session ----------
+  // ---------- Support session ----------
   const getSessionId = () => {
     const k = "audiory_support_session";
     let v = localStorage.getItem(k);
@@ -701,65 +684,21 @@
     return v;
   };
 
-  // We'll use a stable threadId per visitor/device
-  const getThreadId = () => {
-    const k = "audiory_support_threadId";
-    let v = localStorage.getItem(k);
-    if (!v) {
-      v = getSessionId();
-      localStorage.setItem(k, v);
-    }
-    return v;
-  };
-
-  const nowMs = () => Date.now();
-
-  async function ensureThread({ threadId, name, email, subject }) {
-    const ref = doc(db, "supportThreads", threadId);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      const createdAt = nowMs();
-      await setDoc(ref, {
-        name: (name || "").trim(),
-        email: (email || "").trim(),
-        subject: (subject || "Help request").trim(),
-        status: "open",
-        createdAt,
-        lastMessageAt: createdAt,
-        lastMessagePreview: ""
-      }, { merge: true });
-    } else {
-      // keep latest contact info (merge)
-      await setDoc(ref, {
-        name: (name || snap.data()?.name || "").trim(),
-        email: (email || snap.data()?.email || "").trim(),
-        subject: (subject || snap.data()?.subject || "Help request").trim()
-      }, { merge: true });
-    }
-  }
-
-  async function addUserMessageToThread({ name, email, message, source, subject }) {
-    const threadId = getThreadId();
-    const msg = (message || "").trim();
-    if (!msg) throw new Error("Message is empty");
-
-    await ensureThread({ threadId, name, email, subject });
-
-    await addDoc(collection(db, "supportThreads", threadId, "messages"), {
-      sender: "user",
-      message: msg,
-      createdAt: nowMs(),
+  // ✅ Save support message into /supportMessages
+  async function saveSupportMessage({ name, email, message, source }) {
+    const payload = {
+      sessionId: getSessionId(),
+      name: (name || "").trim(),
+      email: (email || "").trim(),
+      message: (message || "").trim(),
       source: source || "help",
       pageUrl: location.href,
-      userAgent: navigator.userAgent
-    });
+      userAgent: navigator.userAgent,
+      createdAt: serverTimestamp(),
+      status: "new"
+    };
 
-    await updateDoc(doc(db, "supportThreads", threadId), {
-      lastMessageAt: nowMs(),
-      lastMessagePreview: msg.slice(0, 120),
-      status: "open"
-    });
+    return await addDoc(collection(db, "supportMessages"), payload);
   }
 
   // ---------- Contact form ----------
@@ -787,13 +726,7 @@
 
     setStatus($("contactStatus"), "Sending...", "");
     try{
-      await addUserMessageToThread({
-        name,
-        email,
-        message: msg,
-        source: "contact_form",
-        subject: "Contact form"
-      });
+      await saveSupportMessage({ name, email, message: msg, source: "contact_form" });
       setStatus($("contactStatus"), "✅ Sent! We’ll reply soon.", "ok");
       $("cMsg").value = "";
     }catch(e){
@@ -844,15 +777,7 @@
     try{
       addBubble(msg);
       $("chMsg").value = "";
-
-      await addUserMessageToThread({
-        name,
-        email,
-        message: msg,
-        source: "chat_widget",
-        subject: "Live chat"
-      });
-
+      await saveSupportMessage({ name, email, message: msg, source: "chat_widget" });
       setStatus($("chatStatus"), "✅ Sent. We’ll reply soon.", "ok");
     }catch(e){
       console.error(e);
@@ -860,4 +785,3 @@
     }
   });
 </script>
-
