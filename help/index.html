@@ -604,202 +604,259 @@
 
   <!-- Firebase (CDN) -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-    import { getFirestore, addDoc, collection, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+  import {
+    getFirestore,
+    doc,
+    setDoc,
+    updateDoc,
+    getDoc,
+    addDoc,
+    collection
+  } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-    // ✅ 1) PASTE YOUR FIREBASE WEB CONFIG HERE
-    // Firebase Console → Project settings → Your apps → (Web app) → Config
-    const firebaseConfig = {
-      apiKey: "PASTE_HERE",
-      authDomain: "PASTE_HERE",
-      projectId: "PASTE_HERE",
-      storageBucket: "PASTE_HERE",
-      messagingSenderId: "PASTE_HERE",
-      appId: "PASTE_HERE"
-    };
+  // ✅ PASTE YOUR FIREBASE WEB CONFIG HERE
+  const firebaseConfig = {
+    apiKey: "PASTE_HERE",
+    authDomain: "PASTE_HERE",
+    projectId: "PASTE_HERE",
+    storageBucket: "PASTE_HERE",
+    messagingSenderId: "PASTE_HERE",
+    appId: "PASTE_HERE"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    // Year
-    document.getElementById("y").textContent = new Date().getFullYear();
+  // Year
+  document.getElementById("y").textContent = new Date().getFullYear();
 
-    // ---------- UI helpers ----------
-    const $ = (id) => document.getElementById(id);
-    const setStatus = (el, msg, kind) => {
-      el.textContent = msg;
-      el.classList.remove("ok","err");
-      if (kind) el.classList.add(kind);
-    };
+  // ---------- UI helpers ----------
+  const $ = (id) => document.getElementById(id);
+  const setStatus = (el, msg, kind) => {
+    el.textContent = msg;
+    el.classList.remove("ok","err");
+    if (kind) el.classList.add(kind);
+  };
 
-    // Expand/collapse article + FAQ items
-    document.querySelectorAll(".articleTop").forEach((top) => {
-      top.addEventListener("click", () => {
-        top.parentElement.classList.toggle("open");
-      });
+  function escapeHtml(str){
+    return (str || "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;")
+      .replaceAll("\n","<br/>");
+  }
+
+  // Expand/collapse article + FAQ items
+  document.querySelectorAll(".articleTop").forEach((top) => {
+    top.addEventListener("click", () => {
+      top.parentElement.classList.toggle("open");
+    });
+  });
+
+  // Scroll tiles
+  document.querySelectorAll(".tile").forEach((t) => {
+    t.addEventListener("click", () => {
+      const to = t.getAttribute("data-scroll");
+      const filter = t.getAttribute("data-filter");
+      if (to) document.querySelector(to)?.scrollIntoView({ behavior: "smooth" });
+      if (filter) {
+        $("q").value = filter;
+        runSearch();
+      }
+    });
+  });
+
+  // Search articles (client-side)
+  const runSearch = () => {
+    const q = ($("q").value || "").trim().toLowerCase();
+    const articles = document.querySelectorAll("#articlesCard .article");
+
+    articles.forEach((a) => {
+      const text = (a.innerText || "").toLowerCase();
+      const tags = (a.getAttribute("data-tags") || "").toLowerCase();
+      const ok = !q || text.includes(q) || tags.includes(q);
+      a.style.display = ok ? "" : "none";
     });
 
-    // Scroll tiles
-    document.querySelectorAll(".tile").forEach((t) => {
-      t.addEventListener("click", () => {
-        const to = t.getAttribute("data-scroll");
-        const filter = t.getAttribute("data-filter");
-        if (to) document.querySelector(to)?.scrollIntoView({ behavior: "smooth" });
-        if (filter) {
-          $("q").value = filter;
-          runSearch();
-        }
-      });
-    });
+    if (q) {
+      const first = Array.from(articles).find((a)=>a.style.display !== "none");
+      if (first) first.classList.add("open");
+    }
+  };
 
-    // Search articles (client-side)
-    const runSearch = () => {
-      const q = ($("q").value || "").trim().toLowerCase();
-      const articles = document.querySelectorAll("#articlesCard .article");
-      let shown = 0;
+  $("searchBtn").addEventListener("click", runSearch);
+  $("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runSearch(); });
 
-      articles.forEach((a) => {
-        const text = (a.innerText || "").toLowerCase();
-        const tags = (a.getAttribute("data-tags") || "").toLowerCase();
-        const ok = !q || text.includes(q) || tags.includes(q);
-        a.style.display = ok ? "" : "none";
-        if (ok) shown++;
-      });
+  // ---------- Thread/session ----------
+  const getSessionId = () => {
+    const k = "audiory_support_session";
+    let v = localStorage.getItem(k);
+    if (!v) {
+      v = "sess_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
+      localStorage.setItem(k, v);
+    }
+    return v;
+  };
 
-      // auto open first visible when searching
-      if (q) {
-        const first = Array.from(articles).find((a)=>a.style.display !== "none");
-        if (first) first.classList.add("open");
-      }
-    };
+  // We'll use a stable threadId per visitor/device
+  const getThreadId = () => {
+    const k = "audiory_support_threadId";
+    let v = localStorage.getItem(k);
+    if (!v) {
+      v = getSessionId();
+      localStorage.setItem(k, v);
+    }
+    return v;
+  };
 
-    $("searchBtn").addEventListener("click", runSearch);
-    $("q").addEventListener("keydown", (e)=>{ if(e.key==="Enter") runSearch(); });
+  const nowMs = () => Date.now();
 
-    // ---------- Support inbox: session id ----------
-    const getSessionId = () => {
-      const k = "audiory_support_session";
-      let v = localStorage.getItem(k);
-      if (!v) {
-        v = "sess_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
-        localStorage.setItem(k, v);
-      }
-      return v;
-    };
+  async function ensureThread({ threadId, name, email, subject }) {
+    const ref = doc(db, "supportThreads", threadId);
+    const snap = await getDoc(ref);
 
-    // ---------- Save message to Firestore ----------
-    async function saveSupportMessage({ name, email, message, source }) {
-      const sessionId = getSessionId();
-      const payload = {
-        sessionId,
+    if (!snap.exists()) {
+      const createdAt = nowMs();
+      await setDoc(ref, {
         name: (name || "").trim(),
         email: (email || "").trim(),
-        message: (message || "").trim(),
-        source: source || "help",
-        pageUrl: location.href,
-        userAgent: navigator.userAgent,
-        createdAt: serverTimestamp(),
-        status: "new"
-      };
+        subject: (subject || "Help request").trim(),
+        status: "open",
+        createdAt,
+        lastMessageAt: createdAt,
+        lastMessagePreview: ""
+      }, { merge: true });
+    } else {
+      // keep latest contact info (merge)
+      await setDoc(ref, {
+        name: (name || snap.data()?.name || "").trim(),
+        email: (email || snap.data()?.email || "").trim(),
+        subject: (subject || snap.data()?.subject || "Help request").trim()
+      }, { merge: true });
+    }
+  }
 
-      // store in: supportMessages
-      return await addDoc(collection(db, "supportMessages"), payload);
+  async function addUserMessageToThread({ name, email, message, source, subject }) {
+    const threadId = getThreadId();
+    const msg = (message || "").trim();
+    if (!msg) throw new Error("Message is empty");
+
+    await ensureThread({ threadId, name, email, subject });
+
+    await addDoc(collection(db, "supportThreads", threadId, "messages"), {
+      sender: "user",
+      message: msg,
+      createdAt: nowMs(),
+      source: source || "help",
+      pageUrl: location.href,
+      userAgent: navigator.userAgent
+    });
+
+    await updateDoc(doc(db, "supportThreads", threadId), {
+      lastMessageAt: nowMs(),
+      lastMessagePreview: msg.slice(0, 120),
+      status: "open"
+    });
+  }
+
+  // ---------- Contact form ----------
+  $("clearBtn").addEventListener("click", ()=>{
+    $("cName").value = "";
+    $("cEmail").value = "";
+    $("cMsg").value = "";
+    setStatus($("contactStatus"), "Cleared.", "ok");
+    setTimeout(()=>setStatus($("contactStatus"), "Messages are sent to Audiory support.", ""), 1200);
+  });
+
+  $("sendBtn").addEventListener("click", async ()=>{
+    const name = $("cName").value;
+    const email = $("cEmail").value;
+    const msg = $("cMsg").value;
+
+    if (!msg.trim()) {
+      setStatus($("contactStatus"), "Please write a message first.", "err");
+      return;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setStatus($("contactStatus"), "Please enter a valid email.", "err");
+      return;
     }
 
-    // ---------- Contact form ----------
-    $("clearBtn").addEventListener("click", ()=>{
-      $("cName").value = "";
-      $("cEmail").value = "";
+    setStatus($("contactStatus"), "Sending...", "");
+    try{
+      await addUserMessageToThread({
+        name,
+        email,
+        message: msg,
+        source: "contact_form",
+        subject: "Contact form"
+      });
+      setStatus($("contactStatus"), "✅ Sent! We’ll reply soon.", "ok");
       $("cMsg").value = "";
-      setStatus($("contactStatus"), "Cleared.", "ok");
-      setTimeout(()=>setStatus($("contactStatus"), "Messages are sent to Audiory support.", ""), 1200);
-    });
+    }catch(e){
+      console.error(e);
+      setStatus($("contactStatus"), "❌ Failed to send. Try again.", "err");
+    }
+  });
 
-    $("sendBtn").addEventListener("click", async ()=>{
-      const name = $("cName").value;
-      const email = $("cEmail").value;
-      const msg = $("cMsg").value;
+  // ---------- Chat drawer ----------
+  const openDrawer = () => {
+    $("drawerBackdrop").style.display = "block";
+    $("drawer").style.display = "flex";
+    setTimeout(()=> $("chMsg").focus(), 50);
+  };
+  const closeDrawer = () => {
+    $("drawerBackdrop").style.display = "none";
+    $("drawer").style.display = "none";
+  };
 
-      if (!msg.trim()) {
-        setStatus($("contactStatus"), "Please write a message first.", "err");
-        return;
-      }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setStatus($("contactStatus"), "Please enter a valid email.", "err");
-        return;
-      }
+  $("supportFab").addEventListener("click", openDrawer);
+  $("openChatBtn").addEventListener("click", openDrawer);
+  $("drawerBackdrop").addEventListener("click", closeDrawer);
+  $("closeDrawer").addEventListener("click", closeDrawer);
 
-      setStatus($("contactStatus"), "Sending...", "");
-      try{
-        await saveSupportMessage({ name, email, message: msg, source: "contact_form" });
-        setStatus($("contactStatus"), "✅ Sent! We’ll reply soon.", "ok");
-        $("cMsg").value = "";
-      }catch(e){
-        console.error(e);
-        setStatus($("contactStatus"), "❌ Failed to send. Try again.", "err");
-      }
-    });
+  const addBubble = (text) => {
+    const div = document.createElement("div");
+    div.className = "bubble me";
+    div.innerHTML = `${escapeHtml(text)}<div class="meta">You</div>`;
+    $("chatBody").appendChild(div);
+    $("chatBody").scrollTop = $("chatBody").scrollHeight;
+  };
 
-    // ---------- Chat drawer ----------
-    const openDrawer = () => {
-      $("drawerBackdrop").style.display = "block";
-      $("drawer").style.display = "flex";
-      setTimeout(()=> $("chMsg").focus(), 50);
-    };
-    const closeDrawer = () => {
-      $("drawerBackdrop").style.display = "none";
-      $("drawer").style.display = "none";
-    };
+  $("chSend").addEventListener("click", async ()=>{
+    const name = $("chName").value;
+    const email = $("chEmail").value;
+    const msg = $("chMsg").value;
 
-    $("supportFab").addEventListener("click", openDrawer);
-    $("openChatBtn").addEventListener("click", openDrawer);
-    $("drawerBackdrop").addEventListener("click", closeDrawer);
-    $("closeDrawer").addEventListener("click", closeDrawer);
-
-    const addBubble = (text) => {
-      const div = document.createElement("div");
-      div.className = "bubble me";
-      div.innerHTML = `${escapeHtml(text)}<div class="meta">You</div>`;
-      $("chatBody").appendChild(div);
-      $("chatBody").scrollTop = $("chatBody").scrollHeight;
-    };
-
-    function escapeHtml(str){
-      return (str || "")
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;")
-        .replaceAll("'","&#039;")
-        .replaceAll("\n","<br/>");
+    if (!msg.trim()) {
+      setStatus($("chatStatus"), "Write a message first.", "err");
+      return;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setStatus($("chatStatus"), "Enter a valid email so we can reply.", "err");
+      return;
     }
 
-    $("chSend").addEventListener("click", async ()=>{
-      const name = $("chName").value;
-      const email = $("chEmail").value;
-      const msg = $("chMsg").value;
+    setStatus($("chatStatus"), "Sending...", "");
+    try{
+      addBubble(msg);
+      $("chMsg").value = "";
 
-      if (!msg.trim()) {
-        setStatus($("chatStatus"), "Write a message first.", "err");
-        return;
-      }
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-        setStatus($("chatStatus"), "Enter a valid email so we can reply.", "err");
-        return;
-      }
+      await addUserMessageToThread({
+        name,
+        email,
+        message: msg,
+        source: "chat_widget",
+        subject: "Live chat"
+      });
 
-      setStatus($("chatStatus"), "Sending...", "");
-      try{
-        addBubble(msg);
-        $("chMsg").value = "";
-        await saveSupportMessage({ name, email, message: msg, source: "chat_widget" });
-        setStatus($("chatStatus"), "✅ Sent. We’ll reply soon.", "ok");
-      }catch(e){
-        console.error(e);
-        setStatus($("chatStatus"), "❌ Failed to send. Try again.", "err");
-      }
-    });
-
-  </script>
-</body>
-</html>
+      setStatus($("chatStatus"), "✅ Sent. We’ll reply soon.", "ok");
+    }catch(e){
+      console.error(e);
+      setStatus($("chatStatus"), "❌ Failed to send. Try again.", "err");
+    }
+  });
+</script>
