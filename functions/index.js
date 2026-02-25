@@ -240,17 +240,52 @@ async function sendEmail({ to, subject, text, html }) {
 }
 
 /* =========================================================
-✅ DARAJA (M-PESA)
+✅ DARAJA (M-PESA) — PRODUCTION (STK + C2B + B2C)
 ========================================================= */
-const OAUTH_URL =
-  "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
-const STK_PUSH_URL =
-  "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+
+// NEW SECRETS (add at top with your other secrets)
+const MPESA_ENV = defineSecret("MPESA_ENV"); // "production" or "sandbox"
+const MPESA_C2B_CONFIRMATION_URL = defineSecret("MPESA_C2B_CONFIRMATION_URL");
+const MPESA_C2B_VALIDATION_URL = defineSecret("MPESA_C2B_VALIDATION_URL");
+
+const B2C_INITIATOR_NAME = defineSecret("B2C_INITIATOR_NAME");
+const B2C_SECURITY_CREDENTIAL = defineSecret("B2C_SECURITY_CREDENTIAL");
+const B2C_RESULT_URL = defineSecret("B2C_RESULT_URL");
+const B2C_TIMEOUT_URL = defineSecret("B2C_TIMEOUT_URL");
+
+function darajaBase() {
+  const env = safeStr(MPESA_ENV.value() || "production").toLowerCase().trim();
+  return env === "sandbox" ? "https://sandbox.safaricom.co.ke" : "https://api.safaricom.co.ke";
+}
+
+function oauthUrl() {
+  return `${darajaBase()}/oauth/v1/generate?grant_type=client_credentials`;
+}
+
+function stkPushUrl() {
+  return `${darajaBase()}/mpesa/stkpush/v1/processrequest`;
+}
+
+function c2bRegisterUrl() {
+  return `${darajaBase()}/mpesa/c2b/v1/registerurl`;
+}
+
+function b2cPaymentUrl() {
+  return `${darajaBase()}/mpesa/b2c/v1/paymentrequest`;
+}
+
+function normalizePhone(phone) {
+  let p = safeStr(phone).trim().replace(/\s+/g, "");
+  if (p.startsWith("+")) p = p.slice(1);
+  if (p.startsWith("0")) p = "254" + p.slice(1);
+  if (p.startsWith("7")) p = "254" + p;
+  return p;
+}
 
 async function getAccessToken(consumerKey, consumerSecret) {
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
 
-  const res = await fetchFn(OAUTH_URL, {
+  const res = await fetchFn(oauthUrl(), {
     method: "GET",
     headers: { Authorization: `Basic ${auth}` },
   });
@@ -879,7 +914,6 @@ exports.captureOrder = onRequest(
     } catch (e) {
       console.error("captureOrder error:", e);
       applyCors(req, res);
-      return res.status
       return res.status(500).json({ error: e.message });
     }
   }
@@ -1371,6 +1405,7 @@ exports.stkpush = onRequest(
       MPESA_SHORTCODE,
       MPESA_PASSKEY,
       MPESA_CALLBACK_URL,
+      MPESA_ENV,
     ],
   },
   async (req, res) => {
@@ -1381,73 +1416,76 @@ exports.stkpush = onRequest(
     try {
       if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
-      const { phone, amount, beatId } = req.body || {};
-      if (!phone || !amount || !beatId) {
-        return res.status(400).json({ error: "phone, amount, and beatId are required" });
-      }
-
-      const orderRef = db.collection("orders").doc();
-      await orderRef.set({
-        beatId,
-        phone,
-        amount: Number(amount),
-        status: "PENDING",
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-
-      const timestamp = nowTimestamp();
-      const password = Buffer.from(
-        `${MPESA_SHORTCODE.value()}${MPESA_PASSKEY.value()}${timestamp}`
-      ).toString("base64");
-
-      const token = await getAccessToken(
-        DARAJA_CONSUMER_KEY.value(),
-        DARAJA_CONSUMER_SECRET.value()
-      );
-
-      const payload = {
-        BusinessShortCode: Number(MPESA_SHORTCODE.value()),
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: Number(amount),
-        PartyA: phone,
-        PartyB: Number(MPESA_SHORTCODE.value()),
-        PhoneNumber: phone,
-        CallBackURL: MPESA_CALLBACK_URL.value(),
-        AccountReference: orderRef.id,
-        TransactionDesc: `Beat ${beatId}`,
-      };
-
-      const r = await fetchFn(STK_PUSH_URL, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await r.json();
-
-      await orderRef.set(
-        {
-          checkoutRequestId: data.CheckoutRequestID || null,
-          merchantRequestId: data.MerchantRequestID || null,
-          stkResponse: data,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      return res.status(r.ok ? 200 : 400).json({ orderId: orderRef.id, ...data });
-    } catch (e) {
-      console.error("stkpush error:", e);
-      try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: e.message });
+    const { phone, amount, beatId } = req.body || {};
+    if (!phone || !amount || !beatId) {
+      return res.status(400).json({ error: "phone, amount, and beatId are required" });
     }
+
+    const msisdn = normalizePhone(phone);
+    const amt = Number(amount);
+    if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "amount invalid" });
+
+    const orderRef = db.collection("orders").doc();
+    await orderRef.set({
+      beatId,
+      phone: msisdn,
+      amount: amt,
+      status: "PENDING",
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    const timestamp = nowTimestamp();
+    const password = Buffer.from(
+      `${MPESA_SHORTCODE.value()}${MPESA_PASSKEY.value()}${timestamp}`
+    ).toString("base64");
+
+    const token = await getAccessToken(
+      DARAJA_CONSUMER_KEY.value(),
+      DARAJA_CONSUMER_SECRET.value()
+    );
+
+    const payload = {
+      BusinessShortCode: Number(MPESA_SHORTCODE.value()),
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: "CustomerPayBillOnline",
+      Amount: amt,
+      PartyA: msisdn,
+      PartyB: Number(MPESA_SHORTCODE.value()),
+      PhoneNumber: msisdn,
+      CallBackURL: MPESA_CALLBACK_URL.value(),
+      AccountReference: orderRef.id,
+      TransactionDesc: `Beat ${beatId}`,
+    };
+
+    const r = await fetchFn(stkPushUrl(), {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    await orderRef.set(
+      {
+        checkoutRequestId: data.CheckoutRequestID || null,
+        merchantRequestId: data.MerchantRequestID || null,
+        stkResponse: data,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
+
+    return res.status(r.ok ? 200 : 400).json({ orderId: orderRef.id, ...data });
+  } catch (e) {
+    console.error("stkpush error:", e);
+    try { applyCors(req, res); } catch (_) {}
+    return res.status(500).json({ error: e.message });
   }
-);
+ });
 
 // Callback endpoint
 exports.stkCallback = onRequest(
@@ -1540,8 +1578,6 @@ exports.secureDownload = onRequest(
     applyCors(req, res);
 
   try {
-    if (applyCors(req, res)) return;
-
     if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
     const { beatId, phone } = req.body || {};
@@ -1593,8 +1629,6 @@ exports.licenseDownload = onRequest(
     applyCors(req, res);
 
   try {
-    if (applyCors(req, res)) return;
-
     if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
     const { beatId, phone } = req.body || {};
