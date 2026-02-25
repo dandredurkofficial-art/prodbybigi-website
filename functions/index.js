@@ -1567,6 +1567,96 @@ exports.stkCallback = onRequest(
   }
 });
 
+// Run once after deploy to register URLs
+exports.c2bRegister = onRequest(
+  {
+    region: "us-central1",
+    secrets: [
+      DARAJA_CONSUMER_KEY,
+      DARAJA_CONSUMER_SECRET,
+      MPESA_SHORTCODE,
+      MPESA_C2B_CONFIRMATION_URL,
+      MPESA_C2B_VALIDATION_URL,
+      MPESA_ENV,
+    ],
+  },
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const token = await getAccessToken(
+        DARAJA_CONSUMER_KEY.value(),
+        DARAJA_CONSUMER_SECRET.value()
+      );
+
+      const payload = {
+        ShortCode: String(MPESA_SHORTCODE.value()),
+        ResponseType: "Completed",
+        ConfirmationURL: MPESA_C2B_CONFIRMATION_URL.value(),
+        ValidationURL: MPESA_C2B_VALIDATION_URL.value(),
+      };
+
+      const r = await fetchFn(c2bRegisterUrl(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await r.json().catch(() => ({}));
+      return res.status(r.ok ? 200 : 400).json({ ok: r.ok, ...data, sent: payload });
+    } catch (e) {
+      console.error("c2bRegister error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+// Safaricom calls this BEFORE accepting C2B payment
+exports.c2bValidation = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    await db.collection("mpesaC2BValidation").add({
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      raw: req.body || null,
+    });
+
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("c2bValidation error:", e);
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  }
+});
+
+// Safaricom calls this AFTER payment is completed
+exports.c2bConfirmation = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    const data = req.body || {};
+    await db.collection("mpesaC2BPayments").doc(safeStr(data.TransID || crypto.randomUUID())).set(
+      {
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        transId: safeStr(data.TransID),
+        amount: Number(data.TransAmount || 0),
+        msisdn: safeStr(data.MSISDN),
+        billRefNumber: safeStr(data.BillRefNumber),
+        transTime: safeStr(data.TransTime),
+        raw: data,
+      },
+      { merge: true }
+    );
+
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("c2bConfirmation error:", e);
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  }
+});
+
 /* =========================================================
 ✅ SECURE DOWNLOAD (CORS FIXED)
 ========================================================= */
