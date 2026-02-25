@@ -211,6 +211,9 @@
     .toast.show{display:block}
     .toast .t{font-weight:700; margin-bottom:4px}
   </style>
+
+  <!-- ✅ ADDED: EmailJS -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -350,6 +353,34 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
+
+    // ✅ ADDED: EmailJS setup
+    const EMAILJS_SERVICE_ID = "service_wg51el8";
+    const EMAILJS_TEMPLATE_ID = "template_hquyadr";
+    const EMAILJS_PUBLIC_KEY = "NrDzsz4llNIdcP5ir";
+
+    function initEmailJS(){
+      try{
+        if (window.emailjs && window.emailjs.init) {
+          window.emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
+      }catch(e){
+        console.error("EmailJS init failed", e);
+      }
+    }
+    initEmailJS();
+
+    async function emailUserReply({ to_email, to_name, reply_message, ticket_message, ticket_id }){
+      if (!window.emailjs) throw new Error("EmailJS not loaded");
+      return window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+        to_email,
+        to_name,
+        reply_message,
+        ticket_message,
+        ticket_id,
+        from_name: "Audiory Support"
+      });
+    }
 
     // UI refs
     const loginView = document.getElementById("loginView");
@@ -581,14 +612,12 @@
       replyEl.disabled = false;
       sendBtn.disabled = false;
 
-      // Mark as open automatically when opened (optional)
       try{
         if(currentMsg && (currentMsg.status === "new" || !currentMsg.status)){
           await updateDoc(doc(db, "supportMessages", msgId), { status: "open" });
         }
       }catch(_){}
 
-      // Listen to replies for this msg (no orderBy to avoid needing an index)
       if(repliesUnsub) repliesUnsub();
       chatBody.innerHTML = '<div class="muted">Loading…</div>';
 
@@ -601,16 +630,13 @@
       repliesUnsub = onSnapshot(repliesQ, (snap)=>{
         const replies = snap.docs.map(d=>({ id:d.id, ...d.data() }));
 
-        // Sort client-side by createdAt
         replies.sort((a,b)=>{
           const ta = a?.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt || 0);
           const tb = b?.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt || 0);
           return ta - tb;
         });
 
-        // Refresh current message from cache (in case status changed)
         currentMsg = inboxCache.find(x=>x.id===msgId) || currentMsg;
-
         renderChat({ msg: currentMsg, replies });
       }, (err)=>{
         chatBody.innerHTML = `<div class="muted" style="color:#ffb4b4">Error: ${escapeHtml(err.message || String(err))}</div>`;
@@ -629,7 +655,7 @@
       sendBtn.disabled = true;
 
       try{
-        // Write reply
+        // Save reply
         await addDoc(collection(db, "supportReplies"), {
           msgId: currentMsgId,
           sessionId: safeStr(currentMsg.sessionId || ""),
@@ -647,8 +673,27 @@
           lastReplyPreview: text.slice(0, 120)
         });
 
+        // ✅ ADDED: Send email via EmailJS
+        const toEmail = safeStr(currentMsg.email || "").trim();
+        if (toEmail) {
+          try{
+            await emailUserReply({
+              to_email: toEmail,
+              to_name: safeStr(currentMsg.name || "").trim() || "Customer",
+              reply_message: text,
+              ticket_message: safeStr(currentMsg.message || ""),
+              ticket_id: currentMsgId
+            });
+            showToast("Sent", "Reply saved + email sent.");
+          }catch(emailErr){
+            console.error("EmailJS error", emailErr);
+            showToast("Saved, email failed", emailErr?.text || emailErr?.message || String(emailErr));
+          }
+        } else {
+          showToast("Sent", "Reply saved (no email provided).");
+        }
+
         replyEl.value = "";
-        showToast("Sent", "Reply saved.");
       }catch(e){
         showToast("Send failed", e?.message || String(e));
       }finally{
@@ -701,7 +746,6 @@
         inboxCache = snap.docs.map(d=>({ id:d.id, ...d.data() }));
         renderInbox();
 
-        // keep current selection
         if(currentMsgId && !inboxCache.some(m=>m.id===currentMsgId)){
           currentMsgId = null;
           currentMsg = null;
@@ -720,7 +764,6 @@
       });
     }
 
-    // Auth watcher
     onAuthStateChanged(auth, async (user)=>{
       if(!user){
         setViewLoggedOut();

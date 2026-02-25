@@ -602,6 +602,29 @@
     </div>
   </div>
 
+  <!-- ✅ EmailJS (added) -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script>
+    // EmailJS init
+    (function(){
+      emailjs.init("NrDzsz4llNIdcP5ir"); // public key
+    })();
+
+    // Send email to support inbox (Gmail connected in EmailJS)
+    async function sendSupportEmail({ name, email, message, source }) {
+      return emailjs.send("service_wg51el8", "template_hquyadr", {
+        name: (name || "").trim(),
+        reply_to: (email || "").trim(),
+        email: (email || "").trim(),      // optional (use if template has {{email}})
+        message: (message || "").trim(),
+        source: source || "help",
+        page_url: location.href,
+        user_agent: navigator.userAgent,
+        title: "New support message"       // optional (use if template has {{title}})
+      });
+    }
+  </script>
+
   <!-- Firebase (CDN) -->
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
@@ -726,7 +749,16 @@
 
     setStatus($("contactStatus"), "Sending...", "");
     try{
+      // 1) Save to Firestore (source of truth)
       await saveSupportMessage({ name, email, message: msg, source: "contact_form" });
+
+      // 2) Send Email notification (best effort)
+      try{
+        await sendSupportEmail({ name, email, message: msg, source: "contact_form" });
+      }catch(emailErr){
+        console.warn("EmailJS failed:", emailErr);
+      }
+
       setStatus($("contactStatus"), "✅ Sent! We’ll reply soon.", "ok");
       $("cMsg").value = "";
     }catch(e){
@@ -777,7 +809,17 @@
     try{
       addBubble(msg);
       $("chMsg").value = "";
+
+      // 1) Save to Firestore
       await saveSupportMessage({ name, email, message: msg, source: "chat_widget" });
+
+      // 2) Send Email notification (best effort)
+      try{
+        await sendSupportEmail({ name, email, message: msg, source: "chat_widget" });
+      }catch(emailErr){
+        console.warn("EmailJS failed:", emailErr);
+      }
+
       setStatus($("chatStatus"), "✅ Sent. We’ll reply soon.", "ok");
     }catch(e){
       console.error(e);
@@ -785,3 +827,5 @@
     }
   });
 </script>
+</body>
+</html>
