@@ -1657,6 +1657,148 @@ exports.c2bConfirmation = onRequest({ region: "us-central1" }, async (req, res) 
   }
 });
 
+exports.b2cPay = onRequest(
+  {
+    region: "us-central1",
+    secrets: [
+      DARAJA_CONSUMER_KEY,
+      DARAJA_CONSUMER_SECRET,
+      MPESA_SHORTCODE,
+      B2C_INITIATOR_NAME,
+      B2C_SECURITY_CREDENTIAL,
+      B2C_RESULT_URL,
+      B2C_TIMEOUT_URL,
+      MPESA_ENV,
+    ],
+  },
+  async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const { phone, amount, remarks } = req.body || {};
+      if (!phone || !amount) return res.status(400).json({ error: "phone and amount are required" });
+
+      const msisdn = normalizePhone(phone);
+      const amt = Number(amount);
+      if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "amount invalid" });
+
+      const token = await getAccessToken(
+        DARAJA_CONSUMER_KEY.value(),
+        DARAJA_CONSUMER_SECRET.value()
+      );
+
+      const payoutRef = db.collection("mpesaB2CRequests").doc();
+      await payoutRef.set({
+        phone: msisdn,
+        amount: amt,
+        remarks: safeStr(remarks || "Audiory payout"),
+        status: "PENDING",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      const payload = {
+        InitiatorName: B2C_INITIATOR_NAME.value(),
+        SecurityCredential: B2C_SECURITY_CREDENTIAL.value(),
+        CommandID: "BusinessPayment",
+        Amount: amt,
+        PartyA: String(MPESA_SHORTCODE.value()),
+        PartyB: msisdn,
+        Remarks: safeStr(remarks || "Audiory payout"),
+        QueueTimeOutURL: B2C_TIMEOUT_URL.value(),
+        ResultURL: B2C_RESULT_URL.value(),
+        Occasion: payoutRef.id,
+      };
+
+      const r = await fetchFn(b2cPaymentUrl(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      await payoutRef.set(
+        {
+          b2cResponse: data,
+          conversationId: data.ConversationID || null,
+          originatorConversationId: data.OriginatorConversationID || null,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      return res.status(r.ok ? 200 : 400).json({ requestId: payoutRef.id, ...data });
+    } catch (e) {
+      console.error("b2cPay error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
+exports.b2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const result = body?.Result || {};
+    const originatorConversationID = safeStr(result.OriginatorConversationID || "");
+    const resultCode = result.ResultCode;
+    const resultDesc = safeStr(result.ResultDesc || "");
+
+    await db.collection("mpesaB2CResults").doc(originatorConversationID || crypto.randomUUID()).set(
+      {
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        originatorConversationID,
+        resultCode,
+        resultDesc,
+        raw: body,
+      },
+      { merge: true }
+    );
+
+    const q = await db
+      .collection("mpesaB2CRequests")
+      .where("originatorConversationId", "==", originatorConversationID)
+      .limit(1)
+      .get();
+
+    if (!q.empty) {
+      await q.docs[0].ref.set(
+        {
+          status: Number(resultCode) === 0 ? "PAID" : "FAILED",
+          resultCode,
+          resultDesc,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    }
+
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("b2cResult error:", e);
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  }
+});
+
+exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    await db.collection("mpesaB2CTimeouts").add({
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      raw: req.body || null,
+    });
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("b2cTimeout error:", e);
+    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+  }
+});
+
 /* =========================================================
 ✅ SECURE DOWNLOAD (CORS FIXED)
 ========================================================= */
