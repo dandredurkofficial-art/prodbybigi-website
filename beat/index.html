@@ -822,5 +822,166 @@
   window.addEventListener("firebase-ready", ()=> loadBeatPage());
 </script>
 
+<script>
+  // =========================
+  // ✅ M-Pesa / Payment Modal Logic (MISSING)
+  // Place this near the end of the file before </body>
+  // =========================
+
+  const pbPayBackdrop = document.getElementById("pbPayBackdrop");
+  const pbPayModal    = document.getElementById("pbPayModal");
+  const pbPayClose    = document.getElementById("pbPayClose");
+
+  const pbPayTitle    = document.getElementById("pbPayTitle");
+  const pbPaySub      = document.getElementById("pbPaySub");
+  const pbPayAmountA  = document.getElementById("pbPayAmountA");
+  const pbPayAmountB  = document.getElementById("pbPayAmountB");
+
+  const pbPayWithPaypal = document.getElementById("pbPayWithPaypal");
+  const pbPayWithMpesa  = document.getElementById("pbPayWithMpesa");
+
+  const pbMpesaBox    = document.getElementById("pbMpesaBox");
+  const pbMpesaPhone  = document.getElementById("pbMpesaPhone");
+  const pbPayStatus   = document.getElementById("pbPayStatus");
+
+  function openPayModal(selected){
+    window.__PB_SELECTED__ = selected;
+
+    const usd = Number(selected?.amountUsd || 0);
+    pbPayTitle.textContent = "Choose payment method";
+    pbPaySub.textContent =
+      `Beat: ${selected.beatId}\n` +
+      `License: ${selected.licenseKey}\n` +
+      `Amount (USD): $${usd.toFixed(2)}`;
+
+    pbPayAmountA.textContent = `$${usd.toFixed(2)}`;
+    pbPayAmountB.textContent = `$${usd.toFixed(2)}`;
+
+    pbPayStatus.textContent = "";
+    pbMpesaBox.style.display = "none";
+
+    pbPayBackdrop.style.display = "block";
+    pbPayModal.style.display = "block";
+  }
+
+  function closePayModal(){
+    pbPayBackdrop.style.display = "none";
+    pbPayModal.style.display = "none";
+    pbPayStatus.textContent = "";
+    pbMpesaBox.style.display = "none";
+  }
+
+  if (pbPayBackdrop) pbPayBackdrop.addEventListener("click", closePayModal);
+  if (pbPayClose) pbPayClose.addEventListener("click", closePayModal);
+
+  // ✅ 1) When user clicks any M-Pesa button on licenses list
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest("[data-mpesa='1']");
+    if (!btn) return;
+
+    const selected = {
+      beatId: btn.getAttribute("data-beat-id") || "",
+      producerId: btn.getAttribute("data-producer-id") || "",
+      licenseKey: btn.getAttribute("data-license") || "basic",
+      amountUsd: Number(btn.getAttribute("data-amount-usd") || 0),
+    };
+
+    if (!selected.beatId){
+      alert("Missing beatId on button.");
+      return;
+    }
+    if (!Number.isFinite(selected.amountUsd) || selected.amountUsd <= 0){
+      alert("Invalid amount on button.");
+      return;
+    }
+
+    openPayModal(selected);
+  });
+
+  // ✅ 2) PayPal button (optional: you can connect to your existing PayPal flow)
+  if (pbPayWithPaypal){
+    pbPayWithPaypal.addEventListener("click", ()=>{
+      alert("PayPal flow not wired here. Use your existing license modal PayPal checkout.");
+    });
+  }
+
+  // ✅ 3) Show phone box when user chooses M-Pesa
+  if (pbPayWithMpesa){
+    pbPayWithMpesa.addEventListener("click", ()=>{
+      pbMpesaBox.style.display = "block";
+      pbPayStatus.textContent = "Enter phone then click M-Pesa again to send STK Push.";
+      setTimeout(()=> pbMpesaPhone?.focus(), 50);
+    });
+  }
+
+  // ✅ 4) Send STK Push when user clicks M-Pesa again AND phone is filled
+  if (pbPayWithMpesa){
+    pbPayWithMpesa.addEventListener("click", async ()=>{
+      try{
+        const sel = window.__PB_SELECTED__;
+        if (!sel) return;
+
+        const phone = (pbMpesaPhone?.value || "").trim();
+        if (!phone){
+          // first click just opens input; second click sends
+          return;
+        }
+
+        if (!window.PB_MPESA_STKPUSH_URL){
+          throw new Error("Missing window.PB_MPESA_STKPUSH_URL in your script config.");
+        }
+
+        // Require signed-in user so backend gets buyerId
+        const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+        if (!u){
+          alert("Please sign in first.");
+          location.href = "/login/";
+          return;
+        }
+
+        pbPayWithMpesa.disabled = true;
+        pbPayStatus.textContent = "Sending STK Push… check your phone.";
+
+        const payload = {
+          phone,
+          beatId: String(sel.beatId),
+          buyerId: String(u.uid),
+          amountUsd: Number(sel.amountUsd),
+          licenseKey: String(sel.licenseKey || "basic"),
+          producerId: String(sel.producerId || "")
+        };
+
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok){
+          throw new Error(data?.error || data?.ResponseDescription || `STK Push failed (${r.status})`);
+        }
+
+        pbPayStatus.textContent =
+          "✅ STK Push sent.\n" +
+          "1) Confirm on your phone.\n" +
+          "2) After payment, go to Buyer Dashboard.\n" +
+          (data?.orderId ? ("\nOrder ID: " + data.orderId) : "");
+
+        setTimeout(()=>{
+          closePayModal();
+          location.href = "/buyer-dashboard/";
+        }, 2500);
+
+      }catch(err){
+        console.error(err);
+        pbPayStatus.textContent = "❌ " + (err?.message || String(err));
+      }finally{
+        pbPayWithMpesa.disabled = false;
+      }
+    });
+  }
+</script>
+
 </body>
 </html>
