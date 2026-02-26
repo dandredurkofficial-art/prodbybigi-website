@@ -1455,10 +1455,8 @@ exports.stkpush = onRequest(
       amountUsd: usd,
       currency: currency,
       amountKes: kes,
-
-      provider: "MPESA_STK"
-      status: "PENDING"
-
+      provider: "MPESA_STK",
+      status: "PENDING",
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -1593,7 +1591,7 @@ exports.stkCallback = onRequest(
           beatId: orderDoc.data().beatId,
 
           //if later i connect auth i will add uid here
-          
+
           phone: metadata.PhoneNumber || null,
           amount: metadata.Amount || null,
           receipt: metadata.MpesaReceiptNumber || null,
@@ -2006,7 +2004,7 @@ exports.onProducerSignup = onDocumentCreated(
 
 exports.onUserBecameProducer = onDocumentWritten(
   {
-    region: "us-central1"
+    region: "us-central1",
     maxInstances: 1,
     document: "users/{uid}",
     secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
