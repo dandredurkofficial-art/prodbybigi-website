@@ -48,6 +48,8 @@ const DARAJA_CONSUMER_SECRET = defineSecret("DARAJA_CONSUMER_SECRET");
 const MPESA_SHORTCODE = defineSecret("MPESA_SHORTCODE");
 const MPESA_PASSKEY = defineSecret("MPESA_PASSKEY");
 const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
+const PRICE_CURRENCY = defineSecret("PRICE_CURRENCY");
+const USD_KES_RATE = defineSecret("USD_KES_RATE");
 
 // SendGrid
 const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
@@ -1424,28 +1426,34 @@ exports.stkpush = onRequest(
     const { phone, amountUsd, amount, beatId } = req.body || {};
     const inputAmountUsd = amountUsd ?? amount;
 
-    if (!phone || !inputAmountUsd || !beatId) {
-      return res
-        .status(400)
-        .json({ error: "phone, amount/amountUsd, and beatId are required" });
+    if (!phone || inputAmountUsd == null || !beatId) {
+      return res.status(400).json({ error: "phone, amount/amountUsd, and beatId are required" });
     }
 
     const msisdn = normalizePhone(phone);
-    const Usd = Number(inputAmountUsd);
-    if (!Number.isFinite(Usd) || Usd <= 0) {
+
+    // ✅ FIX: use ONE variable name (usd)
+    const usd = Number(inputAmountUsd);
+    if (!Number.isFinite(usd) || usd <= 0) {
       return res.status(400).json({ error: "amountUsd invalid" });
     }
 
-    const currency = (PRICE_CURRENCY.value() || "USD").toUpperCase();
+    const currency = String(PRICE_CURRENCY.value() || "USD").toUpperCase();
 
-    // convert if USD, otherwise assume amount already KES
-    const kes =
-      currency === "USD"
-        ? usdToKesInt(usd)
-        : Math.max(1, Math.round(Number(usd)));
+    // ✅ Get rate from secret (string -> number)
+    const rate = Number(USD_KES_RATE.value() || 0);
+    if (currency === "USD" && (!Number.isFinite(rate) || rate <= 0)) {
+    return res.status(500).json({ error: "USD_KES_RATE is missing/invalid" });
+    }
 
-    if (Number.isFinite(kes) || kes <= 0) {
-      return req.status(400).json({ error: "KES amount invalid" });
+    // ✅ Convert to integer KES (Mpesa needs integer)
+    const kes = currency === "USD"
+      ? Math.max(1, Math.round(usd * rate))
+      : Math.max(1, Math.round(usd));
+
+    // ✅ FIX: this condition was wrong + you used req.status
+    if (!Number.isFinite(kes) || kes <= 0) {
+      return res.status(400).json({ error: "KES amount invalid" });
     }
 
     const orderRef = db.collection("orders").doc();
