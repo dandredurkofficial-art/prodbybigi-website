@@ -132,65 +132,96 @@
       .more-grid{grid-template-columns:repeat(2,1fr)}
     }
 
-    /* ==============================
-       ✅ ADDED: M-Pesa Modal UI
-    ============================== */
-    .mp-backdrop{
+    /* =========================
+       ✅ NEW: Payment Method Modal
+    ========================= */
+    .pb-pay-backdrop{
       position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
+      background:rgba(0,0,0,.62);
       display:none;
-      z-index:9998;
+      z-index:10050;
     }
-    .mp-modal{
+    .pb-pay-modal{
       position:fixed;
       left:50%; top:50%;
       transform:translate(-50%,-50%);
       width:min(520px, calc(100vw - 24px));
-      background:#0b1220;
+      background: rgba(15,22,34,.95);
       border:1px solid rgba(255,255,255,.12);
       border-radius:18px;
-      padding:18px;
-      box-shadow:0 20px 70px rgba(0,0,0,.45);
+      padding:16px;
+      box-shadow:0 24px 80px rgba(0,0,0,.55);
       display:none;
-      z-index:9999;
+      z-index:10051;
     }
-    .mp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .mp-title{font-size:16px;font-weight:950;margin:0}
-    .mp-close{
-      border:none;background:transparent;color:#fff;font-size:18px;cursor:pointer;
-      padding:6px 8px;border-radius:10px;
+    .pb-pay-head{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
     }
-    .mp-close:hover{background:rgba(255,255,255,.08)}
-    .mp-sub{color:rgba(255,255,255,.7);font-size:13px;margin:8px 0 14px;line-height:1.4;white-space:pre-wrap}
-    .mp-label{font-size:13px;font-weight:800;margin:10px 0 6px;color:rgba(255,255,255,.85)}
-    .mp-input{
+    .pb-pay-title{font-weight:900; font-size:16px; margin:0}
+    .pb-pay-sub{color:rgba(255,255,255,.7); font-size:12px; margin-top:6px; line-height:1.4}
+    .pb-pay-close{
+      border:none; background:transparent; color:#fff;
+      font-size:18px; cursor:pointer; padding:6px 8px; border-radius:10px;
+    }
+    .pb-pay-close:hover{background:rgba(255,255,255,.08)}
+    .pb-pay-body{padding-top:12px; display:grid; gap:10px}
+    .pb-pay-methods{display:grid; gap:10px}
+    .pb-pay-btn{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .pb-pay-btn:hover{background:rgba(255,255,255,.10)}
+    .pb-pay-btn.primary{
+      border-color: rgba(59,130,246,.40);
+      background: rgba(59,130,246,.18);
+    }
+    .pb-pay-btn.primary:hover{background: rgba(59,130,246,.24)}
+    .pb-pay-btn.success{
+      border-color: rgba(34,197,94,.40);
+      background: rgba(34,197,94,.16);
+    }
+    .pb-pay-btn.success:hover{background: rgba(34,197,94,.22)}
+    .pb-pay-mini{
+      color:rgba(255,255,255,.75);
+      font-size:12px;
+      font-weight:700;
+    }
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:6px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+    }
+    .pb-pay-label{font-size:12px; font-weight:900; color:rgba(255,255,255,.85); margin-bottom:6px}
+    .pb-pay-input{
       width:100%;
       padding:12px;
       border-radius:12px;
       border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
+      background: rgba(255,255,255,.06);
       color:#fff;
       outline:none;
     }
-    .mp-input:focus{border-color:rgba(59,130,246,.55)}
-    .mp-btn{
-      width:100%;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:950;
-      background:#3b82f6;
-      color:#fff;
-    }
-    .mp-btn[disabled]{opacity:.65; cursor:not-allowed}
-    .mp-status{
-      margin-top:10px;
-      font-size:13px;
-      color:rgba(255,255,255,.85);
+    .pb-pay-input:focus{border-color: rgba(34,197,94,.55)}
+    .pb-pay-status{
       min-height:18px;
-      white-space:pre-wrap;
+      margin-top:10px;
+      font-size:12px;
+      color: rgba(255,255,255,.75);
     }
   </style>
 </head>
@@ -388,21 +419,36 @@
   </div>
 </aside>
 
-<!-- ✅ ADDED: M-Pesa Modal HTML (does not remove anything) -->
-<div class="mp-backdrop" id="mpBackdrop" aria-hidden="true"></div>
-<div class="mp-modal" id="mpModal" role="dialog" aria-modal="true">
-  <div class="mp-head">
-    <h3 class="mp-title" id="mpTitle">Pay with M-Pesa</h3>
-    <button class="mp-close" id="mpClose" aria-label="Close">✕</button>
+<!-- ✅ NEW: PAYMENT METHOD MODAL -->
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
   </div>
 
-  <div class="mp-sub" id="mpSub">Enter your phone number to receive an STK prompt.</div>
+  <div class="pb-pay-body">
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span>Pay with PayPal</span>
+        <span class="pb-pay-mini" id="pbPayAmountA">—</span>
+      </button>
 
-  <div class="mp-label">Phone number</div>
-  <input class="mp-input" id="mpPhone" placeholder="07XXXXXXXX or 2547XXXXXXXX" inputmode="tel">
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span>Pay with M-Pesa (STK Push)</span>
+        <span class="pb-pay-mini" id="pbPayAmountB">—</span>
+      </button>
 
-  <button class="mp-btn" id="mpPayBtn" type="button">Pay</button>
-  <div class="mp-status" id="mpStatus"></div>
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">M-Pesa Phone (format: 2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -410,10 +456,15 @@
 </script>
 
 <script>
-  window.PB_PAYPAL_CREATE_ORDER_URL =
-    "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL =
-    "https://captureorder-f65rhsquva-uc.a.run.app";
+  // ✅ PayPal (no trailing slash)
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+
+  // ✅ M-Pesa STK Push (no trailing slash)
+  window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
+
+  // ✅ We'll track the selected beat/license here
+  window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
