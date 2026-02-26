@@ -132,7 +132,9 @@
       .more-grid{grid-template-columns:repeat(2,1fr)}
     }
 
-    /* ✅ M-Pesa modal */
+    /* ==============================
+       ✅ ADDED: M-Pesa Modal
+    ============================== */
     .mp-backdrop{
       position:fixed; inset:0;
       background:rgba(0,0,0,.55);
@@ -190,18 +192,6 @@
       min-height:18px;
       white-space:pre-wrap;
     }
-    .tag-ok{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 10px;
-      border-radius:999px;
-      font-weight:950;
-      font-size:12px;
-      border:1px solid rgba(16,185,129,.35);
-      background: rgba(16,185,129,.12);
-      color:#fff;
-    }
   </style>
 </head>
 
@@ -254,18 +244,19 @@
 
   <!-- Logged IN -->
   <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
-  <button id="mNavSignOut" class="ghost hidden" type="button">Sign out</button>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
 
 <main class="container beat-page">
   <div id="beatStatus" class="cardx">Loading beat…</div>
 
   <section id="beatContent" class="beat-wrap" style="display:none;">
-    <!-- Left -->
+    <!-- Left: cover + play + meta -->
     <div class="cardx">
       <div class="cover-wrap" id="coverWrap">
         <div id="beatCover"></div>
 
+        <!-- ✅ SAME play button system as marketplace -->
         <button class="play-fab"
           id="beatPlayBtn"
           type="button"
@@ -304,24 +295,23 @@
           <div class="v" id="beatDate">—</div>
         </div>
         <div class="kv">
-          <div class="k">Status</div>
-          <div class="v" id="beatUnlocked">—</div>
+          <div class="k">Plays</div>
+          <div class="v" id="beatPlays">—</div>
         </div>
       </div>
 
       <div class="row" style="margin-top:12px;">
         <button class="btn ghost" id="backToMarket" type="button">← Back to Marketplace</button>
-        <a class="btn ghost" id="goDashboardBtn" href="/buyer-dashboard/" style="display:none;">Go to Dashboard</a>
       </div>
     </div>
 
-    <!-- Right -->
+    <!-- Right: licenses + more from producer -->
     <div>
       <div class="cardx">
         <div class="row" style="justify-content:space-between;">
           <div>
             <div style="font-weight:900;font-size:16px;">Licensing</div>
-            <div class="muted" style="font-size:12px;margin-top:4px;">Pay with PayPal/Cart or M-Pesa.</div>
+            <div class="muted" style="font-size:12px;margin-top:4px;">Choose a license to continue.</div>
           </div>
           <div id="beatPricePillWrap"></div>
         </div>
@@ -338,7 +328,7 @@
   </section>
 </main>
 
-<!-- Existing License / Checkout Modal -->
+<!-- License / Checkout Modal (re-use your existing modal system) -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
   <div class="pb-modal-card">
@@ -372,7 +362,7 @@
   </div>
 </div>
 
-<!-- Cart Drawer -->
+<!-- Cart Drawer (re-use) -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
   <div class="pb-cart-head">
@@ -398,7 +388,7 @@
   </div>
 </aside>
 
-<!-- ✅ M-Pesa Pay Modal -->
+<!-- ✅ ADDED: M-Pesa Modal Markup -->
 <div class="mp-backdrop" id="mpBackdrop" aria-hidden="true"></div>
 <div class="mp-modal" id="mpModal" role="dialog" aria-modal="true">
   <div class="mp-head">
@@ -406,9 +396,7 @@
     <button class="mp-close" id="mpClose" aria-label="Close">✕</button>
   </div>
 
-  <div class="mp-sub" id="mpSub">
-    Enter your phone number. You will receive an M-Pesa prompt (STK Push).
-  </div>
+  <div class="mp-sub" id="mpSub">Enter your phone number to receive an STK prompt.</div>
 
   <div class="mp-label">Phone number</div>
   <input class="mp-input" id="mpPhone" placeholder="07XXXXXXXX or 2547XXXXXXXX" inputmode="tel">
@@ -426,8 +414,6 @@
     "https://createorder-f65rhsquva-uc.a.run.app";
   window.PB_PAYPAL_CAPTURE_ORDER_URL =
     "https://captureorder-f65rhsquva-uc.a.run.app";
-  window.PB_MPESA_STKPUSH_URL = 
-    "https://stkpush-f65rhsquva-uc.a.run.app";
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
@@ -437,23 +423,8 @@
 <script src="/js/cart-ui.js"></script>
 <script src="/js/license-modal.js"></script>
 
-<script type="module">
-  import {
-    collection, doc, getDoc, getDocs, query, where, limit
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+<script>
   const $ = (id)=>document.getElementById(id);
-
-  /* =========================
-     CONFIG
-  ========================= */
-  // ✅ Set this to your deployed stkpush HTTPS endpoint if different
-  // Example (Firebase Functions):
-  // const STK_PUSH_URL = "https://us-central1-YOUR_PROJECT.cloudfunctions.net/stkpush";
-  const STK_PUSH_URL = window.STK_PUSH_URL || ""; // set window.STK_PUSH_URL in a <script> if needed
-
-  // UI-only estimate (M-Pesa charges in KES; server does the real conversion)
-  const USD_TO_KES_ESTIMATE = Number(window.USD_TO_KES_ESTIMATE || 160);
 
   function qs(name){
     const u = new URL(location.href);
@@ -464,13 +435,6 @@
     const v = Number(n);
     if (!Number.isFinite(v)) return "$0.00";
     return "$" + v.toFixed(2);
-  }
-
-  function usdToKesEstimate(usd){
-    const u = Number(usd);
-    if (!Number.isFinite(u)) return null;
-    const k = Math.max(1, Math.round(u * USD_TO_KES_ESTIMATE));
-    return k;
   }
 
   function coverHTML(url, title){
@@ -508,6 +472,28 @@
     return (v === null || v === undefined || String(v).trim() === "") ? "—" : String(v);
   }
 
+  /* ✅ analytics event logger (uses window.FB exposures) */
+  async function logAnalyticsEvent({ producerId, type, beatId=null }){
+    try{
+      const FB = window.FB;
+      if (!FB?.auth?.currentUser) return;
+      if (!producerId || !type) return;
+      if (!FB?.db || !FB?.addDoc || !FB?.collection) return;
+
+      const ts = (typeof FB.serverTimestamp === "function") ? FB.serverTimestamp() : Date.now();
+
+      await FB.addDoc(FB.collection(FB.db,"analyticsEvents"), {
+        producerId: String(producerId),
+        type: String(type),
+        beatId: beatId ? String(beatId) : null,
+        actorUid: FB.auth.currentUser.uid,
+        createdAt: ts
+      });
+    }catch(e){}
+  }
+  window.logAnalyticsEvent = logAnalyticsEvent;
+  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+
   function formatDate(x){
     try{
       if (!x) return "—";
@@ -518,134 +504,6 @@
     }catch(e){ return "—"; }
   }
 
-  async function fetchBeatById(beatId){
-    if (window.FB && typeof window.FB.fetchBeatById === "function"){
-      return await window.FB.fetchBeatById(beatId);
-    }
-    const cached = window.__LATEST_BEATS__;
-    if (Array.isArray(cached)){
-      const found = cached.find(b => String(b?.id||"") === String(beatId||""));
-      if (found) return found;
-    }
-    if (window.FB && typeof window.FB.fetchBeats === "function"){
-      const beats = await window.FB.fetchBeats({ max: 160, force: false });
-      window.__LATEST_BEATS__ = beats;
-      return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
-    }
-    return null;
-  }
-
-  function renderMoreFromProducer(allBeats, beat){
-    const wrap = $("moreGrid");
-    if (!wrap) return;
-
-    const uid = String(beat.producerId || "");
-    const others = (allBeats || [])
-      .filter(b => String(b?.producerId||"") === uid && String(b?.id||"") !== String(beat.id||""))
-      .slice(0, 8);
-
-    if (!others.length){
-      wrap.innerHTML = `<div class="muted" style="grid-column:1/-1;">No more beats yet.</div>`;
-      return;
-    }
-
-    wrap.innerHTML = "";
-    others.forEach((b)=>{
-      const url = `/beat/?id=${encodeURIComponent(String(b.id||""))}`;
-      const el = document.createElement("div");
-      el.className = "mini";
-      el.innerHTML = `
-        <div class="mcover">${coverHTML(b.artwork, b.title)}</div>
-        <div class="mbody">
-          <div class="mt">${b.title || "Beat"}</div>
-          <div class="ms">${b.genre ? b.genre : ""}</div>
-        </div>
-      `;
-      el.addEventListener("click", ()=>{ location.href = url; });
-      wrap.appendChild(el);
-    });
-  }
-
-  /* =========================
-     AUTH NAV UI
-  ========================= */
-  function updateNavAuthUI(user){
-    const isIn = !!user;
-
-    const navSignIn = document.getElementById("navSignIn");
-    const navStart  = document.getElementById("navStartSelling");
-    const navDash   = document.getElementById("navDashboard");
-    const navOut    = document.getElementById("navSignOut");
-
-    const mSignIn = document.getElementById("mNavSignIn");
-    const mStart  = document.getElementById("mNavStartSelling");
-    const mDash   = document.getElementById("mNavDashboard");
-    const mOut    = document.getElementById("mNavSignOut");
-
-    if (navSignIn) navSignIn.classList.toggle("hidden", isIn);
-    if (navStart)  navStart.classList.toggle("hidden", isIn);
-    if (navDash)   navDash.classList.toggle("hidden", !isIn);
-    if (navOut)    navOut.classList.toggle("hidden", !isIn);
-
-    if (mSignIn) mSignIn.classList.toggle("hidden", isIn);
-    if (mStart)  mStart.classList.toggle("hidden", isIn);
-    if (mDash)   mDash.classList.toggle("hidden", !isIn);
-    if (mOut)    mOut.classList.toggle("hidden", !isIn);
-
-    if (navOut){
-      navOut.onclick = async ()=>{
-        try{ await window.FB?.auth?.signOut?.(); }catch(e){}
-        location.href = "/login/";
-      };
-    }
-    if (mOut){
-      mOut.onclick = async ()=>{
-        try{ await window.FB?.auth?.signOut?.(); }catch(e){}
-        location.href = "/login/";
-      };
-    }
-  }
-
-  /* =========================
-     UNLOCK CHECK
-  ========================= */
-  async function isUnlockedForUser({ beatId, uid }){
-    if (!beatId || !uid) return false;
-    const db = window.FB?.db;
-    if (!db) return false;
-
-    // unlocks where buyerId == uid AND beatId == beatId
-    try{
-      const q = query(
-        collection(db, "unlocks"),
-        where("buyerId", "==", uid),
-        where("beatId", "==", String(beatId)),
-        limit(1)
-      );
-      const snap = await getDocs(q);
-      return !snap.empty;
-    }catch(e){
-      return false;
-    }
-  }
-
-  function setUnlockedUI(unlocked){
-    const el = $("beatUnlocked");
-    if (!el) return;
-    if (unlocked){
-      el.innerHTML = `<span class="tag-ok">✅ Unlocked</span>`;
-      $("goDashboardBtn").style.display = "";
-      // Disable mpesa buttons + hide price pills
-      document.querySelectorAll("[data-mpesa-pay]").forEach(b=> b.setAttribute("disabled","disabled"));
-    } else {
-      el.textContent = "Locked";
-      $("goDashboardBtn").style.display = "none";
-    }
-  }
-
-  /* =========================
-     LICENSING RENDER
-  ========================= */
   function renderLicenses(beat){
     const wrap = $("licensesGrid");
     if (!wrap) return;
@@ -683,20 +541,17 @@
 
       if (enabled || Number.isFinite(price)){
         added++;
-
-        const usd = Number.isFinite(price) ? price : Number(beat.price || 0);
-        const kesEst = usdToKesEstimate(usd);
+        const usd = Number.isFinite(price) ? price : Number(beat.price ?? 0);
 
         wrap.insertAdjacentHTML("beforeend", `
           <div class="lic">
-            <div style="min-width:0;">
+            <div>
               <strong>${t.label}</strong>
               <div class="lsub">${t.hint}</div>
-              <div class="lsub">USD: ${money(usd)}${kesEst ? ` • Est. KES: ${kesEst}` : ""}</div>
             </div>
 
-            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
-              <!-- PayPal/Cart (existing system) -->
+            <div class="row" style="justify-content:flex-end;">
+              <!-- ✅ IMPORTANT: match marketplace behavior for license-modal.js -->
               <button class="pb-pill price-pill" type="button"
                 data-license="${t.key}"
                 data-producer-id="${producerId}"
@@ -706,14 +561,13 @@
                 <span>${money(usd)}</span>
               </button>
 
-              <!-- ✅ M-Pesa direct -->
+              <!-- ✅ ADDED: M-Pesa -->
               <button class="pb-pill" type="button"
                 data-mpesa-pay="1"
                 data-license="${t.key}"
-                data-amount-usd="${usd}"
                 data-producer-id="${producerId}"
                 data-beat-id="${beatId}"
-                aria-label="Pay with M-Pesa">
+                data-amount-usd="${usd}">
                 <span class="ic">📲</span>
                 <span>M-Pesa</span>
               </button>
@@ -725,17 +579,13 @@
 
     if (!added){
       const usd = Number(beat.price || 0);
-      const kesEst = usdToKesEstimate(usd);
-
       wrap.innerHTML = `
         <div class="lic">
           <div>
             <strong>License</strong>
             <div class="lsub">Choose license to continue.</div>
-            <div class="lsub">USD: ${money(usd)}${kesEst ? ` • Est. KES: ${kesEst}` : ""}</div>
           </div>
-
-          <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end;">
+          <div class="row" style="justify-content:flex-end;">
             <button class="pb-pill price-pill" type="button"
               data-producer-id="${producerId}"
               data-beat-id="${beatId}"
@@ -744,12 +594,13 @@
               <span>${money(usd)}</span>
             </button>
 
+            <!-- ✅ ADDED: M-Pesa -->
             <button class="pb-pill" type="button"
               data-mpesa-pay="1"
               data-license="basic"
-              data-amount-usd="${usd}"
               data-producer-id="${producerId}"
-              data-beat-id="${beatId}">
+              data-beat-id="${beatId}"
+              data-amount-usd="${usd}">
               <span class="ic">📲</span>
               <span>M-Pesa</span>
             </button>
@@ -759,179 +610,57 @@
     }
   }
 
-  /* =========================
-     M-PESA FLOW
-  ========================= */
-  const Mpesa = (() => {
-    const backdrop = $("mpBackdrop");
-    const modal = $("mpModal");
-    const closeBtn = $("mpClose");
-    const payBtn = $("mpPayBtn");
-    const phoneEl = $("mpPhone");
-    const titleEl = $("mpTitle");
-    const subEl = $("mpSub");
-    const statusEl = $("mpStatus");
+  function renderMoreFromProducer(allBeats, beat){
+    const wrap = $("moreGrid");
+    if (!wrap) return;
 
-    let ctx = null; // { beatId, producerId, licenseKey, amountUsd, buyerId }
+    const uid = String(beat.producerId || "");
+    const others = (allBeats || [])
+      .filter(b => String(b?.producerId||"") === uid && String(b?.id||"") !== String(beat.id||""))
+      .slice(0, 8);
 
-    function open(payload){
-      ctx = payload || null;
-      statusEl.textContent = "";
-      phoneEl.value = "";
-
-      const usd = Number(ctx?.amountUsd || 0);
-      const kesEst = usdToKesEstimate(usd);
-
-      titleEl.textContent = "Pay with M-Pesa";
-      subEl.textContent =
-        `Amount: ${money(usd)}${kesEst ? ` (Est. KES ${kesEst})` : ""}\n` +
-        `You will receive an M-Pesa prompt on your phone.`;
-
-      backdrop.style.display = "block";
-      modal.style.display = "block";
-      backdrop.setAttribute("aria-hidden","false");
-      setTimeout(()=>phoneEl.focus(), 30);
+    if (!others.length){
+      wrap.innerHTML = `<div class="muted" style="grid-column:1/-1;">No more beats yet.</div>`;
+      return;
     }
 
-    function close(){
-      backdrop.style.display = "none";
-      modal.style.display = "none";
-      backdrop.setAttribute("aria-hidden","true");
-      ctx = null;
+    wrap.innerHTML = "";
+    others.forEach((b)=>{
+      const url = `/beat/?id=${encodeURIComponent(String(b.id||""))}`;
+      const el = document.createElement("div");
+      el.className = "mini";
+      el.innerHTML = `
+        <div class="mcover">${coverHTML(b.artwork, b.title)}</div>
+        <div class="mbody">
+          <div class="mt">${b.title || "Beat"}</div>
+          <div class="ms">${b.genre ? b.genre : ""}</div>
+        </div>
+      `;
+      el.addEventListener("click", ()=>{ location.href = url; });
+      wrap.appendChild(el);
+    });
+  }
+
+  async function fetchBeatById(beatId){
+    if (window.FB && typeof window.FB.fetchBeatById === "function"){
+      return await window.FB.fetchBeatById(beatId);
     }
 
-    function setStatus(s){ statusEl.textContent = s || ""; }
-
-    async function pollPaid({ orderId, beatId, buyerId }){
-      const db = window.FB?.db;
-      if (!db) return false;
-
-      const maxMs = 120000; // 2 minutes
-      const step = 2000;
-      const start = Date.now();
-
-      while (Date.now() - start < maxMs){
-        // 1) unlock doc id == orderId (your callback creates unlocks doc(orderDoc.id))
-        try{
-          const uref = doc(db, "unlocks", String(orderId));
-          const usnap = await getDoc(uref);
-          if (usnap.exists()){
-            const data = usnap.data() || {};
-            if (!buyerId || String(data.buyerId||"") === String(buyerId)){
-              if (!beatId || String(data.beatId||"") === String(beatId)){
-                return true;
-              }
-            }
-          }
-        }catch(e){}
-
-        // 2) orders status == PAID (fallback)
-        try{
-          const oref = doc(db, "orders", String(orderId));
-          const osnap = await getDoc(oref);
-          if (osnap.exists()){
-            const data = osnap.data() || {};
-            if (String(data.status||"").toUpperCase() === "PAID"){
-              return true;
-            }
-          }
-        }catch(e){}
-
-        await new Promise(r=>setTimeout(r, step));
-      }
-
-      return false;
+    const cached = window.__LATEST_BEATS__;
+    if (Array.isArray(cached)){
+      const found = cached.find(b => String(b?.id||"") === String(beatId||""));
+      if (found) return found;
     }
 
-    async function pay(){
-      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      if (!u){
-        alert("Please sign in first.");
-        location.href = "/login/";
-        return;
-      }
-      if (!ctx?.beatId) return alert("Beat not found.");
-      if (!ctx?.amountUsd) return alert("Missing amount.");
-
-      const phone = (phoneEl.value || "").trim();
-      if (!phone) return alert("Enter your phone number");
-
-      if (!STK_PUSH_URL){
-        alert("Missing STK Push URL.\n\nSet window.STK_PUSH_URL to your stkpush endpoint.");
-        return;
-      }
-
-      payBtn.disabled = true;
-      payBtn.textContent = "Requesting…";
-      setStatus("Sending STK Push…");
-
-      try{
-        const payload = {
-          phone,
-          beatId: String(ctx.beatId),
-          buyerId: String(u.uid),
-          amountUsd: Number(ctx.amountUsd),
-          licenseKey: String(ctx.licenseKey || "basic"),
-          producerId: String(ctx.producerId || "")
-        };
-
-        const r = await fetch(STK_PUSH_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await r.json().catch(()=> ({}));
-
-        if (!r.ok){
-          throw new Error(data?.error || data?.ResponseDescription || `STK Push failed (${r.status})`);
-        }
-
-        const orderId = data.orderId;
-        if (!orderId){
-          // still show message; sometimes you might not return orderId
-          setStatus("STK Push sent. Check your phone.\n\nIf you paid, open Buyer Dashboard.");
-          payBtn.disabled = false;
-          payBtn.textContent = "Pay";
-          return;
-        }
-
-        setStatus("✅ STK Push sent.\nCheck your phone and enter PIN.\n\nWaiting for confirmation…");
-
-        const ok = await pollPaid({
-          orderId,
-          beatId: String(ctx.beatId),
-          buyerId: String(u.uid)
-        });
-
-        if (ok){
-          setStatus("✅ Payment confirmed! Redirecting…");
-          close();
-          location.href = "/buyer-dashboard/?paid=1";
-          return;
-        } else {
-          setStatus("Still waiting.\nIf you already paid, click Refresh on Buyer Dashboard.");
-        }
-
-      }catch(err){
-        console.error(err);
-        setStatus("❌ " + (err?.message || String(err)));
-      }
-
-      payBtn.disabled = false;
-      payBtn.textContent = "Pay";
+    if (window.FB && typeof window.FB.fetchBeats === "function"){
+      const beats = await window.FB.fetchBeats({ max: 160, force: false });
+      window.__LATEST_BEATS__ = beats;
+      return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
     }
 
-    backdrop?.addEventListener("click", close);
-    closeBtn?.addEventListener("click", close);
-    payBtn?.addEventListener("click", pay);
+    return null;
+  }
 
-    return { open, close, setStatus };
-  })();
-
-  /* =========================
-     MAIN LOAD
-  ========================= */
   async function loadBeatPage(){
     const beatId = qs("id");
     const status = $("beatStatus");
@@ -951,7 +680,7 @@
         return;
       }
 
-      // Basic render
+      // Cover + Title
       $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
       $("beatTitle").textContent = beat.title || "Beat";
 
@@ -962,13 +691,18 @@
 
       $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
 
+      // BPM/Key/Date
       $("beatBpm").textContent = pickBpm(beat);
       $("beatKey").textContent = pickKey(beat);
       $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
 
+      // Plays placeholder for now (we’ll make it real when we update firebase.js with getCountFromServer)
+      $("beatPlays").textContent = "—";
+
+      // ✅ Set play button attributes so your existing player.js controls it
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
-      playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
+      playBtn.setAttribute("data-producer-id", String(beat.producerId ||
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
       // Top price pill (PayPal/Cart)
