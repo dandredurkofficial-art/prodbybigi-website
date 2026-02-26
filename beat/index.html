@@ -131,67 +131,6 @@
     @media (max-width: 520px){
       .more-grid{grid-template-columns:repeat(2,1fr)}
     }
-
-    /* ==============================
-       ✅ ADDED: M-Pesa Modal
-    ============================== */
-    .mp-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      z-index:9998;
-    }
-    .mp-modal{
-      position:fixed;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(520px, calc(100vw - 24px));
-      background:#0b1220;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:18px;
-      box-shadow:0 20px 70px rgba(0,0,0,.45);
-      display:none;
-      z-index:9999;
-    }
-    .mp-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-    .mp-title{font-size:16px;font-weight:950;margin:0}
-    .mp-close{
-      border:none;background:transparent;color:#fff;font-size:18px;cursor:pointer;
-      padding:6px 8px;border-radius:10px;
-    }
-    .mp-close:hover{background:rgba(255,255,255,.08)}
-    .mp-sub{color:rgba(255,255,255,.7);font-size:13px;margin:8px 0 14px;line-height:1.4}
-    .mp-label{font-size:13px;font-weight:800;margin:10px 0 6px;color:rgba(255,255,255,.85)}
-    .mp-input{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-    }
-    .mp-input:focus{border-color:rgba(59,130,246,.55)}
-    .mp-btn{
-      width:100%;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:950;
-      background:#3b82f6;
-      color:#fff;
-    }
-    .mp-btn[disabled]{opacity:.65; cursor:not-allowed}
-    .mp-status{
-      margin-top:10px;
-      font-size:13px;
-      color:rgba(255,255,255,.85);
-      min-height:18px;
-      white-space:pre-wrap;
-    }
   </style>
 </head>
 
@@ -388,23 +327,6 @@
   </div>
 </aside>
 
-<!-- ✅ ADDED: M-Pesa Modal Markup -->
-<div class="mp-backdrop" id="mpBackdrop" aria-hidden="true"></div>
-<div class="mp-modal" id="mpModal" role="dialog" aria-modal="true">
-  <div class="mp-head">
-    <h3 class="mp-title" id="mpTitle">Pay with M-Pesa</h3>
-    <button class="mp-close" id="mpClose" aria-label="Close">✕</button>
-  </div>
-
-  <div class="mp-sub" id="mpSub">Enter your phone number to receive an STK prompt.</div>
-
-  <div class="mp-label">Phone number</div>
-  <input class="mp-input" id="mpPhone" placeholder="07XXXXXXXX or 2547XXXXXXXX" inputmode="tel">
-
-  <button class="mp-btn" id="mpPayBtn" type="button">Pay</button>
-  <div class="mp-status" id="mpStatus"></div>
-</div>
-
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
@@ -541,8 +463,6 @@
 
       if (enabled || Number.isFinite(price)){
         added++;
-        const usd = Number.isFinite(price) ? price : Number(beat.price ?? 0);
-
         wrap.insertAdjacentHTML("beforeend", `
           <div class="lic">
             <div>
@@ -550,61 +470,34 @@
               <div class="lsub">${t.hint}</div>
             </div>
 
-            <div class="row" style="justify-content:flex-end;">
-              <!-- ✅ IMPORTANT: match marketplace behavior for license-modal.js -->
-              <button class="pb-pill price-pill" type="button"
-                data-license="${t.key}"
-                data-producer-id="${producerId}"
-                data-beat-id="${beatId}"
-                aria-label="Choose license">
-                <span class="ic">🛍️</span>
-                <span>${money(usd)}</span>
-              </button>
-
-              <!-- ✅ ADDED: M-Pesa -->
-              <button class="pb-pill" type="button"
-                data-mpesa-pay="1"
-                data-license="${t.key}"
-                data-producer-id="${producerId}"
-                data-beat-id="${beatId}"
-                data-amount-usd="${usd}">
-                <span class="ic">📲</span>
-                <span>M-Pesa</span>
-              </button>
-            </div>
+            <!-- ✅ IMPORTANT: match marketplace behavior for license-modal.js -->
+            <button class="pb-pill price-pill" type="button"
+              data-license="${t.key}"
+              data-producer-id="${producerId}"
+              data-beat-id="${beatId}"
+              aria-label="Choose license">
+              <span class="ic">🛍️</span>
+              <span>${money(price ?? beat.price ?? 0)}</span>
+            </button>
           </div>
         `);
       }
     });
 
     if (!added){
-      const usd = Number(beat.price || 0);
       wrap.innerHTML = `
         <div class="lic">
           <div>
             <strong>License</strong>
             <div class="lsub">Choose license to continue.</div>
           </div>
-          <div class="row" style="justify-content:flex-end;">
-            <button class="pb-pill price-pill" type="button"
-              data-producer-id="${producerId}"
-              data-beat-id="${beatId}"
-              aria-label="Choose license">
-              <span class="ic">🛍️</span>
-              <span>${money(usd)}</span>
-            </button>
-
-            <!-- ✅ ADDED: M-Pesa -->
-            <button class="pb-pill" type="button"
-              data-mpesa-pay="1"
-              data-license="basic"
-              data-producer-id="${producerId}"
-              data-beat-id="${beatId}"
-              data-amount-usd="${usd}">
-              <span class="ic">📲</span>
-              <span>M-Pesa</span>
-            </button>
-          </div>
+          <button class="pb-pill price-pill" type="button"
+            data-producer-id="${producerId}"
+            data-beat-id="${beatId}"
+            aria-label="Choose license">
+            <span class="ic">🛍️</span>
+            <span>${money(beat.price || 0)}</span>
+          </button>
         </div>
       `;
     }
@@ -702,10 +595,22 @@
       // ✅ Set play button attributes so your existing player.js controls it
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
-      playBtn.setAttribute("data-producer-id", String(beat.producerId ||
+      playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
-      // Top price pill (PayPal/Cart)
+      // ✅ Log "play" when user taps play (player.js will actually play/pause)
+      // We log on click; if you want "only when audio truly starts", we’ll hook inside player.js next.
+      playBtn.addEventListener("click", ()=>{
+        const pid = String(beat.producerId||"");
+        const bid = String(beat.id||beatId);
+        const key = `${pid}:${bid}`;
+        if (pid && bid && !window.__ANA_SENT__.play[key]){
+          window.__ANA_SENT__.play[key] = 1;
+          logAnalyticsEvent({ producerId: pid, type:"play", beatId: bid });
+        }
+      }, true);
+
+      // ✅ Top-right price pill (clickable)
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
@@ -732,54 +637,20 @@
       if (Array.isArray(list)) window.__LATEST_BEATS__ = list;
       renderMoreFromProducer(list, beat);
 
-      // Show content
+      // show content
       status.style.display = "none";
       content.style.display = "grid";
 
+      // back
       $("backToMarket")?.addEventListener("click", ()=>{ location.href = "/marketplace/"; });
 
-      // Auth nav
-      updateNavAuthUI(window.FB?.auth?.currentUser || window.FB?.user || null);
-      setInterval(()=> updateNavAuthUI(window.FB?.auth?.currentUser || window.FB?.user || null), 1000);
-
-      // Unlock check
-      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      const unlocked = await isUnlockedForUser({ beatId: String(beat.id||beatId), uid: u?.uid || "" });
-      setUnlockedUI(unlocked);
-
-      // Click handlers for M-Pesa buttons
-      document.addEventListener("click", async (e)=>{
-        const btn = e.target.closest("[data-mpesa-pay='1']");
-        if (!btn) return;
-
-        const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-        if (!u){
-          alert("Please sign in first.");
-          location.href = "/login/";
-          return;
-        }
-
-        // check unlock again just in case
-        const already = await isUnlockedForUser({ beatId: String(beat.id||beatId), uid: u.uid });
-        if (already){
-          setUnlockedUI(true);
-          alert("Already unlocked. Go to Buyer Dashboard.");
-          return;
-        }
-
-        const amountUsd = Number(btn.getAttribute("data-amount-usd") || 0);
-        const licenseKey = String(btn.getAttribute("data-license") || "basic");
-        const producerId = String(btn.getAttribute("data-producer-id") || beat.producerId || "");
-        const beatId2 = String(btn.getAttribute("data-beat-id") || beat.id || beatId);
-
-        Mpesa.open({
-          beatId: beatId2,
-          producerId,
-          licenseKey,
-          amountUsd,
-          buyerId: u.uid
-        });
-      });
+      // log VIEW (once)
+      const producerId = String(beat.producerId||"");
+      const viewKey = `${producerId}:${String(beat.id||beatId)}`;
+      if (producerId && (beat.id || beatId) && !window.__ANA_SENT__.view[viewKey]){
+        window.__ANA_SENT__.view[viewKey] = 1;
+        logAnalyticsEvent({ producerId, type:"view", beatId: String(beat.id||beatId) });
+      }
 
     }catch(err){
       console.error(err);
