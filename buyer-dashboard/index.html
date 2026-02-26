@@ -199,12 +199,12 @@
   <section id="view-overview">
     <div class="grid">
       <div class="card stat">
-        <div class="k">Total Orders</div>
+        <div class="k">Total Purchases</div>
         <div class="v" id="statOrders">0</div>
         <div class="mini" id="statOrdersMini">—</div>
       </div>
       <div class="card stat">
-        <div class="k">Paid</div>
+        <div class="k">Paid / Unlocked</div>
         <div class="v" id="statPaid">0</div>
         <div class="mini" id="statPaidMini">—</div>
       </div>
@@ -218,8 +218,8 @@
     <div class="card panel">
       <div style="font-weight:950; font-size:14px;">Quick Tips</div>
       <div class="sub" style="margin-top:6px;">
-        If your download button is disabled, the seller might still be processing the file.
-        If you need help, contact the producer from the beat page.
+        M-Pesa unlocks are confirmed after Safaricom callback (a few seconds).
+        If you paid but don’t see it, click Refresh.
       </div>
     </div>
   </section>
@@ -227,7 +227,7 @@
   <!-- ORDERS -->
   <section id="view-orders" class="hidden">
     <div class="tools">
-      <input id="ordersSearch" placeholder="Search orders (beat/kit title, id)..." />
+      <input id="ordersSearch" placeholder="Search orders (beat id, title)..." />
     </div>
 
     <table class="table">
@@ -254,7 +254,6 @@
         <tr>
           <th>Item</th>
           <th>Type</th>
-          <th>License</th>
           <th style="text-align:right;">Download</th>
         </tr>
       </thead>
@@ -288,49 +287,10 @@
       <a href="/dmca/">DMCA</a>
       <a href="/creator-agreement/">Creator Agreement</a>
     </div>
-
-    <div class="social">
-      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
-        </svg>
-      </a>
-
-      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
-        </svg>
-      </a>
-    </div>
-  </div>
-</footer>
   </div>
 </footer>
 
 <script>
-  // keep if you use backend for secure downloads later
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 
@@ -343,10 +303,8 @@
 
   const $ = (id)=>document.getElementById(id);
 
-  let ALL_ORDERS = [];
-
-  // ✅ NEW: Cloud Function endpoint for License PDF
-  const LICENSE_FN_URL = "https://licensedownload-f65rhsquva-uc.a.run.app";
+  // Unified list that includes PayPal orders + M-Pesa unlocks
+  let ALL_ITEMS = [];
 
   function setStatus(text){
     $("status").textContent = text || "";
@@ -355,6 +313,11 @@
   function hideStatus(){ $("status").classList.add("hidden"); }
 
   function fmtDate(ts){
+    if (!ts) return "—";
+    // Firestore Timestamp support
+    if (typeof ts === "object" && typeof ts.toMillis === "function"){
+      return new Date(ts.toMillis()).toLocaleString();
+    }
     const n = Number(ts||0);
     if (!n) return "—";
     const d = new Date(n);
@@ -373,116 +336,99 @@
     });
   }
 
-  // ✅ NEW: hide/show nav auth links (desktop + mobile)
   function updateNavAuthUI(user){
     const isIn = !!user;
-
     const navSignIn = document.getElementById("navSignIn");
     const navStart  = document.getElementById("navStartSelling");
     const mSignIn   = document.getElementById("mNavSignIn");
     const mStart    = document.getElementById("mNavStartSelling");
 
-    // When signed in, don't show "Sign in" again
     if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
     if (mSignIn)   mSignIn.style.display   = isIn ? "none" : "";
+    if (navStart)  navStart.style.display  = isIn ? "none" : "";
+    if (mStart)    mStart.style.display    = isIn ? "none" : "";
 
-    // Optional: Buyers dashboard hides "Start Selling" while signed in.
-    // If you want it always visible, change isIn ? "none" : "" to "".
-    if (navStart) navStart.style.display = isIn ? "none" : "";
-    if (mStart)   mStart.style.display   = isIn ? "none" : "";
-
-    // Profile button label
     const sw = document.getElementById("switchAccountBtn");
     if (sw) sw.textContent = isIn ? "Switch account" : "Sign in";
   }
 
-  // Accept multiple shapes (your order docs may differ)
+  // Convert PayPal/normal orders to unified item
   function normalizeOrder(x){
-    const itemTitle =
-      x.itemTitle || x.title || x.beatTitle || x.kitTitle || "—";
-    const itemType =
-      (x.itemType || x.type || (x.beatId ? "beat" : (x.kitId ? "kit" : "")) || "—").toString();
-    const licenseKey =
-      (x.licenseKey || x.license || x.lic || "").toString();
-
-    const status =
-      (x.status || x.state || (x.paid ? "paid" : "") || "—").toString();
-
-    const downloadUrl =
-      x.downloadUrl || x.downloadURL || x.fileUrl || x.fileURL || "";
-
-    // ✅ NEW: carry beatId (needed for license download)
-    const beatId =
-      x.beatId || x.beatID || x.itemId || x.itemID || "";
-
-    // ✅ NEW: phone may exist on order (optional check)
-    const phone =
-      x.phone || x.phoneNumber || x.msisdn || "";
+    const beatId = x.beatId || x.beatID || x.itemId || x.itemID || "";
+    const status = (x.status || x.state || (x.paid ? "paid" : "") || "—").toString().toLowerCase();
 
     return {
-      id: x.id,
-      itemTitle: String(itemTitle),
-      itemType: itemType.toLowerCase(),
-      licenseKey: String(licenseKey),
-      status: status.toLowerCase(),
-      createdAt: x.createdAt || x.timestamp || 0,
-      downloadUrl: String(downloadUrl),
-
+      id: String(x.id),
+      source: "order",
       beatId: String(beatId),
-      phone: String(phone)
+      itemTitle: String(x.itemTitle || x.title || x.beatTitle || "Beat"),
+      itemType: (x.itemType || x.type || "beat").toString().toLowerCase(),
+      status,
+      createdAt: x.createdAt || x.timestamp || null,
+      isUnlocked: status.includes("paid") || status.includes("complete"),
+    };
+  }
+
+  // Convert M-Pesa unlocks to unified item
+  function normalizeUnlock(x){
+    const beatId = x.beatId || "";
+    return {
+      id: String(x.id),
+      source: "unlock",
+      beatId: String(beatId),
+      itemTitle: String(x.beatTitle || "Beat"), // if you later store beatTitle in unlocks
+      itemType: "beat",
+      status: "unlocked",
+      createdAt: x.createdAt || null,
+      isUnlocked: true,
     };
   }
 
   function renderOverview(){
-    $("statOrders").textContent = String(ALL_ORDERS.length);
+    $("statOrders").textContent = String(ALL_ITEMS.length);
 
-    const paid = ALL_ORDERS.filter(o => o.status.includes("paid") || o.status.includes("complete")).length;
+    const paid = ALL_ITEMS.filter(o => o.isUnlocked).length;
     $("statPaid").textContent = String(paid);
 
-    const ready = ALL_ORDERS.filter(o => !!o.downloadUrl).length;
+    const ready = ALL_ITEMS.filter(o => o.isUnlocked && o.beatId).length;
     $("statDownloads").textContent = String(ready);
 
-    $("statOrdersMini").textContent = "Your purchase history";
-    $("statPaidMini").textContent = "Orders marked paid/complete";
-    $("statDownloadsMini").textContent = "Orders with download links";
+    $("statOrdersMini").textContent = "PayPal orders + M-Pesa unlocks";
+    $("statPaidMini").textContent = "Paid or unlocked items";
+    $("statDownloadsMini").textContent = "Items you can open/download";
   }
 
   function renderOrders(){
-    const q = ($("ordersSearch").value||"").trim().toLowerCase();
-    const list = ALL_ORDERS.filter(o=>{
-      const hay = `${o.itemTitle} ${o.id} ${o.status} ${o.licenseKey}`.toLowerCase();
-      return !q || hay.includes(q);
+    const qtxt = ($("ordersSearch").value||"").trim().toLowerCase();
+    const list = ALL_ITEMS.filter(o=>{
+      const hay = `${o.itemTitle} ${o.id} ${o.status} ${o.beatId}`.toLowerCase();
+      return !qtxt || hay.includes(qtxt);
     });
 
     const tb = $("ordersTbody");
     tb.innerHTML = "";
 
     list.slice(0, 250).forEach(o=>{
+      const ok = o.isUnlocked;
       const tr = document.createElement("tr");
       tr.className = "rowcard";
       tr.innerHTML = `
         <td>
           <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">order: ${o.id}</div>
+          <div class="sub">${o.source}: ${o.id}${o.beatId ? ` • beatId: ${o.beatId}` : ""}</div>
         </td>
         <td>
-          ${o.status.includes("paid") || o.status.includes("complete")
-            ? `<span class="pill ok">${o.status || "paid"}</span>`
-            : `<span class="pill no">${o.status || "pending"}</span>`
+          ${ok
+            ? `<span class="pill ok">${o.status}</span>`
+            : `<span class="pill no">${o.status}</span>`
           }
         </td>
         <td>${fmtDate(o.createdAt)}</td>
         <td>
           <div class="actions">
-            <button class="btn" type="button" data-action="view" data-id="${o.id}">View</button>
-
-            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${o.downloadUrl ? "" : "disabled"}>
+            <button class="btn" type="button" data-action="open" data-id="${o.id}">Open</button>
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>
               Download
-            </button>
-
-            <!-- ✅ NEW: License PDF button -->
-            <button class="btn" type="button" data-action="license" data-id="${o.id}">
-              License PDF
             </button>
           </div>
         </td>
@@ -492,12 +438,12 @@
   }
 
   function renderDownloads(){
-    const q = ($("downloadsSearch").value||"").trim().toLowerCase();
-    const list = ALL_ORDERS
-      .filter(o => !!o.downloadUrl)
+    const qtxt = ($("downloadsSearch").value||"").trim().toLowerCase();
+    const list = ALL_ITEMS
+      .filter(o => o.isUnlocked && o.beatId)
       .filter(o=>{
-        const hay = `${o.itemTitle} ${o.itemType} ${o.licenseKey}`.toLowerCase();
-        return !q || hay.includes(q);
+        const hay = `${o.itemTitle} ${o.itemType} ${o.beatId}`.toLowerCase();
+        return !qtxt || hay.includes(qtxt);
       });
 
     const tb = $("downloadsTbody");
@@ -509,15 +455,12 @@
       tr.innerHTML = `
         <td>
           <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">order: ${o.id}</div>
+          <div class="sub">${o.source}: ${o.id} • beatId: ${o.beatId}</div>
         </td>
-        <td><span class="pill">${o.itemType || "—"}</span></td>
-        <td><span class="pill">${o.licenseKey || "—"}</span></td>
+        <td><span class="pill">${o.itemType}</span></td>
         <td style="text-align:right;">
           <div class="actions" style="justify-content:flex-end;">
             <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
-            <!-- ✅ NEW: License PDF button -->
-            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
           </div>
         </td>
       `;
@@ -525,7 +468,7 @@
     });
 
     if (!list.length){
-      setStatus("No downloads yet.\n\nTip: Only paid orders with a downloadUrl will show here.");
+      setStatus("No downloads yet.\n\nTip: After M-Pesa payment, wait a few seconds then click Refresh.");
     } else {
       hideStatus();
     }
@@ -536,11 +479,14 @@
     if (active === "overview") renderOverview();
     if (active === "orders") renderOrders();
     if (active === "downloads") renderDownloads();
-    if (active === "profile") {/* no-op */}
   }
 
-  async function loadOrders(){
-    setStatus("Loading your orders…");
+  function getItemById(id){
+    return ALL_ITEMS.find(o => o.id === id) || null;
+  }
+
+  async function loadAll(){
+    setStatus("Loading your purchases…");
 
     const u = window.FB?.auth?.currentUser || window.FB?.user;
     updateNavAuthUI(u);
@@ -553,10 +499,11 @@
 
     $("profileInfo").textContent = `Signed in as: ${u.email || "—"}\nUID: ${u.uid}`;
 
-    try{
-      // Try common fields (your /orders docs might use buyerId OR uid)
-      let snap = null;
+    const merged = [];
 
+    // 1) PayPal / normal orders (buyerId or uid)
+    try{
+      let snap = null;
       try{
         snap = await getDocs(query(
           collection(window.FB.db, "orders"),
@@ -571,60 +518,39 @@
         ));
       }
 
-      const out = [];
-      snap.forEach(d => out.push(normalizeOrder({ id:d.id, ...d.data() })));
-
-      // Sort newest first
-      out.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
-
-      ALL_ORDERS = out;
-
-      hideStatus();
-      renderOverview();
-      refreshVisible();
+      snap.forEach(d => merged.push(normalizeOrder({ id:d.id, ...d.data() })));
     }catch(err){
-      console.error(err);
-      const code = err?.code ? String(err.code) : "";
-      const msg  = err?.message ? String(err.message) : String(err || "");
-      setStatus(
-        "Could not load your orders.\n\n" +
-        (code ? ("Error code: " + code + "\n") : "") +
-        (msg ? ("Message: " + msg + "\n\n") : "\n") +
-        "Fix:\n" +
-        "- If permission-denied: update Firestore rules for /orders read.\n" +
-        "- Ensure orders contain buyerId or uid field."
-      );
+      // don’t fail whole page if this query fails (rules)
+      console.warn("orders load failed:", err);
     }
-  }
 
-  function getOrderById(id){
-    return ALL_ORDERS.find(o => o.id === id) || null;
-  }
+    // 2) M-Pesa unlocks
+    try{
+      const usnap = await getDocs(query(
+        collection(window.FB.db, "unlocks"),
+        where("buyerId", "==", u.uid),
+        limit(300)
+      ));
+      usnap.forEach(d => merged.push(normalizeUnlock({ id:d.id, ...d.data() })));
+    }catch(err){
+      console.warn("unlocks load failed:", err);
+    }
 
-  // ✅ NEW: call cloud function to generate license URL
-  async function requestLicensePdf({ beatId, phone }){
-    if (!beatId) throw new Error("Missing beatId on this order.");
-
-    const payload = {
-      beatId: String(beatId),
-      phone: phone ? String(phone) : ""
-    };
-
-    const r = await fetch(LICENSE_FN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+    // sort newest first
+    merged.sort((a,b)=>{
+      const am = (a.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt||0)) || 0;
+      const bm = (b.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt||0)) || 0;
+      return bm - am;
     });
 
-    const data = await r.json().catch(()=> ({}));
-    if (!r.ok){
-      throw new Error(data?.error || `License request failed (${r.status})`);
-    }
-    if (!data?.url) throw new Error(data?.error || "No license URL returned.");
-    return data.url;
+    ALL_ITEMS = merged;
+
+    hideStatus();
+    renderOverview();
+    refreshVisible();
   }
 
-  document.addEventListener("click", async (e)=>{
+  document.addEventListener("click", (e)=>{
     const tabBtn = e.target.closest(".tab");
     if (tabBtn){
       setTab(tabBtn.dataset.tab);
@@ -637,53 +563,25 @@
 
     const action = btn.getAttribute("data-action");
     const id = btn.getAttribute("data-id");
-    const order = getOrderById(id);
-    if (!order) return;
+    const item = getItemById(id);
+    if (!item) return;
 
-    if (action === "view"){
-      alert(
-        `Order: ${order.id}\n\n` +
-        `Item: ${order.itemTitle}\n` +
-        `Type: ${order.itemType}\n` +
-        `License: ${order.licenseKey || "—"}\n` +
-        `Status: ${order.status || "—"}\n` +
-        `Created: ${fmtDate(order.createdAt)}\n\n` +
-        `Download: ${order.downloadUrl ? "Available" : "Not ready"}`
-      );
+    if (action === "open"){
+      if (!item.beatId) return alert("No beatId stored for this item.");
+      location.href = "/beat/?id=" + encodeURIComponent(item.beatId);
       return;
     }
 
     if (action === "download"){
-      if (!order.downloadUrl) return alert("Download not ready yet.");
-      window.open(order.downloadUrl, "_blank");
-      return;
-    }
-
-    // ✅ NEW: License PDF action
-    if (action === "license"){
-      try{
-        btn.disabled = true;
-        btn.textContent = "Generating…";
-
-        // beatId must exist in the order doc (your STK push already writes beatId)
-        const beatId = order.beatId;
-
-        // Optional: phone match (only if you store phone in orders/unlocks)
-        const phone = order.phone || "";
-
-        const url = await requestLicensePdf({ beatId, phone });
-        window.location.href = url;
-      }catch(err){
-        alert(err?.message || String(err));
-      }finally{
-        btn.disabled = false;
-        btn.textContent = "License PDF";
-      }
+      if (!item.isUnlocked) return alert("Not paid/unlocked yet.");
+      if (!item.beatId) return alert("No beatId stored.");
+      // For now: open beat page (you can add real download links later)
+      location.href = "/beat/?id=" + encodeURIComponent(item.beatId);
       return;
     }
   });
 
-  $("refreshBtn").addEventListener("click", loadOrders);
+  $("refreshBtn").addEventListener("click", loadAll);
   $("ordersSearch").addEventListener("input", renderOrders);
   $("downloadsSearch").addEventListener("input", renderDownloads);
 
@@ -697,7 +595,6 @@
     }
   });
 
-  // Wait for firebase.js
   window.addEventListener("firebase-ready", ()=>{
     const tick = ()=>{
       const u = window.FB?.auth?.currentUser || window.FB?.user || null;
@@ -707,7 +604,6 @@
     tick();
     setInterval(tick, 1000);
 
-    // redirect if not signed in
     const u = window.FB?.auth?.currentUser || window.FB?.user || null;
     updateNavAuthUI(u);
 
@@ -717,7 +613,7 @@
       return;
     }
 
-    loadOrders();
+    loadAll();
   });
 </script>
 
