@@ -1423,7 +1423,8 @@ exports.stkpush = onRequest(
       if (req.method !== "POST")
         return res.status(405).json({ error: "Use POST" });
 
-    const { phone, amountUsd, amount, beatId } = req.body || {};
+    const { phone, amount, amountUsd, beatId, buyerId } = req.body || {};
+    if (!buyerId) return res.status(400).json({ error: "buyerId is required" });
     const inputAmountUsd = amountUsd ?? amount;
 
     if (!phone || inputAmountUsd == null || !beatId) {
@@ -1459,6 +1460,7 @@ exports.stkpush = onRequest(
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
       beatId,
+      buyerId,
       phone: msisdn,
       amountUsd: usd,
       currency: currency,
@@ -1596,10 +1598,8 @@ exports.stkCallback = onRequest(
       if (paid) {
         await db.collection("unlocks").doc(orderDoc.id).set({
           orderId: orderDoc.id,
+          buyerId: orderDoc.data().buyerId || null, // ✅ ADD THIS
           beatId: orderDoc.data().beatId,
-
-          //if later i connect auth i will add uid here
-
           phone: metadata.PhoneNumber || null,
           amount: metadata.Amount || null,
           receipt: metadata.MpesaReceiptNumber || null,
