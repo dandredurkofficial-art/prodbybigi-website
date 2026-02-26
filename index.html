@@ -1035,93 +1035,93 @@
       }
     }
 
-  // ✅ M-Pesa flow (STK Push)
-  async function payWithMpesa(){
-  const sel = window.__PB_SELECTED__;
-  if (!sel?.beatId) return alert("Select a beat first.");
+    // ✅ M-Pesa flow (STK Push)
+    async function payWithMpesa(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat first.");
 
-  mpesaBox.style.display = "block";
-  mpesaPhone.focus();
+      mpesaBox.style.display = "block";
+      mpesaPhone.focus();
 
-  const phone = (mpesaPhone.value || "").trim();
-  if (!phone) {
-    payStatus.textContent = "Enter your phone number above, then press M-Pesa again.";
-    return;
-  }
+      const phone = (mpesaPhone.value || "").trim();
+      if (!phone) {
+        payStatus.textContent = "Enter your phone number above, then press M-Pesa again.";
+        return;
+      }
 
-  // basic validation for Kenyan format
-  const digits = phone.replace(/\D/g,"");
-  if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
-    payStatus.textContent = "Use format: 2547XXXXXXXX (12 digits).";
-    return;
-  }
+      // basic validation for Kenyan format
+      const digits = phone.replace(/\D/g,"");
+      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+        payStatus.textContent = "Use format: 2547XXXXXXXX (12 digits).";
+        return;
+      }
 
-  const amt = Number(sel.amount || 0);
-  if (!amt || amt <= 0) {
-    payStatus.textContent = "Price not detected. Try selecting the license again.";
-    return;
-  }
+      const amt = Number(sel.amount || 0);
+      if (!amt || amt <= 0) {
+        payStatus.textContent = "Price not detected. Try selecting the license again.";
+        return;
+      }
 
-  // ✅ IMPORTANT: define user (this was missing and caused the hang)
-  const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-  if (!u?.uid){
-    payStatus.textContent = "Please sign in to pay with M-Pesa.";
-    setTimeout(()=> location.href="/login/", 600);
-    return;
-  }
+      // ✅ IMPORTANT: define user (this was missing and caused the hang)
+      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+      if (!u?.uid){
+        payStatus.textContent = "Please sign in to pay with M-Pesa.";
+        setTimeout(()=> location.href="/login/", 600);
+        return;
+      }
 
-  btnPaypal.disabled = true;
-  btnMpesa.disabled = true;
-  payStatus.textContent = "Sending STK Push… check your phone.";
+      btnPaypal.disabled = true;
+      btnMpesa.disabled = true;
+      payStatus.textContent = "Sending STK Push… check your phone.";
 
-  // ✅ add timeout so it never “hangs” forever
-  const controller = new AbortController();
-  const t = setTimeout(()=>controller.abort(), 25000);
+      // ✅ add timeout so it never “hangs” forever
+      const controller = new AbortController();
+      const t = setTimeout(()=>controller.abort(), 25000);
 
-  try{
-    const body = {
-      phone: digits,
-      beatId: String(sel.beatId),
-      buyerId: String(u.uid),
-      licenseKey: String(sel.licenseKey || "basic"),
+      try{
+        const body = {
+          phone: digits,
+          beatId: String(sel.beatId),
+          buyerId: String(u.uid),
+          licenseKey: String(sel.licenseKey || "basic"),
 
-      // send amount in BOTH formats (backend can use either)
-      amount: Math.round(amt),          // integer (KES conversion backend may do)
-      amountUsd: Number(amt)            // if your backend uses USD naming
-    };
+          // send amount in BOTH formats (backend can use either)
+          amount: Math.round(amt),          // integer (KES conversion backend may do)
+          amountUsd: Number(amt)            // if your backend uses USD naming
+        };
 
-    const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify(body),
-      signal: controller.signal
-    });
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
 
-    const data = await r.json().catch(()=> ({}));
+        const data = await r.json().catch(()=> ({}));
 
-    if (!r.ok) {
-      console.error("STK push failed:", data);
-      payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
-      return;
+        if (!r.ok) {
+          console.error("STK push failed:", data);
+          payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+          return;
+        }
+
+        payStatus.textContent =
+          "✅ STK sent. Approve on your phone.\n" +
+          (data?.orderId ? ("Order ID: " + data.orderId) : "");
+
+      } catch (err){
+        console.error(err);
+        if (String(err?.name) === "AbortError"){
+          payStatus.textContent = "Timed out waiting for server. Check your STK endpoint / CORS / Render logs.";
+        } else {
+          payStatus.textContent = "Error: " + (err?.message || err);
+        }
+      } finally {
+        clearTimeout(t);
+        btnPaypal.disabled = false;
+        btnMpesa.disabled = false;
+      }
     }
-
-    payStatus.textContent =
-      "✅ STK sent. Approve on your phone.\n" +
-      (data?.orderId ? ("Order ID: " + data.orderId) : "");
-
-  } catch (err){
-    console.error(err);
-    if (String(err?.name) === "AbortError"){
-      payStatus.textContent = "Timed out waiting for server. Check your STK endpoint / CORS / Render logs.";
-    } else {
-      payStatus.textContent = "Error: " + (err?.message || err);
-    }
-  } finally {
-    clearTimeout(t);
-    btnPaypal.disabled = false;
-    btnMpesa.disabled = false;
-  }
-}
   
     btnPaypal?.addEventListener("click", payWithPaypal);
     btnMpesa?.addEventListener("click", payWithMpesa);
