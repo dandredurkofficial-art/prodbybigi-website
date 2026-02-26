@@ -116,6 +116,7 @@ function money(n) {
 }
 
 const crypto = require("crypto");
+const { error } = require("console");
 
 function toKey(x) {
   return String(x || "").trim().toLowerCase();
@@ -1407,6 +1408,8 @@ exports.stkpush = onRequest(
       MPESA_SHORTCODE,
       MPESA_PASSKEY,
       MPESA_CALLBACK_URL,
+      PRICE_CURRENCY,
+      USD_KES_RATE,
     ],
   },
   async (req, res) => {
@@ -1415,23 +1418,47 @@ exports.stkpush = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST")
+        return res.status(405).json({ error: "Use POST" });
 
-    const { phone, amount, beatId } = req.body || {};
-    if (!phone || !amount || !beatId) {
-      return res.status(400).json({ error: "phone, amount, and beatId are required" });
+    const { phone, amountUsd, amount, beatId } = req.body || {};
+    const inputAmountUsd = amountUsd ?? amount;
+
+    if (!phone || !inputAmountUsd || !beatId) {
+      return res
+        .status(400)
+        .json({ error: "phone, amount/amountUsd, and beatId are required" });
     }
 
     const msisdn = normalizePhone(phone);
-    const amt = Number(amount);
-    if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "amount invalid" });
+    const Usd = Number(inputAmountUsd);
+    if (!Number.isFinite(Usd) || Usd <= 0) {
+      return res.status(400).json({ error: "amountUsd invalid" });
+    }
+
+    const currency = (PRICE_CURRENCY.value() || "USD").toUpperCase();
+
+    // convert if USD, otherwise assume amount already KES
+    const kes =
+      currency === "USD"
+        ? usdToKesInt(usd)
+        : Math.max(1, Math.round(Number(usd)));
+
+    if (Number.isFinite(kes) || kes <= 0) {
+      return req.status(400).json({ error: "KES amount invalid" });
+    }
 
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
       beatId,
       phone: msisdn,
-      amount: amt,
-      status: "PENDING",
+      amountUsd: usd,
+      currency: currency,
+      amountKes: kes,
+
+      provider: "MPESA_STK"
+      status: "PENDING"
+
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -1450,7 +1477,7 @@ exports.stkpush = onRequest(
       Password: password,
       Timestamp: timestamp,
       TransactionType: "CustomerPayBillOnline",
-      Amount: amt,
+      Amount: kes,
       PartyA: msisdn,
       PartyB: Number(MPESA_SHORTCODE.value()),
       PhoneNumber: msisdn,
@@ -1475,18 +1502,29 @@ exports.stkpush = onRequest(
         checkoutRequestId: data.CheckoutRequestID || null,
         merchantRequestId: data.MerchantRequestID || null,
         stkResponse: data,
+        mpesaRequestedAmount: kes,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
 
-    return res.status(r.ok ? 200 : 400).json({ orderId: orderRef.id, ...data });
+    return res.status(r.ok ? 200 : 400).json({
+      ok: r.ok, 
+      orderId: orderRef.id, 
+      amountUsd: usd,
+      amountKes: kes,
+      currency,
+
+      ...data 
+    });
   } catch (e) {
     console.error("stkpush error:", e);
-    try { applyCors(req, res); } catch (_) {}
+    try { 
+      applyCors(req, res); 
+    } catch (_) {}
     return res.status(500).json({ error: e.message });
   }
- });
+});
 
 // Callback endpoint
 exports.stkCallback = onRequest(
@@ -1542,6 +1580,8 @@ exports.stkCallback = onRequest(
           status: paid ? "PAID" : "FAILED",
           receipt: metadata.MpesaReceiptNumber || null,
           transactionDate: metadata.TransactionDate || null,
+          paidAt: paid ? admin.firestore.FieldValue.serverTimestamp() : null,
+          amountKesPaid: metadata.Amount || null,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
         { merge: true }
@@ -1551,6 +1591,9 @@ exports.stkCallback = onRequest(
         await db.collection("unlocks").doc(orderDoc.id).set({
           orderId: orderDoc.id,
           beatId: orderDoc.data().beatId,
+
+          //if later i connect auth i will add uid here
+          
           phone: metadata.PhoneNumber || null,
           amount: metadata.Amount || null,
           receipt: metadata.MpesaReceiptNumber || null,
