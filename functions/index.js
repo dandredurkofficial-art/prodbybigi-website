@@ -479,6 +479,7 @@ exports.testEmail = onRequest(
 exports.verifySubscription = onRequest(
   {
     region: "us-central1",
+    maxInstances: 1,
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (req, res) => {
@@ -1399,13 +1400,13 @@ exports.paypalPayoutStatus = onRequest(
 exports.stkpush = onRequest(
   {
     region: "us-central1",
+    maxInstances: 1,
     secrets: [
       DARAJA_CONSUMER_KEY,
       DARAJA_CONSUMER_SECRET,
       MPESA_SHORTCODE,
       MPESA_PASSKEY,
       MPESA_CALLBACK_URL,
-      MPESA_ENV,
     ],
   },
   async (req, res) => {
@@ -1962,7 +1963,8 @@ exports.onProducerSignup = onDocumentCreated(
 
 exports.onUserBecameProducer = onDocumentWritten(
   {
-    region: "us-central1",
+    region: "us-central1"
+    maxInstances: 1,
     document: "users/{uid}",
     secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
   },
@@ -2022,6 +2024,7 @@ exports.onUserBecameProducer = onDocumentWritten(
 exports.onPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
+    maxInstances: 1,
     document: "payouts/{payoutId}",
     secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
   },
