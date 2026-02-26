@@ -1066,6 +1066,15 @@
       btnMpesa.disabled = true;
       payStatus.textContent = "Sending STK Push… check your phone.";
 
+      const payload = {
+        phone,
+        beatId: String(sel.beatId),
+        buyerId: String(u.uid),
+        amountUsd: Number(sel.amountUsd),
+        licenseKey: String(sel.licenseKey || "basic"),
+        producerId: String(sel.producerId || "")
+      };
+
       try{
         const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
           method: "POST",
