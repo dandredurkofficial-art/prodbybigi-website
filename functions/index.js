@@ -1596,65 +1596,65 @@ exports.stkCallback = onRequest(
       );
 
       if (paid) {
-  // ✅ get order fields
-  const o = orderDoc.data() || {};
-  const beatId = o.beatId;
-  const buyerId = o.buyerId || null;
-  const licenseKey = o.licenseKey || "basic";
-  const producerId = o.producerId || null;
+        // ✅ get order fields
+        const o = orderDoc.data() || {};
+        const beatId = o.beatId;
+        const buyerId = o.buyerId || null;
+        const licenseKey = o.licenseKey || "basic";
+        const producerId = o.producerId || null;
 
-  // ✅ fetch beat to get download info (adjust collection name if yours differs)
-  let beatData = null;
-  if (beatId) {
-    const beatSnap = await db.collection("beats").doc(String(beatId)).get();
-    if (beatSnap.exists) beatData = beatSnap.data() || null;
-  }
+        // ✅ fetch beat to get download info (adjust collection name if yours differs)
+        let beatData = null;
+        if (beatId) {
+          const beatSnap = await db.collection("beats").doc(String(beatId)).get();
+          if (beatSnap.exists) beatData = beatSnap.data() || null;
+        }
 
-  // ✅ IMPORTANT:
-  // Store a REAL download reference, not "/beat/?id=..."
-  // Prefer downloadPath (Storage path) if you have it.
-  const downloadPath =
-    o.downloadPath ||
-    beatData?.downloadPath ||                // recommended field if you store it
-    beatData?.filePath ||                    // fallback
-    null;
+        // ✅ IMPORTANT:
+        // Store a REAL download reference, not "/beat/?id=..."
+        // Prefer downloadPath (Storage path) if you have it.
+        const downloadPath =
+          o.downloadPath ||
+          beatData?.downloadPath ||                // recommended field if you store it
+          beatData?.filePath ||                    // fallback
+          null;
 
-  const audioUrl =
-    o.audioUrl ||
-    beatData?.audio ||                        // if this is a direct downloadable URL
-    null;
+        const audioUrl =
+          o.audioUrl ||
+          beatData?.audio ||                        // if this is a direct downloadable URL
+          null;
 
-  await db.collection("unlocks").doc(orderDoc.id).set({
-    unlockId: orderDoc.id,
-    orderId: orderDoc.id,
+        await db.collection("unlocks").doc(orderDoc.id).set({
+          unlockId: orderDoc.id,
+          orderId: orderDoc.id,
 
-    buyerId,
-    beatId: beatId || null,
-    producerId: producerId || beatData?.producerId || null,
-    licenseKey,
+          buyerId,
+          beatId: beatId || null,
+          producerId: producerId || beatData?.producerId || null,
+          licenseKey,
 
-    phone: metadata.PhoneNumber || null,
-    amountKes: metadata.Amount || null,
-    receipt: metadata.MpesaReceiptNumber || null,
-    transactionDate: metadata.TransactionDate || null,
-    checkoutRequestId: CheckoutRequestID,
+          phone: metadata.PhoneNumber || null,
+          amountKes: metadata.Amount || null,
+          receipt: metadata.MpesaReceiptNumber || null,
+          transactionDate: metadata.TransactionDate || null,
+          checkoutRequestId: CheckoutRequestID,
 
-    // ✅ these two are what your dashboard needs:
-    downloadPath,     // best: storage path → later you sign it
-    audioUrl,         // optional: if audio is already a direct downloadable URL
+          // ✅ these two are what your dashboard needs:
+          downloadPath,     // best: storage path → later you sign it
+          audioUrl,         // optional: if audio is already a direct downloadable URL
 
-    status: "unlocked",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
+          status: "unlocked",
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
 
-  // also mark order unlocked (optional but cleaner)
-  await orderDoc.ref.set({
-    unlocked: true,
-    unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-  }, { merge: true });
-}
+        // also mark order unlocked (optional but cleaner)
+        await orderDoc.ref.set({
+          unlocked: true,
+          unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        }, { merge: true });
+      }
 
     return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
   } catch (err) {
