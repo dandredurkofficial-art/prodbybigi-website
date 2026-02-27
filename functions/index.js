@@ -1661,12 +1661,10 @@ exports.stkpush = onRequest(
 });
 
 // Callback endpoint
-exports.stkCallback = onRequest(
-  { region: "us-central1" }, 
-  async (req, res) => {
-    const stop = handleCorsPreflight(req, res);
-    if (stop) return;
-    applyCors(req, res);
+exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
+  const stop = handleCorsPreflight(req, res);
+  if (stop) return;
+  applyCors(req, res);
 
   try {
     // callback is Safaricom -> no browser, but safe
@@ -2198,7 +2196,7 @@ exports.beatsAutoFieldsOnCreate = onDocumentCreated(
   async (event) => {
     const ref = event.data.ref;
     const data = event.data.data();
-    wait ensureBeatFields(ref, data);
+    await ensureBeatFields(ref, data);
   }
 );
 
