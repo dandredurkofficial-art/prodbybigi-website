@@ -1956,108 +1956,176 @@ exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
 });
 
 /* =========================================================
-✅ SECURE DOWNLOAD (CORS FIXED)
+✅ SECURE DOWNLOAD (AUTH + CORS)
 ========================================================= */
 exports.secureDownload = onRequest(
-  { region: "us-central1" }, 
+  { region: "us-central1" },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
     applyCors(req, res);
 
-  try {
-    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
-    const { beatId, phone } = req.body || {};
-    if (!beatId) return res.status(400).json({ error: "beatId is required" });
+      // --------- AUTH (Firebase ID Token) ----------
+      const authHeader = req.headers.authorization || "";
+      const m = authHeader.match(/^Bearer (.+)$/);
+      if (!m) return res.status(401).json({ error: "Missing Authorization Bearer token" });
 
-    const unlockSnap = await db
-      .collection("unlocks")
-      .where("beatId", "==", beatId)
-      .limit(1)
-      .get();
-
-    if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked" });
-
-    if (phone) {
-      const unlock = unlockSnap.docs[0].data();
-      if (unlock.phone && unlock.phone !== phone) {
-        return res.status(403).json({ error: "Unauthorized phone" });
+      let decoded;
+      try {
+        decoded = await admin.auth().verifyIdToken(m[1]);
+      } catch (e) {
+        return res.status(401).json({ error: "Invalid or expired token" });
       }
+
+      const buyerId = String(decoded.uid || "");
+      if (!buyerId) return res.status(401).json({ error: "Auth uid missing" });
+
+      // --------- INPUT ----------
+      const { beatId } = req.body || {};
+      if (!beatId) return res.status(400).json({ error: "beatId is required" });
+
+      // --------- CHECK UNLOCK OWNERSHIP ----------
+      // only allow if THIS buyer has an unlock for this beat
+      const unlockSnap = await db
+        .collection("unlocks")
+        .where("beatId", "==", String(beatId))
+        .where("buyerId", "==", buyerId)
+        .limit(1)
+        .get();
+
+      if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked for this user" });
+
+      const unlock = unlockSnap.docs[0].data() || {};
+
+      // --------- GET FILE PATH ----------
+      // Prefer unlock.downloadPath, then beat.downloadPath, then beat.filePath
+      const beatDoc = await db.collection("beats").doc(String(beatId)).get();
+      if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
+
+      const beatData = beatDoc.data() || {};
+
+      const filePath =
+        safeStr(unlock.downloadPath || "") ||
+        safeStr(beatData.downloadPath || "") ||
+        safeStr(beatData.filePath || "");
+
+      if (!filePath) return res.status(500).json({ error: "File path missing on unlock/beat doc" });
+
+      // --------- SIGNED URL ----------
+      const [url] = await bucket.file(filePath).getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 10 * 60 * 1000,
+        responseDisposition: `attachment; filename="${safeStr(beatData.title || "beat")}.wav"`,
+      });
+
+      return res.json({ url });
+    } catch (err) {
+      console.error("secureDownload error:", err);
+      try { applyCors(req, res); } catch (_) {}
+      return res.status(500).json({ error: "Internal error" });
     }
-
-    const beatDoc = await db.collection("beats").doc(beatId).get();
-    if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
-
-    const { filePath } = beatDoc.data() || {};
-    if (!filePath) return res.status(500).json({ error: "File path missing" });
-
-    const [url] = await bucket.file(filePath).getSignedUrl({
-      version: "v4",
-      action: "read",
-      expires: Date.now() + 10 * 60 * 1000,
-    });
-
-    return res.json({ url });
-  } catch (err) {
-    console.error("secureDownload error:", err);
-    try { applyCors(req, res); } catch (_) {}
-    return res.status(500).json({ error: "Internal error" });
   }
-});
+);
+
 
 /* =========================================================
-✅ LICENSE DOWNLOAD (CORS FIXED)
+✅ LICENSE DOWNLOAD (AUTH + PER LICENSEKEY + CORS)
 ========================================================= */
 exports.licenseDownload = onRequest(
-  { region: "us-central1" }, 
+  { region: "us-central1" },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
     applyCors(req, res);
 
-  try {
-    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
-    const { beatId, phone } = req.body || {};
-    if (!beatId) return res.status(400).json({ error: "beatId is required" });
+      // --------- AUTH (Firebase ID Token) ----------
+      const authHeader = req.headers.authorization || "";
+      const m = authHeader.match(/^Bearer (.+)$/);
+      if (!m) return res.status(401).json({ error: "Missing Authorization Bearer token" });
 
-    const unlockSnap = await db
-      .collection("unlocks")
-      .where("beatId", "==", beatId)
-      .limit(1)
-      .get();
-
-    if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked" });
-
-    if (phone) {
-      const unlock = unlockSnap.docs[0].data();
-      if (unlock.phone && unlock.phone !== phone) {
-        return res.status(403).json({ error: "Unauthorized phone" });
+      let decoded;
+      try {
+        decoded = await admin.auth().verifyIdToken(m[1]);
+      } catch (e) {
+        return res.status(401).json({ error: "Invalid or expired token" });
       }
+
+      const buyerId = String(decoded.uid || "");
+      if (!buyerId) return res.status(401).json({ error: "Auth uid missing" });
+
+      // --------- INPUT ----------
+      const { beatId, licenseKey } = req.body || {};
+      if (!beatId) return res.status(400).json({ error: "beatId is required" });
+
+      const lk = safeStr(licenseKey || "basic").toLowerCase();
+      const allowed = ["basic", "premium", "exclusive"];
+      if (!allowed.includes(lk)) return res.status(400).json({ error: "Invalid licenseKey" });
+
+      // --------- CHECK UNLOCK OWNERSHIP ----------
+      // require THIS buyer has an unlock for this beat (optionally match licenseKey)
+      const unlockQ = db.collection("unlocks")
+        .where("beatId", "==", String(beatId))
+        .where("buyerId", "==", buyerId);
+
+      const unlockSnap = await unlockQ.limit(25).get();
+      if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked for this user" });
+
+      // If you store licenseKey in unlocks, prefer exact match:
+      let unlock = null;
+      unlockSnap.forEach(doc => {
+        const d = doc.data() || {};
+        if (!unlock && safeStr(d.licenseKey).toLowerCase() === lk) unlock = d;
+      });
+      // fallback: any unlock for beat by buyer
+      if (!unlock) unlock = unlockSnap.docs[0].data() || {};
+
+      // --------- GET LICENSE PATH ----------
+      const beatDoc = await db.collection("beats").doc(String(beatId)).get();
+      if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
+
+      const beatData = beatDoc.data() || {};
+
+      // Supported locations:
+      // 1) unlock.licensePath (best)
+      // 2) beat.licensePaths[licenseKey]
+      // 3) beat.licenses[licenseKey].licensePath
+      // 4) beat.licensePath (legacy single)
+      const licensePath =
+        safeStr(unlock.licensePath || "") ||
+        safeStr(beatData?.licensePaths?.[lk] || "") ||
+        safeStr(beatData?.licenses?.[lk]?.licensePath || "") ||
+        safeStr(beatData.licensePath || "");
+
+      if (!licensePath) {
+        return res.status(500).json({
+          error: `licensePath missing on beat doc for "${lk}". Add beats/${beatId}.licensePaths.${lk}`
+        });
+      }
+
+      // --------- SIGNED URL ----------
+      const [url] = await bucket.file(licensePath).getSignedUrl({
+        version: "v4",
+        action: "read",
+        expires: Date.now() + 10 * 60 * 1000,
+        responseDisposition: `attachment; filename="${safeStr(beatData.title || "license")}-${lk}.pdf"`,
+        responseType: "application/pdf",
+      });
+
+      return res.json({ url });
+    } catch (err) {
+      console.error("licenseDownload error:", err);
+      try { applyCors(req, res); } catch (_) {}
+      return res.status(500).json({ error: "Internal error" });
     }
-
-    const beatDoc = await db.collection("beats").doc(beatId).get();
-    if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
-
-    const { licensePath } = beatDoc.data() || {};
-    if (!licensePath) return res.status(500).json({ error: "licensePath missing on beat doc" });
-
-    const [url] = await bucket.file(licensePath).getSignedUrl({
-      version: "v4",
-      action: "read",
-      expires: Date.now() + 10 * 60 * 1000,
-      responseDisposition: "attachment",
-      responseType: "application/pdf",
-    });
-
-    return res.json({ url });
-  } catch (err) {
-    console.error("licenseDownload error:", err);
-    try { applyCors(req, res); } catch (_) {}
-    return res.status(500).json({ error: "Internal error" });
   }
-});
+);
 
 /* =========================================================
 ✅ EMAIL TRIGGERS (SendGrid)
