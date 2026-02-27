@@ -1777,8 +1777,10 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
           unlocked: true,
           unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
-      }
+        }, 
+        { merge: true });
+      };
+    }
 
     return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
   } catch (err) {
