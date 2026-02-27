@@ -151,6 +151,72 @@ function nowTimestamp() {
   );
 }
 
+// Convert Firebase Storage download URL -> storage path
+function storagePathFromDownloadUrl(url) {
+  if (!url || typeof url !== "string") return null;
+  const marker = "/o/";
+  const i = url.indexOf(marker);
+  if (i === -1) return null;
+
+  const after = url.slice(i + marker.length);
+  const beforeQ = after.split("?")[0];
+  try {
+    return decodeURIComponent(beforeQ);
+  } catch {
+    return beforeQ.replace(/%2F/g, "/");
+  }
+}
+
+function defaultLicensePaths() {
+  return {
+    basic: "licenses/basic.pdf",
+    premium: "licenses/premium.pdf",
+    exclusive: "licenses/exclusive.pdf",
+  };
+}
+
+async function ensureBeatFields(beatRef, beatData) {
+  if (!beatData) return;
+
+  const patch = {};
+
+  if (!beatData.filePath) {
+    const p = storagePathFromDownloadUrl(beatData.fullAudio || beatData.audio || "");
+    if (p) patch.filePath = p;
+  }
+
+  if (!beatData.previewPath) {
+    const pp = storagePathFromDownloadUrl(beatData.previewAudio || "");
+    if (pp) patch.previewPath = pp;
+  }
+
+  if (!beatData.licensePaths || typeof beatData.licensePaths !== "object") {
+    patch.licensePaths = defaultLicensePaths();
+  } else {
+    const d = defaultLicensePaths();
+    const merged = { ...d, ...beatData.licensePaths };
+    if (
+      merged.basic !== beatData.licensePaths.basic ||
+      merged.premium !== beatData.licensePaths.premium ||
+      merged.exclusive !== beatData.licensePaths.exclusive
+    ) {
+      patch.licensePaths = merged;
+    }
+  }
+
+  if (Object.keys(patch).length) {
+    patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+    await beatRef.set(patch, { merge: true });
+  }
+}
+
+async function verifyFirebaseIdToken(req) {
+  const h = req.headers.authorization || "";
+  if (!h.startsWith("Bearer ")) throw new Error("Missing Authorization token");
+  const token = h.slice("Bearer ".length);
+  return await admin.auth().verifyIdToken(token);
+}
+
 /* =========================================================
 ✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
 ========================================================= */
@@ -2123,6 +2189,90 @@ exports.licenseDownload = onRequest(
       console.error("licenseDownload error:", err);
       try { applyCors(req, res); } catch (_) {}
       return res.status(500).json({ error: "Internal error" });
+    }
+  }
+);
+
+exports.beatsAutoFieldsOnCreate = onDocumentCreated(
+  { document: "beats/{beatId}", region: "us-central1" },
+  async (event) => {
+    const ref = event.data.ref;
+    const data = event.data.data();
+    wait ensureBeatFields(ref, data);
+  }
+);
+
+exports.beatsAutoFieldsOnWrite = onDocumentWritten(
+  { document: "beats/{beatId}", region: "us-central1" },
+  async (event) => {
+    const after = event.data.after;
+    if (!after.exists) return;
+
+    const ref = after.ref;
+    const data = after.data();
+
+    const missing =
+      !data.filePath ||
+      (!data.licensePaths || typeof data.licensePaths !== "object") ||
+      (!data.licensePaths?.basic || !data.licensePaths?.premium || !data.licensePaths?.exclusive);
+
+    if (!missing) return;
+
+    await ensureBeatFields(ref, data);
+  }
+);
+
+exports.backfillBeatsFields = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+      const decoded = await verifyFirebaseIdToken(req);
+      const uid = decoded.uid;
+
+      const uDoc = await db.collection("users").doc(uid).get();
+      const isAdmin = uDoc.exists && uDoc.data()?.isAdmin === true;
+      if (!isAdmin) return res.status(403).json({ error: "Admin only" });
+
+      let last = null;
+      let updated = 0;
+      let scanned = 0;
+
+      while (true) {
+        let q = db.collection("beats")
+          .orderBy(admin.firestore.FieldPath.documentId())
+          .limit(250);
+        if (last) q = q.startAfter(last);
+
+        const snap = await q.get();
+        if (snap.empty) break;
+
+        for (const doc of snap.docs) {
+          scanned++;
+          const data = doc.data();
+
+          const needs =
+            !data.filePath ||
+            !data.licensePaths ||
+            !data.licensePaths?.basic ||
+            !data.licensePaths?.premium ||
+            !data.licensePaths?.exclusive;
+
+          if (needs) {
+            await ensureBeatFields(doc.ref, data);
+            updated++;
+          }
+        }
+
+        last = snap.docs[snap.docs.length - 1].id;
+        if (snap.size < 250) break;
+      }
+
+      return res.json({ ok: true, scanned, updated });
+    } catch (e) {
+      console.error("backfillBeatsFields error:", e);
+      return res.status(500).json({ error: e.message || String(e) });
     }
   }
 );
