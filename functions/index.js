@@ -893,25 +893,47 @@ exports.captureOrder = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST")
+        return res.status(405).json({ error: "Use POST" });
 
-      const { orderId } = req.body || {};
+      const { orderId, cartId } = req.body || {};
       if (!orderId) return res.status(400).json({ error: "orderId is required" });
 
       const accessToken = await getPayPalAccessToken();
 
-      const r = await fetchFn(`${paypalBaseUrl()}/v2/checkout/orders/${orderId}/capture`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const r = await fetchFn(
+        `${paypalBaseUrl()}/v2/checkout/orders/${orderId}/capture`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await r.json().catch(() => ({}));
 
       if (!r.ok) {
-        return res.status(400).json({ error: data?.message || "Capture failed", details: data });
+        return res
+          .status(400)
+          .json({ error: data?.message || "Capture failed", details: data });
+      }
+
+      /**
+       * ✅ IMPORTANT:
+       * After capture, we process Firestore writes (orders + unlocks).
+       * We need cartId to do that (paypalOrders/{cartId}).
+       *
+       * If your front-end DOES NOT send cartId to captureOrder yet,
+       * then processCartCapture will throw "Cart not found".
+       *
+       * Make sure your capture call includes { orderId, cartId }.
+       */
+      if (cartId) {
+        await processCartCapture({ cartId: String(cartId), captureEvent: data, orderId });
+      } else {
+        console.warn("[captureOrder] cartId missing in request body. Skipping processCartCapture.");
       }
 
       return res.json({ ok: true, data });
@@ -932,6 +954,9 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
   const items = Array.isArray(cart.items) ? cart.items : [];
   if (!items.length) throw new Error("Cart has no items");
 
+  // ✅ ADD
+  const buyerId = safeStr(cart.buyerId || "");
+
   const resource = captureEvent?.resource || {};
   const payerEmail = safeStr(resource?.payer?.email_address || "");
 
@@ -944,6 +969,8 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
 
   // Save main order doc
   const orderRef = db.collection("orders").doc(orderId);
+
+  // ✅ UPDATED (adds buyerId)
   await orderRef.set(
     {
       orderId,
@@ -955,7 +982,10 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
       providerStatus: safeStr(resource?.status),
       amount: Number(value || cart.total || 0),
       currency: currency || cart.currency || "USD",
+
+      buyerId: buyerId || null, // ✅ ADD
       status: "PAID",
+
       payerEmail,
       items,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -984,6 +1014,25 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     const unlockId = `${orderId}__${type}__${id}__${licenseKey}__${i}`;
     const unlockRef = db.collection("unlocks").doc(unlockId);
 
+    // ✅ ADD: fetch beat data for downloads (only if type === "beat")
+    let beatData = null;
+    if (type === "beat" && id) {
+      const beatSnap = await db.collection("beats").doc(String(id)).get();
+      if (beatSnap.exists) beatData = beatSnap.data() || null;
+    }
+
+    const downloadPath =
+      safeStr(it.downloadPath || "") ||
+      beatData?.downloadPath ||
+      beatData?.filePath ||
+      null;
+
+    const audioUrl =
+      safeStr(it.audioUrl || "") ||
+      beatData?.audio ||
+      null;
+
+    // ✅ UPDATED unlock doc (adds buyerId, producerId, downloadPath, audioUrl, status)
     await unlockRef.set(
       {
         unlockId,
@@ -991,15 +1040,26 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
         cartId,
         provider: "paypal",
         type,
+
+        buyerId: buyerId || null, // ✅ ADD
+        producerId: producerId || beatData?.producerId || null, // ✅ ADD
+
         beatId: type === "beat" ? id : null,
         kitId: type === "soundkit" ? id : null,
         licenseKey: licenseKey || null,
+
+        downloadPath, // ✅ ADD
+        audioUrl,     // ✅ ADD
+
         qty,
         amount: lineTotal,
         receipt: safeStr(resource?.id),
         payerEmail,
         transactionDate: Date.now(),
+        status: "unlocked", // ✅ ADD (optional but helpful)
+
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
