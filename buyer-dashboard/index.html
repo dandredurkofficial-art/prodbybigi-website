@@ -322,6 +322,7 @@
           <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
         </svg>
       </a>
+    </div>
   </div>
 </footer>
 
@@ -353,11 +354,9 @@
   // Unified list that includes PayPal orders + M-Pesa unlocks
   let ALL_ITEMS = [];
 
-  // ✅ NEW: Cloud Function endpoint for Download File
+  // ✅ Cloud Function endpoints
   const DOWNLOAD_FN_URL = "https://downloadfile-f65rhsquva-uc.a.run.app";
-
-  // ✅ NEW: Cloud Function endpoint for License PDF
-  const LICENSE_FN_URL = "https://licensedownload-f65rhsquva-uc.a.run.app";
+  const LICENSE_FN_URL  = "https://licensedownload-f65rhsquva-uc.a.run.app";
 
   function setStatus(text){
     $("status").textContent = text || "";
@@ -367,7 +366,6 @@
 
   function fmtDate(ts){
     if (!ts) return "—";
-    // Firestore Timestamp support
     if (typeof ts === "object" && typeof ts.toMillis === "function"){
       return new Date(ts.toMillis()).toLocaleString();
     }
@@ -419,21 +417,29 @@
       status,
       createdAt: x.createdAt || x.timestamp || null,
       isUnlocked: status.includes("paid") || status.includes("complete"),
+      licenseKey: String(x.licenseKey || x.license || "basic"),
+      downloadUrl: x.downloadUrl || x.url || null
     };
   }
 
-  // Convert M-Pesa unlocks to unified item
+  // Convert unlocks (PayPal unlock docs OR M-Pesa unlock docs) to unified item
   function normalizeUnlock(x){
     const beatId = x.beatId || "";
+    const st = (x.status || "unlocked").toString().toLowerCase();
+
     return {
       id: String(x.id),
       source: "unlock",
       beatId: String(beatId),
-      itemTitle: String(x.beatTitle || "Beat"), // if you later store beatTitle in unlocks
-      itemType: "beat",
-      status: "unlocked",
+      itemTitle: String(x.beatTitle || x.title || "Beat"),
+      itemType: (x.type || "beat").toString().toLowerCase(),
+      status: st,
       createdAt: x.createdAt || null,
-      isUnlocked: true,
+      isUnlocked: st.includes("unlock") || st.includes("paid") || st === "ok",
+      licenseKey: String(x.licenseKey || "basic"),
+      downloadPath: x.downloadPath || null,
+      audioUrl: x.audioUrl || null,
+      orderId: x.orderId || null
     };
   }
 
@@ -446,9 +452,9 @@
     const ready = ALL_ITEMS.filter(o => o.isUnlocked && o.beatId).length;
     $("statDownloads").textContent = String(ready);
 
-    $("statOrdersMini").textContent = "PayPal orders + M-Pesa unlocks";
+    $("statOrdersMini").textContent = "PayPal orders + unlocks";
     $("statPaidMini").textContent = "Paid or unlocked items";
-    $("statDownloadsMini").textContent = "Items you can open/download";
+    $("statDownloadsMini").textContent = "Items you can download";
   }
 
   function renderOrders(){
@@ -471,23 +477,14 @@
           <div class="sub">${o.source}: ${o.id}${o.beatId ? ` • beatId: ${o.beatId}` : ""}</div>
         </td>
         <td>
-          ${ok
-            ? `<span class="pill ok">${o.status}</span>`
-            : `<span class="pill no">${o.status}</span>`
-          }
+          ${ok ? `<span class="pill ok">${o.status}</span>` : `<span class="pill no">${o.status}</span>`}
         </td>
         <td>${fmtDate(o.createdAt)}</td>
         <td>
           <div class="actions">
             <button class="btn" type="button" data-action="open" data-id="${o.id}">Open</button>
-            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>
-              Download
-            </button>
-
-            <!-- ✅ NEW: License PDF button -->
-            <button class="btn" type="button" data-action="license" data-id="${o.id}">
-              License PDF
-            </button>
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>Download</button>
+            <button class="btn" type="button" data-action="license" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>License PDF</button>
           </div>
         </td>
       `;
@@ -519,7 +516,6 @@
         <td style="text-align:right;">
           <div class="actions" style="justify-content:flex-end;">
             <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
-            <!-- ✅ NEW: License PDF button -->
             <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
           </div>
         </td>
@@ -545,6 +541,61 @@
     return ALL_ITEMS.find(o => o.id === id) || null;
   }
 
+  async function requestDownloadUrl(item){
+    // ✅ If item already has a real direct URL, use it (and avoid loops back to /beat/)
+    if (item?.downloadUrl && typeof item.downloadUrl === "string") {
+      const u = item.downloadUrl.trim();
+      if (u && !u.includes("/beat/")) return u;
+    }
+
+    // ✅ Ask Cloud Function for signed URL
+    const u = window.FB?.auth?.currentUser;
+    const token = u ? await u.getIdToken().catch(()=>null) : null;
+
+    const r = await fetch(DOWNLOAD_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        ...(token ? { "Authorization": "Bearer " + token } : {})
+      },
+      body: JSON.stringify({
+        // send multiple identifiers so your CF can support either
+        orderId: item.source === "order" ? item.id : (item.orderId || null),
+        unlockId: item.source === "unlock" ? item.id : null,
+        beatId: item.beatId || null
+      })
+    });
+
+    const data = await r.json().catch(()=> ({}));
+    if (!r.ok) throw new Error(data?.error || `Download failed (${r.status})`);
+    if (!data?.url) throw new Error("No download URL returned.");
+    return data.url;
+  }
+
+  async function requestLicensePdfUrl(item){
+    const u = window.FB?.auth?.currentUser;
+    const token = u ? await u.getIdToken().catch(()=>null) : null;
+
+    const r = await fetch(LICENSE_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        ...(token ? { "Authorization": "Bearer " + token } : {})
+      },
+      body: JSON.stringify({
+        orderId: item.source === "order" ? item.id : (item.orderId || null),
+        unlockId: item.source === "unlock" ? item.id : null,
+        beatId: item.beatId || null,
+        licenseKey: item.licenseKey || "basic"
+      })
+    });
+
+    const data = await r.json().catch(()=> ({}));
+    if (!r.ok) throw new Error(data?.error || `License failed (${r.status})`);
+    if (!data?.url) throw new Error("No license PDF URL returned.");
+    return data.url;
+  }
+
   async function loadAll(){
     setStatus("Loading your purchases…");
 
@@ -561,7 +612,7 @@
 
     const merged = [];
 
-    // 1) PayPal / normal orders (buyerId or uid)
+    // 1) Orders (buyerId or uid) — keep, but downloads are better from unlocks
     try{
       let snap = null;
       try{
@@ -577,19 +628,17 @@
           limit(300)
         ));
       }
-
       snap.forEach(d => merged.push(normalizeOrder({ id:d.id, ...d.data() })));
     }catch(err){
-      // don’t fail whole page if this query fails (rules)
       console.warn("orders load failed:", err);
     }
 
-    // 2) M-Pesa unlocks
+    // 2) Unlocks (this is the best source for downloads)
     try{
       const usnap = await getDocs(query(
         collection(window.FB.db, "unlocks"),
         where("buyerId", "==", u.uid),
-        limit(300)
+        limit(500)
       ));
       usnap.forEach(d => merged.push(normalizeUnlock({ id:d.id, ...d.data() })));
     }catch(err){
@@ -610,7 +659,8 @@
     refreshVisible();
   }
 
-  document.addEventListener("click", (e)=>{
+  // ✅ Tabs + actions
+  document.addEventListener("click", async (e)=>{
     const tabBtn = e.target.closest(".tab");
     if (tabBtn){
       setTab(tabBtn.dataset.tab);
@@ -635,27 +685,16 @@
     if (action === "download"){
       try{
         btn.disabled = true;
+        const old = btn.textContent;
         btn.textContent = "Preparing…";
 
-        // If you already store a real url, use it
-        if (order.downloadUrl && !String(order.downloadUrl).includes("/beat/")) {
-          window.open(order.downloadUrl, "_blank");
-          return;
-        }
+        const url = await requestDownloadUrl(item);
+        // force download/open
+        window.location.href = url;
 
-        // Otherwise request a signed link
-        const r = await fetch(DOWNLOAD_FN_URL, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ orderId: order.id })
-        });
-
-        const data = await r.json().catch(()=> ({}));
-        if (!r.ok) throw new Error(data?.error || `Download failed (${r.status})`);
-        if (!data?.url) throw new Error("No download URL returned.");
-
-        window.location.href = data.url;
+        btn.textContent = old;
       }catch(err){
+        console.error(err);
         alert(err?.message || String(err));
       }finally{
         btn.disabled = false;
@@ -664,11 +703,33 @@
       return;
     }
 
-  $("refreshBtn").addEventListener("click", loadAll);
-  $("ordersSearch").addEventListener("input", renderOrders);
-  $("downloadsSearch").addEventListener("input", renderDownloads);
+    if (action === "license"){
+      try{
+        btn.disabled = true;
+        const old = btn.textContent;
+        btn.textContent = "Generating…";
 
-  $("signOutBtn").addEventListener("click", async ()=>{
+        const url = await requestLicensePdfUrl(item);
+        window.open(url, "_blank");
+
+        btn.textContent = old;
+      }catch(err){
+        console.error(err);
+        alert(err?.message || String(err));
+      }finally{
+        btn.disabled = false;
+        btn.textContent = "License PDF";
+      }
+      return;
+    }
+  });
+
+  // ✅ Top buttons + search
+  $("refreshBtn")?.addEventListener("click", loadAll);
+  $("ordersSearch")?.addEventListener("input", renderOrders);
+  $("downloadsSearch")?.addEventListener("input", renderDownloads);
+
+  $("signOutBtn")?.addEventListener("click", async ()=>{
     try{
       await signOut(window.FB.auth);
       updateNavAuthUI(null);
