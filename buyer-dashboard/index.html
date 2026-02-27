@@ -713,13 +713,13 @@
         // open the signed url
         window.location.href = data.url;
 
-      }catch(err){
+       }catch(err){
         alert(err?.message || String(err));
-      }finally{
+       }finally{
         btn.disabled = false;
         btn.textContent = "Download";
-      }
-      return;
+       }
+       return;
     }
 
     if (action === "license"){
@@ -747,13 +747,13 @@
 
         window.location.href = data.url;
 
-      }catch(err){
+       }catch(err){
         alert(err?.message || String(err));
-      }finally{
+       }finally{
         btn.disabled = false;
         btn.textContent = "License PDF";
-      }
-      return;
+       }
+       return;
     }
   });
 
