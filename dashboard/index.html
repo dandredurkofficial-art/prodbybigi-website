@@ -2223,14 +2223,16 @@ async function uploadProfilePic(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".jpg";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/producers/profile/${uid}/photo${ext}`,
       onProgress:(p)=> $("profilePicStatus").innerHTML = `<div class="upload-status">Uploading profile photo… ${p}%</div>`
     });
 
-    profilePic = url;
-    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
+    profilePicUrl = upload.downloadURL;
+    profilePicPath = upload.storagePath;
+
+    $("profilePicBox").innerHTML = `<img src="${profilePicUrl}">`;
     $("profilePicStatus").innerHTML = `<div class="upload-status">✔ Profile picture uploaded</div>`;
   }catch(err){
     console.error(err);
