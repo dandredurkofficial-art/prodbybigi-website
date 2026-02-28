@@ -548,59 +548,65 @@
   }
 
   async function requestDownloadUrl(item){
-    // ✅ If item already has a real direct URL, use it (and avoid loops back to /beat/)
-    if (item?.downloadUrl && typeof item.downloadUrl === "string") {
-      const u = item.downloadUrl.trim();
-      if (u && !u.includes("/beat/")) return u;
-    }
-
-    // ✅ Ask Cloud Function for signed URL
-    const u = window.FB?.auth?.currentUser;
-    const token = u ? await u.getIdToken().catch(()=>null) : null;
-
-    const r = await fetch(DOWNLOAD_FN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json",
-        ...(token ? { "Authorization": "Bearer " + token } : {})
-      },
-      body: JSON.stringify({
-        // send multiple identifiers so your CF can support either
-        orderId: item.source === "order" ? item.id : (item.orderId || null),
-        unlockId: item.source === "unlock" ? item.id : null,
-        beatId: item.beatId || null
-      })
-    });
-
-    const data = await r.json().catch(()=> ({}));
-    if (!r.ok) throw new Error(data?.error || `Download failed (${r.status})`);
-    if (!data?.url) throw new Error("No download URL returned.");
-    return data.url;
+  if (item?.downloadUrl && typeof item.downloadUrl === "string") {
+    const u = item.downloadUrl.trim();
+    if (u && !u.includes("/beat/")) return u;
   }
 
-  async function requestLicensePdfUrl(item){
-    const u = window.FB?.auth?.currentUser;
-    const token = u ? await u.getIdToken().catch(()=>null) : null;
+  const u = window.FB?.auth?.currentUser;
+  const token = u ? await u.getIdToken().catch(()=>null) : null;
 
-    const r = await fetch(LICENSE_FN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json",
-        ...(token ? { "Authorization": "Bearer " + token } : {})
-      },
-      body: JSON.stringify({
-        orderId: item.source === "order" ? item.id : (item.orderId || null),
-        unlockId: item.source === "unlock" ? item.id : null,
-        beatId: item.beatId || null,
-        licenseKey: item.licenseKey || "basic"
-      })
-    });
+  const r = await fetch(DOWNLOAD_FN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      ...(token ? { "Authorization": "Bearer " + token } : {})
+    },
+    body: JSON.stringify({
+      orderId: item.source === "order" ? item.id : (item.orderId || null),
+      unlockId: item.source === "unlock" ? item.id : null,
+      beatId: item.beatId || null,
+      licenseKey: item.licenseKey || "basic" // ✅ add
+    })
+  });
 
-    const data = await r.json().catch(()=> ({}));
-    if (!r.ok) throw new Error(data?.error || `License failed (${r.status})`);
-    if (!data?.url) throw new Error("No license PDF URL returned.");
-    return data.url;
-  }
+  let data = {};
+  let raw = "";
+  try { data = await r.json(); }
+  catch(e){ raw = await r.text().catch(()=> ""); }
+
+  if (!r.ok) throw new Error(data?.error || raw || `Download failed (${r.status})`);
+  if (!data?.url) throw new Error("No download URL returned.");
+  return data.url;
+}
+
+async function requestLicensePdfUrl(item){
+  const u = window.FB?.auth?.currentUser;
+  const token = u ? await u.getIdToken().catch(()=>null) : null;
+
+  const r = await fetch(LICENSE_FN_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type":"application/json",
+      ...(token ? { "Authorization": "Bearer " + token } : {})
+    },
+    body: JSON.stringify({
+      orderId: item.source === "order" ? item.id : (item.orderId || null),
+      unlockId: item.source === "unlock" ? item.id : null,
+      beatId: item.beatId || null,
+      licenseKey: item.licenseKey || "basic"
+    })
+  });
+
+  let data = {};
+  let raw = "";
+  try { data = await r.json(); }
+  catch(e){ raw = await r.text().catch(()=> ""); }
+
+  if (!r.ok) throw new Error(data?.error || raw || `License failed (${r.status})`);
+  if (!data?.url) throw new Error("No license PDF URL returned.");
+  return data.url;
+}
 
   async function loadAll(){
     setStatus("Loading your purchases…");
