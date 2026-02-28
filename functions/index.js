@@ -12,6 +12,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 
 // ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch if needed
 const fetchFn = global.fetch
@@ -104,6 +105,58 @@ function handleCorsPreflight(req, res) {
 ========================================================= */
 function safeStr(v) {
   return v === null || v === undefined ? "" : String(v);
+}
+
+function safeStr(v) {
+  return (typeof v === "string" ? v : (v == null ? "" : String(v))).trim();
+}
+
+function termsFor(licenseKey) {
+
+  if (licenseKey === "exclusive") {
+
+    return [
+
+      "Exclusive license: buyer receives exclusive rights to use the beat.",
+
+      "Producer retains authorship credit unless transferred by written agreement.",
+
+      "No resale/redistribution of the beat file itself.",
+
+      "Must credit producer where applicable.",
+
+    ];
+
+  }
+
+  if (licenseKey === "premium") {
+
+    return [
+
+      "Premium license: buyer may use the beat commercially.",
+
+      "Non-exclusive: producer may license the beat to others.",
+
+      "No resale/redistribution of the beat file itself.",
+
+      "Must credit producer where applicable.",
+
+    ];
+
+  }
+
+  return [
+
+    "Basic license: buyer may use the beat under basic usage rights.",
+
+    "Non-exclusive: producer may license the beat to others.",
+
+    "No resale/redistribution of the beat file itself.",
+
+    "Must credit producer where applicable.",
+
+  ];
+
 }
 
 function isProducerProfile(userData) {

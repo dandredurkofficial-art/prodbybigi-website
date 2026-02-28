@@ -16,7 +16,8 @@
     "@sendgrid/mail": "^8.1.6",
     "firebase-admin": "^13.6.1",
     "firebase-functions": "^7.0.5",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "pdf-lib": "^1.17.1"
   },
   "private": true
 }
