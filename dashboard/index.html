@@ -1555,7 +1555,8 @@ async function publishBeat(){
     return;
   }
 
-  if (!$("exclusiveEnabled").checked)
+  // If exclusive is OFF, clear stems fields
+  if (!$("exclusiveEnabled").checked){
     stemsZipUrl = null;
     stemsZipPath = null;
   }
@@ -1575,17 +1576,20 @@ async function publishBeat(){
       genre: ($("genre").value || "").trim(),
       producerName: producerName,
       artwork: uploadedArtwork || "",
+
       fullAudio,
       previewAudio,
       producerId: window.auth.currentUser.uid,
 
-      // SECURE DOWNLOAD FIELDS
+      // ✅ secure download fields (storage paths)
       filePath: fullAudioPath || null,
       previewPath: previewAudioPath || null,
+
+      // stems only if exclusive enabled
       stemsZipUrl: ($("exclusiveEnabled").checked ? (stemsZipUrl || null) : null),
       stemsZipPath: ($("exclusiveEnabled").checked ? (stemsZipPath || null) : null),
 
-      // LICENSE PDF PATHS (GLOBAL LICENSES)
+      // ✅ license pdf paths (your storage already has these)
       licensePaths: {
         basic: "licenses/basic.pdf",
         premium: "licenses/premium.pdf",
