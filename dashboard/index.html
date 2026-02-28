@@ -774,9 +774,10 @@ window.PB_VERIFY_DOMAIN_DNS_URL = "https://verifydomaindns-f65rhsquva-uc.a.run.a
 /* ===========================
    GLOBALS
 =========================== */
-let uploadedArtwork = null, fullAudio = null, previewAudio = null;
+let uploadedArtwork = null, fullAudio = null, previewAudio = null, fullAudioPath null, previewAudioPath = null;
 let beatsData = [], currentAudio = null;
 let stemsZipUrl = null;
+let stemsZipPath = null;
 
 let kitCover = null, kitFile = null;
 let kitsData = [];
@@ -1348,13 +1349,14 @@ async function uploadFullAudio(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/beats/full/${uid}/${Date.now()}${ext}`,
       onProgress:(p)=> $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
     });
 
-    fullAudio = url;
+    fullAudio = upload.downloadURL;
+    fullAudioPath = upload.storagePath; 
     $("fullStatus").innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
   }catch(err){
     console.error(err);
@@ -1373,13 +1375,14 @@ async function uploadPreviewAudio(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
       onProgress:(p)=> $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
     });
 
-    previewAudio = url;
+    previewAudio = upload.downloadURL;
+    previewAudioPath = upload.storagePath;
     $("previewStatus").innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
   }catch(err){
     console.error(err);
@@ -1403,13 +1406,14 @@ async function uploadStemsZip(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".zip";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/beats/stems/${uid}/${Date.now()}${ext}`,
       onProgress:(p)=> $("stemsStatus").innerHTML = `<div class="upload-status">Uploading stems… ${p}%</div>`
     });
 
-    stemsZipUrl = url;
+    stemsZipUrl = upload.downloadURL;
+    stemsZipPath = upload.storagePath;
     $("stemsStatus").innerHTML = `<div class="upload-status">✔ Stems ZIP uploaded</div>`;
     alert("Stems ZIP uploaded");
   }catch(err){
