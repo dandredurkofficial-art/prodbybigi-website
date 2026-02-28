@@ -1003,7 +1003,7 @@ function showPage(id, el){
   }
 
   // ✅ Auto-load campaigns when opening marketing page
-  if (id === "marketingTools" && typeof window.loadmarketingCampaigns === "functions") {
+  if (id === "marketingTools" && typeof window.loadmarketingCampaigns === "function") {
     window.loadMarketingCampaigns();
   }
 
@@ -1094,7 +1094,7 @@ async function uploadToStorage({ file, path, onProgress }){
         
         resolve({
           downloadURL,
-          storagePath: task.snapshot.ref.full
+          storagePath: task.snapshot.ref.fullpath
         });
       }
     );
