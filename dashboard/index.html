@@ -1330,7 +1330,7 @@ async function uploadArtwork(){
       onProgress:(p)=> $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
     });
 
-    uploadedArtwork = url;
+    uploadedArtwork = url.downloadURL;
     $("artworkBox").innerHTML = `<img src="${uploadedArtwork}">`;
     $("artworkStatus").innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
   }catch(err){
