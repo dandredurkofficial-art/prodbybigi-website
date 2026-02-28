@@ -2275,7 +2275,8 @@ async function saveProfile(){
       displayName: ($("displayName").value || "").trim(),
       location: ($("location").value || "").trim(),
       bio: ($("bio").value || "").trim(),
-      photoURL: profilePic || ""
+      photoURL: profilePicUrl || "",
+      photoPath: profilePicPath || ""
     };
 
     await window.updateDoc(window.doc(window.db,"users",window.currentUser.uid), data);
