@@ -2100,96 +2100,194 @@ exports.secureDownload = onRequest(
 /* =========================================================
 ✅ LICENSE DOWNLOAD (AUTH + PER LICENSEKEY + CORS)
 ========================================================= */
-exports.licenseDownload = onRequest(
-  { region: "us-central1" },
-  async (req, res) => {
-    const stop = handleCorsPreflight(req, res);
-    if (stop) return;
-    applyCors(req, res);
+exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) => {
+  const stop = handleCorsPreflight(req, res);
+  if (stop) return;
+  applyCors(req, res);
 
+  try {
+    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+
+    // ---------- AUTH ----------
+    const authHeader = req.headers.authorization || "";
+    const m = authHeader.match(/^Bearer (.+)$/);
+    if (!m) return res.status(401).json({ error: "Missing Authorization Bearer token" });
+
+    let decoded;
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+      decoded = await admin.auth().verifyIdToken(m[1]);
+    } catch (e) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
 
-      // --------- AUTH (Firebase ID Token) ----------
-      const authHeader = req.headers.authorization || "";
-      const m = authHeader.match(/^Bearer (.+)$/);
-      if (!m) return res.status(401).json({ error: "Missing Authorization Bearer token" });
+    const buyerId = safeStr(decoded.uid);
+    if (!buyerId) return res.status(401).json({ error: "Auth uid missing" });
 
-      let decoded;
-      try {
-        decoded = await admin.auth().verifyIdToken(m[1]);
-      } catch (e) {
-        return res.status(401).json({ error: "Invalid or expired token" });
+    // ---------- INPUT ----------
+    const { beatId, licenseKey, unlockId, orderId } = req.body || {};
+    const lk = safeStr(licenseKey || "basic").toLowerCase();
+    const allowed = ["basic", "premium", "exclusive"];
+    if (!allowed.includes(lk)) return res.status(400).json({ error: "Invalid licenseKey" });
+
+    // ---------- FIND UNLOCK (prefer unlockId) ----------
+    let unlockRef = null;
+    let unlockData = null;
+
+    if (safeStr(unlockId)) {
+      const snap = await db.collection("unlocks").doc(safeStr(unlockId)).get();
+      if (snap.exists) {
+        const d = snap.data() || {};
+        // ownership check
+        if (safeStr(d.buyerId) !== buyerId) return res.status(403).json({ error: "Not your unlock" });
+        unlockRef = snap.ref;
+        unlockData = d;
       }
+    }
 
-      const buyerId = String(decoded.uid || "");
-      if (!buyerId) return res.status(401).json({ error: "Auth uid missing" });
+    // fallback: query by beatId+buyerId
+    if (!unlockData) {
+      if (!beatId) return res.status(400).json({ error: "beatId is required if unlockId not provided" });
 
-      // --------- INPUT ----------
-      const { beatId, licenseKey } = req.body || {};
-      if (!beatId) return res.status(400).json({ error: "beatId is required" });
-
-      const lk = safeStr(licenseKey || "basic").toLowerCase();
-      const allowed = ["basic", "premium", "exclusive"];
-      if (!allowed.includes(lk)) return res.status(400).json({ error: "Invalid licenseKey" });
-
-      // --------- CHECK UNLOCK OWNERSHIP ----------
-      // require THIS buyer has an unlock for this beat (optionally match licenseKey)
-      const unlockQ = db.collection("unlocks")
-        .where("beatId", "==", String(beatId))
+      const q = db.collection("unlocks")
+        .where("beatId", "==", safeStr(beatId))
         .where("buyerId", "==", buyerId);
 
-      const unlockSnap = await unlockQ.limit(25).get();
-      if (unlockSnap.empty) return res.status(403).json({ error: "Beat not unlocked for this user" });
+      const snap = await q.limit(25).get();
+      if (snap.empty) return res.status(403).json({ error: "Beat not unlocked for this user" });
 
-      // If you store licenseKey in unlocks, prefer exact match:
-      let unlock = null;
-      unlockSnap.forEach(doc => {
+      // prefer exact licenseKey match, else first
+      let chosen = null;
+      for (const doc of snap.docs) {
         const d = doc.data() || {};
-        if (!unlock && safeStr(d.licenseKey).toLowerCase() === lk) unlock = d;
-      });
-      // fallback: any unlock for beat by buyer
-      if (!unlock) unlock = unlockSnap.docs[0].data() || {};
-
-      // --------- GET LICENSE PATH ----------
-      const beatDoc = await db.collection("beats").doc(String(beatId)).get();
-      if (!beatDoc.exists) return res.status(404).json({ error: "Beat not found" });
-
-      const beatData = beatDoc.data() || {};
-
-      // Supported locations:
-      // 1) unlock.licensePath (best)
-      // 2) beat.licensePaths[licenseKey]
-      // 3) beat.licenses[licenseKey].licensePath
-      // 4) beat.licensePath (legacy single)
-      const licensePath =
-        safeStr(unlock.licensePath || "") ||
-        safeStr(beatData?.licensePaths?.[lk] || "") ||
-        safeStr(beatData?.licenses?.[lk]?.licensePath || "") ||
-        safeStr(beatData.licensePath || "");
-
-      if (!licensePath) {
-        return res.status(500).json({
-          error: `licensePath missing on beat doc for "${lk}". Add beats/${beatId}.licensePaths.${lk}`
-        });
+        if (!chosen && safeStr(d.licenseKey).toLowerCase() === lk) chosen = { ref: doc.ref, data: d };
       }
+      if (!chosen) chosen = { ref: snap.docs[0].ref, data: snap.docs[0].data() || {} };
 
-      // --------- SIGNED URL ----------
-      const [url] = await bucket.file(licensePath).getSignedUrl({
+      unlockRef = chosen.ref;
+      unlockData = chosen.data;
+    }
+
+    // Optional: require paid unlock
+    if (unlockData.paid === false) {
+      return res.status(403).json({ error: "Unlock not paid" });
+    }
+
+    const finalBeatId = safeStr(unlockData.beatId || beatId);
+    if (!finalBeatId) return res.status(400).json({ error: "beatId missing" });
+
+    // ---------- GET BEAT ----------
+    const beatSnap = await db.collection("beats").doc(finalBeatId).get();
+    if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
+    const beat = beatSnap.data() || {};
+
+    // ---------- RESOLVE DATA (checkout name/email, producer name) ----------
+    const buyerName = safeStr(unlockData.buyerName || unlockData.checkoutName || "");
+    const buyerEmail = safeStr(unlockData.buyerEmail || unlockData.checkoutEmail || "");
+    const beatTitle = safeStr(unlockData.beatTitle || beat.title || "Beat");
+    const producerId = safeStr(unlockData.producerId || beat.producerId || "");
+    let producerName = safeStr(unlockData.producerName || beat.producerName || "");
+
+    // fallback: fetch producer profile if you store it
+    if (!producerName && producerId) {
+      const prodSnap = await db.collection("users").doc(producerId).get().catch(() => null);
+      if (prodSnap && prodSnap.exists) {
+        const pd = prodSnap.data() || {};
+        producerName = safeStr(pd.displayName || pd.name || "");
+      }
+    }
+    if (!producerName) producerName = "Producer";
+
+    // ---------- IF WE ALREADY GENERATED IT, REUSE ----------
+    const existingPath = safeStr(unlockData.licenseGeneratedPath?.[lk] || unlockData.licenseGeneratedPath || "");
+    if (existingPath) {
+      const [url] = await bucket.file(existingPath).getSignedUrl({
         version: "v4",
         action: "read",
         expires: Date.now() + 10 * 60 * 1000,
-        responseDisposition: `attachment; filename="${safeStr(beatData.title || "license")}-${lk}.pdf"`,
+        responseDisposition: `attachment; filename="${beatTitle}-${lk}-license.pdf"`,
         responseType: "application/pdf",
       });
-
       return res.json({ url });
-    } catch (err) {
-        console.error("License ERROR:", err);
-        res.status(500).json({ error: err?.message || String(err) });
     }
+
+    // ---------- GENERATE PDF ----------
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+
+    let y = 800;
+    const left = 50;
+
+    const draw = (text, size = 12, isBold = false) => {
+      page.drawText(text, {
+        x: left,
+        y,
+        size,
+        font: isBold ? bold : font,
+        color: rgb(1, 1, 1),
+      });
+      y -= size + 8;
+    };
+
+    draw("AUDIORY LICENSE AGREEMENT", 20, true);
+    draw(`License Type: ${lk.toUpperCase()}`, 14, true);
+    y -= 8;
+
+    draw(`Beat: ${beatTitle}`, 12, true);
+    draw(`Producer: ${producerName}`, 12);
+    draw(`Buyer Name: ${buyerName || "N/A"}`, 12);
+    draw(`Buyer Email: ${buyerEmail || "N/A"}`, 12);
+    draw(`Order ID: ${safeStr(unlockData.orderId || orderId || "N/A")}`, 12);
+    draw(`Unlock ID: ${unlockRef.id}`, 12);
+    draw(`Date: ${new Date().toISOString().slice(0, 10)}`, 12);
+
+    y -= 12;
+    draw("Terms of Use:", 14, true);
+
+    const terms = termsFor(lk);
+    for (const t of terms) {
+      draw(`• ${t}`, 11);
+      if (y < 80) break; // simple overflow protection
+    }
+
+    y -= 18;
+    draw("This license is issued electronically via Audiory.", 10);
+    draw("Keep this document as proof of purchase and license rights.", 10);
+
+    const pdfBytes = await pdfDoc.save();
+
+    // ---------- UPLOAD GENERATED PDF ----------
+    const outPath = `licenses/generated/${unlockRef.id}_${lk}.pdf`;
+    await bucket.file(outPath).save(Buffer.from(pdfBytes), {
+      contentType: "application/pdf",
+      resumable: false,
+      metadata: {
+        cacheControl: "private, max-age=0, no-transform",
+      },
+    });
+
+    // save path back to unlock so we can reuse next time
+    await unlockRef.set(
+      { licenseGeneratedPath: { [lk]: outPath } },
+      { merge: true }
+    );
+
+    // ---------- SIGNED URL ----------
+    const [url] = await bucket.file(outPath).getSignedUrl({
+      version: "v4",
+      action: "read",
+      expires: Date.now() + 10 * 60 * 1000,
+      responseDisposition: `attachment; filename="${beatTitle}-${lk}-license.pdf"`,
+      responseType: "application/pdf",
+    });
+
+    return res.json({ url });
+  } catch (err) {
+    console.error("License ERROR:", err);
+    return res.status(500).json({ error: err?.message || String(err) });
   }
-);
+});
 
 exports.beatsAutoFieldsOnCreate = onDocumentCreated(
   { document: "beats/{beatId}", region: "us-central1" },
