@@ -2090,9 +2090,8 @@ exports.secureDownload = onRequest(
 
       return res.json({ url });
     } catch (err) {
-      console.error("secureDownload error:", err);
-      try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: "Internal error" });
+        console.error("DOWNLOAD ERROR:", err);
+        res.status(500).json({ error: err?.message || String(err) });
     }
   }
 );
@@ -2186,9 +2185,8 @@ exports.licenseDownload = onRequest(
 
       return res.json({ url });
     } catch (err) {
-      console.error("licenseDownload error:", err);
-      try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: "Internal error" });
+        console.error("License ERROR:", err);
+        res.status(500).json({ error: err?.message || String(err) });
     }
   }
 );
