@@ -1077,8 +1077,8 @@ async function uploadToStorage({ file, path, onProgress }){
     throw new Error("Firebase Storage not ready.");
   }
 
-  const r = window.ref(window.storage, path);
-  const task = window.uploadBytesResumable(r, file, { contentType: file.type || undefined });
+  const storageRef = window.ref(window.storage, path);
+  const task = window.uploadBytesResumable(storageRef, file, { contentType: file.type || undefined });
 
   return await new Promise((resolve, reject)=>{
     task.on("state_changed",
@@ -1088,8 +1088,12 @@ async function uploadToStorage({ file, path, onProgress }){
       },
       reject,
       async ()=>{
-        const url = await window.getDownloadURL(task.snapshot.ref);
-        resolve(url);
+        const downloadURL = await window.getDownloadURL(task.snapshot.ref);
+        
+        resolve({
+          downloadURL,
+          storagePath: task.snapshot.ref.full
+        });
       }
     );
   });
