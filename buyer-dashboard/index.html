@@ -548,65 +548,65 @@
   }
 
   async function requestDownloadUrl(item){
-  if (item?.downloadUrl && typeof item.downloadUrl === "string") {
-    const u = item.downloadUrl.trim();
-    if (u && !u.includes("/beat/")) return u;
+    if (item?.downloadUrl && typeof item.downloadUrl === "string") {
+      const u = item.downloadUrl.trim();
+      if (u && !u.includes("/beat/")) return u;
+    }
+
+    const u = window.FB?.auth?.currentUser;
+    const token = u ? await u.getIdToken().catch(()=>null) : null;
+
+    const r = await fetch(DOWNLOAD_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        ...(token ? { "Authorization": "Bearer " + token } : {})
+      },
+      body: JSON.stringify({
+        orderId: item.source === "order" ? item.id : (item.orderId || null),
+        unlockId: item.source === "unlock" ? item.id : null,
+        beatId: item.beatId || null,
+        licenseKey: item.licenseKey || "basic" // ✅ add
+      })
+    });
+
+    let data = {};
+    let raw = "";
+    try { data = await r.json(); }
+    catch(e){ raw = await r.text().catch(()=> ""); }
+
+    if (!r.ok) throw new Error(data?.error || raw || `Download failed (${r.status})`);
+    if (!data?.url) throw new Error("No download URL returned.");
+    return data.url;
   }
 
-  const u = window.FB?.auth?.currentUser;
-  const token = u ? await u.getIdToken().catch(()=>null) : null;
+  async function requestLicensePdfUrl(item){
+    const u = window.FB?.auth?.currentUser;
+    const token = u ? await u.getIdToken().catch(()=>null) : null;
 
-  const r = await fetch(DOWNLOAD_FN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type":"application/json",
-      ...(token ? { "Authorization": "Bearer " + token } : {})
-    },
-    body: JSON.stringify({
-      orderId: item.source === "order" ? item.id : (item.orderId || null),
-      unlockId: item.source === "unlock" ? item.id : null,
-      beatId: item.beatId || null,
-      licenseKey: item.licenseKey || "basic" // ✅ add
-    })
-  });
+    const r = await fetch(LICENSE_FN_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type":"application/json",
+        ...(token ? { "Authorization": "Bearer " + token } : {})
+      },
+      body: JSON.stringify({
+        orderId: item.source === "order" ? item.id : (item.orderId || null),
+        unlockId: item.source === "unlock" ? item.id : null,
+        beatId: item.beatId || null,
+        licenseKey: item.licenseKey || "basic"
+      })
+    });
 
-  let data = {};
-  let raw = "";
-  try { data = await r.json(); }
-  catch(e){ raw = await r.text().catch(()=> ""); }
+    let data = {};
+    let raw = "";
+    try { data = await r.json(); }
+    catch(e){ raw = await r.text().catch(()=> ""); }
 
-  if (!r.ok) throw new Error(data?.error || raw || `Download failed (${r.status})`);
-  if (!data?.url) throw new Error("No download URL returned.");
-  return data.url;
-}
-
-async function requestLicensePdfUrl(item){
-  const u = window.FB?.auth?.currentUser;
-  const token = u ? await u.getIdToken().catch(()=>null) : null;
-
-  const r = await fetch(LICENSE_FN_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type":"application/json",
-      ...(token ? { "Authorization": "Bearer " + token } : {})
-    },
-    body: JSON.stringify({
-      orderId: item.source === "order" ? item.id : (item.orderId || null),
-      unlockId: item.source === "unlock" ? item.id : null,
-      beatId: item.beatId || null,
-      licenseKey: item.licenseKey || "basic"
-    })
-  });
-
-  let data = {};
-  let raw = "";
-  try { data = await r.json(); }
-  catch(e){ raw = await r.text().catch(()=> ""); }
-
-  if (!r.ok) throw new Error(data?.error || raw || `License failed (${r.status})`);
-  if (!data?.url) throw new Error("No license PDF URL returned.");
-  return data.url;
-}
+    if (!r.ok) throw new Error(data?.error || raw || `License failed (${r.status})`);
+    if (!data?.url) throw new Error("No license PDF URL returned.");
+    return data.url;
+  }
 
   async function loadAll(){
     setStatus("Loading your purchases…");
