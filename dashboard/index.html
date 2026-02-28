@@ -774,12 +774,19 @@ window.PB_VERIFY_DOMAIN_DNS_URL = "https://verifydomaindns-f65rhsquva-uc.a.run.a
 /* ===========================
    GLOBALS
 =========================== */
-let uploadedArtwork = null, fullAudio = null, previewAudio = null, fullAudioPath null, previewAudioPath = null;
-let beatsData = [], currentAudio = null;
+let uploadedArtwork = null; 
+let fullAudio = null;
+let previewAudio = null;
 let stemsZipUrl = null;
+  
+let fullAudioPath null;
+let previewAudioPath = null;
 let stemsZipPath = null;
+  
+let beatsData = [], currentAudio = null;
 
-let kitCover = null, kitFile = null;
+let kitCover = null;
+let kitFile = null;
 let kitsData = [];
 
 let profilePic = null;
@@ -1554,7 +1561,10 @@ async function publishBeat(){
     return;
   }
 
-  if (!$("exclusiveEnabled").checked) stemsZipUrl = null;
+  if (!$("exclusiveEnabled").checked)
+    stemsZipUrl = null;
+    stemsZipPath = null;
+  }
 
   const publishBtn = $("publishBtn");
   publishBtn.disabled = true;
@@ -1575,7 +1585,18 @@ async function publishBeat(){
       previewAudio,
       producerId: window.auth.currentUser.uid,
 
+      // SECURE DOWNLOAD FIELDS
+      filePath: fullAudioPath || null,
+      previewPath: previewAudioPath || null,
       stemsZipUrl: ($("exclusiveEnabled").checked ? (stemsZipUrl || null) : null),
+      stemsZipPath: ($("exclusiveEnabled").checked ? (stemsZipPath || null) : null),
+
+      // LICENSE PDF PATHS (GLOBAL LICENSES)
+      licensePaths: {
+        basic: "licenses/basic.pdf",
+        premium: "licenses/premium.pdf",
+        exclusive: "licenses/exclusive.pdf"
+      },
 
       published: true,
       licenses: {
@@ -1619,6 +1640,9 @@ function resetUploadForm(){
   fullAudio = null;
   previewAudio = null;
   stemsZipUrl = null;
+  fullAudioPath = null;
+  previewAudioPath = null;
+  stemsZipPath = null;
 
   $("artworkBox").innerHTML = "<span>Artwork Preview</span>";
   $("artworkStatus").innerHTML = "";
