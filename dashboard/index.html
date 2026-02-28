@@ -2251,10 +2251,8 @@ function fillSettingsForm(){
 
   const pic = prof.photoURL || prof.photoUrl || prof.photo || "";
   if (pic){
-    profilePic = pic;
+    profilePicUrl = pic;
     $("profilePicBox").innerHTML = `<img src="${pic}">`;
-  } else if (profilePic){
-    $("profilePicBox").innerHTML = `<img src="${profilePic}">`;
   } else {
     $("profilePicBox").innerHTML = `<span>Profile Picture</span>`;
   }
