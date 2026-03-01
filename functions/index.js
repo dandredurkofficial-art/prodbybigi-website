@@ -2468,7 +2468,7 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
         y,
         size,
         font: isBold ? bold : font,
-        color: rgb(1, 1, 1),
+        color: rgb(0, 0, 0),
       });
       y -= size + 8;
     };
