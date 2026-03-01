@@ -2386,51 +2386,64 @@ window.verifyCustomDomain = verifyCustomDomain;
    PRODUCER SALES (UNLOCKS)
 =========================== */
 
-async function loadProducerSalesFromUnlocks() {
+async function loadProducerSalesFromOrders() {
   const statusEl = document.getElementById("prodSalesStatus");
   const listEl   = document.getElementById("prodSalesList");
-
   if (!statusEl || !listEl) return;
-  if (!window.currentUser) return;
 
   try {
     statusEl.textContent = "Loading sales…";
     listEl.innerHTML = "";
 
-    const uid = window.currentUser.uid;
+    const u = window.currentUser; // you already set this in onAuthStateChanged
+    if (!u?.uid) {
+      statusEl.textContent = "Please sign in.";
+      return;
+    }
 
+    // Query orders for this producer (filter paid on client to avoid index headaches)
     const q = window.query(
-      window.collection(window.db, "unlocks"),
-      window.where("producerId", "==", uid),
-      window.where("status", "==", "unlocked")
+      window.collection(window.db, "orders"),
+      window.where("producerId", "==", u.uid),
+      window.orderBy("createdAt", "desc"),
+      window.limit(50)
     );
 
     const snap = await window.getDocs(q);
-
     const rows = [];
     snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
 
-    rows.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+    // keep only paid/completed
+    const paidRows = rows.filter(o => {
+      const s = String(o.status || o.state || "").toUpperCase();
+      const paidFlag = o.paid === true;
+      return paidFlag || s.includes("PAID") || s.includes("COMPLETED");
+    });
 
-    if (!rows.length) {
+    if (!paidRows.length) {
       statusEl.textContent = "No sales yet.";
       return;
     }
 
-    statusEl.textContent = `Sales (${rows.length})`;
+    statusEl.textContent = `Sales (${paidRows.length})`;
 
-    rows.forEach(it => {
-      const beatTitle  = it.beatTitle || "Beat";
-      const licenseKey = (it.licenseKey || "basic").toUpperCase();
-      const buyerName  = it.buyerName || "Buyer";
-      const buyerEmail = it.buyerEmail || "";
-      const amount     = it.amountUsd ?? it.amount ?? it.amountKes ?? "";
-      const provider   = it.provider || "";
-      const when       = it.createdAt
-        ? new Date(it.createdAt)
-        : null;
+    for (const it of paidRows) {
+      const beatTitle  = it.beatTitle || it.title || "Beat";
+      const licenseKey = String(it.licenseKey || it.license || "basic").toUpperCase();
+
+      const buyerName  = it.buyerName || it.checkoutName || "Buyer";
+      const buyerEmail = it.buyerEmail || it.checkoutEmail || "";
+
+      const amount =
+        it.amountUsd ?? it.amountUSD ?? it.amount ?? it.total ?? it.amountKesPaid ?? it.amountKes ?? "";
+
+      const provider = it.provider || it.providerName || "";
+      const when =
+        it.createdAt?.toDate ? it.createdAt.toDate()
+        : (typeof it.createdAt === "number" ? new Date(it.createdAt) : null);
 
       const div = document.createElement("div");
+      div.className = "sale-row";
       div.innerHTML = `
         <div style="font-weight:800">${beatTitle}</div>
         <div style="opacity:.85">License: ${licenseKey}</div>
@@ -2440,15 +2453,17 @@ async function loadProducerSalesFromUnlocks() {
         <hr style="opacity:.15;margin:12px 0;">
       `;
       listEl.appendChild(div);
-    });
+    }
 
   } catch (err) {
-    console.error("loadProducerSalesFromUnlocks error:", err);
-    statusEl.textContent = "Could not load sales. Check console for index/rules error.";
+    console.error("loadProducerSalesFromOrders error:", err);
+
+    // If it says "requires an index" you'll need to create it.
+    // If it says "permission-denied" you must fix Firestore rules.
+    statusEl.textContent = "Could not load sales (check console: rules/index).";
   }
 }
-
-window.loadProducerSalesFromUnlocks = loadProducerSalesFromUnlocks;
+window.loadProducerSalesFromOrders = loadProducerSalesFromOrders;
 
 /* ===========================
    EXPORT for onclick=""
