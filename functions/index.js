@@ -2463,7 +2463,7 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
     const left = 50;
 
     const draw = (text, size = 12, isBold = false) => {
-      page.drawText(string(text || ""), {
+      page.drawText(String(text || ""), {
         x: left,
         y,
         size,
