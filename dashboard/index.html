@@ -78,6 +78,7 @@
   window.currentProfile = null;
 
   onAuthStateChanged(auth, async (user) => {
+    document.body.classList.remove("auth-ready");
     if (user) {
       window.currentUser = user;
 
@@ -106,6 +107,7 @@
     } else {
       window.currentUser = null;
       window.currentProfile = null;
+      location.replace("/login/");
 
       if (typeof window.refreshProLocks === "function") window.refreshProLocks();
       if (typeof window.loadUpgradeUI === "function") window.loadUpgradeUI();
