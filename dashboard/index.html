@@ -88,9 +88,9 @@
       // only call after functions exist
       if (typeof window.loadBeats === "function") window.loadBeats();
       if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
-      if (typeof window.loadProducerSalesFromOrders === "function") window.loadProducerSalesFromOrders();
       if (typeof window.loadAdvancedAnalyticsReal === "function") window.loadAdvancedAnalyticsReal();
       if (typeof window.loadPayoutUI === "function") window.loadPayoutUI();
+      if (typeof window.loadProducerSalesFromUnlocks === "function") window.loadProducerSalesFromUnlocks();
 
       if (typeof window.loadMarketingCampaigns === "function") window.loadMarketingCampaigns();
 
@@ -2382,10 +2382,10 @@ window.saveCustomDomain = saveCustomDomain;
 window.verifyCustomDomain = verifyCustomDomain;
 
 /* ===========================
-   PRODUCER SALES (ORDERS)
+   PRODUCER SALES (UNLOCKS)
 =========================== */
 
-async function loadProducerSalesFromOrders() {
+async function loadProducerSalesFromUnlocks() {
   const statusEl = document.getElementById("prodSalesStatus");
   const listEl   = document.getElementById("prodSalesList");
   if (!statusEl || !listEl) return;
@@ -2394,58 +2394,48 @@ async function loadProducerSalesFromOrders() {
     statusEl.textContent = "Loading sales…";
     listEl.innerHTML = "";
 
-    const u = window.currentUser; // you already set this in onAuthStateChanged
+    const u = window.currentUser;
     if (!u?.uid) {
       statusEl.textContent = "Please sign in.";
       return;
     }
 
-    // Query orders for this producer (filter paid on client to avoid index headaches)
-    const q = window.query(
-      window.collection(window.db, "orders"),
+    // ✅ unlocks for this producer
+    // NOTE: requires unlock docs to contain producerId (we'll fix in functions next)
+    const qy = window.query(
+      window.collection(window.db, "unlocks"),
       window.where("producerId", "==", u.uid),
       window.orderBy("createdAt", "desc"),
       window.limit(50)
     );
 
-    const snap = await window.getDocs(q);
-    const rows = [];
-    snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+    const snap = await window.getDocs(qy);
+    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    // keep only paid/completed
-    const paidRows = rows.filter(o => {
-      const s = String(o.status || o.state || "").toUpperCase();
-      const paidFlag = o.paid === true;
-      return paidFlag || s.includes("PAID") || s.includes("COMPLETED");
-    });
-
-    if (!paidRows.length) {
+    if (!rows.length) {
       statusEl.textContent = "No sales yet.";
       return;
     }
 
-    statusEl.textContent = `Sales (${paidRows.length})`;
+    statusEl.textContent = `Sales (${rows.length})`;
 
-    for (const it of paidRows) {
-      const beatTitle  = it.beatTitle || it.title || "Beat";
-      const licenseKey = String(it.licenseKey || it.license || "basic").toUpperCase();
-
-      const buyerName  = it.buyerName || it.checkoutName || "Buyer";
-      const buyerEmail = it.buyerEmail || it.checkoutEmail || "";
-
-      const amount =
-        it.amountUsd ?? it.amountUSD ?? it.amount ?? it.total ?? it.amountKesPaid ?? it.amountKes ?? "";
-
-      const provider = it.provider || it.providerName || "";
+    for (const it of rows) {
+      const beatTitle   = it.beatTitle || "Beat";
+      const licenseKey  = String(it.licenseKey || "basic").toUpperCase();
+      const buyerName   = it.buyerName || "Buyer";
+      const buyerEmail  = it.buyerEmail || "";
+      const amount      = it.amountUsd ?? it.amount ?? it.amountKes ?? "";
+      const provider    = it.provider || it.providerName || "";
+      const status      = it.status || (it.paid ? "PAID" : "");
       const when =
-        it.createdAt?.toDate ? it.createdAt.toDate()
-        : (typeof it.createdAt === "number" ? new Date(it.createdAt) : null);
+        it.createdAt?.toDate ? it.createdAt.toDate() :
+        (typeof it.createdAt === "number" ? new Date(it.createdAt) : null);
 
       const div = document.createElement("div");
       div.className = "sale-row";
       div.innerHTML = `
         <div style="font-weight:800">${beatTitle}</div>
-        <div style="opacity:.85">License: ${licenseKey}</div>
+        <div style="opacity:.85">License: ${licenseKey} ${status ? " • " + status : ""}</div>
         <div style="opacity:.85">Buyer: ${buyerName}${buyerEmail ? " • " + buyerEmail : ""}</div>
         <div style="opacity:.85">Amount: ${amount ? amount : "N/A"} ${provider ? " • " + provider : ""}</div>
         <div style="opacity:.7;font-size:12px">${when ? when.toLocaleString() : ""}</div>
@@ -2453,16 +2443,13 @@ async function loadProducerSalesFromOrders() {
       `;
       listEl.appendChild(div);
     }
-
   } catch (err) {
-    console.error("loadProducerSalesFromOrders error:", err);
-
-    // If it says "requires an index" you'll need to create it.
-    // If it says "permission-denied" you must fix Firestore rules.
+    console.error("loadProducerSalesFromUnlocks error:", err);
     statusEl.textContent = "Could not load sales (check console: rules/index).";
   }
 }
-window.loadProducerSalesFromOrders = loadProducerSalesFromOrders;
+
+window.loadProducerSalesFromUnlocks = loadProducerSalesFromUnlocks;
 
 /* ===========================
    EXPORT for onclick=""
