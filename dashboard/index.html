@@ -2375,6 +2375,74 @@ window.saveCustomDomain = saveCustomDomain;
 window.verifyCustomDomain = verifyCustomDomain;
 
 /* ===========================
+   PRODUCER SALES (UNLOCKS)
+=========================== */
+
+async function loadProducerSalesFromUnlocks() {
+  const statusEl = document.getElementById("prodSalesStatus");
+  const listEl   = document.getElementById("prodSalesList");
+
+  if (!statusEl || !listEl) return;
+  if (!window.currentUser) return;
+
+  try {
+    statusEl.textContent = "Loading sales…";
+    listEl.innerHTML = "";
+
+    const uid = window.currentUser.uid;
+
+    const q = window.query(
+      window.collection(window.db, "unlocks"),
+      window.where("producerId", "==", uid),
+      window.where("status", "==", "unlocked")
+    );
+
+    const snap = await window.getDocs(q);
+
+    const rows = [];
+    snap.forEach(d => rows.push({ id: d.id, ...d.data() }));
+
+    rows.sort((a,b)=> (b.createdAt||0) - (a.createdAt||0));
+
+    if (!rows.length) {
+      statusEl.textContent = "No sales yet.";
+      return;
+    }
+
+    statusEl.textContent = `Sales (${rows.length})`;
+
+    rows.forEach(it => {
+      const beatTitle  = it.beatTitle || "Beat";
+      const licenseKey = (it.licenseKey || "basic").toUpperCase();
+      const buyerName  = it.buyerName || "Buyer";
+      const buyerEmail = it.buyerEmail || "";
+      const amount     = it.amountUsd ?? it.amount ?? it.amountKes ?? "";
+      const provider   = it.provider || "";
+      const when       = it.createdAt
+        ? new Date(it.createdAt)
+        : null;
+
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <div style="font-weight:800">${beatTitle}</div>
+        <div style="opacity:.85">License: ${licenseKey}</div>
+        <div style="opacity:.85">Buyer: ${buyerName}${buyerEmail ? " • " + buyerEmail : ""}</div>
+        <div style="opacity:.85">Amount: ${amount ? amount : "N/A"} ${provider ? " • " + provider : ""}</div>
+        <div style="opacity:.7;font-size:12px">${when ? when.toLocaleString() : ""}</div>
+        <hr style="opacity:.15;margin:12px 0;">
+      `;
+      listEl.appendChild(div);
+    });
+
+  } catch (err) {
+    console.error("loadProducerSalesFromUnlocks error:", err);
+    statusEl.textContent = "Could not load sales. Check console for index/rules error.";
+  }
+}
+
+window.loadProducerSalesFromUnlocks = loadProducerSalesFromUnlocks;
+
+/* ===========================
    EXPORT for onclick=""
 =========================== */
 window.uploadArtwork = uploadArtwork;
