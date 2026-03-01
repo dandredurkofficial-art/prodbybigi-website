@@ -1343,6 +1343,39 @@ exports.paypalWebhook = onRequest(
       const orderRef = db.collection("orders").doc(orderId);
       const existing = await orderRef.get();
 
+      // buyer data (paypal)
+      const buyerEmail = safeStr(resource?.payer?.email_address || "");
+      const payerName =
+        safeStr(resource?.payer?.name?.given_name || "") +
+        (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
+      const buyerName = safeStr(payerName).trim();
+
+      // beat + producer names
+      let beatTitle = "";
+      let producerName = "";
+
+      if (beatId) {
+        const beatSnap = await db.collection("beats").doc(beatId).get();
+        if (beatSnap.exists) {
+          const b = beatSnap.data() || {};
+          beatTitle = safeStr(b.title || "Beat");
+          const pid = safeStr(producerId || b.producerId || "");
+
+          // if you store producerName on beat, use it
+          producerName = safeStr(b.producerName || "");
+
+          // fallback: load producer profile
+          if (!producerName && pid) {
+             const prodSnap = await db.collection("users").doc(pid).get().catch(() => null);
+          if (prodSnap && prodSnap.exists) {
+            const pd = prodSnap.data() || {};
+            producerName = safeStr(pd.displayName || pd.name || "");
+          }
+        }
+      }
+    }
+    if (!producerName) producerName = "Producer";
+
       if (!existing.exists) {
         await orderRef.set({
           orderId,
@@ -1377,6 +1410,13 @@ exports.paypalWebhook = onRequest(
         const unlockId = `${orderId}__beat__${beatId}__${licenseKey}`;
         await db.collection("unlocks").doc(unlockId).set(
           {
+          buyerEmail: buyerEmail || null,
+            buyerName: buyerName || null,
+            beatTitle: beatTitle || null,
+            producerId: producerId || null,
+            producerName: producerName || null,
+            paid: true,
+            status: "unlocked",
             unlockId,
             orderId,
             beatId,
