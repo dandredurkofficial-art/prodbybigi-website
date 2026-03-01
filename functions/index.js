@@ -2424,8 +2424,8 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
     const beat = beatSnap.data() || {};
 
     // ---------- RESOLVE DATA (checkout name/email, producer name) ----------
-    const buyerName = safeStr(unlockData.buyerName || orderData.buyerName || unlockData.checkoutName || "");
-    const buyerEmail = safeStr(unlockData.buyerEmail || orderData.buyerEmail || unlockData.checkoutEmail || "");
+    const buyerName = safeStr(unlockData.buyerName || unlockData.checkoutName || "");
+    const buyerEmail = safeStr(unlockData.buyerEmail || unlockData.checkoutEmail || "");
     const beatTitle = safeStr(unlockData.beatTitle || beat.title || "Beat");
     const producerId = safeStr(unlockData.producerId || beat.producerId || "");
     let producerName = safeStr(unlockData.producerName || beat.producerName || "");
