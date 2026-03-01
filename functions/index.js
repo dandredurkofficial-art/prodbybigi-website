@@ -1713,7 +1713,9 @@ exports.stkpush = onRequest(
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
       beatId,
+      beatTitle,
       buyerId,
+      buyerName: buyerName || null,
       licenseKey: String(licenseKey || "basic"),
       phone: msisdn,
       amountUsd: usd,
