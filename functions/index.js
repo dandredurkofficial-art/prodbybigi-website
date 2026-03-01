@@ -1089,9 +1089,36 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
   // Save main order doc
   const orderRef = db.collection("orders").doc(orderId);
 
+  // buyer details (from paypal capture)
+  const buyerEmail = payerEmail || null;
+
+  // try to get buyer name from paypal if present
+  const payerName =
+    safeStr(resource?.payer?.name?.given_name || "") +
+    (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
+  const buyerName = safeStr(payerName).trim() || null;
+
+  const beatTitle = safeStr(it.title || beatData?.title || "Beat");
+
+  // producer name: prefer beatData.producerName, else fetch users/{producerId}
+  let producerName = safeStr(beatData?.producerName || "");
+  const finalProducerId = safeStr(producerId || beatData?.producerId || "");
+  if (!producerName && finalProducerId) {
+    const prodSnap = await db.collection("users").doc(finalProducerId).get().catch(() => null);
+    if (prodSnap && prodSnap.exists) {
+      const pd = prodSnap.data() || {};
+      producerName = safeStr(pd.displayName || pd.name || "");
+    }
+  }
+  if (!producerName) producerName = "Producer";
+
   // ✅ UPDATED (adds buyerId)
   await orderRef.set(
     {
+      buyerName,
+      buyerEmail,
+      beatTitle,
+      producerName,
       orderId,
       provider: "paypal",
       type: "cart",
@@ -1153,34 +1180,41 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
 
     // ✅ UPDATED unlock doc (adds buyerId, producerId, downloadPath, audioUrl, status)
     await unlockRef.set(
-      {
-        unlockId,
-        orderId,
-        cartId,
-        provider: "paypal",
-        type,
+    {
+      unlockId,
+      orderId,
+      cartId,
+      provider: "paypal",
+      type,
 
-        buyerId: buyerId || null, // ✅ ADD
-        producerId: producerId || beatData?.producerId || null, // ✅ ADD
+      buyerId: buyerId || null,
+      buyerName,
+      buyerEmail,
 
-        beatId: type === "beat" ? id : null,
-        kitId: type === "soundkit" ? id : null,
-        licenseKey: licenseKey || null,
+      producerId: finalProducerId || null,
+      producerName,
 
-        downloadPath, // ✅ ADD
-        audioUrl,     // ✅ ADD
+      beatId: type === "beat" ? id : null,
+      beatTitle,
 
-        qty,
-        amount: lineTotal,
-        receipt: safeStr(resource?.id),
-        payerEmail,
-        transactionDate: Date.now(),
-        status: "unlocked", // ✅ ADD (optional but helpful)
+      kitId: type === "soundkit" ? id : null,
+      licenseKey: licenseKey || null,
 
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-      },
-      { merge: true }
+      downloadPath,
+      audioUrl,
+
+      qty,
+      amount: lineTotal,
+      receipt: safeStr(resource?.id),
+      payerEmail,
+      transactionDate: Date.now(),
+      status: "unlocked",
+      paid: true,
+
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    },
+    { merge: true }
     );
 
     // credit producer (idempotent per unlock)
