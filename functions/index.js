@@ -1710,12 +1710,60 @@ exports.stkpush = onRequest(
       return res.status(400).json({ error: "KES amount invalid" });
     }
 
+    // ✅ fetch beat + producer info
+    const beatSnap = await db.collection("beats").doc(String(beatId)).get();
+    if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
+    const beatData = beatSnap.data() || {};
+
+    const producerId = String(beatData.producerId || "").trim();
+    const beatTitle = String(beatData.title || "Beat").trim();
+
+    // ✅ fetch buyer profile (Auth is most reliable for email)
+    let buyerName = "";
+    let buyerEmail = "";
+
+    // 1) Try Firestore users/{buyerId}
+    try {
+      const uSnap = await db.collection("users").doc(String(buyerId)).get();
+      if (uSnap.exists) {
+        const u = uSnap.data() || {};
+        buyerName = String(u.displayName || u.name || "").trim();
+        buyerEmail = String(u.email || "").trim();
+      }
+    } catch (_) {}
+
+    // 2) Fallback to Firebase Auth user record
+    try {
+      const au = await admin.auth().getUser(String(buyerId));
+      buyerEmail = buyerEmail || String(au.email || "").trim();
+      buyerName =
+        buyerName ||
+        String(au.displayName || "").trim() ||
+        String((au.providerData && au.providerData[0]?.displayName) || "").trim();
+    } catch (_) {}
+
+    // ✅ fetch producer name (from beat first, else users/{producerId})
+    let producerName = String(beatData.producerName || "").trim();
+    if (!producerName && producerId) {
+      try {
+        const pSnap = await db.collection("users").doc(producerId).get();
+        if (pSnap.exists) {
+          const p = pSnap.data() || {};
+          producerName = String(p.displayName || p.name || "").trim();
+        }
+      } catch (_) {}
+    }
+    if (!producerName) producerName = "Producer";
+
     const orderRef = db.collection("orders").doc();
     await orderRef.set({
       beatId,
       beatTitle,
       buyerId,
       buyerName: buyerName || null,
+      buyerEmail: buyerEmail || null,
+      producerId: producerId || null,
+      producerName: producerName || null,
       licenseKey: String(licenseKey || "basic"),
       phone: msisdn,
       amountUsd: usd,
