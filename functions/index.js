@@ -1807,23 +1807,28 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
     } = callback;
 
     const metadata = {};
-    CallbackMetadata?.Item?.forEach((item) => {
+    (CallbackMetadata?.Item || []).forEach((item) => {
       metadata[item.Name] = item.Value ?? null;
     });
 
-    await db.collection("mpesaPayments").doc(CheckoutRequestID).set({
-      checkoutRequestId: CheckoutRequestID,
-      merchantRequestId: MerchantRequestID || null,
-      resultCode: ResultCode,
-      resultDesc: ResultDesc,
-      amount: metadata.Amount || null,
-      phone: metadata.PhoneNumber || null,
-      receipt: metadata.MpesaReceiptNumber || null,
-      transactionDate: metadata.TransactionDate || null,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      raw: callback,
-    });
+    // Log raw MPesa payment callback
+    await db.collection("mpesaPayments").doc(String(CheckoutRequestID)).set(
+      {
+        checkoutRequestId: CheckoutRequestID,
+        merchantRequestId: MerchantRequestID || null,
+        resultCode: ResultCode,
+        resultDesc: ResultDesc,
+        amount: metadata.Amount || null,
+        phone: metadata.PhoneNumber || null,
+        receipt: metadata.MpesaReceiptNumber || null,
+        transactionDate: metadata.TransactionDate || null,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        raw: callback,
+      },
+      { merge: true }
+    );
 
+    // Find related order
     const orderSnap = await db
       .collection("orders")
       .where("checkoutRequestId", "==", CheckoutRequestID)
@@ -1834,6 +1839,7 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
       const orderDoc = orderSnap.docs[0];
       const paid = Number(ResultCode) === 0;
 
+      // Update order status
       await orderDoc.ref.set(
         {
           status: paid ? "PAID" : "FAILED",
@@ -1847,66 +1853,125 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
       );
 
       if (paid) {
-        // ✅ get order fields
+        // ✅ order fields
         const o = orderDoc.data() || {};
-        const beatId = o.beatId;
-        const buyerId = o.buyerId || null;
-        const licenseKey = o.licenseKey || "basic";
-        const producerId = o.producerId || null;
+        const beatId = String(o.beatId || "");
+        const buyerId = o.buyerId ? String(o.buyerId) : null;
 
-        // ✅ fetch beat to get download info (adjust collection name if yours differs)
+        // IMPORTANT:
+        // If you want the STK license to show which license was bought,
+        // your STK "create payment" flow must store licenseKey in the order doc.
+        const licenseKey = String(o.licenseKey || "basic").toLowerCase();
+
+        // If your order doesn't store producerId, we can read it from beatData
+        const producerIdFromOrder = o.producerId ? String(o.producerId) : "";
+
+        // ✅ fetch beat
         let beatData = null;
         if (beatId) {
-          const beatSnap = await db.collection("beats").doc(String(beatId)).get();
+          const beatSnap = await db.collection("beats").doc(beatId).get();
           if (beatSnap.exists) beatData = beatSnap.data() || null;
         }
 
-        // ✅ IMPORTANT:
-        // Store a REAL download reference, not "/beat/?id=..."
-        // Prefer downloadPath (Storage path) if you have it.
+        // ✅ download refs
         const downloadPath =
-          o.downloadPath ||
-          beatData?.downloadPath ||                // recommended field if you store it
-          beatData?.filePath ||                    // fallback
+          (o.downloadPath ? String(o.downloadPath) : "") ||
+          (beatData?.downloadPath ? String(beatData.downloadPath) : "") ||
+          (beatData?.filePath ? String(beatData.filePath) : "") ||
           null;
 
         const audioUrl =
-          o.audioUrl ||
-          beatData?.audio ||                        // if this is a direct downloadable URL
+          (o.audioUrl ? String(o.audioUrl) : "") ||
+          (beatData?.audio ? String(beatData.audio) : "") ||
           null;
 
-        await db.collection("unlocks").doc(orderDoc.id).set({
-          unlockId: orderDoc.id,
-          orderId: orderDoc.id,
+        // ✅ license display fields (for PDF)
+        const beatTitle =
+          (o.beatTitle ? String(o.beatTitle) : "") ||
+          (beatData?.title ? String(beatData.title) : "") ||
+          "Beat";
 
-          buyerId,
-          beatId: beatId || null,
-          producerId: producerId || beatData?.producerId || null,
-          licenseKey,
+        const finalProducerId =
+          producerIdFromOrder || (beatData?.producerId ? String(beatData.producerId) : "") || "";
 
-          phone: metadata.PhoneNumber || null,
-          amountKes: metadata.Amount || null,
-          receipt: metadata.MpesaReceiptNumber || null,
-          transactionDate: metadata.TransactionDate || null,
-          checkoutRequestId: CheckoutRequestID,
+        let producerName =
+          (o.producerName ? String(o.producerName) : "") ||
+          (beatData?.producerName ? String(beatData.producerName) : "");
 
-          // ✅ these two are what your dashboard needs:
-          downloadPath,     // best: storage path → later you sign it
-          audioUrl,         // optional: if audio is already a direct downloadable URL
+        if (!producerName && finalProducerId) {
+          const prodSnap = await db.collection("users").doc(finalProducerId).get().catch(() => null);
+          if (prodSnap && prodSnap.exists) {
+            const pd = prodSnap.data() || {};
+            producerName = String(pd.displayName || pd.name || "");
+          }
+        }
+        if (!producerName) producerName = "Producer";
 
-          status: "unlocked",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+        // Buyer name/email: MPesa doesn't provide these, so pull from users/{buyerId}
+        let buyerName =
+          (o.buyerName ? String(o.buyerName) : "") ||
+          "";
+        let buyerEmail =
+          (o.buyerEmail ? String(o.buyerEmail) : "") ||
+          "";
 
-        // also mark order unlocked (optional but cleaner)
-        await orderDoc.ref.set({
-          unlocked: true,
-          unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, 
-        { merge: true });
-      };
+        if ((!buyerName || !buyerEmail) && buyerId) {
+          const buyerSnap = await db.collection("users").doc(buyerId).get().catch(() => null);
+          if (buyerSnap && buyerSnap.exists) {
+            const bu = buyerSnap.data() || {};
+            if (!buyerName) buyerName = String(bu.displayName || bu.name || "");
+            if (!buyerEmail) buyerEmail = String(bu.email || "");
+          }
+        }
+
+        // ✅ Create/Update unlock (MPesa)
+        await db.collection("unlocks").doc(orderDoc.id).set(
+          {
+            unlockId: orderDoc.id,
+            orderId: orderDoc.id,
+            provider: "MPESA_STK",
+
+            paid: true, // ✅ helpful for licenseDownload checks
+            status: "unlocked",
+
+            buyerId,
+            buyerName: buyerName || null,   // ✅ for license PDF
+            buyerEmail: buyerEmail || null, // ✅ for license PDF
+
+            beatId: beatId || null,
+            beatTitle: beatTitle || null,   // ✅ for license PDF
+
+            producerId: finalProducerId || null,
+            producerName: producerName || null, // ✅ for license PDF
+
+            licenseKey: licenseKey || "basic", // ✅ for license PDF
+
+            phone: metadata.PhoneNumber || null,
+            amountKes: metadata.Amount || null,
+            receipt: metadata.MpesaReceiptNumber || null,
+            transactionDate: metadata.TransactionDate || null,
+            checkoutRequestId: CheckoutRequestID,
+
+            // ✅ dashboard download fields
+            downloadPath,
+            audioUrl,
+
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+
+        // ✅ mark order unlocked (optional)
+        await orderDoc.ref.set(
+          {
+            unlocked: true,
+            unlockedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
     }
 
     return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
