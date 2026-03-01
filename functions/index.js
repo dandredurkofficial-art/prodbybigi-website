@@ -2423,9 +2423,46 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
     if (!beatSnap.exists) return res.status(404).json({ error: "Beat not found" });
     const beat = beatSnap.data() || {};
 
-    // ---------- RESOLVE DATA (checkout name/email, producer name) ----------
-    const buyerName = safeStr(unlockData.buyerName || unlockData.checkoutName || "");
-    const buyerEmail = safeStr(unlockData.buyerEmail || unlockData.checkoutEmail || "");
+    // ---------- GET ORDER (optional) ----------
+    let orderData = {};
+    const maybeOrderId = safeStr(unlockData.orderId || orderId || "");
+    if (maybeOrderId) {
+      const oSnap = await db.collection("orders").doc(maybeOrderId).get().catch(() => null);
+      if (oSnap && oSnap.exists) orderData = oSnap.data() || {};
+    }
+
+    // ---------- GET BUYER PROFILE (Auth + users fallback) ----------
+    let authUser = null;
+    try { authUser = await admin.auth().getUser(buyerId); } catch (_) {}
+
+    let userProfile = {};
+    try {
+      const uSnap = await db.collection("users").doc(buyerId).get();
+      if (uSnap.exists) userProfile = uSnap.data() || {};
+    } catch (_) {}
+
+    // ---------- RESOLVE DATA (buyer, producer, beat) ----------
+    const buyerName = safeStr(
+      unlockData.buyerName ||
+      orderData.buyerName ||
+      orderData.checkoutName ||
+      unlockData.checkoutName ||
+      userProfile.displayName ||
+      userProfile.name ||
+      authUser?.displayName ||
+      ""
+    );
+
+    const buyerEmail = safeStr(
+      unlockData.buyerEmail ||
+      orderData.buyerEmail ||
+      orderData.checkoutEmail ||
+      unlockData.checkoutEmail ||
+      userProfile.email ||
+      authUser?.email ||
+      ""
+    );
+
     const beatTitle = safeStr(unlockData.beatTitle || beat.title || "Beat");
     const producerId = safeStr(unlockData.producerId || beat.producerId || "");
     let producerName = safeStr(unlockData.producerName || beat.producerName || "");
