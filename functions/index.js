@@ -1676,7 +1676,7 @@ exports.stkpush = onRequest(
       if (req.method !== "POST")
         return res.status(405).json({ error: "Use POST" });
 
-    const { phone, amount, amountUsd, beatId, buyerId } = req.body || {};
+    const { phone, amount, amountUsd, beatId, buyerId, licenseKey } = req.body || {};
     if (!buyerId) return res.status(400).json({ error: "buyerId is required" });
     const inputAmountUsd = amountUsd ?? amount;
 
@@ -1714,6 +1714,7 @@ exports.stkpush = onRequest(
     await orderRef.set({
       beatId,
       buyerId,
+      licenseKey: String(licenseKey || "basic"),
       phone: msisdn,
       amountUsd: usd,
       currency: currency,

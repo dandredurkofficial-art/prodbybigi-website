@@ -605,6 +605,7 @@
 
     if (!r.ok) throw new Error(data?.error || raw || `License failed (${r.status})`);
     if (!data?.url) throw new Error("No license PDF URL returned.");
+    
     return data.url;
   }
 
