@@ -397,10 +397,6 @@ function c2bRegisterUrl() {
   return `${darajaBase()}/mpesa/c2b/v1/registerurl`;
 }
 
-function b2cPaymentUrl() {
-  return `${darajaBase()}/mpesa/b2c/v1/paymentrequest`;
-}
-
 function normalizePhone(phone) {
   let p = safeStr(phone).trim().replace(/\s+/g, "");
   if (p.startsWith("+")) p = p.slice(1);
@@ -409,21 +405,55 @@ function normalizePhone(phone) {
   return p;
 }
 
-async function getAccessToken(consumerKey, consumerSecret) {
+async function getDarajaToken({ consumerKey, consumerSecret }) {
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
-
-  const res = await fetchFn(oauthUrl(), {
-    method: "GET",
+  const r = await fetch(`${DARAJA_BASE}/oauth/v1/generate?grant_type=client_credentials`, {
     headers: { Authorization: `Basic ${auth}` },
   });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.access_token) throw new Error(j.errorMessage || "Failed to get Daraja token");
+  return j.access_token;
+}
 
-  if (!res.ok) {
-    const txt = await res.text();
-    throw new Error(`OAuth failed: ${res.status} ${txt}`);
-  }
+// Helper: call B2C
+async function callB2C({
+  token,
+  shortcode,
+  initiatorName,
+  securityCredential,
+  amountKes,
+  phone2547,
+  resultUrl,
+  timeoutUrl,
+  remarks,   
+  occassion,
+  commandId,
+}) {
+  const payload = {
+    InitiatorName: initiatorName,
+    SecurityCredential: securityCredential,
+    CommandID: commandId || "BusinessPayment",
+    Amount: Number(amountKes),
+    PartyA: shortcode,
+    PartyB: phone2547, // 2547xxxxxxxx
+    Remarks: remarks || "Withdrawal",
+    QueueTimeOutURL: timeoutUrl,
+    ResultURL: resultUrl,
+    Occassion: occassion || "Audiory",
+  };
 
-  const data = await res.json();
-  return data.access_token;
+  const r = await fetch(`${DARAJA_BASE}/mpesa/b2c/v3/paymentrequest`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.errorMessage || j.ResponseDescription || "B2C request failed");
+  return j;
 }
 
 /* =========================================================
