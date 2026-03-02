@@ -2241,20 +2241,55 @@ exports.b2cPay = onRequest(
 );
 
 // ResultURL callback
-exports.mpesaB2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    // Safaricom sends JSON
-    const body = req.body;
-    console.log("B2C RESULT:", JSON.stringify(body));
+exports.mpesaB2cResult = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      const body = req.body;
+      console.log("B2C RESULT:", JSON.stringify(body));
 
-    // TODO: save to Firestore (payoutsRequests/{id} or payouts/{id})
-    // best: use OriginatorConversationID / ConversationID to match your request
+      const result = body?.Result || {};
+      const originatorConversationId = result?.OriginatorConversationID || "";
+      const conversationId = result?.ConversationID || "";
+      const transactionId = result?.TransactionID || "";
+      const resultCode = result?.ResultCode;
+      const resultDesc = result?.ResultDesc || "";
 
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  } catch (e) {
-    console.error(e);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  }
+      // Find payout request by OriginatorConversationID
+      if (originatorConversationId) {
+        const q = await db
+          .collection("payoutsRequests")
+          .where("mpesa.originatorConversationId", "==", originatorConversationId)
+          .limit(1)
+          .get();
+
+        if (!q.empty) {
+          const ref = q.docs[0].ref;
+          const ok = String(resultCode) === "0";
+
+          await ref.set(
+            {
+              status: ok ? "success" : "failed",
+              updatedAt: Date.now(),
+              mpesa: {
+                conversationId,
+                transactionId,
+                resultCode,
+                resultDesc,
+                rawResult: body,
+              },
+            },
+            { merge: true }
+          );
+        }
+      }
+
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    } catch (e) {
+      console.error("mpesaB2cResult error:", e);
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    }
+   }
 });
 
 // TimeoutURL callback
