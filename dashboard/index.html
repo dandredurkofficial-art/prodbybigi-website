@@ -1035,15 +1035,17 @@ function getProducerDisplayName(){
     : ((prof.firstName || prof.lastName) ? `${prof.firstName||""} ${prof.lastName||""}`.trim() : "");
   return name || ("Prod. " + String(window.auth?.currentUser?.uid || "").slice(0,8));
 }
-function getWalletBalance(){
-  const prof = window.currentProfile || {};
-  const v = prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? prof.earnings ?? 0;
-  const n = Number(v || 0);
-  return isFinite(n) ? n : 0;
+async function getProducerWalletDoc() {
+  const u = window.currentUser;
+  if (!u?.uid) return null;
+  const ref = window.doc(window.db, "wallets", u.uid);
+  const snap = await window.getDoc(ref);
+  return snap.exists() ? snap.data() : { lifetimeUsd: 0, availableUsd: 0 };
 }
-function money(n){
-  const v = Number(n || 0);
-  return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
+
+function walletNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
 }
 function pickFile(accept){
   return new Promise((resolve)=>{
@@ -1775,23 +1777,14 @@ async function loadDashboardStats(){
       if ($("statKits")) $("statKits").textContent = String(ksnap.size || 0);
     }
 
-    let sales = 0;
-    try{
-      const qo = window.query(window.collection(window.db,"orders"), window.where("producerId","==",window.currentUser.uid));
-      const osnap = await window.getDocs(qo);
-      osnap.forEach(d=>{
-        const o = d.data() || {};
-        const amt = Number(o.amount ?? o.total ?? o.price ?? 0) || 0;
-        const status = String(o.status ?? o.state ?? "").toLowerCase();
-        if (!status || status.includes("completed") || status.includes("paid")) sales += amt;
-      });
-    }catch(e){}
+    // ✅ REAL MONEY from wallets/{producerId}
+    const w = await getProducerWalletDoc();
+    const totalSalesUsd = walletNumber(w?.lifetimeUsd);
+    const balUsd = walletNumber(w?.availableUsd);
 
-    if ($("totalSales")) $("totalSales").textContent = money(sales);
-
-    const bal = getWalletBalance();
-    if ($("availableBalance")) $("availableBalance").textContent = money(bal);
-    if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
+    if ($("totalSales")) $("totalSales").textContent = money(totalSalesUsd);
+    if ($("availableBalance")) $("availableBalance").textContent = money(balUsd);
+    if ($("payoutBalance")) $("payoutBalance").textContent = money(balUsd);
 
     refreshProLocks();
   }catch(e){}
@@ -2017,7 +2010,7 @@ window.loadUpgradeUI = loadUpgradeUI;
 /* ===========================
    FINANCE UI + PRODUCTION WITHDRAW REQUEST
 =========================== */
-function loadPayoutUI(){
+async function loadPayoutUI(){
   const prof = window.currentProfile || {};
   const loc = String(prof.location || "").toLowerCase();
   const isKenya = loc.includes("kenya") || loc.includes("ke") || loc.includes("nairobi") || loc.includes("mombasa");
@@ -2035,7 +2028,8 @@ function loadPayoutUI(){
     if (!isKenya) method.value = "paypal";
   }
 
-  const bal = getWalletBalance();
+  const w = await getProducerWalletDoc();
+  const bal = walletNumber(w?.availableUsd);
   if ($("payoutBalance")) $("payoutBalance").textContent = money(bal);
 }
 window.loadPayoutUI = loadPayoutUI;
@@ -2066,7 +2060,7 @@ document.addEventListener("click", async (e)=>{
 
   try{
     // ✅ Production: create payout request in Firestore
-    await window.addDoc(window.collection(window.db, "payoutRequests"), {
+    await window.addDoc(window.collection(window.db, "payouts"), { ... })
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       method,
@@ -2083,6 +2077,11 @@ document.addEventListener("click", async (e)=>{
 
     $("withdrawAmount").value = "";
     $("withdrawDestination").value = "";
+
+    // ✅ refresh balances on screen
+    await loadPayoutUI();
+    await loadDashboardStats();
+  
   }catch(err){
     if (status) status.style.color = "#ef4444";
     if (status) status.textContent = "❌ Request failed: " + (err?.message || err);
