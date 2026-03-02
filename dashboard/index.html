@@ -2048,7 +2048,9 @@ document.addEventListener("click", async (e)=>{
   if (!amount || amount <= 0) return alert("Enter a valid amount");
   if (!dest) return alert("Enter PayPal email or M-Pesa phone");
 
-  const bal = getWalletBalance();
+  const w = await getProducerWalletDoc();
+  const bal = walletNumber(w?.availableUsd);
+
   if (bal <= 0 || amount > bal){
     if (status) status.style.color = "#ef4444";
     if (status) status.textContent = "❌ Insufficient balance for this withdrawal.";
@@ -2060,7 +2062,7 @@ document.addEventListener("click", async (e)=>{
 
   try{
     // ✅ Production: create payout request in Firestore
-    await window.addDoc(window.collection(window.db, "payouts"), { ... })
+    await window.addDoc(window.collection(window.db, "payoutsRequests"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       method,
