@@ -2329,6 +2329,104 @@ exports.B2cTimeout = onRequest(
   }
 });
 
+exports.processPayoutRequest = onDocumentCreated(
+  {
+    region: "us-central1",
+    document: "payoutsRequests/{requestId}",
+    secrets: [
+      MPESA_CONSUMER_KEY,
+      MPESA_CONSUMER_SECRET,
+      B2C_SHORTCODE,
+      B2C_INITIATOR_NAME,
+      B2C_SECURITY_CREDENTIAL,
+    ],
+  },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const data = snap.data() || {};
+    const ref = snap.ref;
+
+    // Only handle M-Pesa requests in "requested" state
+    if (data.method !== "mpesa") return;
+    if (data.status !== "requested") return;
+
+    // Basic validation
+    const amountKes = Number(data.amountKes);
+    const phone = String(data.destination || "").trim(); // expect 2547...
+    if (!amountKes || amountKes <= 0) {
+      await ref.set({ status: "failed", failReason: "Invalid amountKes", updatedAt: Date.now() }, { merge: true });
+      return;
+    }
+    if (!/^2547\d{8}$/.test(phone)) {
+      await ref.set({ status: "failed", failReason: "Invalid destination phone (use 2547XXXXXXXX)", updatedAt: Date.now() }, { merge: true });
+      return;
+    }
+
+    // Prevent double-processing
+    await ref.set({ status: "processing", updatedAt: Date.now() }, { merge: true });
+
+    try {
+      const consumerKey = MPESA_CONSUMER_KEY.value();
+      const consumerSecret = MPESA_CONSUMER_SECRET.value();
+
+      const token = await getDarajaToken({ consumerKey, consumerSecret });
+
+      // Build callback URLs (YOUR deployed function URLs)
+      const resultUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cResult`;
+      const timeoutUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cTimeout`;
+
+      const shortcode = MPESA_B2C_SHORTCODE.value();
+      const initiatorName = MPESA_B2C_INITIATOR.value();
+      const securityCredential = MPESA_B2C_SECURITY_CREDENTIAL.value();
+
+      const commandId = "BusinessPayment"; // start here
+
+      const resp = await callB2C({
+        token,
+        shortcode,
+        initiatorName,
+        securityCredential,
+        amountKes,
+        phone2547: phone,
+        resultUrl,
+        timeoutUrl,
+        remarks: "Audiory withdrawal",
+        occassion: "Audiory",
+        commandId,
+      });
+
+      // Save conversation IDs for matching callbacks
+      await ref.set(
+        {
+          mpesa: {
+            commandId,
+            conversationId: resp?.ConversationID || "",
+            originatorConversationId: resp?.OriginatorConversationID || "",
+            responseCode: resp?.ResponseCode || "",
+            responseDescription: resp?.ResponseDescription || "",
+            rawResponse: resp,
+          },
+          status: "submitted",
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.error("processPayoutRequest error:", e);
+      await ref.set(
+        {
+          status: "failed",
+          failReason: e?.message || String(e),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+    }
+  }
+);
+
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
   async (event) => {
