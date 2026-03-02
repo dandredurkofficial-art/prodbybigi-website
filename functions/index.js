@@ -259,13 +259,6 @@ async function ensureBeatFields(beatRef, beatData) {
   }
 }
 
-async function verifyFirebaseIdToken(req) {
-  const h = req.headers.authorization || "";
-  if (!h.startsWith("Bearer ")) throw new Error("Missing Authorization token");
-  const token = h.slice("Bearer ".length);
-  return await admin.auth().verifyIdToken(token);
-}
-
 function toNumber(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
