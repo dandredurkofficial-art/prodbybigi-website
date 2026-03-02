@@ -2241,7 +2241,7 @@ exports.b2cPay = onRequest(
 );
 
 // ResultURL callback
-exports.mpesaB2cResult = onRequest(
+exports.B2cResult = onRequest(
   { region: "us-central1" },
   async (req, res) => {
     try {
@@ -2286,10 +2286,10 @@ exports.mpesaB2cResult = onRequest(
 
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     } catch (e) {
-      console.error("mpesaB2cResult error:", e);
+      console.error("B2cResult error:", e);
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
-   }
+  }
 });
 
 // TimeoutURL callback
