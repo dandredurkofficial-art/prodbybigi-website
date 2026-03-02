@@ -2293,17 +2293,39 @@ exports.B2cResult = onRequest(
 });
 
 // TimeoutURL callback
-exports.mpesaB2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    const body = req.body;
-    console.log("B2C TIMEOUT:", JSON.stringify(body));
+exports.mpesaB2cTimeout = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      const body = req.body;
+      console.log("B2C TIMEOUT:", JSON.stringify(body));
 
-    // TODO: mark payout as timeout / retry
+      const result = body?.Result || {};
+      const originatorConversationId = result?.OriginatorConversationID || "";
 
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  } catch (e) {
-    console.error(e);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+      if (originatorConversationId) {
+        const q = await db
+          .collection("payoutsRequests")
+          .where("mpesa.originatorConversationId", "==", originatorConversationId)
+          .limit(1)
+          .get();
+
+        if (!q.empty) {
+          await q.docs[0].ref.set(
+            {
+              status: "timeout",
+              updatedAt: Date.now(),
+              mpesa: { rawTimeout: body },
+            },
+            { merge: true }
+          );
+        }
+      }
+
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    } catch (e) {
+      console.error("mpesaB2cTimeout error:", e);
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 });
 
