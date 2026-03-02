@@ -2264,6 +2264,84 @@ exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
   }
 });
 
+exports.onPayoutPaidUpdateWallet = functions.firestore
+  .document("payouts/{payoutId}")
+  .onWrite(async (change) => {
+    const after = change.after.exists ? change.after.data() : null;
+    const before = change.before.exists ? change.before.data() : null;
+    if (!after) return null;
+
+    const producerId = after.producerId;
+    if (!producerId) return null;
+
+    const afterPaid = after.status === "PAID";
+    const beforePaid = before && before.status === "PAID";
+    if (afterPaid && beforePaid) return null;
+    if (!afterPaid) return null;
+
+    const amountUsd = toNumber(after.amountUsd ?? after.amount ?? 0);
+    const walletRef = db.doc(`wallets/${producerId}`);
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(walletRef);
+      const w = snap.exists ? snap.data() : {};
+      const availableUsd = toNumber(w.availableUsd);
+
+      tx.set(walletRef, {
+        availableUsd: Math.max(0, availableUsd - amountUsd),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+    });
+
+    return null;
+  });
+
+exports.onOrderWriteUpdateWallet = functions.firestore
+  .document("orders/{orderId}")
+  .onWrite(async (change, context) => {
+    const after = change.after.exists ? change.after.data() : null;
+    const before = change.before.exists ? change.before.data() : null;
+
+    // If deleted, ignore for now (or handle reversals later)
+    if (!after) return null;
+
+    const producerId = after.producerId;
+    if (!producerId) return null;
+
+    // Only react when status becomes PAID (or is PAID on create)
+    const afterPaid = after.status === "PAID";
+    const beforePaid = before && before.status === "PAID";
+
+    // If it was already PAID before, do nothing (prevents double counting)
+    if (afterPaid && beforePaid) return null;
+    if (!afterPaid) return null;
+
+    // Get amount (choose your canonical field)
+    const amountUsd = toNumber(after.amountUsd ?? after.amount ?? after.amountKes ?? 0);
+
+    const walletRef = db.doc(`wallets/${producerId}`);
+
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(walletRef);
+      const w = snap.exists ? snap.data() : {};
+
+      const lifetimeUsd = toNumber(w.lifetimeUsd);
+      const availableUsd = toNumber(w.availableUsd);
+
+      tx.set(
+        walletRef,
+        {
+          lifetimeUsd: lifetimeUsd + amountUsd,
+          availableUsd: availableUsd + amountUsd,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+    });
+
+    return null;
+  });
+
 /* =========================================================
 ✅ SECURE DOWNLOAD (AUTH + CORS)
 ========================================================= */
