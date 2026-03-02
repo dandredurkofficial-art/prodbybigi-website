@@ -2293,7 +2293,7 @@ exports.B2cResult = onRequest(
 });
 
 // TimeoutURL callback
-exports.mpesaB2cTimeout = onRequest(
+exports.B2cTimeout = onRequest(
   { region: "us-central1" },
   async (req, res) => {
     try {
@@ -2324,7 +2324,7 @@ exports.mpesaB2cTimeout = onRequest(
 
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     } catch (e) {
-      console.error("mpesaB2cTimeout error:", e);
+      console.error("B2cTimeout error:", e);
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 });
