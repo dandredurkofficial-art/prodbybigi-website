@@ -1017,7 +1017,7 @@ function showPage(id, el){
   }
 
   // ✅ Auto-load campaigns when opening marketing page
-  if (id === "marketingTools" && typeof window.loadmarketingCampaigns === "function") {
+  if (id === "marketingTools" && typeof window.loadMarketingCampaigns === "function") {
     window.loadMarketingCampaigns();
   }
 
@@ -1508,10 +1508,11 @@ async function startBulkUpload(){
     let artUrl = "";
     if (fArt){
       const ext = extFromName(fArt.name) || ".jpg";
-      artUrl = await uploadToStorage({
+      const artUp = await uploadToStorage({
         file: fArt,
         path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`
       });
+      artUrl = artUp.downloadURL; // ✅ correct
     }
 
     const extFull = extFromName(fFull.name) || ".mp3";
