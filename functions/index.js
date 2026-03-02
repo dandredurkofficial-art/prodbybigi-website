@@ -394,9 +394,9 @@ function normalizePhone(phone) {
   return p;
 }
 
-async function getDarajaToken({ consumerKey, consumerSecret }) {
+async function getAccessToken({ consumerKey, consumerSecret }) {
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
-  const r = await fetch(`${DARAJA_BASE}/oauth/v1/generate?grant_type=client_credentials`, {
+  const r = await fetch(`${darajaBase}/oauth/v1/generate?grant_type=client_credentials`, {
     headers: { Authorization: `Basic ${auth}` },
   });
   const j = await r.json().catch(() => ({}));
@@ -431,7 +431,7 @@ async function callB2C({
     Occassion: occassion || "Audiory",
   };
 
-  const r = await fetch(`${DARAJA_BASE}/mpesa/b2c/v3/paymentrequest`, {
+  const r = await fetch(`${darajaBase}/mpesa/b2c/v3/paymentrequest`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -1123,7 +1123,6 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
   const buyerName = safeStr(payerName).trim() || null;
 
   // producer name: prefer beatData.producerName, else fetch users/{producerId}
-  let producerName = safeStr(beatData?.producerName || "");
   const finalProducerId = safeStr(producerId || beatData?.producerId || "");
   if (!producerName && finalProducerId) {
     const prodSnap = await db.collection("users").doc(finalProducerId).get().catch(() => null);
@@ -1139,8 +1138,6 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     {
       buyerName,
       buyerEmail,
-      beatTitle,
-      producerName,
       orderId,
       provider: "paypal",
       type: "cart",
@@ -2323,9 +2320,9 @@ exports.processPayoutRequest = onDocumentCreated(
     region: "us-central1",
     document: "payoutsRequests/{requestId}",
     secrets: [
-      MPESA_CONSUMER_KEY,
-      MPESA_CONSUMER_SECRET,
-      B2C_SHORTCODE,
+      DARAJA_CONSUMER_KEY,
+      DARAJA_CONSUMER_SECRET,
+      MPESA_SHORTCODE,
       B2C_INITIATOR_NAME,
       B2C_SECURITY_CREDENTIAL,
     ],
@@ -2360,15 +2357,15 @@ exports.processPayoutRequest = onDocumentCreated(
       const consumerKey = MPESA_CONSUMER_KEY.value();
       const consumerSecret = MPESA_CONSUMER_SECRET.value();
 
-      const token = await getDarajaToken({ consumerKey, consumerSecret });
+      const token = await getAccessToken({ consumerKey, consumerSecret });
 
       // Build callback URLs (YOUR deployed function URLs)
       const resultUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cResult`;
       const timeoutUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cTimeout`;
 
-      const shortcode = MPESA_B2C_SHORTCODE.value();
-      const initiatorName = MPESA_B2C_INITIATOR.value();
-      const securityCredential = MPESA_B2C_SECURITY_CREDENTIAL.value();
+      const shortcode = B2C_SHORTCODE.value();
+      const initiatorName = B2C_INITIATOR_NAME.value();
+      const securityCredential = B2C_SECURITY_CREDENTIAL.value();
 
       const commandId = "BusinessPayment"; // start here
 
