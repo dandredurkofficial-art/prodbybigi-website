@@ -107,10 +107,6 @@ function safeStr(v) {
   return v === null || v === undefined ? "" : String(v);
 }
 
-function safeStr(v) {
-  return (typeof v === "string" ? v : (v == null ? "" : String(v))).trim();
-}
-
 function termsFor(licenseKey) {
 
   if (licenseKey === "exclusive") {
