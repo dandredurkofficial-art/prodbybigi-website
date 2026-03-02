@@ -1,27 +1,23 @@
+// generateSecurityCredential.js
 const fs = require("fs");
+const path = require("path");
 const crypto = require("crypto");
 
-// 🔴 PUT YOUR INITIATOR PASSWORD HERE
-const initiatorPassword = "HalimaIsmael20!";
+const CERT_PATH = path.join(__dirname, "ProductionCertificate.pem");
 
-// Read certificate file directly
-const cert = fs.readFileSync("ProductionCertificate.cer");
+// put your initiator password here (the one you set on org portal)
+const INITIATOR_PASSWORD = "HalimaIsmael20!";
 
-// Create public key directly from certificate
-const publicKey = crypto.createPublicKey({
-  key: cert,
-  format: "der",
-  type: "spki",
-});
+const certPem = fs.readFileSync(CERT_PATH, "utf8");
 
-// Encrypt using RSA PKCS1 v1.5
+// IMPORTANT: for Daraja SecurityCredential use RSA PKCS#1 v1.5 (NOT OAEP)
 const encrypted = crypto.publicEncrypt(
   {
-    key: publicKey,
+    key: certPem,
     padding: crypto.constants.RSA_PKCS1_PADDING,
   },
-  Buffer.from(initiatorPassword)
+  Buffer.from(INITIATOR_PASSWORD, "utf8")
 );
 
-console.log("\n🔐 SecurityCredential:\n");
+console.log("SecurityCredential (base64):");
 console.log(encrypted.toString("base64"));
