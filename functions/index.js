@@ -2210,60 +2210,35 @@ exports.b2cPay = onRequest(
   }
 );
 
-exports.b2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
+// ResultURL callback
+exports.mpesaB2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
   try {
-    const body = req.body || {};
-    const result = body?.Result || {};
-    const originatorConversationID = safeStr(result.OriginatorConversationID || "");
-    const resultCode = result.ResultCode;
-    const resultDesc = safeStr(result.ResultDesc || "");
+    // Safaricom sends JSON
+    const body = req.body;
+    console.log("B2C RESULT:", JSON.stringify(body));
 
-    await db.collection("mpesaB2CResults").doc(originatorConversationID || crypto.randomUUID()).set(
-      {
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        originatorConversationID,
-        resultCode,
-        resultDesc,
-        raw: body,
-      },
-      { merge: true }
-    );
+    // TODO: save to Firestore (payoutsRequests/{id} or payouts/{id})
+    // best: use OriginatorConversationID / ConversationID to match your request
 
-    const q = await db
-      .collection("mpesaB2CRequests")
-      .where("originatorConversationId", "==", originatorConversationID)
-      .limit(1)
-      .get();
-
-    if (!q.empty) {
-      await q.docs[0].ref.set(
-        {
-          status: Number(resultCode) === 0 ? "PAID" : "FAILED",
-          resultCode,
-          resultDesc,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
-    }
-
-    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   } catch (e) {
-    console.error("b2cResult error:", e);
-    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    console.error(e);
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 });
 
-exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
+// TimeoutURL callback
+exports.mpesaB2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
   try {
-    await db.collection("mpesaB2CTimeouts").add({
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      raw: req.body || null,
-    });
-    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    const body = req.body;
+    console.log("B2C TIMEOUT:", JSON.stringify(body));
+
+    // TODO: mark payout as timeout / retry
+
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   } catch (e) {
-    console.error("b2cTimeout error:", e);
-    return res.json({ ResultCode: 0, ResultDesc: "Accepted" });
+    console.error(e);
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
 });
 
