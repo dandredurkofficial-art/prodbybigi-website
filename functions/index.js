@@ -270,6 +270,11 @@ async function verifyFirebaseIdToken(req) {
   return await admin.auth().verifyIdToken(token);
 }
 
+function toNumber(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
 /* =========================================================
 ✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
 ========================================================= */
