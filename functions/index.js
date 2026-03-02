@@ -1103,8 +1103,6 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
   const buyerName = safeStr(payerName).trim() || null;
 
-  const beatTitle = safeStr(it.title || beatData?.title || "Beat");
-
   // producer name: prefer beatData.producerName, else fetch users/{producerId}
   let producerName = safeStr(beatData?.producerName || "");
   const finalProducerId = safeStr(producerId || beatData?.producerId || "");
