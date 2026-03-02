@@ -2406,17 +2406,71 @@ async function loadProducerSalesFromUnlocks() {
       return;
     }
 
-    // ✅ unlocks for this producer
-    // NOTE: requires unlock docs to contain producerId (we'll fix in functions next)
-    const qy = window.query(
-      window.collection(window.db, "unlocks"),
-      window.where("producerId", "==", u.uid),
-      window.orderBy("createdAt", "desc"),
-      window.limit(50)
-    );
+    // ✅ Ensure beats are loaded (beatsData is filled by loadBeats())
+    if (!Array.isArray(window.beatsData) || window.beatsData.length === 0) {
+      // fallback: load beats quickly if not loaded yet
+      const bq = window.query(
+        window.collection(window.db, "beats"),
+        window.where("producerId", "==", u.uid)
+      );
+      const bsnap = await window.getDocs(bq);
+      window.beatsData = bsnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
 
-    const snap = await window.getDocs(qy);
-    const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const beatIds = (window.beatsData || [])
+      .map(b => b.id)
+      .filter(Boolean);
+
+    if (!beatIds.length) {
+      statusEl.textContent = "No beats found for this producer.";
+      return;
+    }
+
+    // Firestore "in" supports max 10 values → chunk
+    const chunks = [];
+    for (let i = 0; i < beatIds.length; i += 10) chunks.push(beatIds.slice(i, i + 10));
+
+    // Cache buyer profiles so we don't spam reads
+    const buyerCache = new Map();
+    async function getBuyerProfile(buyerId) {
+      if (!buyerId) return null;
+      if (buyerCache.has(buyerId)) return buyerCache.get(buyerId);
+
+      try {
+        const ref = window.doc(window.db, "users", buyerId);
+        const snap = await window.getDoc(ref);
+        const data = snap.exists() ? snap.data() : null;
+        buyerCache.set(buyerId, data);
+        return data;
+      } catch (e) {
+        buyerCache.set(buyerId, null);
+        return null;
+      }
+    }
+
+    // ✅ Fetch unlocks for these beats
+    let rows = [];
+    for (const ids of chunks) {
+      const qy = window.query(
+        window.collection(window.db, "unlocks"),
+        window.where("beatId", "in", ids),
+        window.orderBy("createdAt", "desc"),
+        window.limit(50)
+      );
+
+      const snap = await window.getDocs(qy);
+      rows.push(...snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    }
+
+    // ✅ Sort and keep top 50 overall
+    rows.sort((a, b) => {
+      const ad = a.createdAt?.toDate ? a.createdAt.toDate().getTime()
+              : (typeof a.createdAt === "number" ? a.createdAt : 0);
+      const bd = b.createdAt?.toDate ? b.createdAt.toDate().getTime()
+              : (typeof b.createdAt === "number" ? b.createdAt : 0);
+      return bd - ad;
+    });
+    rows = rows.slice(0, 50);
 
     if (!rows.length) {
       statusEl.textContent = "No sales yet.";
@@ -2426,13 +2480,28 @@ async function loadProducerSalesFromUnlocks() {
     statusEl.textContent = `Sales (${rows.length})`;
 
     for (const it of rows) {
-      const beatTitle   = it.beatTitle || "Beat";
-      const licenseKey  = String(it.licenseKey || "basic").toUpperCase();
-      const buyerName   = it.buyerName || "Buyer";
-      const buyerEmail  = it.buyerEmail || "";
-      const amount      = it.amountUsd ?? it.amount ?? it.amountKes ?? "";
-      const provider    = it.provider || it.providerName || "";
-      const status      = it.status || (it.paid ? "PAID" : "");
+      const beatTitle  = it.beatTitle || "Beat";
+      const licenseKey = String(it.licenseKey || "basic").toUpperCase();
+
+      // ✅ buyer name/email: prefer unlock fields, fallback to /users/{buyerId}
+      let buyerName  = it.buyerName || "";
+      let buyerEmail = it.buyerEmail || "";
+      if ((!buyerName || !buyerEmail) && it.buyerId) {
+        const prof = await getBuyerProfile(it.buyerId);
+        if (prof) {
+          const dn = (prof.displayName || "").trim();
+          const fn = (prof.firstName || "").trim();
+          const ln = (prof.lastName || "").trim();
+          buyerName = buyerName || dn || `${fn} ${ln}`.trim() || "Buyer";
+          buyerEmail = buyerEmail || (prof.email || "").trim() || "";
+        }
+      }
+      buyerName = buyerName || "Buyer";
+
+      const amount   = it.amountUsd ?? it.amount ?? it.amountKes ?? "";
+      const provider = it.provider || it.providerName || "";
+      const status   = it.status || (it.paid ? "PAID" : "");
+
       const when =
         it.createdAt?.toDate ? it.createdAt.toDate() :
         (typeof it.createdAt === "number" ? new Date(it.createdAt) : null);
@@ -2441,7 +2510,7 @@ async function loadProducerSalesFromUnlocks() {
       div.className = "sale-row";
       div.innerHTML = `
         <div style="font-weight:800">${beatTitle}</div>
-        <div style="opacity:.85">License: ${licenseKey} ${status ? " • " + status : ""}</div>
+        <div style="opacity:.85">License: ${licenseKey}${status ? " • " + status : ""}</div>
         <div style="opacity:.85">Buyer: ${buyerName}${buyerEmail ? " • " + buyerEmail : ""}</div>
         <div style="opacity:.85">Amount: ${amount ? amount : "N/A"} ${provider ? " • " + provider : ""}</div>
         <div style="opacity:.7;font-size:12px">${when ? when.toLocaleString() : ""}</div>
