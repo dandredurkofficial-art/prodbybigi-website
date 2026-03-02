@@ -1047,6 +1047,16 @@ function walletNumber(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 }
+
+function money(v){
+  const n = Number(v);
+  const safe = Number.isFinite(n) ? n : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(safe);
+}
+  
 function pickFile(accept){
   return new Promise((resolve)=>{
     const input = document.createElement("input");
