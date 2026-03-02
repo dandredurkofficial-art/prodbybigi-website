@@ -2290,7 +2290,7 @@ exports.B2cResult = onRequest(
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
   }
-});
+);
 
 // TimeoutURL callback
 exports.B2cTimeout = onRequest(
