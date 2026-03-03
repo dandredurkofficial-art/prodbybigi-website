@@ -2117,6 +2117,7 @@ document.addEventListener("click", async (e)=>{
     // ✅ refresh balances on screen
     await loadPayoutUI();
     await loadDashboardStats();
+    await loadWithdrawalHistory();
   
   }catch(err){
     if (status) status.style.color = "#ef4444";
