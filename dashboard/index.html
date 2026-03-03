@@ -1790,7 +1790,10 @@ async function loadDashboardStats(){
     if ($("statPublished")) $("statPublished").textContent = String(published);
 
     if (window.currentUser){
-      const qk = window.query(window.collection(window.db,"soundkits"), window.where("producerId","==",window.currentUser.uid));
+      const qk = window.query(
+        window.collection(window.db,"soundkits"),
+        window.where("producerId","==",window.currentUser.uid)
+      );
       const ksnap = await window.getDocs(qk);
       if ($("statKits")) $("statKits").textContent = String(ksnap.size || 0);
     }
@@ -1800,30 +1803,16 @@ async function loadDashboardStats(){
     const totalSalesUsd = walletNumber(w?.lifetimeUsd);
     const balUsd = walletNumber(w?.availableUsd);
 
-    // prevent multiple pending withdrawals
-    const pendingQ = window.query(
-      window.collection(window.db,"payoutsRequests"),
-      window.where("producerId","==",window.currentUser.uid),
-      window.where("status","in",["requested","processing","submitted"])
-    );
-
-    const pendingSnap = await window.getDocs(pendingQ);
-
-    if (!pendingSnap.empty){
-      if (status) status.style.color = "#ef4444";
-      if (status) status.textContent = "❌ You already have a withdrawal processing.";
-      btn.disabled = false;
-      btn.textContent = "Withdraw";
-      return;
-    }
-
     if ($("totalSales")) $("totalSales").textContent = money(totalSalesUsd);
     if ($("availableBalance")) $("availableBalance").textContent = money(balUsd);
     if ($("payoutBalance")) $("payoutBalance").textContent = money(balUsd);
 
     refreshProLocks();
-  }catch(e){}
+  }catch(e){
+    console.error("loadDashboardStats error:", e);
+  }
 }
+window.loadDashboardStats = loadDashboardStats;
 
 /* ===========================
    MARKETING (PRO)
