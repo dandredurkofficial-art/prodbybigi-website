@@ -1799,6 +1799,23 @@ async function loadDashboardStats(){
     const totalSalesUsd = walletNumber(w?.lifetimeUsd);
     const balUsd = walletNumber(w?.availableUsd);
 
+    // prevent multiple pending withdrawals
+    const pendingQ = window.query(
+      window.collection(window.db,"payoutsRequests"),
+      window.where("producerId","==",window.currentUser.uid),
+      window.where("status","in",["requested","processing","submitted"])
+    );
+
+    const pendingSnap = await window.getDocs(pendingQ);
+
+    if (!pendingSnap.empty){
+      if (status) status.style.color = "#ef4444";
+      if (status) status.textContent = "❌ You already have a withdrawal processing.";
+      btn.disabled = false;
+      btn.textContent = "Withdraw";
+      return;
+    }
+
     if ($("totalSales")) $("totalSales").textContent = money(totalSalesUsd);
     if ($("availableBalance")) $("availableBalance").textContent = money(balUsd);
     if ($("payoutBalance")) $("payoutBalance").textContent = money(balUsd);
