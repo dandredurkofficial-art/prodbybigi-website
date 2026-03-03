@@ -2675,23 +2675,33 @@ exports.onOrderWriteUpdateWallet = onDocumentWritten(
     // prevent double count
     if (!afterPaid || beforePaid) return;
 
-    // choose canonical field
-    const amountUsd = toNumber(after.amountUsd ?? after.amount ?? 0);
+    const amountUsdRaw = toNumber(after.amountUsd ?? after.amount ?? 0);
+    if (!Number.isFinite(amountUsdRaw) || amountUsdRaw <= 0) return;
+
+    // round to 2dp safely
+    const amountUsd = Math.round(amountUsdRaw * 100) / 100;
 
     const walletRef = db.doc(`wallets/${producerId}`);
 
     await db.runTransaction(async (tx) => {
       const snap = await tx.get(walletRef);
-      const w = snap.exists ? snap.data() : {};
+      const w = snap.exists ? (snap.data() || {}) : {};
 
       const lifetimeUsd = toNumber(w.lifetimeUsd);
       const availableUsd = toNumber(w.availableUsd);
+      const pendingPayoutUsd = toNumber(w.pendingPayoutUsd);
+      const paidOutUsd = toNumber(w.paidOutUsd);
 
       tx.set(
         walletRef,
         {
-          lifetimeUsd: lifetimeUsd + amountUsd,
-          availableUsd: availableUsd + amountUsd,
+          lifetimeUsd: Math.round((lifetimeUsd + amountUsd) * 100) / 100,
+          availableUsd: Math.round((availableUsd + amountUsd) * 100) / 100,
+
+          // keep these fields present for payout workflow
+          pendingPayoutUsd: Math.round(pendingPayoutUsd * 100) / 100,
+          paidOutUsd: Math.round(paidOutUsd * 100) / 100,
+
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
         { merge: true }
@@ -2702,36 +2712,10 @@ exports.onOrderWriteUpdateWallet = onDocumentWritten(
 
 exports.onPayoutPaidUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "payouts/{payoutId}" },
-  async (event) => {
-    const after = event.data?.after?.data() || null;
-    const before = event.data?.before?.data() || null;
-    if (!after) return;
-
-    const producerId = String(after.producerId || "").trim();
-    if (!producerId) return;
-
-    const afterPaid = String(after.status || "").toUpperCase() === "PAID";
-    const beforePaid = String(before?.status || "").toUpperCase() === "PAID";
-
-    if (!afterPaid || beforePaid) return;
-
-    const amountUsd = toNumber(after.amountUsd ?? after.amount ?? 0);
-    const walletRef = db.doc(`wallets/${producerId}`);
-
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(walletRef);
-      const w = snap.exists ? snap.data() : {};
-      const availableUsd = toNumber(w.availableUsd);
-
-      tx.set(
-        walletRef,
-        {
-          availableUsd: Math.max(0, availableUsd - amountUsd),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
-    });
+  async () => {
+    // DISABLED:
+    // Wallet settlement now handled in payoutsRequests workflow
+    return;
   }
 );
 
