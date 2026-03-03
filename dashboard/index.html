@@ -2540,6 +2540,49 @@ async function loadProducerSalesFromUnlocks() {
 
 window.loadProducerSalesFromUnlocks = loadProducerSalesFromUnlocks;
 
+async function loadWithdrawalHistory(){
+  const box = document.getElementById("withdrawHistory");
+  if (!box || !window.currentUser) return;
+
+  box.textContent = "Loading…";
+
+  try{
+    const q = window.query(
+      window.collection(window.db,"payoutsRequests"),
+      window.where("producerId","==",window.currentUser.uid),
+      window.orderBy("createdAt","desc"),
+      window.limit(20)
+    );
+
+    const snap = await window.getDocs(q);
+
+    if (snap.empty){
+      box.textContent = "No withdrawal requests yet.";
+      return;
+    }
+
+    box.innerHTML = "";
+
+    snap.forEach(d=>{
+      const r = d.data();
+      const when = new Date(r.createdAt || Date.now()).toLocaleString();
+
+      box.innerHTML += `
+        <div style="padding:10px 0;border-bottom:1px solid #1f2937;">
+          <strong>$${Number(r.amount||0).toFixed(2)}</strong>
+          • ${r.method}
+          • <span style="opacity:.7">${r.status}</span>
+          <br>
+          <span style="font-size:12px;opacity:.6">${when}</span>
+        </div>
+      `;
+    });
+
+  }catch(err){
+    box.textContent = "Could not load withdrawals.";
+  }
+}  
+
 /* ===========================
    EXPORT for onclick=""
 =========================== */
