@@ -267,6 +267,44 @@ function b2cPaymentUrl() {
   return `${darajaBase()}/mpesa/b2c/v3/paymentrequest`;
 }
 
+async function updateB2CByOriginatorId(originatorConversationId, patch) {
+  let updated = 0;
+
+  // A) Producer withdrawals flow (payoutsRequests) => nested mpesa.originatorConversationId
+  try {
+    const q1 = await db
+      .collection("payoutsRequests")
+      .where("mpesa.originatorConversationId", "==", originatorConversationId)
+      .limit(5)
+      .get();
+
+    for (const doc of q1.docs) {
+      await doc.ref.set(patch.payoutsRequests, { merge: true });
+      updated++;
+    }
+  } catch (e) {
+    console.error("update payoutsRequests error:", e);
+  }
+
+  // B) Manual B2C test flow (mpesaB2CRequests) => top-level originatorConversationId
+  try {
+    const q2 = await db
+      .collection("mpesaB2CRequests")
+      .where("originatorConversationId", "==", originatorConversationId)
+      .limit(5)
+      .get();
+
+    for (const doc of q2.docs) {
+      await doc.ref.set(patch.mpesaB2CRequests, { merge: true });
+      updated++;
+    }
+  } catch (e) {
+    console.error("update mpesaB2CRequests error:", e);
+  }
+
+  return updated;
+}
+
 /* =========================================================
 ✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
 ========================================================= */
