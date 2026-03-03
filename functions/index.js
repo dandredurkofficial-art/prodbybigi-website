@@ -500,21 +500,30 @@ async function callB2C({
   phone2547,
   resultUrl,
   timeoutUrl,
-  remarks,   
+  remarks,
   occassion,
   commandId,
 }) {
+  // ✅ must be unique each request
+  const originatorConversationId =
+    `AUDIORY_${Date.now()}_${Math.floor(Math.random() * 1e6)}`;
+
   const payload = {
     InitiatorName: initiatorName,
     SecurityCredential: securityCredential,
     CommandID: commandId || "BusinessPayment",
-    Amount: Number(amountKes),
-    PartyA: shortcode,
-    PartyB: phone2547, // 2547xxxxxxxx
+
+    // ✅ required / important
+    Amount: Math.round(Number(amountKes)),     // keep integer
+    PartyA: String(shortcode),
+    PartyB: String(phone2547),                 // 2547xxxxxxxx
     Remarks: remarks || "Withdrawal",
-    QueueTimeOutURL: timeoutUrl,
-    ResultURL: resultUrl,
+    QueueTimeOutURL: String(timeoutUrl),
+    ResultURL: String(resultUrl),
     Occasion: occassion || "Audiory",
+
+    // ✅ THE MISSING FIELD (exact casing!)
+    OriginatorConversationID: originatorConversationId,
   };
 
   const r = await fetch(`${darajaBase()}/mpesa/b2c/v3/paymentrequest`, {
@@ -527,8 +536,19 @@ async function callB2C({
   });
 
   const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(j.errorMessage || j.ResponseDescription || "B2C request failed");
-  return j;
+
+  // ✅ if Daraja returns non-200, surface the best error message
+  if (!r.ok) {
+    throw new Error(
+      j?.errorMessage ||
+      j?.ResponseDescription ||
+      j?.ResultDesc ||
+      `B2C request failed (${r.status})`
+    );
+  }
+
+  // ✅ attach the originator id so you can store it in Firestore for tracking
+  return { ...j, OriginatorConversationID: originatorConversationId };
 }
 
 /* =========================================================
@@ -2527,13 +2547,13 @@ exports.processPayoutRequest = onDocumentCreated(
         occassion: "Audiory",
         commandId,
       });
-
-      await ref.set(
-        {
+  
+      await ref.set({
           mpesa: {
             commandId,
+            originatorConversationId: safeStr(resp?.OriginatorConversationID), // ✅ now exists
             conversationId: safeStr(resp?.ConversationID),
-            originatorConversationId: safeStr(resp?.OriginatorConversationID),
+            originatorConversationIdFromSaf: safeStr(resp?.OriginatorConversationID), // optional
             responseCode: safeStr(resp?.ResponseCode),
             responseDescription: safeStr(resp?.ResponseDescription),
             rawResponse: resp,
