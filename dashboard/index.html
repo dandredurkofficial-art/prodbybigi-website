@@ -1007,6 +1007,7 @@ function showPage(id, el){
   if (id === "settings") fillSettingsForm();
   if (id === "soundkits") loadKits();
   if (id === "finance") loadPayoutUI();
+  if (id === "dashboard") loadDashboardStats();
 
   if (id === "privateMessages" && typeof window.loadMessagesThreadList === "function") {
     window.loadMessagesThreadList();
