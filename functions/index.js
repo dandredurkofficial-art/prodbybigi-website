@@ -1284,15 +1284,14 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
   return { ok: true };
 }
 
-/* =========================================================
-✅ PAYPAL WEBHOOK
-========================================================= */
+// ---------------------- PAYPAL WEBHOOK ----------------------
 exports.paypalWebhook = onRequest(
   {
     region: "us-central1",
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_WEBHOOK_ID, PAYPAL_MODE],
   },
   async (req, res) => {
+    // handle preflight + CORS
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
     applyCors(req, res);
@@ -1300,6 +1299,7 @@ exports.paypalWebhook = onRequest(
     try {
       if (req.method !== "POST") return res.status(405).send("Use POST");
 
+      // verify signature
       const ok = await verifyPayPalWebhookSignature(req);
       if (!ok) return res.status(401).send("Invalid signature");
 
@@ -1308,6 +1308,7 @@ exports.paypalWebhook = onRequest(
       const resource = event.resource || {};
       const resourceId = safeStr(resource.id || event.id);
 
+      // store raw webhook for debugging/audit
       await db
         .collection("paypalWebhooks")
         .doc(safeStr(event.id || resourceId || String(Date.now())))
@@ -1321,56 +1322,59 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-      if (eventType !== "PAYMENT.CAPTURE.COMPLETED") {
+      // Only handle capture completed here (others are stored but ignored)
+      if (eventType !== "PAYMENT.CAPTURE.COMPLETED" && eventType !== "CHECKOUT.ORDER.APPROVED") {
         return res.status(200).json({ received: true, ignored: eventType });
       }
 
       const { value, currency } = parseAmountFromPayPalEvent(event);
 
-      const customId =
+      // parse custom id (supports "cartId=..." or legacy "beatId=..|licenseKey=..|producerId=..")
+      const resourceCustomId =
         safeStr(resource?.custom_id) ||
         safeStr(resource?.invoice_id) ||
         safeStr(resource?.supplementary_data?.related_ids?.order_id) ||
         "";
-
       const meta = {};
-      if (customId) {
-        // supports both: "cartId=xxx" and old "beatId=..|licenseKey=..|producerId=.."
-        customId.split("|").forEach((part) => {
+      if (resourceCustomId) {
+        resourceCustomId.split("|").forEach((part) => {
           const [k, ...rest] = part.split("=");
           const key = safeStr(k).trim();
           const val = safeStr(rest.join("=")).trim();
           if (key) meta[key] = val;
         });
-        // if it's "cartId=xxx" only, this still works
-        if (customId.includes("cartId=") && !meta.cartId) {
-          meta.cartId = safeStr(customId.split("cartId=")[1] || "").trim();
+        if (resourceCustomId.includes("cartId=") && !meta.cartId) {
+          meta.cartId = safeStr(resourceCustomId.split("cartId=")[1] || "").trim();
         }
       }
 
+      // derive orderId for internal records
       const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
 
-      // ✅ 1) CART FLOW
+      // 1) CART FLOW: prefer cartId if present
       const cartId = safeStr(meta.cartId || "");
       if (cartId) {
         await processCartCapture({ cartId, captureEvent: event, orderId });
         return res.status(200).json({ received: true, eventType, cart: true });
       }
 
-      // ✅ 2) OLD SINGLE-BEAT FLOW (backward compatible)
+      // 2) OLD SINGLE-BEAT FLOW (backward compatible)
       const beatId = safeStr(meta.beatId || meta.beat || "");
       const licenseKey = safeStr(meta.licenseKey || "basic").toLowerCase().trim();
       let producerId = safeStr(meta.producerId || meta.producer || "");
 
+      // if beat exists but producerId not provided, fetch it
       if (beatId && !producerId) {
-        const beatSnap = await db.collection("beats").doc(beatId).get();
-        if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
+        try {
+          const beatSnap = await db.collection("beats").doc(beatId).get();
+          if (beatSnap.exists) producerId = safeStr(beatSnap.data()?.producerId || "");
+        } catch (_) {}
       }
 
       const orderRef = db.collection("orders").doc(orderId);
       const existing = await orderRef.get();
 
-      // buyer data (paypal)
+      // buyer data from PayPal
       const buyerEmail = safeStr(resource?.payer?.email_address || "");
       const payerName =
         safeStr(resource?.payer?.name?.given_name || "") +
@@ -1382,30 +1386,37 @@ exports.paypalWebhook = onRequest(
       let producerName = "";
 
       if (beatId) {
-        const beatSnap = await db.collection("beats").doc(beatId).get();
-        if (beatSnap.exists) {
-          const b = beatSnap.data() || {};
-          beatTitle = safeStr(b.title || "Beat");
-          const pid = safeStr(producerId || b.producerId || "");
-
-          // if you store producerName on beat, use it
-          producerName = safeStr(b.producerName || "");
-
-          // fallback: load producer profile
-          if (!producerName && pid) {
-            const prodSnap = await db.collection("users").doc(pid).get().catch(() => null);
-            if (prodSnap && prodSnap.exists) {
-              const pd = prodSnap.data() || {};
-              producerName = safeStr(pd.displayName || pd.name || "");
-            }
+        try {
+          const beatSnap = await db.collection("beats").doc(beatId).get();
+          if (beatSnap.exists) {
+            const b = beatSnap.data() || {};
+            beatTitle = safeStr(b.title || b.beatTitle || "");
+            // prefer stored producerName
+            producerName = safeStr(b.producerName || "");
+            // if producerId still missing, try to take from beat
+            if (!producerId) producerId = safeStr(b.producerId || "");
           }
-          if (!producerName) producerName = "Producer";
+        } catch (_) {}
+      }
 
+      // fallback: load producer profile if we still don't have a name
+      if (!producerName && producerId) {
+        try {
+          const prodSnap = await db.collection("users").doc(producerId).get().catch(() => null);
+          if (prodSnap && prodSnap.exists) {
+            const pd = prodSnap.data() || {};
+            producerName = safeStr(pd.displayName || pd.name || "");
+          }
+        } catch (_) {}
+      }
+      if (!producerName) producerName = "Producer";
+
+      // create or update the order doc
       if (!existing.exists) {
         await orderRef.set({
           orderId,
           provider: "paypal",
-          type: "single",
+          type: beatId ? "single" : "unknown",
           providerEventId: safeStr(event.id),
           providerCaptureId: safeStr(resource.id),
           providerStatus: safeStr(resource.status),
@@ -1415,7 +1426,7 @@ exports.paypalWebhook = onRequest(
           amount: Number(value || 0),
           currency: currency || "USD",
           status: "PAID",
-          payerEmail: safeStr(resource?.payer?.email_address),
+          payerEmail: buyerEmail || null,
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           raw: event,
@@ -1431,11 +1442,12 @@ exports.paypalWebhook = onRequest(
         );
       }
 
+      // create unlock + credit producer for single-beat flow
       if (beatId && producerId) {
         const unlockId = `${orderId}__beat__${beatId}__${licenseKey}`;
         await db.collection("unlocks").doc(unlockId).set(
           {
-          buyerEmail: buyerEmail || null,
+            buyerEmail: buyerEmail || null,
             buyerName: buyerName || null,
             beatTitle: beatTitle || null,
             producerId: producerId || null,
@@ -1459,7 +1471,7 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-        // idempotent credit marker
+        // idempotent credit marker + credit producer
         const markerRef = db.collection("walletCredits").doc(unlockId);
         const marker = await markerRef.get();
         if (!marker.exists) {
@@ -1484,8 +1496,10 @@ exports.paypalWebhook = onRequest(
       return res.status(200).json({ received: true, eventType });
     } catch (e) {
       console.error("paypalWebhook error:", e);
-      try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: e.message });
+      try {
+        applyCors(req, res);
+      } catch (_) {}
+      return res.status(500).json({ error: e?.message || String(e) });
     }
   }
 );
