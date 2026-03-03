@@ -2129,6 +2129,71 @@ document.addEventListener("click", async (e)=>{
   btn.textContent = "Withdraw";
 });
 
+async function loadWithdrawalHistory(){
+  const box = document.getElementById("withdrawHistory");
+  if (!box) return;
+
+  if (!window.currentUser){
+    box.textContent = "Login to view withdrawals.";
+    return;
+  }
+
+  box.textContent = "Loading…";
+
+  try{
+    // ✅ pulls your withdrawal requests
+    const qy = window.query(
+      window.collection(window.db, "payoutsRequests"),
+      window.where("producerId", "==", window.currentUser.uid),
+      window.orderBy("createdAt", "desc"),
+      window.limit(25)
+    );
+
+    const snap = await window.getDocs(qy);
+    const items = [];
+    snap.forEach(d => items.push({ id: d.id, ...d.data() }));
+
+    if (!items.length){
+      box.textContent = "No withdrawals yet.";
+      return;
+    }
+
+    function fmtDate(v){
+      if (!v) return "";
+      if (typeof v === "number") return new Date(v).toLocaleString();
+      if (v?.toDate) return v.toDate().toLocaleString(); // Firestore Timestamp
+      return "";
+    }
+
+    box.innerHTML = items.map(r=>{
+      const status = String(r.status || "").toLowerCase();
+      const badge =
+        status === "success" ? "badge good" :
+        status === "failed" ? "badge bad" :
+        status === "timeout" ? "badge warn" :
+        "badge";
+
+      return `
+        <div class="track" style="margin-bottom:10px;">
+          <div style="flex:1">
+            <strong>${(r.method || "withdraw").toUpperCase()}</strong>
+            <div class="subtle">
+              ${r.amount ? `${r.amount} ${r.currency || ""}` : ""} • ${r.destination ? r.destination : ""}
+            </div>
+            <div class="subtle">${fmtDate(r.createdAt)}</div>
+            ${r.failReason ? `<div class="subtle" style="color:#fecaca;">${r.failReason}</div>` : ""}
+          </div>
+          <span class="${badge}">${status || "pending"}</span>
+        </div>
+      `;
+    }).join("");
+  }catch(err){
+    console.error("loadWithdrawalHistory:", err);
+    box.innerHTML = `<span style="color:#fecaca;">Could not load history: ${err?.message || err}</span>`;
+  }
+}
+window.loadWithdrawalHistory = loadWithdrawalHistory;
+  
 /* ===========================
    SOUND KITS
 =========================== */
