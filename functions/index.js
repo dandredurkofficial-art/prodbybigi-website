@@ -12,14 +12,13 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
-const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 
-// ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch if needed
-const fetchFn = global.fetch
-  ? global.fetch
-  : (...args) =>
-      import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
+// ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch v2 (CommonJS)
+let fetchFn = global.fetch;
+if (!fetchFn) {
+  // node-fetch v2 => require
+  fetchFn = require("node-fetch");
+}
 // ✅ Firebase Storage
 const { getStorage } = require("firebase-admin/storage");
 
@@ -264,6 +263,10 @@ function toNumber(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
+function b2cPaymentUrl() {
+  return `${darajaBase()}/mpesa/b2c/v3/paymentrequest`;
+}
+
 /* =========================================================
 ✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
 ========================================================= */
@@ -394,13 +397,18 @@ function normalizePhone(phone) {
   return p;
 }
 
-async function getAccessToken({ consumerKey, consumerSecret }) {
+async function getAccessToken(consumerKey, consumerSecret) {
   const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString("base64");
-  const r = await fetch(`${darajaBase}/oauth/v1/generate?grant_type=client_credentials`, {
+
+  const r = await fetchFn(`${darajaBase()}/oauth/v1/generate?grant_type=client_credentials`, {
+    method: "GET",
     headers: { Authorization: `Basic ${auth}` },
   });
+
   const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.access_token) throw new Error(j.errorMessage || "Failed to get Daraja token");
+  if (!r.ok || !j.access_token) {
+    throw new Error(j.errorMessage || j.error_description || "Failed to get Daraja token");
+  }
   return j.access_token;
 }
 
@@ -1097,43 +1105,29 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
   const items = Array.isArray(cart.items) ? cart.items : [];
   if (!items.length) throw new Error("Cart has no items");
 
-  // ✅ ADD
   const buyerId = safeStr(cart.buyerId || "");
 
   const resource = captureEvent?.resource || {};
   const payerEmail = safeStr(resource?.payer?.email_address || "");
 
-  // Idempotency: only process once
+  // Idempotency: only process once per orderId
   const processedRef = db.collection("paypalOrderCaptures").doc(orderId);
   const already = await processedRef.get();
   if (already.exists) return { ok: true, alreadyProcessed: true };
 
   const { value, currency } = parseAmountFromPayPalEvent(captureEvent);
 
-  // Save main order doc
-  const orderRef = db.collection("orders").doc(orderId);
-
   // buyer details (from paypal capture)
   const buyerEmail = payerEmail || null;
 
-  // try to get buyer name from paypal if present
   const payerName =
     safeStr(resource?.payer?.name?.given_name || "") +
     (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
   const buyerName = safeStr(payerName).trim() || null;
 
-  // producer name: prefer beatData.producerName, else fetch users/{producerId}
-  const finalProducerId = safeStr(producerId || beatData?.producerId || "");
-  if (!producerName && finalProducerId) {
-    const prodSnap = await db.collection("users").doc(finalProducerId).get().catch(() => null);
-    if (prodSnap && prodSnap.exists) {
-      const pd = prodSnap.data() || {};
-      producerName = safeStr(pd.displayName || pd.name || "");
-    }
-  }
-  if (!producerName) producerName = "Producer";
+  // Save main order doc
+  const orderRef = db.collection("orders").doc(orderId);
 
-  // ✅ UPDATED (adds buyerId)
   await orderRef.set(
     {
       buyerName,
@@ -1148,7 +1142,7 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
       amount: Number(value || cart.total || 0),
       currency: currency || cart.currency || "USD",
 
-      buyerId: buyerId || null, // ✅ ADD
+      buyerId: buyerId || null,
       status: "PAID",
 
       payerEmail,
@@ -1179,61 +1173,75 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     const unlockId = `${orderId}__${type}__${id}__${licenseKey}__${i}`;
     const unlockRef = db.collection("unlocks").doc(unlockId);
 
-    // ✅ ADD: fetch beat data for downloads (only if type === "beat")
+    // For beats, load beat data for title + paths
     let beatData = null;
     if (type === "beat" && id) {
       const beatSnap = await db.collection("beats").doc(String(id)).get();
       if (beatSnap.exists) beatData = beatSnap.data() || null;
     }
 
+    const beatTitle =
+      type === "beat"
+        ? safeStr(beatData?.title || it.title || "Beat")
+        : safeStr(it.title || "Sound Kit");
+
+    let producerName = safeStr(beatData?.producerName || "");
+    if (!producerName && producerId) {
+      const prodSnap = await db.collection("users").doc(producerId).get().catch(() => null);
+      if (prodSnap && prodSnap.exists) {
+        const pd = prodSnap.data() || {};
+        producerName = safeStr(pd.displayName || pd.name || "");
+      }
+    }
+    if (!producerName) producerName = "Producer";
+
     const downloadPath =
       safeStr(it.downloadPath || "") ||
-      beatData?.downloadPath ||
-      beatData?.filePath ||
+      safeStr(beatData?.downloadPath || "") ||
+      safeStr(beatData?.filePath || "") ||
       null;
 
     const audioUrl =
       safeStr(it.audioUrl || "") ||
-      beatData?.audio ||
+      safeStr(beatData?.audio || "") ||
       null;
 
-    // ✅ UPDATED unlock doc (adds buyerId, producerId, downloadPath, audioUrl, status)
     await unlockRef.set(
-    {
-      unlockId,
-      orderId,
-      cartId,
-      provider: "paypal",
-      type,
+      {
+        unlockId,
+        orderId,
+        cartId,
+        provider: "paypal",
+        type,
 
-      buyerId: buyerId || null,
-      buyerName,
-      buyerEmail,
+        buyerId: buyerId || null,
+        buyerName,
+        buyerEmail,
 
-      producerId: finalProducerId || null,
-      producerName,
+        producerId: producerId || null,
+        producerName,
 
-      beatId: type === "beat" ? id : null,
-      beatTitle,
+        beatId: type === "beat" ? id : null,
+        beatTitle: beatTitle || null,
 
-      kitId: type === "soundkit" ? id : null,
-      licenseKey: licenseKey || null,
+        kitId: type === "soundkit" ? id : null,
+        licenseKey: licenseKey || null,
 
-      downloadPath,
-      audioUrl,
+        downloadPath,
+        audioUrl,
 
-      qty,
-      amount: lineTotal,
-      receipt: safeStr(resource?.id),
-      payerEmail,
-      transactionDate: Date.now(),
-      status: "unlocked",
-      paid: true,
+        qty,
+        amount: lineTotal,
+        receipt: safeStr(resource?.id),
+        payerEmail,
+        transactionDate: Date.now(),
+        status: "unlocked",
+        paid: true,
 
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    },
-    { merge: true }
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true }
     );
 
     // credit producer (idempotent per unlock)
@@ -1385,15 +1393,13 @@ exports.paypalWebhook = onRequest(
 
           // fallback: load producer profile
           if (!producerName && pid) {
-             const prodSnap = await db.collection("users").doc(pid).get().catch(() => null);
-          if (prodSnap && prodSnap.exists) {
-            const pd = prodSnap.data() || {};
-            producerName = safeStr(pd.displayName || pd.name || "");
+            const prodSnap = await db.collection("users").doc(pid).get().catch(() => null);
+            if (prodSnap && prodSnap.exists) {
+              const pd = prodSnap.data() || {};
+              producerName = safeStr(pd.displayName || pd.name || "");
+            }
           }
-        }
-      }
-    }
-    if (!producerName) producerName = "Producer";
+          if (!producerName) producerName = "Producer";
 
       if (!existing.exists) {
         await orderRef.set({
@@ -2325,6 +2331,9 @@ exports.processPayoutRequest = onDocumentCreated(
       MPESA_SHORTCODE,
       B2C_INITIATOR_NAME,
       B2C_SECURITY_CREDENTIAL,
+      B2C_RESULT_URL,
+      B2C_TIMEOUT_URL,
+      MPESA_ENV,
     ],
   },
   async (event) => {
@@ -2335,13 +2344,14 @@ exports.processPayoutRequest = onDocumentCreated(
     const ref = snap.ref;
 
     // Only handle M-Pesa requests in "requested" state
-    if (data.method !== "mpesa") return;
-    if (data.status !== "requested") return;
+    if (safeStr(data.method).toLowerCase() !== "mpesa") return;
+    if (safeStr(data.status).toLowerCase() !== "requested") return;
 
     // Basic validation
     const amountKes = Number(data.amountKes);
-    const phone = String(data.destination || "").trim(); // expect 2547...
-    if (!amountKes || amountKes <= 0) {
+    const phone = normalizePhone(String(data.destination || "").trim()); // accept 07.. / 2547.. etc
+
+    if (!Number.isFinite(amountKes) || amountKes <= 0) {
       await ref.set({ status: "failed", failReason: "Invalid amountKes", updatedAt: Date.now() }, { merge: true });
       return;
     }
@@ -2354,20 +2364,20 @@ exports.processPayoutRequest = onDocumentCreated(
     await ref.set({ status: "processing", updatedAt: Date.now() }, { merge: true });
 
     try {
-      const consumerKey = MPESA_CONSUMER_KEY.value();
-      const consumerSecret = MPESA_CONSUMER_SECRET.value();
+      const token = await getAccessToken(
+        DARAJA_CONSUMER_KEY.value(),
+        DARAJA_CONSUMER_SECRET.value()
+      );
 
-      const token = await getAccessToken({ consumerKey, consumerSecret });
-
-      // Build callback URLs (YOUR deployed function URLs)
-      const resultUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cResult`;
-      const timeoutUrl = `https://us-central1-audiory-beat-store.cloudfunctions.net/mpesaB2cTimeout`;
-
-      const shortcode = B2C_SHORTCODE.value();
+      const shortcode = String(MPESA_SHORTCODE.value());
       const initiatorName = B2C_INITIATOR_NAME.value();
       const securityCredential = B2C_SECURITY_CREDENTIAL.value();
 
-      const commandId = "BusinessPayment"; // start here
+      // Use secrets if you configured them, else fallback to defaults (keeps your site working)
+      const resultUrl = safeStr(B2C_RESULT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/B2cResult`;
+      const timeoutUrl = safeStr(B2C_TIMEOUT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/B2cTimeout`;
+
+      const commandId = "BusinessPayment";
 
       const resp = await callB2C({
         token,
@@ -2383,15 +2393,14 @@ exports.processPayoutRequest = onDocumentCreated(
         commandId,
       });
 
-      // Save conversation IDs for matching callbacks
       await ref.set(
         {
           mpesa: {
             commandId,
-            conversationId: resp?.ConversationID || "",
-            originatorConversationId: resp?.OriginatorConversationID || "",
-            responseCode: resp?.ResponseCode || "",
-            responseDescription: resp?.ResponseDescription || "",
+            conversationId: safeStr(resp?.ConversationID),
+            originatorConversationId: safeStr(resp?.OriginatorConversationID),
+            responseCode: safeStr(resp?.ResponseCode),
+            responseDescription: safeStr(resp?.ResponseDescription),
             rawResponse: resp,
           },
           status: "submitted",
@@ -2714,7 +2723,9 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
       });
       return res.json({ url });
     }
-
+    
+    const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+    
     // ---------- GENERATE PDF ----------
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595.28, 841.89]); // A4
