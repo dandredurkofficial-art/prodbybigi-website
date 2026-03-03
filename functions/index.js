@@ -413,6 +413,7 @@ async function getAccessToken(consumerKey, consumerSecret) {
 }
 
 // Helper: call B2C
+// Helper: call B2C
 async function callB2C({
   token,
   shortcode,
@@ -422,7 +423,7 @@ async function callB2C({
   phone2547,
   resultUrl,
   timeoutUrl,
-  remarks,   
+  remarks,
   occassion,
   commandId,
 }) {
@@ -436,10 +437,10 @@ async function callB2C({
     Remarks: remarks || "Withdrawal",
     QueueTimeOutURL: timeoutUrl,
     ResultURL: resultUrl,
-    Occassion: occassion || "Audiory",
+    Occasion: occassion || "Audiory", // ✅ correct spelling
   };
 
-  const r = await fetch(`${darajaBase}/mpesa/b2c/v3/paymentrequest`, {
+  const r = await fetchFn(`${darajaBase()}/mpesa/b2c/v3/paymentrequest`, { // ✅ fetchFn + darajaBase()
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
