@@ -2248,94 +2248,88 @@ exports.b2cPay = onRequest(
 );
 
 // ResultURL callback
-exports.b2cResult = onRequest(
-  { region: "us-central1" },
-  async (req, res) => {
-    try {
-      const body = req.body;
-      console.log("B2C RESULT:", JSON.stringify(body));
+exports.b2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    const body = req.body;
+    console.log("B2C RESULT:", JSON.stringify(body));
 
-      const result = body?.Result || {};
-      const originatorConversationId = result?.OriginatorConversationID || "";
-      const conversationId = result?.ConversationID || "";
-      const transactionId = result?.TransactionID || "";
-      const resultCode = result?.ResultCode;
-      const resultDesc = result?.ResultDesc || "";
+    const result = body?.Result || {};
+    const originatorConversationId = String(result?.OriginatorConversationID || "");
+    const conversationId = String(result?.ConversationID || "");
+    const transactionId = String(result?.TransactionID || "");
+    const resultCode = result?.ResultCode;
+    const resultDesc = String(result?.ResultDesc || "");
 
-      // Find payout request by OriginatorConversationID
-      if (originatorConversationId) {
-        const q = await db
-          .collection("payoutsRequests")
-          .where("mpesa.originatorConversationId", "==", originatorConversationId)
-          .limit(1)
-          .get();
+    if (originatorConversationId) {
+      const ok = String(resultCode) === "0";
 
-        if (!q.empty) {
-          const ref = q.docs[0].ref;
-          const ok = String(resultCode) === "0";
+      const updated = await updateB2CByOriginatorId(originatorConversationId, {
+        payoutsRequests: {
+          status: ok ? "success" : "failed",
+          updatedAt: Date.now(),
+          mpesa: {
+            conversationId,
+            transactionId,
+            resultCode,
+            resultDesc,
+            rawResult: body,
+          },
+        },
+        mpesaB2CRequests: {
+          status: ok ? "SUCCESS" : "FAILED",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          mpesa: {
+            conversationId,
+            transactionId,
+            resultCode,
+            resultDesc,
+            rawResult: body,
+          },
+        },
+      });
 
-          await ref.set(
-            {
-              status: ok ? "success" : "failed",
-              updatedAt: Date.now(),
-              mpesa: {
-                conversationId,
-                transactionId,
-                resultCode,
-                resultDesc,
-                rawResult: body,
-              },
-            },
-            { merge: true }
-          );
-        }
-      }
-
-      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-    } catch (e) {
-      console.error("B2cResult error:", e);
-      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+      console.log("B2C RESULT updated docs:", updated);
     }
+
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("b2cResult error:", e);
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
-);
+});
 
 // TimeoutURL callback
-exports.b2cTimeout = onRequest(
-  { region: "us-central1" },
-  async (req, res) => {
-    try {
-      const body = req.body;
-      console.log("B2C TIMEOUT:", JSON.stringify(body));
+exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
+  try {
+    const body = req.body;
+    console.log("B2C TIMEOUT:", JSON.stringify(body));
 
-      const result = body?.Result || {};
-      const originatorConversationId = result?.OriginatorConversationID || "";
+    const result = body?.Result || {};
+    const originatorConversationId = String(result?.OriginatorConversationID || "");
 
-      if (originatorConversationId) {
-        const q = await db
-          .collection("payoutsRequests")
-          .where("mpesa.originatorConversationId", "==", originatorConversationId)
-          .limit(1)
-          .get();
+    if (originatorConversationId) {
+      const updated = await updateB2CByOriginatorId(originatorConversationId, {
+        payoutsRequests: {
+          status: "timeout",
+          updatedAt: Date.now(),
+          mpesa: { rawTimeout: body },
+        },
+        mpesaB2CRequests: {
+          status: "TIMEOUT",
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          mpesa: { rawTimeout: body },
+        },
+      });
 
-        if (!q.empty) {
-          await q.docs[0].ref.set(
-            {
-              status: "timeout",
-              updatedAt: Date.now(),
-              mpesa: { rawTimeout: body },
-            },
-            { merge: true }
-          );
-        }
-      }
-
-      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-    } catch (e) {
-      console.error("b2cTimeout error:", e);
-      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+      console.log("B2C TIMEOUT updated docs:", updated);
     }
+
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+  } catch (e) {
+    console.error("b2cTimeout error:", e);
+    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
-);
+});
 
 exports.processPayoutRequest = onDocumentCreated(
   {
