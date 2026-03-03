@@ -2359,7 +2359,6 @@ exports.b2cResult = onRequest(
       const resultCode = result?.ResultCode;
       const resultDesc = result?.ResultDesc || "";
 
-      // Find payout request by OriginatorConversationID
       if (originatorConversationId) {
         const q = await db
           .collection("payoutsRequests")
@@ -2368,10 +2367,11 @@ exports.b2cResult = onRequest(
           .get();
 
         if (!q.empty) {
-          const ref = q.docs[0].ref;
+          const reqRef = q.docs[0].ref;
           const ok = String(resultCode) === "0";
 
-          await ref.set(
+          // 1) update request status + mpesa fields
+          await reqRef.set(
             {
               status: ok ? "success" : "failed",
               updatedAt: Date.now(),
@@ -2385,6 +2385,52 @@ exports.b2cResult = onRequest(
             },
             { merge: true }
           );
+
+          // 2) settle wallet (success) OR refund (failed)
+          await db.runTransaction(async (tx) => {
+            const reqSnap = await tx.get(reqRef);
+            if (!reqSnap.exists) return;
+
+            const reqData = reqSnap.data() || {};
+
+            // ✅ idempotent guard
+            if (reqData.walletSettled === true) return;
+
+            const producerId = String(reqData.producerId || "");
+            const amountUsd = Number(reqData.amountUsd ?? reqData.amount);
+
+            if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) {
+              // mark settled to avoid infinite retries on bad data
+              tx.set(reqRef, { walletSettled: true }, { merge: true });
+              return;
+            }
+
+            const walletRef = db.doc(`wallets/${producerId}`);
+            const wSnap = await tx.get(walletRef);
+            const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+            const availableUsd = Number(w.availableUsd || 0);
+            const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+            const paidOutUsd = Number(w.paidOutUsd || 0);
+
+            if (ok) {
+              // ✅ success: pending -> paidOut
+              tx.set(walletRef, {
+                pendingPayoutUsd: +(pendingPayoutUsd - amountUsd).toFixed(2),
+                paidOutUsd: +(paidOutUsd + amountUsd).toFixed(2),
+                updatedAt: Date.now(),
+              }, { merge: true });
+            } else {
+              // ✅ failed: pending -> available (refund)
+              tx.set(walletRef, {
+                pendingPayoutUsd: +(pendingPayoutUsd - amountUsd).toFixed(2),
+                availableUsd: +(availableUsd + amountUsd).toFixed(2),
+                updatedAt: Date.now(),
+              }, { merge: true });
+            }
+
+            tx.set(reqRef, { walletSettled: true, updatedAt: Date.now() }, { merge: true });
+          });
         }
       }
 
@@ -2415,7 +2461,10 @@ exports.b2cTimeout = onRequest(
           .get();
 
         if (!q.empty) {
-          await q.docs[0].ref.set(
+          const reqRef = q.docs[0].ref;
+
+          // 1) mark timeout
+          await reqRef.set(
             {
               status: "timeout",
               updatedAt: Date.now(),
@@ -2423,6 +2472,39 @@ exports.b2cTimeout = onRequest(
             },
             { merge: true }
           );
+
+          // 2) refund in wallet (idempotent)
+          await db.runTransaction(async (tx) => {
+            const reqSnap = await tx.get(reqRef);
+            if (!reqSnap.exists) return;
+
+            const reqData = reqSnap.data() || {};
+            if (reqData.walletSettled === true) return;
+
+            const producerId = String(reqData.producerId || "");
+            const amountUsd = Number(reqData.amountUsd ?? reqData.amount);
+
+            if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) {
+              tx.set(reqRef, { walletSettled: true }, { merge: true });
+              return;
+            }
+
+            const walletRef = db.doc(`wallets/${producerId}`);
+            const wSnap = await tx.get(walletRef);
+            const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+            const availableUsd = Number(w.availableUsd || 0);
+            const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+
+            // ✅ timeout: refund pending -> available
+            tx.set(walletRef, {
+              pendingPayoutUsd: +(pendingPayoutUsd - amountUsd).toFixed(2),
+              availableUsd: +(availableUsd + amountUsd).toFixed(2),
+              updatedAt: Date.now(),
+            }, { merge: true });
+
+            tx.set(reqRef, { walletSettled: true, updatedAt: Date.now() }, { merge: true });
+          });
         }
       }
 
