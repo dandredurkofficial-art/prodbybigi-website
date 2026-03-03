@@ -2247,7 +2247,7 @@ exports.b2cPay = onRequest(
 );
 
 // ResultURL callback
-exports.B2cResult = onRequest(
+exports.b2cResult = onRequest(
   { region: "us-central1" },
   async (req, res) => {
     try {
@@ -2299,7 +2299,7 @@ exports.B2cResult = onRequest(
 );
 
 // TimeoutURL callback
-exports.B2cTimeout = onRequest(
+exports.b2cTimeout = onRequest(
   { region: "us-central1" },
   async (req, res) => {
     try {
@@ -2330,10 +2330,11 @@ exports.B2cTimeout = onRequest(
 
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     } catch (e) {
-      console.error("B2cTimeout error:", e);
+      console.error("b2cTimeout error:", e);
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    }
   }
-});
+);
 
 exports.processPayoutRequest = onDocumentCreated(
   {
@@ -2388,8 +2389,8 @@ exports.processPayoutRequest = onDocumentCreated(
       const securityCredential = B2C_SECURITY_CREDENTIAL.value();
 
       // Use secrets if you configured them, else fallback to defaults (keeps your site working)
-      const resultUrl = safeStr(B2C_RESULT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/B2cResult`;
-      const timeoutUrl = safeStr(B2C_TIMEOUT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/B2cTimeout`;
+      const resultUrl = safeStr(B2C_RESULT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult`;
+      const timeoutUrl = safeStr(B2C_TIMEOUT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout`;
 
       const commandId = "BusinessPayment";
 
