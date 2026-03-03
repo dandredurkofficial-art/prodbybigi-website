@@ -2653,6 +2653,59 @@ exports.onPayoutPaidUpdateWallet = onDocumentWritten(
   }
 );
 
+exports.reservePayoutFunds = onDocumentCreated(
+  { region: "us-central1", document: "payoutsRequests/{requestId}" },
+  async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const ref = snap.ref;
+    const data = snap.data() || {};
+
+    const producerId = String(data.producerId || "");
+    const amountUsd = Number(data.amountUsd ?? data.amount); // your UI uses "amount"
+    const status = String(data.status || "").toLowerCase();
+
+    // only reserve once, only for fresh requests
+    if (!producerId) return;
+    if (!Number.isFinite(amountUsd) || amountUsd <= 0) return;
+    if (status !== "requested") return;
+
+    const db = admin.firestore();
+    const walletRef = db.doc(`wallets/${producerId}`);
+
+    await db.runTransaction(async (tx) => {
+      const wSnap = await tx.get(walletRef);
+      const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+      const availableUsd = Number(w.availableUsd || 0);
+      const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+
+      if (availableUsd < amountUsd) {
+        tx.set(ref, {
+          status: "failed",
+          failReason: "Insufficient balance",
+          updatedAt: Date.now(),
+        }, { merge: true });
+        return;
+      }
+
+      // ✅ reserve the funds
+      tx.set(walletRef, {
+        availableUsd: +(availableUsd - amountUsd).toFixed(2),
+        pendingPayoutUsd: +(pendingPayoutUsd + amountUsd).toFixed(2),
+        updatedAt: Date.now(),
+      }, { merge: true });
+
+      tx.set(ref, {
+        status: "processing",      // reserved
+        amountUsd: +amountUsd.toFixed(2),
+        updatedAt: Date.now(),
+      }, { merge: true });
+    });
+  }
+);
+
 /* =========================================================
 ✅ SECURE DOWNLOAD (AUTH + CORS)
 ========================================================= */
