@@ -267,6 +267,84 @@ function b2cPaymentUrl() {
   return `${darajaBase()}/mpesa/b2c/v3/paymentrequest`;
 }
 
+// ✅ Helper: update BOTH possible collections by OriginatorConversationID
+async function updateB2CByOriginatorId(originatorConversationId, patch) {
+  const id = String(originatorConversationId || "").trim();
+  if (!id) return { payoutsRequests: 0, mpesaB2CRequests: 0 };
+
+  const results = { payoutsRequests: 0, mpesaB2CRequests: 0 };
+
+  // ---- payoutsRequests: match mpesa.originatorConversationId OR top-level originatorConversationId
+  {
+    const qs = [];
+
+    qs.push(
+      db.collection("payoutsRequests")
+        .where("mpesa.originatorConversationId", "==", id)
+        .limit(25)
+        .get()
+    );
+
+    qs.push(
+      db.collection("payoutsRequests")
+        .where("originatorConversationId", "==", id)
+        .limit(25)
+        .get()
+    );
+
+    const [q1, q2] = await Promise.all(qs);
+
+    const docs = new Map();
+    q1.docs.forEach((d) => docs.set(d.id, d));
+    q2.docs.forEach((d) => docs.set(d.id, d));
+
+    if (docs.size) {
+      const batch = db.batch();
+      for (const d of docs.values()) {
+        batch.set(d.ref, patch.payoutsRequests, { merge: true });
+        results.payoutsRequests++;
+      }
+      await batch.commit();
+    }
+  }
+
+  // ---- mpesaB2CRequests: match originatorConversationId OR mpesa.originatorConversationId
+  {
+    const qs = [];
+
+    qs.push(
+      db.collection("mpesaB2CRequests")
+        .where("originatorConversationId", "==", id)
+        .limit(25)
+        .get()
+    );
+
+    qs.push(
+      db.collection("mpesaB2CRequests")
+        .where("mpesa.originatorConversationId", "==", id)
+        .limit(25)
+        .get()
+    );
+
+    const [q1, q2] = await Promise.all(qs);
+
+    const docs = new Map();
+    q1.docs.forEach((d) => docs.set(d.id, d));
+    q2.docs.forEach((d) => docs.set(d.id, d));
+
+    if (docs.size) {
+      const batch = db.batch();
+      for (const d of docs.values()) {
+        batch.set(d.ref, patch.mpesaB2CRequests, { merge: true });
+        results.mpesaB2CRequests++;
+      }
+      await batch.commit();
+    }
+  }
+
+  return results;
+}
+
 /* =========================================================
 ✅ AUTH: VERIFY FIREBASE ID TOKEN (buyerId support)
 ========================================================= */
@@ -413,7 +491,6 @@ async function getAccessToken(consumerKey, consumerSecret) {
 }
 
 // Helper: call B2C
-// Helper: call B2C
 async function callB2C({
   token,
   shortcode,
@@ -423,7 +500,7 @@ async function callB2C({
   phone2547,
   resultUrl,
   timeoutUrl,
-  remarks,
+  remarks,   
   occassion,
   commandId,
 }) {
@@ -437,10 +514,10 @@ async function callB2C({
     Remarks: remarks || "Withdrawal",
     QueueTimeOutURL: timeoutUrl,
     ResultURL: resultUrl,
-    Occasion: occassion || "Audiory", // ✅ correct spelling
+    Occasion: occassion || "Audiory",
   };
 
-  const r = await fetchFn(`${darajaBase()}/mpesa/b2c/v3/paymentrequest`, { // ✅ fetchFn + darajaBase()
+  const r = await fetch(`${darajaBase()}/mpesa/b2c/v3/paymentrequest`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -2162,7 +2239,6 @@ exports.c2bConfirmation = onRequest({ region: "us-central1" }, async (req, res) 
   }
 });
 
-// ✅ UPDATED: b2cPay (uses callB2C + consistent response saving)
 exports.b2cPay = onRequest(
   {
     region: "us-central1",
@@ -2186,19 +2262,11 @@ exports.b2cPay = onRequest(
       if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
 
       const { phone, amount, remarks } = req.body || {};
-      if (!phone || amount == null) {
-        return res.status(400).json({ error: "phone and amount are required" });
-      }
+      if (!phone || !amount) return res.status(400).json({ error: "phone and amount are required" });
 
       const msisdn = normalizePhone(phone);
-      if (!/^2547\d{8}$/.test(msisdn)) {
-        return res.status(400).json({ error: "Invalid phone (use 07.. or 2547XXXXXXXX)" });
-      }
-
       const amt = Number(amount);
-      if (!Number.isFinite(amt) || amt <= 0) {
-        return res.status(400).json({ error: "amount invalid" });
-      }
+      if (!Number.isFinite(amt) || amt <= 0) return res.status(400).json({ error: "amount invalid" });
 
       const token = await getAccessToken(
         DARAJA_CONSUMER_KEY.value(),
@@ -2206,172 +2274,146 @@ exports.b2cPay = onRequest(
       );
 
       const payoutRef = db.collection("mpesaB2CRequests").doc();
-      await payoutRef.set(
-        {
-          phone: msisdn,
-          amount: amt,
-          remarks: safeStr(remarks || "Audiory payout"),
-          status: "processing",
-          createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        },
-        { merge: true }
-      );
-
-      const shortcode = String(MPESA_SHORTCODE.value());
-      const initiatorName = safeStr(B2C_INITIATOR_NAME.value());
-      const securityCredential = safeStr(B2C_SECURITY_CREDENTIAL.value());
-
-      const resultUrl =
-        safeStr(B2C_RESULT_URL.value()) ||
-        "https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult";
-
-      const timeoutUrl =
-        safeStr(B2C_TIMEOUT_URL.value()) ||
-        "https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout";
-
-      const resp = await callB2C({
-        token,
-        shortcode,
-        initiatorName,
-        securityCredential,
-        amountKes: amt,
-        phone2547: msisdn,
-        resultUrl,
-        timeoutUrl,
+      await payoutRef.set({
+        phone: msisdn,
+        amount: amt,
         remarks: safeStr(remarks || "Audiory payout"),
-        occassion: payoutRef.id, // ✅ track which request
-        commandId: "BusinessPayment",
+        status: "PENDING",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
+      const payload = {
+        InitiatorName: B2C_INITIATOR_NAME.value(),
+        SecurityCredential: B2C_SECURITY_CREDENTIAL.value(),
+        CommandID: "BusinessPayment",
+        Amount: amt,
+        PartyA: String(MPESA_SHORTCODE.value()),
+        PartyB: msisdn,
+        Remarks: safeStr(remarks || "Audiory payout"),
+        QueueTimeOutURL: B2C_TIMEOUT_URL.value(),
+        ResultURL: B2C_RESULT_URL.value(),
+        Occasion: payoutRef.id,
+      };
+
+      const r = await fetchFn(b2cPaymentUrl(), {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await r.json().catch(() => ({}));
+
       await payoutRef.set(
         {
-          b2cResponse: resp,
-          conversationId: resp?.ConversationID || null,
-          originatorConversationId: resp?.OriginatorConversationID || null,
-          status: "submitted",
+          b2cResponse: data,
+          conversationId: data.ConversationID || null,
+          originatorConversationId: data.OriginatorConversationID || null,
           updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         },
         { merge: true }
       );
 
-      return res.status(200).json({ ok: true, requestId: payoutRef.id, ...resp });
+      return res.status(r.ok ? 200 : 400).json({ requestId: payoutRef.id, ...data });
     } catch (e) {
       console.error("b2cPay error:", e);
-      return res.status(500).json({ ok: false, error: e.message || String(e) });
+      return res.status(500).json({ error: e.message });
     }
   }
 );
 
-// ✅ RESULT URL callback (Safaricom)
-exports.b2cResult = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    const body = req.body || {};
-    console.log("B2C RESULT:", JSON.stringify(body));
+// ResultURL callback
+exports.b2cResult = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      const body = req.body;
+      console.log("B2C RESULT:", JSON.stringify(body));
 
-    const result = body?.Result || {};
-    const originatorConversationId = safeStr(result?.OriginatorConversationID);
-    const conversationId = safeStr(result?.ConversationID);
-    const transactionId = safeStr(result?.TransactionID);
-    const resultCode = safeStr(result?.ResultCode);
-    const resultDesc = safeStr(result?.ResultDesc);
+      const result = body?.Result || {};
+      const originatorConversationId = result?.OriginatorConversationID || "";
+      const conversationId = result?.ConversationID || "";
+      const transactionId = result?.TransactionID || "";
+      const resultCode = result?.ResultCode;
+      const resultDesc = result?.ResultDesc || "";
 
-    if (originatorConversationId) {
-      const ok = String(resultCode) === "0";
+      // Find payout request by OriginatorConversationID
+      if (originatorConversationId) {
+        const q = await db
+          .collection("payoutsRequests")
+          .where("mpesa.originatorConversationId", "==", originatorConversationId)
+          .limit(1)
+          .get();
 
-      const updated = await updateB2CByOriginatorId(originatorConversationId, {
-        payoutsRequests: {
-          status: ok ? "success" : "failed",
-          updatedAt: Date.now(),
-          originatorConversationId, // helpful for querying later
-          mpesa: {
-            ...(typeof body === "object" ? {} : {}),
-            originatorConversationId,
-            conversationId,
-            transactionId,
-            resultCode,
-            resultDesc,
-            rawResult: body,
-          },
-        },
+        if (!q.empty) {
+          const ref = q.docs[0].ref;
+          const ok = String(resultCode) === "0";
 
-        mpesaB2CRequests: {
-          status: ok ? "success" : "failed",
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          originatorConversationId,
-          conversationId,
-          transactionId,
-          resultCode,
-          resultDesc,
-          mpesa: {
-            originatorConversationId,
-            conversationId,
-            transactionId,
-            resultCode,
-            resultDesc,
-            rawResult: body,
-          },
-        },
-      });
+          await ref.set(
+            {
+              status: ok ? "success" : "failed",
+              updatedAt: Date.now(),
+              mpesa: {
+                conversationId,
+                transactionId,
+                resultCode,
+                resultDesc,
+                rawResult: body,
+              },
+            },
+            { merge: true }
+          );
+        }
+      }
 
-      console.log("B2C RESULT updated docs:", updated);
-    } else {
-      console.warn("B2C RESULT missing OriginatorConversationID");
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    } catch (e) {
+      console.error("B2cResult error:", e);
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
-
-    // Safaricom expects 200 + ResultCode 0 to accept
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  } catch (e) {
-    console.error("b2cResult error:", e);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
-});
+);
 
-// ✅ TIMEOUT URL callback (Safaricom)
-exports.b2cTimeout = onRequest({ region: "us-central1" }, async (req, res) => {
-  try {
-    const body = req.body || {};
-    console.log("B2C TIMEOUT:", JSON.stringify(body));
+// TimeoutURL callback
+exports.b2cTimeout = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    try {
+      const body = req.body;
+      console.log("B2C TIMEOUT:", JSON.stringify(body));
 
-    const result = body?.Result || {};
-    const originatorConversationId = safeStr(result?.OriginatorConversationID);
+      const result = body?.Result || {};
+      const originatorConversationId = result?.OriginatorConversationID || "";
 
-    if (originatorConversationId) {
-      const updated = await updateB2CByOriginatorId(originatorConversationId, {
-        payoutsRequests: {
-          status: "timeout",
-          updatedAt: Date.now(),
-          originatorConversationId,
-          mpesa: {
-            originatorConversationId,
-            rawTimeout: body,
-          },
-        },
+      if (originatorConversationId) {
+        const q = await db
+          .collection("payoutsRequests")
+          .where("mpesa.originatorConversationId", "==", originatorConversationId)
+          .limit(1)
+          .get();
 
-        mpesaB2CRequests: {
-          status: "timeout",
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          originatorConversationId,
-          mpesa: {
-            originatorConversationId,
-            rawTimeout: body,
-          },
-        },
-      });
+        if (!q.empty) {
+          await q.docs[0].ref.set(
+            {
+              status: "timeout",
+              updatedAt: Date.now(),
+              mpesa: { rawTimeout: body },
+            },
+            { merge: true }
+          );
+        }
+      }
 
-      console.log("B2C TIMEOUT updated docs:", updated);
-    } else {
-      console.warn("B2C TIMEOUT missing OriginatorConversationID");
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
+    } catch (e) {
+      console.error("b2cTimeout error:", e);
+      return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
     }
-
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
-  } catch (e) {
-    console.error("b2cTimeout error:", e);
-    return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
   }
-});
+);
 
-// ✅ UPDATED: processPayoutRequest (idempotent + uses callB2C + consistent status)
 exports.processPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
@@ -2403,40 +2445,16 @@ exports.processPayoutRequest = onDocumentCreated(
     const phone = normalizePhone(String(data.destination || "").trim()); // accept 07.. / 2547.. etc
 
     if (!Number.isFinite(amountKes) || amountKes <= 0) {
-      await ref.set(
-        { status: "failed", failReason: "Invalid amountKes", updatedAt: Date.now() },
-        { merge: true }
-      );
+      await ref.set({ status: "failed", failReason: "Invalid amountKes", updatedAt: Date.now() }, { merge: true });
       return;
     }
-
     if (!/^2547\d{8}$/.test(phone)) {
-      await ref.set(
-        {
-          status: "failed",
-          failReason: "Invalid destination phone (use 2547XXXXXXXX)",
-          updatedAt: Date.now(),
-        },
-        { merge: true }
-      );
+      await ref.set({ status: "failed", failReason: "Invalid destination phone (use 2547XXXXXXXX)", updatedAt: Date.now() }, { merge: true });
       return;
     }
 
-    // ✅ Idempotent lock (prevents double B2C on retries/races)
-    await db.runTransaction(async (tx) => {
-      const fresh = await tx.get(ref);
-      const cur = fresh.data() || {};
-      const s = safeStr(cur.status).toLowerCase();
-
-      // only proceed if still requested
-      if (s !== "requested") return;
-
-      tx.set(ref, { status: "processing", updatedAt: Date.now() }, { merge: true });
-    });
-
-    // If we didn't acquire the lock, stop
-    const again = await ref.get();
-    if (safeStr(again.data()?.status).toLowerCase() !== "processing") return;
+    // Prevent double-processing
+    await ref.set({ status: "processing", updatedAt: Date.now() }, { merge: true });
 
     try {
       const token = await getAccessToken(
@@ -2445,16 +2463,12 @@ exports.processPayoutRequest = onDocumentCreated(
       );
 
       const shortcode = String(MPESA_SHORTCODE.value());
-      const initiatorName = safeStr(B2C_INITIATOR_NAME.value());
-      const securityCredential = safeStr(B2C_SECURITY_CREDENTIAL.value());
+      const initiatorName = B2C_INITIATOR_NAME.value();
+      const securityCredential = B2C_SECURITY_CREDENTIAL.value();
 
-      const resultUrl =
-        safeStr(B2C_RESULT_URL.value()) ||
-        "https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult";
-
-      const timeoutUrl =
-        safeStr(B2C_TIMEOUT_URL.value()) ||
-        "https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout";
+      // Use secrets if you configured them, else fallback to defaults (keeps your site working)
+      const resultUrl = safeStr(B2C_RESULT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult`;
+      const timeoutUrl = safeStr(B2C_TIMEOUT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout`;
 
       const commandId = "BusinessPayment";
 
@@ -2476,9 +2490,6 @@ exports.processPayoutRequest = onDocumentCreated(
         {
           mpesa: {
             commandId,
-            amountKes,
-            destination: phone,
-
             conversationId: safeStr(resp?.ConversationID),
             originatorConversationId: safeStr(resp?.OriginatorConversationID),
             responseCode: safeStr(resp?.ResponseCode),
