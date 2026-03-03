@@ -2440,21 +2440,60 @@ exports.processPayoutRequest = onDocumentCreated(
     if (safeStr(data.method).toLowerCase() !== "mpesa") return;
     if (safeStr(data.status).toLowerCase() !== "requested") return;
 
-    // Basic validation
-    const amountKes = Number(data.amountKes);
+    // --- Validate destination phone ---
     const phone = normalizePhone(String(data.destination || "").trim()); // accept 07.. / 2547.. etc
-
-    if (!Number.isFinite(amountKes) || amountKes <= 0) {
-      await ref.set({ status: "failed", failReason: "Invalid amountKes", updatedAt: Date.now() }, { merge: true });
+    if (!/^2547\d{8}$/.test(phone)) {
+      await ref.set(
+        { status: "failed", failReason: "Invalid destination phone (use 2547XXXXXXXX)", updatedAt: Date.now() },
+        { merge: true }
+      );
       return;
     }
-    if (!/^2547\d{8}$/.test(phone)) {
-      await ref.set({ status: "failed", failReason: "Invalid destination phone (use 2547XXXXXXXX)", updatedAt: Date.now() }, { merge: true });
+
+    // --- Determine amount in USD (client sends USD as `amount`) ---
+    const amountUsd = Number(data.amount); // your dashboard writes this
+    if (!Number.isFinite(amountUsd) || amountUsd <= 0) {
+      await ref.set(
+        { status: "failed", failReason: "Invalid amount (USD)", updatedAt: Date.now() },
+        { merge: true }
+      );
+      return;
+    }
+
+    // --- Convert USD -> KES (choose ONE approach below) ---
+    // Option 1 (simple fixed rate): set your own constant
+    const USD_TO_KES = 160; // TODO: change to your preferred rate
+    const amountKes = Math.round(amountUsd * USD_TO_KES);
+
+    // Option 2 (if you already store exchange rate somewhere), replace above with your rate lookup.
+
+    // --- Enforce minimum for B2C + integer amount ---
+    const MIN_KES = 10; // TODO: set based on your business / Mpesa limits
+    if (!Number.isInteger(amountKes) || amountKes < MIN_KES) {
+      await ref.set(
+        {
+          status: "failed",
+          failReason: `Invalid amountKes (min ${MIN_KES} KES). Increase withdrawal amount.`,
+          amountUsd,
+          amountKes,
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
       return;
     }
 
     // Prevent double-processing
-    await ref.set({ status: "processing", updatedAt: Date.now() }, { merge: true });
+    await ref.set(
+      {
+        status: "processing",
+        amountUsd,
+        amountKes,
+        destination: phone, // normalize stored phone too
+        updatedAt: Date.now(),
+      },
+      { merge: true }
+    );
 
     try {
       const token = await getAccessToken(
@@ -2466,9 +2505,12 @@ exports.processPayoutRequest = onDocumentCreated(
       const initiatorName = B2C_INITIATOR_NAME.value();
       const securityCredential = B2C_SECURITY_CREDENTIAL.value();
 
-      // Use secrets if you configured them, else fallback to defaults (keeps your site working)
-      const resultUrl = safeStr(B2C_RESULT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult`;
-      const timeoutUrl = safeStr(B2C_TIMEOUT_URL.value()) || `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout`;
+      const resultUrl =
+        safeStr(B2C_RESULT_URL.value()) ||
+        `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cResult`;
+      const timeoutUrl =
+        safeStr(B2C_TIMEOUT_URL.value()) ||
+        `https://us-central1-audiory-beat-store.cloudfunctions.net/b2cTimeout`;
 
       const commandId = "BusinessPayment";
 
