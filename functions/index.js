@@ -1751,6 +1751,91 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
   }
 );
 
+exports.pollPayPalPayouts = onSchedule(
+  { region: "us-central1", schedule: "every 2 minutes", secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_ENV] },
+  async () => {
+    const env = PAYPAL_ENV.value();
+    const token = await getPayPalAccessToken({
+      clientId: PAYPAL_CLIENT_ID.value(),
+      clientSecret: PAYPAL_CLIENT_SECRET.value(),
+      env,
+    });
+
+    const snap = await db.collection("payoutsRequests")
+      .where("method", "==", "paypal")
+      .where("status", "==", "submitted")
+      .limit(20)
+      .get();
+
+    for (const doc of snap.docs) {
+      const data = doc.data() || {};
+      const payoutBatchId = data?.paypal?.payoutBatchId;
+      if (!payoutBatchId) continue;
+
+      // Get batch details
+      const r = await fetch(`${paypalBase(env)}/v1/payments/payouts/${payoutBatchId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const j = await r.json().catch(()=> ({}));
+      if (!r.ok) {
+        await doc.ref.set({ status:"failed", failReason: j?.message || "PayPal batch fetch failed", updatedAt: Date.now() }, { merge:true });
+        continue;
+      }
+
+      const batchStatus = String(j?.batch_header?.batch_status || "").toUpperCase();
+      // Common statuses: SUCCESS / PROCESSING / DENIED / CANCELED etc.
+      if (batchStatus === "PROCESSING" || batchStatus === "PENDING") continue;
+
+      const ok = (batchStatus === "SUCCESS");
+
+      // mark request success/failed
+      await doc.ref.set({
+        status: ok ? "success" : "failed",
+        updatedAt: Date.now(),
+        paypal: {
+          ...(data.paypal || {}),
+          batchStatus,
+          rawBatch: j,
+        }
+      }, { merge:true });
+
+      // ✅ settle wallet ONCE if success
+      if (ok) {
+        await settleWalletForPayoutRequest(doc.ref, data);
+      }
+    }
+  }
+);
+
+async function settleWalletForPayoutRequest(reqRef, reqData){
+  // idempotency: only deduct once
+  await db.runTransaction(async (tx) => {
+    const fresh = await tx.get(reqRef);
+    const d = fresh.data() || {};
+    if (d.settled === true) return;
+
+    const producerId = String(d.producerId || "");
+    const amountUsd = Number(d.amountUsd ?? d.amount);
+    if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) return;
+
+    const walletRef = db.doc(`wallets/${producerId}`);
+    const wsnap = await tx.get(walletRef);
+    const w = wsnap.exists ? wsnap.data() : {};
+    const availableUsd = Number(w.availableUsd || 0);
+
+    tx.set(walletRef, {
+      availableUsd: Math.max(0, availableUsd - amountUsd),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge:true });
+
+    tx.set(reqRef, {
+      settled: true,
+      settledAt: Date.now(),
+      settledUsd: amountUsd,
+    }, { merge:true });
+  });
+}
+
 /* =========================================================
 ✅ OPTIONAL: payout status (manual)
 ========================================================= */
