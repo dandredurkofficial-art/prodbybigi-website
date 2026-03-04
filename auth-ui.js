@@ -418,9 +418,14 @@ onAuthStateChanged(getAuthOrThrow(), async (user) => {
 
     const role = snap.exists() ? (snap.data()?.role || "") : "";
 
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+
     if (!role) {
 
-      location.href = "/register/";
+      if (!location.pathname.startsWith("/register")) {
+        location.href = "/register/";
+      }
+
       return;
 
     }
