@@ -2062,60 +2062,117 @@ async function loadPayoutUI(){
 }
 window.loadPayoutUI = loadPayoutUI;
 
-document.addEventListener("click", async (e)=>{
+document.addEventListener("click", async (e) => {
   const btn = e.target.closest("#withdrawBtn");
   if (!btn) return;
 
   if (!window.currentUser) return alert("Login again.");
 
-  const amount = Number(($("withdrawAmount").value || "").trim());
-  const dest = ($("withdrawDestination").value || "").trim();
-  const method = ($("withdrawMethod").value || "paypal").trim();
-  const status = $("withdrawStatus");
+  const amountUsd = Number(($("withdrawAmount").value || "").trim());
+  let dest = ($("withdrawDestination").value || "").trim();
+  const method = String(($("withdrawMethod").value || "paypal")).trim().toLowerCase();
+  const statusEl = $("withdrawStatus");
 
-  if (!amount || amount <= 0) return alert("Enter a valid amount");
+  if (!Number.isFinite(amountUsd) || amountUsd <= 0) return alert("Enter a valid amount");
   if (!dest) return alert("Enter PayPal email or M-Pesa phone");
 
+  // wallet balance check (still USD wallet)
   const w = await getProducerWalletDoc();
   const bal = walletNumber(w?.availableUsd);
 
-  if (bal <= 0 || amount > bal){
-    if (status) status.style.color = "#ef4444";
-    if (status) status.textContent = "❌ Insufficient balance for this withdrawal.";
+  if (bal <= 0 || amountUsd > bal) {
+    if (statusEl) statusEl.style.color = "#ef4444";
+    if (statusEl) statusEl.textContent = "❌ Insufficient balance for this withdrawal.";
     return;
+  }
+
+  // basic destination validation + normalization
+  function normalizePhone(phone) {
+    let p = String(phone || "").trim().replace(/\s+/g, "");
+    if (p.startsWith("+")) p = p.slice(1);
+    if (p.startsWith("0")) p = "254" + p.slice(1);
+    if (p.startsWith("7")) p = "254" + p;
+    return p;
+  }
+
+  // If MPesa: normalize phone + compute amountKes
+  let amountKes = null;
+  if (method === "mpesa") {
+    dest = normalizePhone(dest);
+
+    if (!/^2547\d{8}$/.test(dest)) {
+      alert("M-Pesa phone must be like 2547XXXXXXXX (or 07XXXXXXXX).");
+      return;
+    }
+
+    // ✅ IMPORTANT:
+    // Set this to your real USD→KES rate (same as your functions secret USD_KES_RATE)
+    // If you already show USD input, we convert to KES for B2C.
+    const USD_TO_KES = 160; // <-- change to your current rate
+    amountKes = Math.max(1, Math.round(amountUsd * USD_TO_KES));
+  } else {
+    // PayPal: light email-ish check
+    if (!dest.includes("@") || dest.length < 6) {
+      alert("Enter a valid PayPal email.");
+      return;
+    }
+  }
+
+  // prevent multiple pending withdrawals
+  try {
+    const pendingQ = window.query(
+      window.collection(window.db, "payoutsRequests"),
+      window.where("producerId", "==", window.currentUser.uid),
+      window.where("status", "in", ["requested", "processing", "submitted"])
+    );
+    const pendingSnap = await window.getDocs(pendingQ);
+    if (!pendingSnap.empty) {
+      if (statusEl) statusEl.style.color = "#ef4444";
+      if (statusEl) statusEl.textContent = "❌ You already have a withdrawal processing.";
+      return;
+    }
+  } catch (_) {
+    // if rules block this query, we still allow request (but ideally rules allow it)
   }
 
   btn.disabled = true;
   btn.textContent = "Submitting...";
 
-  try{
-    // ✅ Production: create payout request in Firestore
-    await window.addDoc(window.collection(window.db, "payoutsRequests"), {
+  try {
+    const payload = {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
-      method,
+
+      method, // "paypal" or "mpesa"
       destination: dest,
-      amount,
+
+      // ✅ Always store USD
+      amountUsd,
+      amount: amountUsd, // keep backward compatibility
       currency: "USD",
+
+      // ✅ Only MPesa needs KES
+      amountKes: method === "mpesa" ? amountKes : null,
+
       status: "requested",
       createdAt: Date.now(),
-      updatedAt: Date.now()
-    });
+      updatedAt: Date.now(),
+    };
 
-    if (status) status.style.color = "#22c55e";
-    if (status) status.textContent = "✅ Withdrawal request submitted. Processing will start shortly.";
+    await window.addDoc(window.collection(window.db, "payoutsRequests"), payload);
+
+    if (statusEl) statusEl.style.color = "#22c55e";
+    if (statusEl) statusEl.textContent = "✅ Withdrawal request submitted. Processing will start shortly.";
 
     $("withdrawAmount").value = "";
     $("withdrawDestination").value = "";
 
-    // ✅ refresh balances on screen
     await loadPayoutUI();
     await loadDashboardStats();
     await loadWithdrawalHistory();
-  
-  }catch(err){
-    if (status) status.style.color = "#ef4444";
-    if (status) status.textContent = "❌ Request failed: " + (err?.message || err);
+  } catch (err) {
+    if (statusEl) statusEl.style.color = "#ef4444";
+    if (statusEl) statusEl.textContent = "❌ Request failed: " + (err?.message || err);
   }
 
   btn.disabled = false;
