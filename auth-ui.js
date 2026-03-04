@@ -104,11 +104,28 @@ window.registerUser = async function registerUser() {
 
     setStatus("Creating account...");
 
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    const uid = cred.user.uid;
+    let user;
+
+    /* ------------------------------------
+       FIX: prevent duplicate Google account
+    ------------------------------------ */
+
+    if (auth.currentUser && auth.currentUser.email === email) {
+
+      // user already signed in with Google
+      user = auth.currentUser;
+
+    } else {
+
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      user = cred.user;
+
+    }
+
+    const uid = user.uid;
 
     try {
-      await updateProfile(cred.user, {
+      await updateProfile(user, {
         displayName: role === "producer" ? "Producer" : "Buyer"
       });
     } catch {}
@@ -152,6 +169,7 @@ window.registerUser = async function registerUser() {
     alert(err?.message || String(err));
 
   }
+
 };
 
 /* =========================
