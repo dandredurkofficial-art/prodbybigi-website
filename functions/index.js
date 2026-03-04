@@ -1431,6 +1431,103 @@ exports.paypalWebhook = onRequest(
         eventType.startsWith("PAYMENT.PAYOUTS-ITEM.") ||
         eventType.startsWith("PAYMENT.PAYOUTS-ITEM_"); // some integrations vary
 
+       /**
+ * ============================
+ * ✅ PAYPAL PAYOUT BATCH EVENTS
+ * ============================
+ * Handles when entire payout batch finishes
+ */
+
+const isBatchEvent =
+  eventType === "PAYMENT.PAYOUTSBATCH.SUCCESS" ||
+  eventType === "PAYMENT.PAYOUTSBATCH.DENIED";
+
+if (isBatchEvent) {
+
+  const payoutBatchId =
+    safeStr(resource?.payout_batch_id) ||
+    safeStr(resource?.batch_header?.payout_batch_id) ||
+    safeStr(resource?.batch_id) ||
+    "";
+
+  if (!payoutBatchId) {
+    return res.status(200).json({ received: true, note: "Missing payoutBatchId" });
+  }
+
+  const q = await db
+    .collection("payoutsRequests")
+    .where("paypalBatchId", "==", payoutBatchId)
+    .limit(1)
+    .get();
+
+  if (q.empty) {
+    return res.status(200).json({
+      received: true,
+      note: "Batch received but no payout request found",
+      payoutBatchId,
+    });
+  }
+
+  const reqRef = q.docs[0].ref;
+
+  await db.runTransaction(async (tx) => {
+    const s = await tx.get(reqRef);
+    const d = s.data() || {};
+
+    if (d.paypalSettled === true) return;
+
+    const producerId = safeStr(d.producerId);
+    const reservedUsd = toNumber(d.reservedUsd ?? d.amountUsd ?? d.amount ?? 0);
+
+    const walletRef = db.doc(`wallets/${producerId}`);
+    const wSnap = await tx.get(walletRef);
+    const w = wSnap.exists ? wSnap.data() : {};
+
+    const lockedUsd = toNumber(w.lockedUsd);
+    const availableUsd = toNumber(w.availableUsd);
+
+    const success = eventType === "PAYMENT.PAYOUTSBATCH.SUCCESS";
+
+    if (success) {
+
+      tx.set(walletRef,{
+        lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+
+      tx.set(reqRef,{
+        status:"success",
+        paypalSettled:true,
+        walletSettledAt:Date.now(),
+        updatedAt:Date.now(),
+        paypal:{batchEvent:eventType,raw:event}
+      },{merge:true});
+
+    } else {
+
+      tx.set(walletRef,{
+        lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+        availableUsd: availableUsd + reservedUsd,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+
+      tx.set(reqRef,{
+        status:"failed",
+        paypalSettled:true,
+        reserveReleased:true,
+        walletSettledAt:Date.now(),
+        updatedAt:Date.now(),
+        failReason:"PayPal payout batch denied",
+        paypal:{batchEvent:eventType,raw:event}
+      },{merge:true});
+
+    }
+
+  });
+
+  return res.status(200).json({received:true,eventType,batch:true});
+}
+
       if (isPayoutItemEvent) {
         // Try to extract batch id + item id
         const payoutBatchId =
