@@ -335,7 +335,14 @@ async function ensureUserProfile(user, { roleHint = "" } = {}) {
 
   if (snap.exists()) return;
 
-  const pendingRole = (roleHint || localStorage.getItem("pendingRole") || "buyer").trim() || "buyer";
+  const pendingRole = (roleHint || localStorage.getItem("pendingRole") || "").trim();
+
+  // 🚨 If role not chosen yet → force role selection page
+  if (!pendingRole) {
+    window.location.href = "/choose-role/";
+    return;
+  }
+
   localStorage.removeItem("pendingRole");
 
   const email = (user.email || "").toLowerCase();
