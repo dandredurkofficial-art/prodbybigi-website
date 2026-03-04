@@ -49,7 +49,6 @@ function getRoleSelected() {
 }
 
 function getReturnUrl() {
-  // supports /login/?return=/producer-profile/?producerId=...
   try {
     const u = new URL(location.href);
     const r = (u.searchParams.get("return") || "").trim();
@@ -59,20 +58,20 @@ function getReturnUrl() {
 }
 
 function goAfterAuth(role) {
-  // 1) if return exists, always go there (same-site path only)
+
   const ret = getReturnUrl();
   if (ret) {
     location.href = ret;
     return;
   }
 
-  // 2) otherwise route by role (NO .html)
   redirectByRole(role);
 }
 
 /* =========================
-   ✅ Helpers: Firebase handles
+   Firebase helpers
 ========================= */
+
 function getAuthOrThrow() {
   const auth = window.FB?.auth;
   if (!auth) throw new Error("Firebase auth not ready (window.FB.auth missing).");
@@ -86,9 +85,11 @@ function getDbOrThrow() {
 }
 
 /* =========================
-   ✅ REGISTER (email+password)
+   REGISTER
 ========================= */
+
 window.registerUser = async function registerUser() {
+
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
@@ -100,16 +101,18 @@ window.registerUser = async function registerUser() {
   if (!role) return alert("Please select a role (Producer or Buyer)");
 
   try {
+
     setStatus("Creating account...");
+
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid = cred.user.uid;
 
-    // Optional nice displayName (can be replaced later)
     try {
-      await updateProfile(cred.user, { displayName: role === "producer" ? "Producer" : "Buyer" });
+      await updateProfile(cred.user, {
+        displayName: role === "producer" ? "Producer" : "Buyer"
+      });
     } catch {}
 
-    // Save user profile
     await setDoc(doc(db, "users", uid), {
       email: email.toLowerCase(),
       role,
@@ -117,37 +120,46 @@ window.registerUser = async function registerUser() {
       displayName: role === "producer" ? "Producer" : "Buyer"
     }, { merge: true });
 
-    // Role-specific collection (keep your current structure)
     if (role === "producer") {
+
       await setDoc(doc(db, "producers", uid), {
         email: email.toLowerCase(),
         beatsCount: 0,
         followers: 0,
         createdAt: serverTimestamp()
       }, { merge: true });
+
     }
 
     if (role === "buyer") {
+
       await setDoc(doc(db, "buyers", uid), {
         email: email.toLowerCase(),
         purchases: 0,
         createdAt: serverTimestamp()
       }, { merge: true });
+
     }
 
     setStatus("");
+
     goAfterAuth(role);
+
   } catch (err) {
+
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
+
   }
 };
 
 /* =========================
-   ✅ LOGIN (email+password)
+   LOGIN
 ========================= */
+
 window.loginUser = async function loginUser() {
+
   const auth = getAuthOrThrow();
 
   const email = String($("email")?.value || "").trim();
@@ -156,26 +168,34 @@ window.loginUser = async function loginUser() {
   if (!email || !password) return alert("Enter email and password");
 
   try {
+
     setStatus("Signing in...");
+
     await signInWithEmailAndPassword(auth, email, password);
-    // redirect handled by auth listener (only on auth pages)
+
   } catch (err) {
+
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
+
   }
 };
 
 /* =========================
-   ✅ RESET PASSWORD
+   RESET PASSWORD
 ========================= */
+
 window.resetPassword = async function resetPassword() {
+
   const auth = getAuthOrThrow();
 
   const email = String($("email")?.value || "").trim();
+
   if (!email) return alert("Enter your email first");
 
   try {
+
     setStatus("Sending reset email...");
 
     await sendPasswordResetEmail(auth, email, {
@@ -184,26 +204,33 @@ window.resetPassword = async function resetPassword() {
     });
 
     setStatus("✅ Reset email sent. Check inbox/spam.");
+
   } catch (err) {
+
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
+
   }
 };
 
 /* =========================
-   ✅ GOOGLE SIGN IN/REGISTER
+   GOOGLE LOGIN
 ========================= */
+
 const googleProvider = new GoogleAuthProvider();
 
 async function googleSignInSmart(auth) {
+
   try {
-    // ✅ popup first
+
     const res = await signInWithPopup(auth, googleProvider);
     return res;
+
   } catch (e) {
-    // ✅ redirect fallback for mobile/popup issues
+
     const code = e?.code || "";
+
     const popupRelated =
       code.includes("popup") ||
       code.includes("blocked") ||
@@ -212,123 +239,190 @@ async function googleSignInSmart(auth) {
       /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     if (popupRelated) {
+
       await signInWithRedirect(auth, googleProvider);
       return null;
+
     }
+
     throw e;
+
   }
+
 }
 
-// Google LOGIN button
+/* GOOGLE LOGIN BUTTON */
+
 window.googleLogin = async function googleLogin() {
+
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
   try {
-    setStatus("Opening Google...");
-    const res = await googleSignInSmart(auth);
-    if (!res?.user) return; // redirect started
 
-    // ensure profile exists
+    setStatus("Opening Google...");
+
+    const res = await googleSignInSmart(auth);
+
+    if (!res?.user) return;
+
     await ensureUserProfile(res.user, { roleHint: "" });
 
     const snap = await getDoc(doc(db, "users", res.user.uid));
-    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
 
     setStatus("");
+
+    if (!role) {
+
+      location.href = "/register/";
+      return;
+
+    }
+
     goAfterAuth(role);
+
   } catch (err) {
+
     console.error(err);
     setStatus("");
     alert("Google login failed: " + (err?.message || String(err)));
+
   }
+
 };
 
-// Google REGISTER button (role required)
+/* GOOGLE REGISTER BUTTON */
+
 window.googleRegister = async function googleRegister() {
+
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
   const role = getRoleSelected();
+
   if (!role) return alert("Please select a role first (Producer or Buyer)");
 
   localStorage.setItem("pendingRole", role);
 
   try {
+
     setStatus("Opening Google...");
+
     const res = await googleSignInSmart(auth);
-    if (!res?.user) return; // redirect started
+
+    if (!res?.user) return;
 
     await ensureUserProfile(res.user, { roleHint: role });
 
     const snap = await getDoc(doc(db, "users", res.user.uid));
+
     const finalRole = snap.exists() ? (snap.data()?.role || role) : role;
 
     setStatus("");
+
     goAfterAuth(finalRole);
+
   } catch (err) {
+
     console.error(err);
     setStatus("");
     alert("Google signup failed: " + (err?.message || String(err)));
+
   }
+
 };
 
-// Handle redirect result (mobile / popup blocked)
+/* =========================
+   HANDLE GOOGLE REDIRECT
+========================= */
+
 (async function handleGoogleRedirectResult() {
+
   const auth = window.FB?.auth;
   const db = window.FB?.db;
+
   if (!auth || !db) return;
 
   try {
+
     const res = await getRedirectResult(auth);
+
     if (!res?.user) return;
 
     const pendingRole = localStorage.getItem("pendingRole") || "";
+
     await ensureUserProfile(res.user, { roleHint: pendingRole });
 
     const snap = await getDoc(doc(db, "users", res.user.uid));
-    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
 
     setStatus("");
+
+    if (!role) {
+
+      location.href = "/register/";
+      return;
+
+    }
+
     goAfterAuth(role);
-  } catch (e) {
-    // ignore if none
-  }
+
+  } catch (e) {}
+
 })();
 
 /* =========================
-   ✅ AUTH STATE LISTENER
-   Only redirects on auth pages to avoid hijacking other pages.
+   AUTH STATE LISTENER
 ========================= */
+
 onAuthStateChanged(getAuthOrThrow(), async (user) => {
+
   const db = window.FB?.db;
 
-  // Prevent redirect loop right after logout
   if (localStorage.getItem("justLoggedOut") === "1") {
+
     if (!user) localStorage.removeItem("justLoggedOut");
     return;
+
   }
 
   if (!user) return;
-  if (!isAuthPage()) return; // ✅ IMPORTANT
+  if (!isAuthPage()) return;
 
   try {
+
     await ensureUserProfile(user, { roleHint: localStorage.getItem("pendingRole") || "" });
 
-    if (!db) return;
     const snap = await getDoc(doc(db, "users", user.uid));
-    const role = snap.exists() ? (snap.data()?.role || "buyer") : "buyer";
+
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+
+    if (!role) {
+
+      location.href = "/register/";
+      return;
+
+    }
 
     goAfterAuth(role);
+
   } catch (e) {
+
     console.error(e);
+
   }
+
 });
 
 /* =========================
-   ✅ Create Firestore profile if missing (Google sign-in users)
+   CREATE USER PROFILE
 ========================= */
+
 async function ensureUserProfile(user, { roleHint = "" } = {}) {
+
   const db = getDbOrThrow();
   const uref = doc(db, "users", user.uid);
   const snap = await getDoc(uref);
@@ -337,10 +431,11 @@ async function ensureUserProfile(user, { roleHint = "" } = {}) {
 
   const pendingRole = (roleHint || localStorage.getItem("pendingRole") || "").trim();
 
-  // 🚨 If role not chosen yet → force role selection page
   if (!pendingRole) {
-    window.location.href = "/choose-role/";
+
+    window.location.href = "/register/";
     return;
+
   }
 
   localStorage.removeItem("pendingRole");
@@ -355,57 +450,76 @@ async function ensureUserProfile(user, { roleHint = "" } = {}) {
   }, { merge: true });
 
   if (pendingRole === "producer") {
+
     await setDoc(doc(db, "producers", user.uid), {
       email,
       beatsCount: 0,
       followers: 0,
       createdAt: serverTimestamp()
     }, { merge: true });
+
   }
 
   if (pendingRole === "buyer") {
+
     await setDoc(doc(db, "buyers", user.uid), {
       email,
       purchases: 0,
       createdAt: serverTimestamp()
     }, { merge: true });
+
   }
+
 }
 
 /* =========================
-   ✅ REDIRECT LOGIC (NO .html)
+   REDIRECT LOGIC
 ========================= */
+
 function redirectByRole(role) {
+
   const r = String(role || "").toLowerCase();
 
   if (r === "admin") {
     location.href = "/admin-dashboard/";
     return;
   }
+
   if (r === "producer") {
     location.href = "/dashboard/";
     return;
   }
+
   if (r === "buyer") {
     location.href = "/buyer-dashboard/";
     return;
   }
 
-  // fallback
   location.href = "/buyer-dashboard/";
+
 }
 
 /* =========================
-   ✅ LOGOUT (GLOBAL)
+   LOGOUT
 ========================= */
+
 window.logout = async function logout() {
+
   const auth = getAuthOrThrow();
+
   try {
+
     localStorage.setItem("justLoggedOut", "1");
+
     await signOut(auth);
+
     location.replace("/login/");
+
   } catch (err) {
+
     console.error(err);
     alert(err?.message || String(err));
+
   }
+
 };
