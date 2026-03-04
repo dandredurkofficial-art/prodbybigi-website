@@ -1999,7 +1999,7 @@ exports.pollPayPalPayouts = onSchedule(
       .collection("payoutsRequests")
       .where("method", "==", "paypal")
       .where("status", "==", "submitted")
-      .limit(20)
+      .limit(25)
       .get();
 
     for (const doc of snap.docs) {
