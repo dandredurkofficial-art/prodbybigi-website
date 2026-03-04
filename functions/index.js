@@ -12,6 +12,7 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 
 // ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch v2 (CommonJS)
 let fetchFn = global.fetch;
@@ -1978,17 +1979,24 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
   }
 );
 
+// ✅ Poll PayPal payouts and finalize wallet based on lockedUsd
 exports.pollPayPalPayouts = onSchedule(
-  { region: "us-central1", schedule: "every 2 minutes", secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_ENV] },
+  {
+    region: "us-central1",
+    schedule: "every 2 minutes",
+    secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+  },
   async () => {
-    const env = PAYPAL_ENV.value();
+    const mode = PAYPAL_MODE.value(); // "live" or "sandbox"
+
     const token = await getPayPalAccessToken({
       clientId: PAYPAL_CLIENT_ID.value(),
       clientSecret: PAYPAL_CLIENT_SECRET.value(),
-      env,
+      mode, // update your helper to use "mode"
     });
 
-    const snap = await db.collection("payoutsRequests")
+    const snap = await db
+      .collection("payoutsRequests")
       .where("method", "==", "paypal")
       .where("status", "==", "submitted")
       .limit(20)
@@ -1996,70 +2004,131 @@ exports.pollPayPalPayouts = onSchedule(
 
     for (const doc of snap.docs) {
       const data = doc.data() || {};
-      const payoutBatchId = data?.paypal?.payoutBatchId;
+
+      const payoutBatchId =
+        safeStr(data.paypalBatchId) ||
+        safeStr(data?.paypal?.payoutBatchId) ||
+        safeStr(data?.paypal?.batchId);
+
       if (!payoutBatchId) continue;
 
       // Get batch details
-      const r = await fetch(`${paypalBase(env)}/v1/payments/payouts/${payoutBatchId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const r = await fetch(`${paypalBase(mode)}/v1/payments/payouts/${payoutBatchId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const j = await r.json().catch(()=> ({}));
+
+      const j = await r.json().catch(() => ({}));
+
       if (!r.ok) {
-        await doc.ref.set({ status:"failed", failReason: j?.message || "PayPal batch fetch failed", updatedAt: Date.now() }, { merge:true });
+        // Don’t settle wallet here; just mark failed (optional)
+        await doc.ref.set(
+          {
+            status: "failed",
+            failReason: safeStr(j?.message || j?.name || "PayPal batch fetch failed"),
+            updatedAt: Date.now(),
+            paypal: { ...(data.paypal || {}), rawBatch: j },
+          },
+          { merge: true }
+        );
+
+        // ✅ release locked funds on failure
+        await finalizeWalletForPayPalPayout(doc.ref, { ...data, finalStatus: "failed" });
         continue;
       }
 
       const batchStatus = String(j?.batch_header?.batch_status || "").toUpperCase();
-      // Common statuses: SUCCESS / PROCESSING / DENIED / CANCELED etc.
+
+      // still processing
       if (batchStatus === "PROCESSING" || batchStatus === "PENDING") continue;
 
-      const ok = (batchStatus === "SUCCESS");
+      const ok = batchStatus === "SUCCESS";
+      const finalStatus = ok ? "success" : "failed";
 
-      // mark request success/failed
-      await doc.ref.set({
-        status: ok ? "success" : "failed",
-        updatedAt: Date.now(),
-        paypal: {
-          ...(data.paypal || {}),
-          batchStatus,
-          rawBatch: j,
-        }
-      }, { merge:true });
+      await doc.ref.set(
+        {
+          status: finalStatus,
+          updatedAt: Date.now(),
+          paypal: {
+            ...(data.paypal || {}),
+            payoutBatchId,
+            batchStatus,
+            rawBatch: j,
+          },
+        },
+        { merge: true }
+      );
 
-      // ✅ settle wallet ONCE if success
-      if (ok) {
-        await settleWalletForPayoutRequest(doc.ref, data);
-      }
+      // ✅ finalize wallet correctly (lockedUsd -> spent on success, or locked->available on fail)
+      await finalizeWalletForPayPalPayout(doc.ref, { ...data, finalStatus });
     }
   }
 );
 
-async function settleWalletForPayoutRequest(reqRef, reqData){
-  // idempotency: only deduct once
+// ✅ Wallet finalizer for PayPal using lockedUsd reserve model
+async function finalizeWalletForPayPalPayout(reqRef, reqData) {
   await db.runTransaction(async (tx) => {
     const fresh = await tx.get(reqRef);
-    const d = fresh.data() || {};
+    const d = fresh.exists ? fresh.data() || {} : {};
     if (d.settled === true) return;
 
-    const producerId = String(d.producerId || "");
-    const amountUsd = Number(d.amountUsd ?? d.amount);
+    const producerId = safeStr(d.producerId);
+    const amountUsd = Number(d.reservedUsd ?? d.amountUsd ?? d.amount);
+
     if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) return;
 
     const walletRef = db.doc(`wallets/${producerId}`);
     const wsnap = await tx.get(walletRef);
-    const w = wsnap.exists ? wsnap.data() : {};
+    const w = wsnap.exists ? wsnap.data() || {} : {};
+
     const availableUsd = Number(w.availableUsd || 0);
+    const lockedUsd = Number(w.lockedUsd || 0);
 
-    tx.set(walletRef, {
-      availableUsd: Math.max(0, availableUsd - amountUsd),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-    }, { merge:true });
+    const status = safeStr(d.status || reqData.finalStatus || "").toLowerCase();
 
-    tx.set(reqRef, {
-      settled: true,
-      settledAt: Date.now(),
-      settledUsd: amountUsd,
-    }, { merge:true });
+    if (status === "success") {
+      // ✅ payout succeeded: consume locked funds (do NOT touch available)
+      tx.set(
+        walletRef,
+        {
+          lockedUsd: Math.max(0, lockedUsd - amountUsd),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      tx.set(
+        reqRef,
+        {
+          settled: true,
+          settledAt: Date.now(),
+          settledUsd: amountUsd,
+          settlementType: "locked-consumed",
+        },
+        { merge: true }
+      );
+    } else if (status === "failed" || status === "timeout" || status === "canceled") {
+      // ✅ payout failed: release locked back to available
+      tx.set(
+        walletRef,
+        {
+          lockedUsd: Math.max(0, lockedUsd - amountUsd),
+          availableUsd: availableUsd + amountUsd,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      tx.set(
+        reqRef,
+        {
+          settled: true,
+          settledAt: Date.now(),
+          settledUsd: amountUsd,
+          settlementType: "locked-released",
+        },
+        { merge: true }
+      );
+    }
   });
 }
 
