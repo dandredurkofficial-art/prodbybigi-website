@@ -433,9 +433,13 @@ async function ensureUserProfile(user, { roleHint = "" } = {}) {
 
   if (!pendingRole) {
 
+    // already on register page → don't redirect again
+    if (location.pathname.startsWith("/register")) {
+      return;
+    }
+
     window.location.href = "/register/";
     return;
-
   }
 
   localStorage.removeItem("pendingRole");
