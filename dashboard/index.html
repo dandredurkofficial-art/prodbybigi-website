@@ -2108,7 +2108,7 @@ document.addEventListener("click", async (e) => {
     // ✅ IMPORTANT:
     // Set this to your real USD→KES rate (same as your functions secret USD_KES_RATE)
     // If you already show USD input, we convert to KES for B2C.
-    const USD_TO_KES = 160; // <-- change to your current rate
+    const USD_TO_KES = 130; // <-- change to your current rate
     amountKes = Math.max(1, Math.round(amountUsd * USD_TO_KES));
   } else {
     // PayPal: light email-ish check
