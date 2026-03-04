@@ -418,8 +418,6 @@ onAuthStateChanged(getAuthOrThrow(), async (user) => {
 
     const role = snap.exists() ? (snap.data()?.role || "") : "";
 
-    const role = snap.exists() ? (snap.data()?.role || "") : "";
-
     if (!role) {
 
       if (!location.pathname.startsWith("/register")) {
