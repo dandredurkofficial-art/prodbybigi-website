@@ -1420,14 +1420,205 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-      // Only handle capture completed here (others are stored but ignored)
+      /**
+       * ============================
+       * ✅ PAYPAL PAYOUTS (WITHDRAWALS)
+       * ============================
+       * These are the events you need for withdrawals.
+       */
+      const isPayoutItemEvent =
+        eventType.startsWith("PAYMENT.PAYOUTS-ITEM.") ||
+        eventType.startsWith("PAYMENT.PAYOUTS-ITEM_"); // some integrations vary
+
+      if (isPayoutItemEvent) {
+        // Try to extract batch id + item id
+        const payoutBatchId =
+          safeStr(resource?.payout_batch_id) ||
+          safeStr(resource?.batch_header?.payout_batch_id) ||
+          safeStr(resource?.batch_id) ||
+          "";
+
+        const senderItemId =
+          safeStr(resource?.payout_item?.sender_item_id) ||
+          safeStr(resource?.sender_item_id) ||
+          "";
+
+        const itemStatus =
+          safeStr(resource?.transaction_status || resource?.payout_item?.transaction_status || "").toUpperCase();
+
+        // Map success/failure/pending
+        const SUCCESS = new Set(["SUCCESS", "SUCCESSFUL", "COMPLETED"]);
+        const FAIL = new Set([
+          "FAILED",
+          "RETURNED",
+          "CANCELED",
+          "CANCELLED",
+          "DENIED",
+          "BLOCKED",
+          "REFUNDED",
+          "REVERSED",
+        ]);
+        const PENDING = new Set(["PENDING", "PROCESSING", "UNCLAIMED", "ONHOLD", "HELD", "NEW"]);
+
+        // Find payout request doc:
+        // 1) by paypalBatchId (recommended, because you store it)
+        // 2) fallback by sender_item_id (if you stored it as payoutId / requestId)
+        let reqSnap = null;
+
+        if (payoutBatchId) {
+          const q = await db
+            .collection("payoutsRequests")
+            .where("paypalBatchId", "==", payoutBatchId)
+            .limit(1)
+            .get();
+          if (!q.empty) reqSnap = q.docs[0];
+        }
+
+        if (!reqSnap && senderItemId) {
+          // If you used sender_item_id = requestId or payoutId, this will work
+          const direct = await db.collection("payoutsRequests").doc(senderItemId).get().catch(() => null);
+          if (direct && direct.exists) reqSnap = direct;
+        }
+
+        // If still no match, we accept the webhook but can’t settle
+        if (!reqSnap) {
+          return res.status(200).json({
+            received: true,
+            eventType,
+            note: "No matching payoutsRequests found",
+            payoutBatchId,
+            senderItemId,
+            itemStatus,
+          });
+        }
+
+        const reqRef = reqSnap.ref;
+
+        await db.runTransaction(async (tx) => {
+          const s = await tx.get(reqRef);
+          const d = s.exists ? (s.data() || {}) : {};
+
+          // idempotency
+          if (d.paypalSettled === true) return;
+
+          const producerId = safeStr(d.producerId).trim();
+          const reservedUsd = toNumber(d.reservedUsd ?? d.amountUsd ?? d.amount ?? 0);
+
+          if (!producerId || !Number.isFinite(reservedUsd) || reservedUsd <= 0) {
+            tx.set(
+              reqRef,
+              {
+                status: "failed",
+                failReason: "Cannot settle PayPal payout: missing producerId/reservedUsd",
+                updatedAt: Date.now(),
+                paypal: { eventType, itemStatus, payoutBatchId, senderItemId, raw: event },
+              },
+              { merge: true }
+            );
+            return;
+          }
+
+          const walletRef = db.doc(`wallets/${producerId}`);
+          const wSnap = await tx.get(walletRef);
+          const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+          const availableUsd = toNumber(w.availableUsd);
+          const lockedUsd = toNumber(w.lockedUsd);
+
+          if (SUCCESS.has(itemStatus)) {
+            // finalize: remove from locked
+            tx.set(
+              walletRef,
+              {
+                lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            tx.set(
+              reqRef,
+              {
+                status: "success",
+                updatedAt: Date.now(),
+                paypalSettled: true,
+                walletSettledAt: Date.now(),
+                paypal: { eventType, itemStatus, payoutBatchId, senderItemId, raw: event },
+              },
+              { merge: true }
+            );
+            return;
+          }
+
+          if (FAIL.has(itemStatus)) {
+            // release back: locked -> available
+            tx.set(
+              walletRef,
+              {
+                lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+                availableUsd: availableUsd + reservedUsd,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              },
+              { merge: true }
+            );
+
+            tx.set(
+              reqRef,
+              {
+                status: "failed",
+                updatedAt: Date.now(),
+                paypalSettled: true,
+                reserveReleased: true,
+                walletSettledAt: Date.now(),
+                failReason: `PayPal payout ${itemStatus}`,
+                paypal: { eventType, itemStatus, payoutBatchId, senderItemId, raw: event },
+              },
+              { merge: true }
+            );
+            return;
+          }
+
+          if (PENDING.has(itemStatus) || !itemStatus) {
+            // keep pending/submitted
+            tx.set(
+              reqRef,
+              {
+                status: safeStr(d.status).toLowerCase() === "processing" ? "processing" : "submitted",
+                updatedAt: Date.now(),
+                paypal: { eventType, itemStatus: itemStatus || "UNKNOWN", payoutBatchId, senderItemId, raw: event },
+              },
+              { merge: true }
+            );
+            return;
+          }
+
+          // unknown - just store
+          tx.set(
+            reqRef,
+            {
+              updatedAt: Date.now(),
+              paypal: { eventType, itemStatus, payoutBatchId, senderItemId, raw: event },
+            },
+            { merge: true }
+          );
+        });
+
+        return res.status(200).json({ received: true, eventType, payout: true });
+      }
+
+      /**
+       * ============================
+       * ✅ SALES EVENTS (YOUR ORIGINAL)
+       * ============================
+       */
       if (eventType !== "PAYMENT.CAPTURE.COMPLETED" && eventType !== "CHECKOUT.ORDER.APPROVED") {
         return res.status(200).json({ received: true, ignored: eventType });
       }
 
+      // --- your original sales logic continues below (unchanged) ---
+
       const { value, currency } = parseAmountFromPayPalEvent(event);
 
-      // parse custom id (supports "cartId=..." or legacy "beatId=..|licenseKey=..|producerId=..")
       const resourceCustomId =
         safeStr(resource?.custom_id) ||
         safeStr(resource?.invoice_id) ||
@@ -1446,22 +1637,18 @@ exports.paypalWebhook = onRequest(
         }
       }
 
-      // derive orderId for internal records
       const orderId = `pp_${safeStr(resource.id || event.id || Date.now())}`;
 
-      // 1) CART FLOW: prefer cartId if present
       const cartId = safeStr(meta.cartId || "");
       if (cartId) {
         await processCartCapture({ cartId, captureEvent: event, orderId });
         return res.status(200).json({ received: true, eventType, cart: true });
       }
 
-      // 2) OLD SINGLE-BEAT FLOW (backward compatible)
       const beatId = safeStr(meta.beatId || meta.beat || "");
       const licenseKey = safeStr(meta.licenseKey || "basic").toLowerCase().trim();
       let producerId = safeStr(meta.producerId || meta.producer || "");
 
-      // if beat exists but producerId not provided, fetch it
       if (beatId && !producerId) {
         try {
           const beatSnap = await db.collection("beats").doc(beatId).get();
@@ -1472,14 +1659,12 @@ exports.paypalWebhook = onRequest(
       const orderRef = db.collection("orders").doc(orderId);
       const existing = await orderRef.get();
 
-      // buyer data from PayPal
       const buyerEmail = safeStr(resource?.payer?.email_address || "");
       const payerName =
         safeStr(resource?.payer?.name?.given_name || "") +
         (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
       const buyerName = safeStr(payerName).trim();
 
-      // beat + producer names
       let beatTitle = "";
       let producerName = "";
 
@@ -1489,15 +1674,12 @@ exports.paypalWebhook = onRequest(
           if (beatSnap.exists) {
             const b = beatSnap.data() || {};
             beatTitle = safeStr(b.title || b.beatTitle || "");
-            // prefer stored producerName
             producerName = safeStr(b.producerName || "");
-            // if producerId still missing, try to take from beat
             if (!producerId) producerId = safeStr(b.producerId || "");
           }
         } catch (_) {}
       }
 
-      // fallback: load producer profile if we still don't have a name
       if (!producerName && producerId) {
         try {
           const prodSnap = await db.collection("users").doc(producerId).get().catch(() => null);
@@ -1509,7 +1691,6 @@ exports.paypalWebhook = onRequest(
       }
       if (!producerName) producerName = "Producer";
 
-      // create or update the order doc
       if (!existing.exists) {
         await orderRef.set({
           orderId,
@@ -1540,7 +1721,6 @@ exports.paypalWebhook = onRequest(
         );
       }
 
-      // create unlock + credit producer for single-beat flow
       if (beatId && producerId) {
         const unlockId = `${orderId}__beat__${beatId}__${licenseKey}`;
         await db.collection("unlocks").doc(unlockId).set(
@@ -1569,7 +1749,6 @@ exports.paypalWebhook = onRequest(
           { merge: true }
         );
 
-        // idempotent credit marker + credit producer
         const markerRef = db.collection("walletCredits").doc(unlockId);
         const marker = await markerRef.get();
         if (!marker.exists) {
@@ -1608,84 +1787,122 @@ exports.paypalWebhook = onRequest(
 exports.onPaypalPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
-    document: "payouts/{payoutId}",
+    document: "payoutsRequests/{requestId}", // ✅ match your dashboard + mpesa pipeline
     secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
   },
   async (event) => {
+    const snap = event.data;
+    if (!snap) return;
+
+    const requestId = event.params.requestId;
+    const ref = snap.ref;
+    const data = snap.data() || {};
+
     try {
-      const payoutId = event.params.payoutId;
-      const data = event.data?.data() || {};
+      const method = safeStr(data.method || "").toLowerCase().trim();
+      const status = safeStr(data.status || "").toLowerCase().trim();
 
-      const method = safeStr(data.method || data.withdrawMethod || "").toLowerCase().trim();
+      // ✅ only handle paypal + requested
       if (method !== "paypal") return;
+      if (status !== "requested") return;
 
-      const producerId = safeStr(data.producerId);
+      const producerId = safeStr(data.producerId).trim();
       const destination = safeStr(data.destination || data.email || data.paypalEmail).trim();
-      const amount = Number(data.amount || 0);
+      const amountUsd = Number(data.amountUsd ?? data.amount ?? 0);
 
-      const producerRef = db.collection("users").doc(producerId);
-      const payoutRef = db.collection("payouts").doc(payoutId);
-
-      if (!producerId || !destination || !amount || amount <= 0) {
-        await payoutRef.set(
-          {
-            status: "FAILED",
-            error: "Missing producerId/destination/amount",
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
+      if (!producerId || !destination || !Number.isFinite(amountUsd) || amountUsd <= 0) {
+        await ref.set(
+          { status: "failed", failReason: "Missing/invalid producerId, destination, or amountUsd", updatedAt: Date.now() },
           { merge: true }
         );
         return;
       }
 
-      let newBalance = 0;
-
-      await db.runTransaction(async (tx) => {
-        const pSnap = await tx.get(producerRef);
-        if (!pSnap.exists) throw new Error("Producer profile missing");
-        const prof = pSnap.data() || {};
-        const bal = Number(
-          prof.availableBalance ?? prof.walletBalance ?? prof.balance ?? prof.wallet ?? 0
+      // ✅ basic email-ish check (lightweight)
+      if (!destination.includes("@") || destination.length < 6) {
+        await ref.set(
+          { status: "failed", failReason: "Invalid PayPal email destination", updatedAt: Date.now() },
+          { merge: true }
         );
+        return;
+      }
 
-        if (!isFinite(bal) || bal < amount) throw new Error("Insufficient balance");
-        newBalance = Math.round((bal - amount) * 100) / 100;
+      const walletRef = db.doc(`wallets/${producerId}`);
 
+      // ✅ Reserve (hold) funds immediately to prevent double-withdraw
+      // We will finalize on success later (webhook/poller) using idempotency.
+      await db.runTransaction(async (tx) => {
+        const wSnap = await tx.get(walletRef);
+        const w = wSnap.exists ? wSnap.data() : {};
+
+        const availableUsd = toNumber(w.availableUsd);
+        const lockedUsd = toNumber(w.lockedUsd); // we’ll add this field
+
+        // prevent re-processing same request
+        const fresh = await tx.get(ref);
+        const curr = fresh.exists ? (fresh.data() || {}) : {};
+        const currStatus = safeStr(curr.status || "").toLowerCase();
+        if (currStatus !== "requested") return;
+
+        if (!Number.isFinite(availableUsd) || availableUsd < amountUsd) {
+          tx.set(
+            ref,
+            {
+              status: "failed",
+              failReason: "Insufficient available balance",
+              updatedAt: Date.now(),
+            },
+            { merge: true }
+          );
+          return;
+        }
+
+        // move funds: available -> locked
         tx.set(
-          payoutRef,
+          walletRef,
           {
-            status: "PROCESSING",
-            provider: "paypal",
+            availableUsd: Math.max(0, availableUsd - amountUsd),
+            lockedUsd: lockedUsd + amountUsd,
             updatedAt: admin.firestore.FieldValue.serverTimestamp(),
           },
           { merge: true }
         );
 
         tx.set(
-          producerRef,
+          ref,
           {
-            availableBalance: admin.firestore.FieldValue.increment(-amount),
-            walletUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            status: "processing",
+            updatedAt: Date.now(),
+            amountUsd,
+            currency: "USD",
+            // mark reserved so we can safely release or finalize later
+            reservedUsd: amountUsd,
+            reserveApplied: true,
+            provider: "paypal",
           },
           { merge: true }
         );
       });
 
-      const accessToken = await getPayPalAccessToken();
+      // If transaction set status to failed, stop
+      const afterSnap = await ref.get();
+      const after = afterSnap.data() || {};
+      if (safeStr(after.status).toLowerCase() === "failed") return;
 
+      const accessToken = await getPayPalAccessToken(); // uses PAYPAL_MODE internally
       const payoutPayload = {
         sender_batch_header: {
-          sender_batch_id: `audiory_${payoutId}_${Date.now()}`,
+          sender_batch_id: `audiory_req_${requestId}_${Date.now()}`,
           email_subject: "You have a payout from Audiory",
           email_message: "Your Audiory payout has been sent. Thank you for using Audiory!",
         },
         items: [
           {
             recipient_type: "EMAIL",
-            amount: { value: amount.toFixed(2), currency: "USD" },
+            amount: { value: amountUsd.toFixed(2), currency: "USD" },
             receiver: destination,
             note: "Audiory producer withdrawal",
-            sender_item_id: payoutId,
+            sender_item_id: requestId,
           },
         ],
       };
@@ -1699,24 +1916,38 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
         body: JSON.stringify(payoutPayload),
       });
 
-      const respText = await r.text();
-      let respJson = {};
-      try {
-        respJson = JSON.parse(respText);
-      } catch (_) {
-        respJson = { raw: respText };
-      }
+      const raw = await r.text();
+      let resp = {};
+      try { resp = JSON.parse(raw); } catch (_) { resp = { raw }; }
 
       if (!r.ok) {
-        // rollback wallet
+        // ✅ release reserved funds if PayPal submission failed
         await db.runTransaction(async (tx) => {
-          tx.set(producerRef, { availableBalance: admin.firestore.FieldValue.increment(amount) }, { merge: true });
+          const wSnap = await tx.get(walletRef);
+          const w = wSnap.exists ? wSnap.data() : {};
+          const lockedUsd = toNumber(w.lockedUsd);
+          const availableUsd = toNumber(w.availableUsd);
+
+          const reserved = toNumber(after.reservedUsd ?? amountUsd);
+
           tx.set(
-            payoutRef,
+            walletRef,
             {
-              status: "FAILED",
-              error: `PayPal payout failed: ${r.status} ${safeStr(respText)}`.slice(0, 1000),
+              lockedUsd: Math.max(0, lockedUsd - reserved),
+              availableUsd: availableUsd + reserved,
               updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+
+          tx.set(
+            ref,
+            {
+              status: "failed",
+              failReason: `PayPal submit failed: ${r.status} ${safeStr(raw)}`.slice(0, 1000),
+              paypalResponse: resp,
+              updatedAt: Date.now(),
+              reserveReleased: true,
             },
             { merge: true }
           );
@@ -1724,26 +1955,22 @@ exports.onPaypalPayoutRequest = onDocumentCreated(
         return;
       }
 
-      await payoutRef.set(
+      await ref.set(
         {
-          status: "SUBMITTED",
-          paypalBatchId: safeStr(respJson?.batch_header?.payout_batch_id),
-          paypalResponse: respJson,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          balanceAfter: newBalance,
+          status: "submitted", // ✅ submitted to PayPal
+          paypalBatchId: safeStr(resp?.batch_header?.payout_batch_id),
+          paypalResponse: resp,
+          updatedAt: Date.now(),
         },
         { merge: true }
       );
     } catch (e) {
       console.error("onPaypalPayoutRequest error:", e);
-      const payoutId = event.params.payoutId;
+
+      // ✅ best-effort: mark failed (do NOT try to release here unless we’re sure reserveApplied)
       try {
-        await db.collection("payouts").doc(payoutId).set(
-          {
-            status: "FAILED",
-            error: safeStr(e.message || e).slice(0, 1000),
-            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-          },
+        await ref.set(
+          { status: "failed", failReason: safeStr(e?.message || e).slice(0, 1000), updatedAt: Date.now() },
           { merge: true }
         );
       } catch (_) {}
@@ -1837,7 +2064,7 @@ async function settleWalletForPayoutRequest(reqRef, reqData){
 }
 
 /* =========================================================
-✅ OPTIONAL: payout status (manual)
+✅ payout status
 ========================================================= */
 exports.paypalPayoutStatus = onRequest(
   {
@@ -1854,6 +2081,8 @@ exports.paypalPayoutStatus = onRequest(
       if (!payoutBatchId) return res.status(400).json({ error: "payoutBatchId is required" });
 
       const accessToken = await getPayPalAccessToken();
+
+      // 1) Fetch batch details from PayPal
       const r = await fetchFn(`${paypalBaseUrl()}/v1/payments/payouts/${payoutBatchId}`, {
         method: "GET",
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -1863,11 +2092,184 @@ exports.paypalPayoutStatus = onRequest(
       let j = {};
       try { j = JSON.parse(txt); } catch (_) { j = { raw: txt }; }
 
-      return res.status(r.ok ? 200 : 400).json(j);
+      if (!r.ok) {
+        return res.status(400).json(j);
+      }
+
+      // 2) Determine PayPal status in a tolerant way
+      const batchStatus =
+        safeStr(j?.batch_header?.batch_status || j?.batch_header?.payout_batch_status || "").toUpperCase();
+
+      // Often item status is more accurate than batch_status for single payouts
+      const firstItem = Array.isArray(j?.items) && j.items.length ? j.items[0] : null;
+
+      const itemStatus = safeStr(firstItem?.transaction_status || firstItem?.payout_item?.transaction_status || "").toUpperCase();
+
+      // prefer itemStatus if present
+      const status = itemStatus || batchStatus;
+
+      // 3) Find matching payoutsRequests doc
+      // We store paypalBatchId in payoutsRequests when submitted.
+      const q = await db
+        .collection("payoutsRequests")
+        .where("paypalBatchId", "==", payoutBatchId)
+        .limit(1)
+        .get();
+
+      if (q.empty) {
+        // Nothing to settle, but still return PayPal response
+        return res.status(200).json({
+          ok: true,
+          note: "No matching payoutsRequests doc found for this payoutBatchId",
+          paypal: j,
+        });
+      }
+
+      const reqRef = q.docs[0].ref;
+
+      await db.runTransaction(async (tx) => {
+        const reqSnap = await tx.get(reqRef);
+        const reqData = reqSnap.exists ? (reqSnap.data() || {}) : {};
+
+        // idempotency: don't settle twice
+        if (reqData.paypalSettled === true) return;
+
+        const producerId = safeStr(reqData.producerId).trim();
+        const reservedUsd = toNumber(reqData.reservedUsd ?? reqData.amountUsd ?? reqData.amount ?? 0);
+
+        if (!producerId || !Number.isFinite(reservedUsd) || reservedUsd <= 0) {
+          tx.set(
+            reqRef,
+            {
+              status: "failed",
+              failReason: "Cannot settle PayPal payout: missing producerId/reservedUsd",
+              updatedAt: Date.now(),
+              paypal: { status, raw: j },
+            },
+            { merge: true }
+          );
+          return;
+        }
+
+        const walletRef = db.doc(`wallets/${producerId}`);
+        const wSnap = await tx.get(walletRef);
+        const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+        const availableUsd = toNumber(w.availableUsd);
+        const lockedUsd = toNumber(w.lockedUsd);
+
+        // Map PayPal statuses
+        const SUCCESS = new Set(["SUCCESS", "SUCCESSFUL", "COMPLETED"]);
+        const FINAL_FAIL = new Set([
+          "FAILED",
+          "RETURNED",
+          "CANCELED",
+          "CANCELLED",
+          "DENIED",
+          "BLOCKED",
+          "REFUNDED",
+          "REVERSED",
+        ]);
+        const PENDING = new Set(["PENDING", "PROCESSING", "UNCLAIMED", "ONHOLD", "HELD", "NEW"]);
+
+        if (SUCCESS.has(status)) {
+          // Success: funds already moved from available -> locked at request time.
+          // Now finalize by reducing locked.
+          tx.set(
+            walletRef,
+            {
+              lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+
+          tx.set(
+            reqRef,
+            {
+              status: "success",
+              updatedAt: Date.now(),
+              paypalSettled: true,
+              walletSettledAt: Date.now(),
+              paypal: {
+                status,
+                payoutBatchId,
+                raw: j,
+              },
+            },
+            { merge: true }
+          );
+
+          return;
+        }
+
+        if (FINAL_FAIL.has(status)) {
+          // Failure: release reserve back to available, decrease locked.
+          tx.set(
+            walletRef,
+            {
+              lockedUsd: Math.max(0, lockedUsd - reservedUsd),
+              availableUsd: availableUsd + reservedUsd,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+
+          tx.set(
+            reqRef,
+            {
+              status: "failed",
+              updatedAt: Date.now(),
+              paypalSettled: true,
+              reserveReleased: true,
+              walletSettledAt: Date.now(),
+              failReason: `PayPal payout ${status}`,
+              paypal: {
+                status,
+                payoutBatchId,
+                raw: j,
+              },
+            },
+            { merge: true }
+          );
+
+          return;
+        }
+
+        if (PENDING.has(status) || !status) {
+          // Still pending: keep submitted/processing, don’t touch wallet
+          tx.set(
+            reqRef,
+            {
+              status: safeStr(reqData.status).toLowerCase() === "processing" ? "processing" : "submitted",
+              updatedAt: Date.now(),
+              paypal: {
+                status: status || "UNKNOWN",
+                payoutBatchId,
+                raw: j,
+              },
+            },
+            { merge: true }
+          );
+          return;
+        }
+
+        // Unknown status: don’t settle, just record
+        tx.set(
+          reqRef,
+          {
+            updatedAt: Date.now(),
+            paypal: { status, payoutBatchId, raw: j },
+          },
+          { merge: true }
+        );
+      });
+
+      return res.status(200).json({ ok: true, status, payoutBatchId, paypal: j });
     } catch (e) {
       console.error("paypalPayoutStatus error:", e);
       try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: e.message });
+      return res.status(500).json({ error: safeStr(e.message || e) });
     }
   }
 );
