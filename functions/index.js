@@ -3177,7 +3177,7 @@ exports.processPayoutRequest = onDocumentCreated(
 
     // --- Convert USD -> KES (choose ONE approach below) ---
     // Option 1 (simple fixed rate): set your own constant
-    const USD_TO_KES = 130; // TODO: change to your preferred rate
+    const USD_TO_KES = 125; // TODO: change to your preferred rate
     const amountKes = Math.round(amountUsd * USD_TO_KES);
 
     // Option 2 (if you already store exchange rate somewhere), replace above with your rate lookup.
