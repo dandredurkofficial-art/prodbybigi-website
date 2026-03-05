@@ -248,7 +248,11 @@
   @media(max-width:640px){
     .toggle { flex-direction:column; align-items:flex-start; }
     .price { width:100%; }
-    button.primary { width:100%; }
+
+    /* only upload buttons full width on mobile */
+    #uploadSection button.primary{
+      width:100%;
+    }
   }
 
   #aiTagBox input {
