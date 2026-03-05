@@ -77,9 +77,17 @@
     .chart-card{
       display:flex;
       flex-direction:column;
-      height:100%;
     }
 
+    /* text area */
+    .chart-text{
+      min-width:0;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* title clamp */
     .trend-meta .t,
     .home-title-clamp{
       display:-webkit-box;
@@ -89,6 +97,7 @@
       text-overflow:ellipsis;
     }
 
+    /* producer line */
     .trend-meta .p,
     .home-producer-clamp{
       display:block;
@@ -97,22 +106,20 @@
       text-overflow:ellipsis;
     }
 
+    /* row that contains text + price */
     .chart-meta-row{
       display:flex;
-      flex-direction:column;
-      align-items:flex-start;
-      gap:6px;
-      height:100%;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-top:10px;
     }
-    .chart-text{
-      min-width:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-    }
+
+    /* price pill container */
     .chart-pill{
-      margin-top:auto;
-      align-self:flex-end;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
     }
 
     .producer-link{
