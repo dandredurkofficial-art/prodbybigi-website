@@ -1182,7 +1182,9 @@
         b.featuredUntil &&
         b.featuredUntil > now
       );
-      
+
+      /* RANDOMIZE FEATURED ORDER */
+      featuredBeats.sort(() => Math.random() - 0.5);
 
       /* FEATURED ROTATION */
 
