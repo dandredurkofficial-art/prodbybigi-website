@@ -13,6 +13,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
+exports.generateTags = require("./generateTags").generateTags;
 
 // ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch v2 (CommonJS)
 let fetchFn = global.fetch;
