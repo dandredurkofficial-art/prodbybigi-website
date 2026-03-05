@@ -1,178 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Beats • Audiory</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Free Beats | Audiory</title>
 
-<style>
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/marketplace.css">
+<link rel="stylesheet" href="/css/cart.css">
 
-body{
-margin:0;
-font-family:Inter,system-ui;
-background:#070a12;
-color:#fff;
-}
-
-header{
-height:70px;
-display:flex;
-align-items:center;
-padding:0 20px;
-border-bottom:1px solid #1f2937;
-font-size:20px;
-font-weight:700;
-}
-
-.container{
-max-width:1200px;
-margin:auto;
-padding:24px;
-}
-
-.beats-grid{
-display:grid;
-grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-gap:18px;
-}
-
-.beat-card{
-background:#0b1220;
-border:1px solid #1f2937;
-border-radius:16px;
-overflow:hidden;
-transition:.2s;
-}
-
-.beat-card:hover{
-transform:translateY(-3px);
-border-color:#334155;
-}
-
-.beat-art{
-width:100%;
-aspect-ratio:1/1;
-object-fit:cover;
-}
-
-.beat-body{
-padding:14px;
-}
-
-.beat-title{
-font-weight:700;
-margin-bottom:4px;
-}
-
-.beat-producer{
-font-size:13px;
-color:#9ca3af;
-margin-bottom:10px;
-}
-
-audio{
-width:100%;
-margin-bottom:10px;
-}
-
-.download-btn{
-width:100%;
-border:none;
-padding:10px;
-border-radius:10px;
-background:#3b82f6;
-color:white;
-font-weight:600;
-cursor:pointer;
-}
-
-.download-btn:hover{
-background:#2563eb;
-}
-
-.empty{
-text-align:center;
-opacity:.6;
-margin-top:80px;
-font-size:18px;
-}
-
-</style>
 </head>
 
 <body>
 
-<header>
-Free Beats
+<header class="topbar">
+  <div class="container topbar-inner">
+
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+
+  </div>
 </header>
 
-<div class="container">
+<div class="menu-backdrop" id="menuBackdrop"></div>
+
+<nav class="mobile-menu" id="mobileMenu">
+
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn">✕</button>
+  </div>
+
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+
+</nav>
+
+<main class="container">
+
+<section class="market-head">
+
+<h1 class="market-title">Free Beats</h1>
+
+<p class="market-sub">
+Download free beats from Audiory producers.
+</p>
+
+</section>
+
+<div id="marketStatus" class="loading-box">
+Loading free beats…
+</div>
 
 <div id="beatsGrid" class="beats-grid"></div>
 
-<div id="emptyState" class="empty" style="display:none">
-No free beats available yet
-</div>
+</main>
+
+<footer class="footer">
+
+<div class="container footer-row">
+
+<div>© 2026 Audiory</div>
 
 </div>
 
-<script type="module">
+</footer>
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script type="module" src="/js/firebase.js"></script>
 
-const firebaseConfig = {
-apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
-authDomain: "audiory-beat-store.firebaseapp.com",
-projectId: "audiory-beat-store",
-};
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/license-modal.js"></script>
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+<script>
 
-const grid = document.getElementById("beatsGrid");
-const empty = document.getElementById("emptyState");
+function money(n){
+const v = Number(n)
+if(!Number.isFinite(v)) return "$0.00"
+return "$"+v.toFixed(2)
+}
+
+function coverHTML(url,title){
+
+if(url){
+return `<img src="${url}" alt="${title}" loading="lazy"/>`
+}
+
+const initials = String(title || "B")
+.trim()
+.slice(0,2)
+.toUpperCase()
+
+return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px">${initials}</div>`
+}
+
+function prettyProducerName(b){
+
+if(b.producerName) return b.producerName
+
+if(!b.producerId) return "Producer"
+
+return "Prod. "+String(b.producerId).slice(0,8)
+
+}
+
+function isFreeBeat(b){
+
+if(b.freeDownload === true) return true
+if(b.isFree === true) return true
+
+if(Number(b.price) === 0) return true
+
+return false
+}
 
 async function loadFreeBeats(){
 
-const q = query(
-collection(db,"beats"),
-where("licenseType","==","free")
-);
+const status = document.getElementById("marketStatus")
+const grid = document.getElementById("beatsGrid")
 
-const snap = await getDocs(q);
+try{
 
-if(snap.empty){
-empty.style.display="block";
-return;
+status.textContent="Loading free beats…"
+
+const beats = await window.FB.fetchBeats({
+max:60,
+force:true
+})
+
+const freeBeats = beats.filter(isFreeBeat)
+
+grid.innerHTML=""
+
+if(!freeBeats.length){
+
+status.textContent="No free beats available yet"
+
+return
+
 }
 
-snap.forEach(doc=>{
+status.classList.add("hidden")
 
-const beat = doc.data();
+freeBeats.forEach((b)=>{
 
-const card = document.createElement("div");
-card.className="beat-card";
+const card = document.createElement("div")
+
+card.className="card beat-card"
+
+card.setAttribute("data-beat-id",b.id)
+
+const audioUrl = b.audio || ""
 
 card.innerHTML = `
-<img class="beat-art" src="${beat.artworkUrl || ''}">
-<div class="beat-body">
-<div class="beat-title">${beat.title || "Untitled Beat"}</div>
-<div class="beat-producer">${beat.producerName || ""}</div>
-<audio controls src="${beat.previewUrl || ''}"></audio>
-<button class="download-btn" onclick="window.open('${beat.fullUrl || ''}')">
-Download Free Beat
+
+<div class="beat-cover">
+
+${coverHTML(b.artwork,b.title)}
+
+<button
+class="play-fab"
+data-play-btn
+data-ignore-license="1"
+data-audio-url="${audioUrl}"
+aria-label="Play">
+
+<span class="playIcon">▶</span>
+
 </button>
+
 </div>
-`;
 
-grid.appendChild(card);
+<div class="beat-meta">
 
-});
+<div>
+
+<h3>${b.title}</h3>
+
+<a
+class="producer"
+href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}">
+
+${prettyProducerName(b)}
+
+</a>
+
+${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
+
+</div>
+
+<button class="pb-pill free">
+
+<span>⬇️</span>
+
+<span>Free</span>
+
+</button>
+
+</div>
+
+`
+
+grid.appendChild(card)
+
+})
+
+}catch(err){
+
+console.error(err)
+
+status.textContent="Could not load free beats"
 
 }
 
-loadFreeBeats();
+}
+
+window.addEventListener("firebase-ready",()=>{
+
+if(window.FB && typeof window.FB.fetchBeats==="function"){
+
+loadFreeBeats()
+
+}
+
+})
 
 </script>
 
