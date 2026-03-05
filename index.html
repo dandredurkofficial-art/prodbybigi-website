@@ -1175,6 +1175,14 @@
       const beats = await window.FB.fetchBeats({ max: 30, force: true });
       window.__LATEST_BEATS__ = beats;
 
+      const now = Date.now();
+
+      const featuredBeats = beats.filter(b =>
+        b.featured === true &&
+        b.featuredUntil &&
+        b.featuredUntil > now
+      );
+
       strip.innerHTML = "";
       chart.innerHTML = "";
 
