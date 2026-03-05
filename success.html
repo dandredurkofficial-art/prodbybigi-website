@@ -35,52 +35,52 @@
     }
 
     async function doCapture(user) {
-  const orderId = getOrderIdFromUrl();
-  if (!orderId) {
-    window.location.href = "/marketplace/?error=missing_token";
-    return;
-  }
-
-  const token = await user.getIdToken();
-
-  // fetch order details first to extract cartId
-  const details = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  }).then(r => r.json()).catch(()=>null);
-
-  let cartId = null;
-
-  try {
-    const custom = details?.purchase_units?.[0]?.custom_id || "";
-    if (custom.startsWith("cartId=")) {
-      cartId = custom.replace("cartId=", "");
+      const orderId = getOrderIdFromUrl();
+      if (!orderId) {
+        window.location.href = "/marketplace/?error=missing_token";
+        return;
     }
-  } catch {}
 
-  const r = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      orderId,
-      cartId
-    }),
-  });
+    const token = await user.getIdToken();
 
-  const data = await r.json().catch(() => ({}));
+    // fetch order details first to extract cartId
+    const details = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json()).catch(()=>null);
 
-  if (!r.ok) {
-    console.error("Capture failed:", data);
-    window.location.href = "/marketplace/?error=capture_failed";
-    return;
+    let cartId = null;
+
+    try {
+      const custom = details?.purchase_units?.[0]?.custom_id || "";
+      if (custom.startsWith("cartId=")) {
+        cartId = custom.replace("cartId=", "");
+      }
+    } catch {}
+
+    const r = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        orderId,
+        cartId
+      }),
+    });
+
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      console.error("Capture failed:", data);
+      window.location.href = "/marketplace/?error=capture_failed";
+      return;
+    }
+
+    setTimeout(() => {
+      window.location.href = "/buyer-dashboard/?paid=1";
+    }, 1200);
   }
-
-  setTimeout(() => {
-    window.location.href = "/buyer-dashboard/?paid=1";
-  }, 1200);
-}
 
     // Require login so buyer dashboard can show their stuff
     onAuthStateChanged(auth, (user) => {
