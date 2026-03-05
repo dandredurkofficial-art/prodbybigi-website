@@ -302,6 +302,63 @@
     color:white;
     font-weight:600;
   }
+
+  /* ===== AUDIORY FINAL LAYOUT STABILITY FIX ===== */
+
+  /* make sure cards never overflow */
+  .card{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* inputs behave correctly inside cards */
+  .card input,
+  .card textarea,
+  .card select{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* primary buttons stable across all pages */
+  button.primary{
+    width:100%;
+    max-width:100%;
+    display:block;
+    box-sizing:border-box;
+  }
+
+  /* keep spacing nice between stacked buttons */
+  button.primary + button.primary{
+    margin-top:10px;
+  }
+
+  /* finance withdraw button fix */
+  #withdrawBtn{
+    width:100%;
+    display:block;
+    box-sizing:border-box;
+  }
+
+  /* prevent mobile overflow bugs */
+  main{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+
+  /* ensure rows wrap properly on mobile */
+  .row{
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  /* fix column overflow issues */
+  .col{
+    max-width:100%;
+    box-sizing:border-box;
+  }
   
 </style>
 </head>
