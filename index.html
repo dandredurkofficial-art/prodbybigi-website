@@ -1194,6 +1194,63 @@
 
       status.classList.add("hidden");
 
+      /* =====================
+   FEATURED BEATS
+===================== */
+
+if(featuredBeats.length){
+
+  featuredStatus.classList.add("hidden");
+
+  featuredBeats.slice(0,10).forEach((b)=>{
+
+    const el = document.createElement("div");
+    el.className = "card trend-card";
+    el.setAttribute("data-beat-id", b.id);
+
+    const audioUrl = b.audio || "";
+    const beatUrl = beatPageUrl(b);
+    const prodUrl = producerPageUrl(b);
+
+    el.innerHTML = `
+      <div class="beat-cover">
+        <a class="beat-open" href="${beatUrl}" data-open-beat="1">
+          ${coverHTML(b.artwork, b.title)}
+        </a>
+
+        <button class="play-fab"
+          data-play-btn
+          data-ignore-license="1"
+          data-audio-url="${audioUrl}">
+          <span class="playIcon">▶</span>
+        </button>
+      </div>
+
+      <div class="trend-meta">
+        <a class="t" href="${beatUrl}" style="color:inherit;text-decoration:none;">
+          ${b.title}
+        </a>
+
+        <a class="p producer-link" href="${prodUrl}">
+          ${prettyProducerName(b)}
+        </a>
+      </div>
+
+      <div class="trend-actions">
+        ${pillHTML(b)}
+      </div>
+    `;
+
+    featuredStrip.appendChild(el);
+
+  });
+
+}else{
+
+  featuredStatus.textContent = "No featured beats right now";
+
+}
+
       beats.slice(0,12).forEach((b)=>{
         const el = document.createElement("div");
         el.className = "card trend-card";
