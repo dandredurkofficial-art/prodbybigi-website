@@ -1,1 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Beats - Audiory</title>
 
+<style>
+
+body{
+margin:0;
+font-family:Inter,system-ui;
+background:#070a12;
+color:white;
+}
+
+header{
+padding:18px 24px;
+border-bottom:1px solid #1f2937;
+font-weight:700;
+font-size:20px;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+padding:24px;
+}
+
+.beats-grid{
+display:grid;
+grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+gap:20px;
+}
+
+.beat-card{
+background:#0b1220;
+border:1px solid #1f2937;
+border-radius:14px;
+overflow:hidden;
+}
+
+.beat-art{
+width:100%;
+aspect-ratio:1/1;
+object-fit:cover;
+}
+
+.beat-info{
+padding:12px;
+}
+
+.beat-title{
+font-weight:700;
+margin-bottom:6px;
+}
+
+.beat-producer{
+font-size:13px;
+opacity:.7;
+margin-bottom:10px;
+}
+
+button{
+width:100%;
+border:none;
+padding:10px;
+border-radius:8px;
+background:#3b82f6;
+color:white;
+cursor:pointer;
+font-weight:600;
+}
+
+audio{
+width:100%;
+margin-top:10px;
+}
+
+.empty{
+text-align:center;
+opacity:.6;
+margin-top:60px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+Free Beats
+</header>
+
+<div class="container">
+
+<div id="beatsGrid" class="beats-grid"></div>
+
+<div id="emptyState" class="empty" style="display:none;">
+No free beats available
+</div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* YOUR FIREBASE CONFIG */
+const firebaseConfig = {
+apiKey: "YOUR_API_KEY",
+authDomain: "YOUR_PROJECT.firebaseapp.com",
+projectId: "YOUR_PROJECT_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const beatsGrid = document.getElementById("beatsGrid");
+const emptyState = document.getElementById("emptyState");
+
+async function loadFreeBeats(){
+
+const q = query(
+collection(db,"beats"),
+where("licenseType","==","free")
+);
+
+const snapshot = await getDocs(q);
+
+if(snapshot.empty){
+emptyState.style.display="block";
+return;
+}
+
+snapshot.forEach(doc=>{
+
+const beat = doc.data();
+
+const card = document.createElement("div");
+card.className="beat-card";
+
+card.innerHTML = `
+<img class="beat-art" src="${beat.artworkUrl || ''}">
+
+<div class="beat-info">
+
+<div class="beat-title">${beat.title || 'Untitled Beat'}</div>
+
+<div class="beat-producer">${beat.producerName || ''}</div>
+
+<audio controls src="${beat.previewUrl}"></audio>
+
+<button onclick="downloadBeat('${beat.fullUrl}')">
+Download Free Beat
+</button>
+
+</div>
+`;
+
+beatsGrid.appendChild(card);
+
+});
+
+}
+
+window.downloadBeat = function(url){
+window.open(url,"_blank");
+}
+
+loadFreeBeats();
+
+</script>
+
+</body>
+</html>
