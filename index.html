@@ -1182,6 +1182,18 @@
         b.featuredUntil &&
         b.featuredUntil > now
       );
+      
+
+      /* FEATURED ROTATION */
+
+      const rotationSize = 10;
+
+      const rotationIndex =
+        Math.floor(Date.now() / (1000 * 60 * 5)) % Math.ceil(featuredBeats.length / rotationSize);
+
+      const start = rotationIndex * rotationSize;
+
+      const visibleFeatured = featuredBeats.slice(start, start + rotationSize);
 
       strip.innerHTML = "";
       chart.innerHTML = "";
@@ -1202,7 +1214,7 @@
 
         featuredStatus.classList.add("hidden");
 
-        featuredBeats.slice(0,10).forEach((b)=>{
+        visibleFeatured.forEach((b)=>{
 
           const el = document.createElement("div");
           el.className = "card trend-card";
