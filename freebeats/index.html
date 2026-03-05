@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Beats - Audiory</title>
+<title>Free Beats • Audiory</title>
 
 <style>
 
@@ -11,14 +11,17 @@ body{
 margin:0;
 font-family:Inter,system-ui;
 background:#070a12;
-color:white;
+color:#fff;
 }
 
 header{
-padding:18px 24px;
+height:70px;
+display:flex;
+align-items:center;
+padding:0 20px;
 border-bottom:1px solid #1f2937;
-font-weight:700;
 font-size:20px;
+font-weight:700;
 }
 
 .container{
@@ -29,15 +32,21 @@ padding:24px;
 
 .beats-grid{
 display:grid;
-grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-gap:20px;
+grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+gap:18px;
 }
 
 .beat-card{
 background:#0b1220;
 border:1px solid #1f2937;
-border-radius:14px;
+border-radius:16px;
 overflow:hidden;
+transition:.2s;
+}
+
+.beat-card:hover{
+transform:translateY(-3px);
+border-color:#334155;
 }
 
 .beat-art{
@@ -46,41 +55,46 @@ aspect-ratio:1/1;
 object-fit:cover;
 }
 
-.beat-info{
-padding:12px;
+.beat-body{
+padding:14px;
 }
 
 .beat-title{
 font-weight:700;
-margin-bottom:6px;
+margin-bottom:4px;
 }
 
 .beat-producer{
 font-size:13px;
-opacity:.7;
+color:#9ca3af;
 margin-bottom:10px;
-}
-
-button{
-width:100%;
-border:none;
-padding:10px;
-border-radius:8px;
-background:#3b82f6;
-color:white;
-cursor:pointer;
-font-weight:600;
 }
 
 audio{
 width:100%;
-margin-top:10px;
+margin-bottom:10px;
+}
+
+.download-btn{
+width:100%;
+border:none;
+padding:10px;
+border-radius:10px;
+background:#3b82f6;
+color:white;
+font-weight:600;
+cursor:pointer;
+}
+
+.download-btn:hover{
+background:#2563eb;
 }
 
 .empty{
 text-align:center;
 opacity:.6;
-margin-top:60px;
+margin-top:80px;
+font-size:18px;
 }
 
 </style>
@@ -96,8 +110,8 @@ Free Beats
 
 <div id="beatsGrid" class="beats-grid"></div>
 
-<div id="emptyState" class="empty" style="display:none;">
-No free beats available
+<div id="emptyState" class="empty" style="display:none">
+No free beats available yet
 </div>
 
 </div>
@@ -107,18 +121,17 @@ No free beats available
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* YOUR FIREBASE CONFIG */
 const firebaseConfig = {
 apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
 authDomain: "audiory-beat-store.firebaseapp.com",
-projectId: "audiory-beat-store"
+projectId: "audiory-beat-store",
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const beatsGrid = document.getElementById("beatsGrid");
-const emptyState = document.getElementById("emptyState");
+const grid = document.getElementById("beatsGrid");
+const empty = document.getElementById("emptyState");
 
 async function loadFreeBeats(){
 
@@ -127,14 +140,14 @@ collection(db,"beats"),
 where("licenseType","==","free")
 );
 
-const snapshot = await getDocs(q);
+const snap = await getDocs(q);
 
-if(snapshot.empty){
-emptyState.style.display="block";
+if(snap.empty){
+empty.style.display="block";
 return;
 }
 
-snapshot.forEach(doc=>{
+snap.forEach(doc=>{
 
 const beat = doc.data();
 
@@ -143,30 +156,20 @@ card.className="beat-card";
 
 card.innerHTML = `
 <img class="beat-art" src="${beat.artworkUrl || ''}">
-
-<div class="beat-info">
-
-<div class="beat-title">${beat.title || 'Untitled Beat'}</div>
-
-<div class="beat-producer">${beat.producerName || ''}</div>
-
-<audio controls src="${beat.previewUrl}"></audio>
-
-<button onclick="downloadBeat('${beat.fullUrl}')">
+<div class="beat-body">
+<div class="beat-title">${beat.title || "Untitled Beat"}</div>
+<div class="beat-producer">${beat.producerName || ""}</div>
+<audio controls src="${beat.previewUrl || ''}"></audio>
+<button class="download-btn" onclick="window.open('${beat.fullUrl || ''}')">
 Download Free Beat
 </button>
-
 </div>
 `;
 
-beatsGrid.appendChild(card);
+grid.appendChild(card);
 
 });
 
-}
-
-window.downloadBeat = function(url){
-window.open(url,"_blank");
 }
 
 loadFreeBeats();
