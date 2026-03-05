@@ -1,419 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Marketplace | Audiory</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Free Beats | Audiory</title>
 
-  <!-- ✅ SEO META (ADDED) -->
-  <meta name="description" content="Browse Audiory Marketplace: discover trending beats, search by genre, and preview tracks instantly. Buy licenses and find producers worldwide." />
-  <meta name="keywords" content="marketplace, buy beats, sell beats, beat marketplace, instrumentals, afrobeats beats, trap beats, drill beats, amapiano beats, r&b beats, hip hop beats, music producers" />
-  <meta name="author" content="Audiory" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://audiory.site/marketplace/" />
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/marketplace.css">
+<link rel="stylesheet" href="/css/cart.css">
 
-  <!-- ✅ FAVICON (ADDED) -->
-  <link rel="icon" href="/audioryfavicon.web" />
-  <link rel="shortcut icon" href="/audioryfavicon.web" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/audioryfavicon.web" />
+<style>
+.market-head{margin-top:10px}
+.market-title{font-size:32px;font-weight:900}
+.market-sub{color:var(--muted);margin-top:6px}
 
-  <!-- ✅ OPEN GRAPH (ADDED) -->
-  <meta property="og:title" content="Marketplace – Audiory" />
-  <meta property="og:description" content="Discover trending beats, search genres, preview tracks, and buy licenses from producers worldwide on Audiory." />
-  <meta property="og:url" content="https://audiory.site/marketplace/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:image" content="https://audiory.site/og-image.jpg" />
-  <meta property="og:image:alt" content="Audiory Marketplace" />
-  <meta property="og:site_name" content="Audiory" />
+.pb-pill.free{
+background:rgba(59,130,246,.16);
+border-color:rgba(59,130,246,.35);
+}
 
-  <!-- ✅ TWITTER/X CARDS (ADDED) -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Marketplace – Audiory" />
-  <meta name="twitter:description" content="Discover trending beats, search genres, preview tracks, and buy licenses worldwide." />
-  <meta name="twitter:image" content="https://audiory.site/og-image.jpg" />
-
-  <!-- small perf -->
-  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
-
-  <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/marketplace.css?v=6">
-  <link rel="stylesheet" href="/css/cart.css">
-
-  <style>
-    /* lightweight UI additions (won't break your CSS) */
-    .market-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 4px}
-    .market-search{flex:1;min-width:220px;display:flex;gap:10px}
-    .market-search input{flex:1}
-    .chips{display:flex;flex-wrap:wrap;gap:8px}
-    .chip{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;font-weight:700;font-size:12px;cursor:pointer}
-    .chip.active{outline:2px solid rgba(85,160,255,.55)}
-
-    /* ✅ BeatStars-like price pills */
-    .pb-pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      min-width:110px;
-      padding:10px 12px;
-      border-radius:12px;
-      font-weight:900;
-      font-size:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      cursor:pointer;
-      user-select:none;
-      transition:transform .08s ease, background .15s ease;
-      flex:0 0 auto;
-      white-space:nowrap;
-    }
-    .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
-    .pb-pill:active{transform:translateY(0px)}
-    .pb-pill .ic{font-size:16px; line-height:1}
-    .pb-pill.free{
-      background:rgba(59,130,246,.16);
-      border-color:rgba(59,130,246,.35);
-    }
-
-    /* ✅ Free download modal (BeatStars style) */
-    .pb-free-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      z-index:9998;
-    }
-    .pb-free-modal{
-      position:fixed;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(520px, calc(100vw - 24px));
-      background:#0b1220;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:18px;
-      box-shadow:0 20px 70px rgba(0,0,0,.45);
-      display:none;
-      z-index:9999;
-    }
-    .pb-free-head{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      margin-bottom:10px;
-    }
-    .pb-free-title{
-      font-size:16px;
-      font-weight:900;
-      margin:0;
-    }
-    .pb-free-close{
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:18px;
-      cursor:pointer;
-      padding:6px 8px;
-      border-radius:10px;
-    }
-    .pb-free-close:hover{background:rgba(255,255,255,.08)}
-    .pb-free-sub{
-      color:rgba(255,255,255,.7);
-      font-size:13px;
-      margin:8px 0 14px;
-      line-height:1.4;
-    }
-    .pb-free-label{
-      font-size:13px;
-      font-weight:800;
-      margin:10px 0 6px;
-      color:rgba(255,255,255,.85);
-    }
-    .pb-free-input{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-    }
-    .pb-free-input:focus{border-color:rgba(59,130,246,.55)}
-    .pb-free-btn{
-      width:100%;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      background:#3b82f6;
-      color:#fff;
-    }
-    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
-    .pb-free-note{
-      margin-top:10px;
-      color:rgba(255,255,255,.55);
-      font-size:12px;
-      line-height:1.35;
-    }
-    .pb-free-status{
-      margin-top:10px;
-      font-size:13px;
-      color:#22c55e;
-      min-height:18px;
-    }
-
-    /* =========================================
-       ✅ FIX: title + pill alignment (BeatStars feel)
-       - On small screens: stack (text full width, pill full width)
-       - Ensure title/prod can use the width and wrap nicely
-    ========================================= */
-    .beat-meta > div{ min-width:0; } /* allow text to size properly in flex */
-    .beat-meta h3{
-      display:-webkit-box;
-      -webkit-box-orient:vertical;
-      -webkit-line-clamp:2;   /* show up to 2 lines like BeatStars */
-      overflow:hidden;
-    }
-    .beat-meta .producer{
-      max-width:100%;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      white-space:nowrap;
-    }
-
-    @media (max-width: 520px){
-      .beat-meta{
-        flex-direction:column;
-        align-items:stretch;
-        gap:10px;
-      }
-      .pb-pill{
-        width:100%;
-        min-width:0;
-      }
-  </style>
+.pb-pill{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+min-width:110px;
+padding:10px 12px;
+border-radius:12px;
+font-weight:900;
+font-size:14px;
+border:1px solid rgba(255,255,255,.14);
+background:rgba(255,255,255,.06);
+color:#fff;
+cursor:pointer;
+}
+</style>
 </head>
+
 <body>
 
 <header class="topbar">
-  <div class="container topbar-inner">
-    <div class="brand">
-      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</div>
-    </div>
+<div class="container topbar-inner">
+<div class="brand">
+<button class="icon-btn" id="hamburgerBtn">☰</button>
+<div class="logo">Audiory</div>
+</div>
 
-    <nav class="desktop-nav" aria-label="Main">
-      <a href="/index.html">Feed</a>
-      <a href="/marketplace/">Tracks</a>
-      <a href="/soundkits/">Sound Kits</a>
-      <a href="/producers/">Producers</a>
-      <!-- Logged OUT -->
-      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
-      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
-
-      <!-- Logged IN -->
-      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">
-        Dashboard
-      </a>
-      <button id="navSignOut" class="ghost hidden" type="button">
-        Sign out
-      </button>
-    </nav>
-
-    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
-      <span class="cart-ic">🛒</span>
-      <span class="cart-count" id="pbCartCount">0</span>
-    </button>
-  </div>
-</header>
-
-<div class="menu-backdrop" id="menuBackdrop"></div>
-<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
-  <div class="menu-head">
-    <div class="menu-title">Menu</div>
-    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
-  </div>
-  <a href="/index.html">Feed</a>
-  <a href="/marketplace/">Tracks</a>
-  <a href="/soundkits/">Sound Kits</a>
-  <a href="/producers/">Producers</a>
-  <!-- Logged OUT -->
-  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
-  <a id="mNavSignIn" href="/login/">Sign in</a>
-
-  <!-- Logged IN -->
-  <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
-  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+<nav class="desktop-nav">
+<a href="/index.html">Feed</a>
+<a href="/marketplace/">Tracks</a>
+<a href="/soundkits/">Sound Kits</a>
+<a href="/producers/">Producers</a>
 </nav>
 
+<button class="cart-btn" id="pbCartBtn">
+<span class="cart-ic">🛒</span>
+<span class="cart-count" id="pbCartCount">0</span>
+</button>
+</div>
+</header>
+
 <main class="container">
-  <section class="market-head">
-    <h1 class="market-title" id="marketTitle">Trending Beats</h1>
-    <p class="market-sub" id="marketSub">Fresh uploads from producers — tap play to preview.</p>
 
-    <div class="market-tools">
-      <div class="market-search">
-        <input id="marketSearchInput" placeholder="Search beats, producers, genres…" />
-        <button id="marketSearchBtn" type="button">Search</button>
-      </div>
-      <div class="chips" id="genreChips"></div>
-    </div>
-  </section>
+<section class="market-head">
+<h1 class="market-title">Free Beats</h1>
+<p class="market-sub">Download free beats from Audiory producers.</p>
+</section>
 
-  <div id="marketStatus" class="loading-box">Loading marketplace…</div>
-  <div id="beatsGrid" class="beats-grid"></div>
+<div id="marketStatus" class="loading-box">Loading free beats…</div>
+<div id="beatsGrid" class="beats-grid"></div>
+
 </main>
 
 <footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-    <div class="footer-links">
-      <a href="/privacy/">Privacy Policy</a>
-      <a href="/terms/">Terms</a>
-      <a href="/cookies/">Cookies</a>
-      <a href="/cookie-settings/">Cookie Settings</a>
-      <a href="/refunds/">Refund Policy</a>
-      <a href="/dmca/">DMCA</a>
-      <a href="/creator-agreement/">Creator Agreement</a>
-    </div>
-
-    <div class="social">
-      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
-        </svg>
-      </a>
-
-      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
-        </svg>
-      </a>
-    </div>
-  </div>
+<div class="container footer-row">
+<div>© 2026 Audiory</div>
+</div>
 </footer>
-
-<!-- License / Checkout Modal -->
-<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
-<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
-  <div class="pb-modal-card">
-    <div class="pb-modal-head">
-      <div>
-        <div class="pb-modal-kicker">Choose License</div>
-        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
-        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
-      </div>
-      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
-    </div>
-
-    <div class="pb-licenses" id="pbLicensesGrid"></div>
-
-    <div class="pb-modal-foot">
-      <div class="pb-total">
-        <div class="pb-total-label">Total</div>
-        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
-      </div>
-
-      <div class="pb-actions">
-        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
-        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
-      </div>
-    </div>
-
-    <div class="pb-terms" id="pbTermsBox">
-      <div class="pb-terms-title">Usage</div>
-      <div class="pb-terms-grid" id="pbTermsGrid"></div>
-    </div>
-  </div>
-</div>
-
-<!-- Cart Drawer -->
-<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
-<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
-  <div class="pb-cart-head">
-    <div>
-      <div class="pb-cart-title">Your Cart</div>
-      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
-    </div>
-    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
-  </div>
-
-  <div class="pb-cart-body" id="pbCartItems"></div>
-
-  <div class="pb-cart-foot">
-    <div class="pb-cart-totals">
-      <div class="muted">Total</div>
-      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
-    </div>
-
-    <div class="pb-cart-actions">
-      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
-      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
-    </div>
-  </div>
-</aside>
-
-<!-- ✅ FREE DOWNLOAD POPUP -->
-<div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
-<div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
-  <div class="pb-free-head">
-    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
-    <button class="pb-free-close" id="pbFreeClose" aria-label="Close">✕</button>
-  </div>
-
-  <div class="pb-free-sub" id="pbFreeSub">
-    Enter your email address and full name to unlock your free download.
-    We will send your free track to the email address.
-  </div>
-
-  <div class="pb-free-label">Full name</div>
-  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
-
-  <div class="pb-free-label">Email address</div>
-  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
-
-  <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
-  <div class="pb-free-status" id="pbFreeStatus"></div>
-
-  <div class="pb-free-note">
-    By continuing, you agree to our Terms & Privacy Policy.
-  </div>
-</div>
-
-<script>
-  window.API_BASE = "https://prodbybigi-api.onrender.com";
-</script>
-
-<script>
-  window.PB_PAYPAL_CREATE_ORDER_URL =
-    "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL =
-    "https://captureorder-f65rhsquva-uc.a.run.app";
-</script>
 
 <script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
@@ -423,442 +86,139 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
-  function money(n){
-    const v = Number(n);
-    if (!Number.isFinite(v)) return "$0.00";
-    return "$" + v.toFixed(2);
-  }
-
-  function prettyProducerName(b){
-    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
-    if (!b.producerId) return "Prod. Unknown";
-    return "Prod. " + String(b.producerId).slice(0,8);
-  }
-
-  function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
-    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
-    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
-  }
-
-  function getParams(){
-    const u = new URL(location.href);
-    const q = (u.searchParams.get("q") || "").trim();
-    const genre = (u.searchParams.get("genre") || "").trim();
-    return { q, genre };
-  }
-
-  function setParams({ q, genre }){
-    const u = new URL(location.href);
-    if (q) u.searchParams.set("q", q); else u.searchParams.delete("q");
-    if (genre) u.searchParams.set("genre", genre); else u.searchParams.delete("genre");
-    if (!u.searchParams.toString()) u.search = "";
-    location.href = u.toString();
-  }
-
-  function norm(s){ return String(s||"").toLowerCase().trim(); }
-
-  function buildChips(activeGenre){
-    const genres = ["All","Afrobeats","Trap","Drill","Amapiano","R&B","Hip Hop"];
-    const wrap = document.getElementById("genreChips");
-    if(!wrap) return;
-    wrap.innerHTML = "";
-    genres.forEach((g)=>{
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "chip" + ((g !== "All" && norm(g) === norm(activeGenre)) || (g==="All" && !activeGenre) ? " active" : "");
-      btn.textContent = g;
-      btn.addEventListener("click", ()=>{
-        setParams({ q: getParams().q, genre: g === "All" ? "" : g });
-      });
-      wrap.appendChild(btn);
-    });
-  }
-
-  function applyHeader({ q, genre }){
-    const t = document.getElementById("marketTitle");
-    const s = document.getElementById("marketSub");
-    if(!t || !s) return;
-
-    if (genre && q){
-      t.textContent = `${genre} — Search`;
-      s.textContent = `Results for “${q}” in ${genre}.`;
-    } else if (genre){
-      t.textContent = `${genre} Beats`;
-      s.textContent = `Only ${genre} beats. Tap play to preview.`;
-    } else if (q){
-      t.textContent = `Search Results`;
-      s.textContent = `Results for “${q}”.`;
-    } else {
-      t.textContent = `Trending Beats`;
-      s.textContent = `Fresh uploads from producers — tap play to preview.`;
-    }
-  }
-
-  function filterBeats(beats, { q, genre }){
-    const qn = norm(q);
-    const gn = norm(genre);
-
-    return (beats || []).filter((b)=>{
-      const title = norm(b.title);
-      const prod  = norm(b.producerName);
-      const gen   = norm(b.genre);
-
-      const okGenre = !gn || gen === gn || (gn === "r&b" && (gen === "r&b" || gen === "rb"));
-      if (!okGenre) return false;
-
-      if (!qn) return true;
-      return title.includes(qn) || prod.includes(qn) || gen.includes(qn);
-    });
-  }
-
-  /* ===========================
-     ✅ FREE DOWNLOAD (BeatStars style)
-  =========================== */
-  const FreeDL = (() => {
-    const $ = (id)=>document.getElementById(id);
-
-    const backdrop = $("pbFreeBackdrop");
-    const modal = $("pbFreeModal");
-    const closeBtn = $("pbFreeClose");
-    const sendBtn = $("pbFreeSend");
-    const nameEl = $("pbFreeName");
-    const emailEl = $("pbFreeEmail");
-    const titleEl = $("pbFreeTitle");
-    const statusEl = $("pbFreeStatus");
-
-    let currentBeat = null;
-
-    function open(beat){
-      currentBeat = beat || null;
-      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
-      statusEl.textContent = "";
-      nameEl.value = "";
-      emailEl.value = "";
-
-      backdrop.style.display = "block";
-      modal.style.display = "block";
-      backdrop.setAttribute("aria-hidden","false");
-      setTimeout(()=>nameEl.focus(), 30);
-    }
-
-    function close(){
-      backdrop.style.display = "none";
-      modal.style.display = "none";
-      backdrop.setAttribute("aria-hidden","true");
-      currentBeat = null;
-    }
-
-    async function send(){
-      const fullName = (nameEl.value || "").trim();
-      const email = (emailEl.value || "").trim().toLowerCase();
-
-      if (!fullName) return alert("Enter your full name");
-      if (!email || !email.includes("@")) return alert("Enter a valid email");
-      if (!currentBeat?.id) return alert("Beat not found");
-
-      const key = `pb_free_${currentBeat.id}_${email}`;
-      if (localStorage.getItem(key) === "1"){
-        statusEl.textContent = "✅ Already sent. Check inbox/spam.";
-        return;
-      }
-
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Sending...";
-
-      try{
-        if (window.FB && typeof window.FB.logFreeDownload === "function"){
-          await window.FB.logFreeDownload({
-            beatId: currentBeat.id,
-            beatTitle: currentBeat.title || "",
-            producerId: currentBeat.producerId || "",
-            producerName: currentBeat.producerName || "",
-            fullName,
-            email,
-            createdAt: Date.now()
-          });
-        }
-
-        localStorage.setItem(key, "1");
-        statusEl.textContent = "✅ Sent! Check inbox/spam.";
-        setTimeout(close, 900);
-      }catch(err){
-        console.error(err);
-        alert("Failed: " + (err?.message || err));
-      }
-
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send";
-    }
-
-    backdrop?.addEventListener("click", close);
-    closeBtn?.addEventListener("click", close);
-    sendBtn?.addEventListener("click", send);
-
-    return { open, close };
-  })();
-
-  /* ✅ FIXED: Detect Free correctly */
-  function isFreeBeat(b){
-    if (!b) return true;
-
-    if (b.freeDownload === true || b.isFree === true) return true;
-
-    // If price exists and is a number, trust it
-    if (Number.isFinite(Number(b.price))) {
-      return Number(b.price) <= 0;
-    }
-
-    // If price missing, check licenses:
-    const lic = b.licenses || {};
-    const hasPaidLicense =
-      lic?.basic?.enabled === true ||
-      lic?.premium?.enabled === true ||
-      lic?.exclusive?.enabled === true;
-
-    if (hasPaidLicense) return false;
-
-    // fallback
-    return true;
-  }
-
-  function pillHTML(b){
-    if (isFreeBeat(b)){
-      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
-        <span class="ic">⬇️</span>
-        <span>Free</span>
-      </button>`;
-    }
-    return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
-      <span class="ic">🛍️</span>
-      <span>${money(b.price)}</span>
-    </button>`;
-  }
-
-  /* =========================================================
-     ✅ Beat Page routing (BeatStars-like)
-     - Clicking cover/title/card opens a dedicated beat page
-     - Price pill still opens license modal (handled by license-modal.js)
-     - Play button still previews (player.js)
-     - Free pill opens free modal (already)
-     NOTE: This assumes you will have a page like:
-           /beat/?id=<beatId>
-           (we'll build/confirm that page next)
-  ========================================================== */
-  function beatPageUrl(beat){
-    const id = beat?.id ? String(beat.id) : "";
-    return `/beat/?id=${encodeURIComponent(id)}`;
-  }
-
-  /* =========================================================
-     ✅ ADVANCED ANALYTICS (REAL) — events
-     - "view" : when user opens the beat page from marketplace
-     - "play" : when user starts preview from marketplace (click play)
-     IMPORTANT:
-     - Your rules require signed-in users for analyticsEvents create.
-     - For timestamp, we prefer serverTimestamp() if your firebase.js exposes it.
-       Fallback: Date.now()
-  ========================================================== */
-  async function logAnalyticsEvent({ producerId, type, beatId=null }){
-    try{
-      if (!window.auth?.currentUser) return; // requires signed-in (matches your rules)
-      if (!producerId || !type) return;
-      if (!window.db || !window.addDoc || !window.collection) return;
-
-      const ts =
-        (typeof window.serverTimestamp === "function")
-          ? window.serverTimestamp()
-          : Date.now();
-
-      await window.addDoc(window.collection(window.db,"analyticsEvents"), {
-        producerId: String(producerId),
-        type: String(type),          // "view" | "play"
-        beatId: beatId ? String(beatId) : null,
-        actorUid: window.auth.currentUser.uid,
-        createdAt: ts
-      });
-    }catch(e){
-      // silently ignore
-    }
-  }
-  window.logAnalyticsEvent = logAnalyticsEvent;
-
-  // Prevent spamming same event in one session
-  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
-
-  async function loadMarketplace(){
-    const status = document.getElementById("marketStatus");
-    const grid   = document.getElementById("beatsGrid");
-    const inp = document.getElementById("marketSearchInput");
-    const btn = document.getElementById("marketSearchBtn");
-
-    const params = getParams();
-    applyHeader(params);
-    buildChips(params.genre);
-
-    if (inp) inp.value = params.q || "";
-
-    function goSearch(){
-      const newQ = (inp?.value || "").trim();
-      setParams({ q: newQ, genre: getParams().genre });
-    }
-    btn?.addEventListener("click", goSearch);
-    inp?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
-
-    try{
-      status.textContent = "Loading marketplace…";
-      status.classList.remove("hidden");
-
-      // ✅ Force refresh once to avoid old cached “free”
-      const beats = await window.FB.fetchBeats({ max: 60, force: true });
-
-      window.__LATEST_BEATS__ = beats;
-
-      const filtered = filterBeats(beats, params);
-
-      grid.innerHTML = "";
-
-      if(!filtered.length){
-        status.classList.remove("hidden");
-        status.textContent = "No beats found for this filter.";
-        return;
-      }
-
-      status.classList.add("hidden");
-
-      filtered.forEach((b)=>{
-        const card = document.createElement("div");
-        card.className = "card beat-card";
-        card.setAttribute("data-beat-id", b.id);
-
-        const audioUrl = b.audio || "";
-        const pageUrl = beatPageUrl(b);
-
-        card.innerHTML = `
-          <div class="beat-cover">
-            <a class="beat-open"
-               href="${pageUrl}"
-               data-open-beat="1"
-               data-producer-id="${String(b.producerId||"")}"
-               data-beat-id="${String(b.id||"")}"
-               aria-label="Open beat page">
-              ${coverHTML(b.artwork, b.title)}
-            </a>
-
-            <button class="play-fab"
-              data-play-btn
-              data-ignore-license="1"
-              data-audio-url="${audioUrl}"
-              data-producer-id="${String(b.producerId||"")}"
-              data-beat-id="${String(b.id||"")}"
-              aria-label="Play">
-              <span class="playIcon">▶</span>
-            </button>
-          </div>
-
-          <div class="beat-meta">
-            <div>
-              <a class="beat-title-link"
-                 href="${pageUrl}"
-                 data-open-beat="1"
-                 data-producer-id="${String(b.producerId||"")}"
-                 data-beat-id="${String(b.id||"")}"
-                 style="text-decoration:none;color:inherit;">
-                <h3 style="margin:0 0 4px 0;">${b.title}</h3>
-              </a>
-
-              <a class="producer"
-                 href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}"
-                 data-producer-id="${String(b.producerId||"")}"
-                 data-beat-id="${String(b.id||"")}">
-                ${prettyProducerName(b)}
-              </a>
-
-              ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
-            </div>
-
-            ${
-              // keep Free as-is, but keep paid pill as .price-pill so license-modal.js still works
-              (isFreeBeat(b))
-                ? pillHTML(b)
-                : `<button class="pb-pill price-pill" type="button"
-                     data-producer-id="${String(b.producerId||"")}"
-                     data-beat-id="${String(b.id||"")}"
-                     aria-label="Choose license">
-                    <span class="ic">🛍️</span>
-                    <span>${money(b.price)}</span>
-                   </button>`
-            }
-          </div>
-        `;
-
-        // ✅ Free download button
-        card.addEventListener("click", (e)=>{
-          const freeBtn = e.target.closest("[data-free-download='1']");
-          if (!freeBtn) return;
-          e.preventDefault();
-          e.stopPropagation();
-          FreeDL.open(b);
-        });
-
-        // ✅ Beat page open (cover/title/card click)
-        card.addEventListener("click", (e)=>{
-          // Don't hijack clicks for these:
-          if (e.target.closest("[data-free-download='1']")) return;     // free modal
-          if (e.target.closest(".price-pill")) return;                  // license modal
-          if (e.target.closest("[data-play-btn]")) return;              // preview
-          if (e.target.closest("a.producer")) return;                   // producer page
-
-          // If clicked on a beat open link OR anywhere on card body, open beat page:
-          const openLink = e.target.closest("[data-open-beat='1']");
-          const url = pageUrl;
-
-          // log VIEW when user opens beat page
-          const producerId = String(b.producerId||"");
-          const beatId = String(b.id||"");
-          const key = `${producerId}:${beatId}`;
-          if (producerId && beatId && !window.__ANA_SENT__.view[key]){
-            window.__ANA_SENT__.view[key] = 1;
-            logAnalyticsEvent({ producerId, type:"view", beatId });
-          }
-
-          // open
-          if (openLink){
-            // let <a href> navigate naturally
-            return;
-          }
-          window.location.href = url;
-        });
-
-        // ✅ log PLAY when preview is clicked (best we can do from here)
-        // (Actual "when audio starts" can be done inside player.js later)
-        card.addEventListener("click", (e)=>{
-          const btn = e.target.closest("[data-play-btn]");
-          if (!btn) return;
-
-          const producerId = btn.getAttribute("data-producer-id") || "";
-          const beatId = btn.getAttribute("data-beat-id") || "";
-          if (!producerId || !beatId) return;
-
-          const key = `${producerId}:${beatId}`;
-          if (window.__ANA_SENT__.play[key]) return;
-          window.__ANA_SENT__.play[key] = 1;
-
-          logAnalyticsEvent({ producerId, type:"play", beatId });
-        }, true);
-
-        grid.appendChild(card);
-      });
-
-    }catch(err){
-      console.error("[marketplace] load error:", err);
-      status.textContent = "Could not load beats. Check Firestore rules & console.";
-    }
-  }
-
-  window.addEventListener("firebase-ready", () => {
-    if (window.FB && typeof window.FB.fetchBeats === "function") loadMarketplace();
-  });
+
+function coverHTML(url,title){
+if(url) return `<img src="${url}" alt="${title}" loading="lazy">`;
+const initials = String(title||"B").slice(0,2).toUpperCase();
+return `<div style="height:100%;display:grid;place-items:center;font-weight:900">${initials}</div>`;
+}
+
+function prettyProducerName(b){
+if(b.producerName) return b.producerName;
+if(!b.producerId) return "Producer";
+return "Prod. " + b.producerId.slice(0,8);
+}
+
+function isFreeBeat(b){
+
+if(b.freeDownload === true) return true;
+if(b.isFree === true) return true;
+
+if(Number.isFinite(Number(b.price))){
+return Number(b.price) <= 0;
+}
+
+const lic = b.licenses || {};
+
+const paid =
+lic?.basic?.enabled === true ||
+lic?.premium?.enabled === true ||
+lic?.exclusive?.enabled === true;
+
+return !paid;
+}
+
+function pillHTML(){
+return `
+<button class="pb-pill free">
+<span>⬇️</span>
+<span>Free</span>
+</button>
+`;
+}
+
+async function loadFreeBeats(){
+
+const status=document.getElementById("marketStatus");
+const grid=document.getElementById("beatsGrid");
+
+try{
+
+status.textContent="Loading free beats…";
+
+const beats=await window.FB.fetchBeats({max:60,force:true});
+
+const freeBeats=beats.filter(b=>isFreeBeat(b));
+
+grid.innerHTML="";
+
+if(!freeBeats.length){
+status.textContent="No free beats available yet";
+return;
+}
+
+status.classList.add("hidden");
+
+freeBeats.forEach((b)=>{
+
+const card=document.createElement("div");
+card.className="card beat-card";
+card.setAttribute("data-beat-id",b.id);
+
+const audioUrl=b.audio||"";
+
+card.innerHTML=`
+
+<div class="beat-cover">
+${coverHTML(b.artwork,b.title)}
+
+<button class="play-fab"
+data-play-btn
+data-ignore-license="1"
+data-audio-url="${audioUrl}"
+aria-label="Play">
+
+<span class="playIcon">▶</span>
+
+</button>
+</div>
+
+<div class="beat-meta">
+
+<div>
+
+<h3>${b.title}</h3>
+
+<a class="producer"
+href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}">
+
+${prettyProducerName(b)}
+
+</a>
+
+${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
+
+</div>
+
+${pillHTML()}
+
+</div>
+
+`;
+
+grid.appendChild(card);
+
+});
+
+}catch(err){
+
+console.error(err);
+status.textContent="Could not load free beats";
+
+}
+
+}
+
+window.addEventListener("firebase-ready",()=>{
+
+if(window.FB && typeof window.FB.fetchBeats==="function"){
+
+loadFreeBeats();
+
+}
+
+});
+
 </script>
 
 </body>
