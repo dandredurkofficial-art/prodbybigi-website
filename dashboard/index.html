@@ -359,6 +359,21 @@
     max-width:100%;
     box-sizing:border-box;
   }
+
+  /* Recent sales toggle */
+  .sale-item.hidden-sale{
+    display:none;
+  }
+
+  .view-toggle{
+    margin-top:12px;
+    background:#111827;
+    border:1px solid #1f2937;
+    color:#fff;
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  }
   
 </style>
 </head>
@@ -1976,6 +1991,39 @@ async function loadDashboardStats(){
   }
 }
 window.loadDashboardStats = loadDashboardStats;
+
+function limitRecentSales(){
+  const sales = document.querySelectorAll("#recentSalesList .sale-item");
+
+  sales.forEach((sale, index)=>{
+    if(index >= 3){
+      sale.classList.add("hidden-sale");
+    }
+  });
+
+  if(sales.length <= 3){
+    document.getElementById("toggleSalesBtn").style.display="none";
+  }
+}
+
+let salesExpanded = false;
+
+function toggleSales(){
+  const sales = document.querySelectorAll("#recentSalesList .sale-item");
+  const btn = document.getElementById("toggleSalesBtn");
+
+  salesExpanded = !salesExpanded;
+
+  sales.forEach((sale,index)=>{
+    if(index >= 3){
+      sale.style.display = salesExpanded ? "block" : "none";
+    }
+  });
+
+  btn.textContent = salesExpanded ? "View less" : "View more";
+}
+
+document.addEventListener("DOMContentLoaded", limitRecentSales);
 
 /* ===========================
    MARKETING (PRO)
