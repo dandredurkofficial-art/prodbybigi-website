@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Free Beats | Audiory</title>
 
@@ -9,76 +9,81 @@
 <link rel="stylesheet" href="/css/marketplace.css">
 <link rel="stylesheet" href="/css/cart.css">
 
-<style>
-.market-head{margin-top:10px}
-.market-title{font-size:32px;font-weight:900}
-.market-sub{color:var(--muted);margin-top:6px}
-
-.pb-pill.free{
-background:rgba(59,130,246,.16);
-border-color:rgba(59,130,246,.35);
-}
-
-.pb-pill{
-display:inline-flex;
-align-items:center;
-justify-content:center;
-gap:8px;
-min-width:110px;
-padding:10px 12px;
-border-radius:12px;
-font-weight:900;
-font-size:14px;
-border:1px solid rgba(255,255,255,.14);
-background:rgba(255,255,255,.06);
-color:#fff;
-cursor:pointer;
-}
-</style>
 </head>
 
 <body>
 
 <header class="topbar">
-<div class="container topbar-inner">
-<div class="brand">
-<button class="icon-btn" id="hamburgerBtn">☰</button>
-<div class="logo">Audiory</div>
-</div>
+  <div class="container topbar-inner">
 
-<nav class="desktop-nav">
-<a href="/index.html">Feed</a>
-<a href="/marketplace/">Tracks</a>
-<a href="/soundkits/">Sound Kits</a>
-<a href="/producers/">Producers</a>
-</nav>
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
 
-<button class="cart-btn" id="pbCartBtn">
-<span class="cart-ic">🛒</span>
-<span class="cart-count" id="pbCartCount">0</span>
-</button>
-</div>
+    <nav class="desktop-nav">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+
+  </div>
 </header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+
+<nav class="mobile-menu" id="mobileMenu">
+
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn">✕</button>
+  </div>
+
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+
+</nav>
 
 <main class="container">
 
 <section class="market-head">
+
 <h1 class="market-title">Free Beats</h1>
-<p class="market-sub">Download free beats from Audiory producers.</p>
+
+<p class="market-sub">
+Download free beats from Audiory producers.
+</p>
+
 </section>
 
-<div id="marketStatus" class="loading-box">Loading free beats…</div>
+<div id="marketStatus" class="loading-box">
+Loading free beats…
+</div>
+
 <div id="beatsGrid" class="beats-grid"></div>
 
 </main>
 
 <footer class="footer">
+
 <div class="container footer-row">
+
 <div>© 2026 Audiory</div>
+
 </div>
+
 </footer>
 
 <script type="module" src="/js/firebase.js"></script>
+
 <script src="/js/menu.js"></script>
 <script src="/js/player.js"></script>
 <script src="/js/cart.js"></script>
@@ -87,82 +92,92 @@ cursor:pointer;
 
 <script>
 
+function money(n){
+const v = Number(n)
+if(!Number.isFinite(v)) return "$0.00"
+return "$"+v.toFixed(2)
+}
+
 function coverHTML(url,title){
-if(url) return `<img src="${url}" alt="${title}" loading="lazy">`;
-const initials = String(title||"B").slice(0,2).toUpperCase();
-return `<div style="height:100%;display:grid;place-items:center;font-weight:900">${initials}</div>`;
+
+if(url){
+return `<img src="${url}" alt="${title}" loading="lazy"/>`
+}
+
+const initials = String(title || "B")
+.trim()
+.slice(0,2)
+.toUpperCase()
+
+return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px">${initials}</div>`
 }
 
 function prettyProducerName(b){
-if(b.producerName) return b.producerName;
-if(!b.producerId) return "Producer";
-return "Prod. " + b.producerId.slice(0,8);
+
+if(b.producerName) return b.producerName
+
+if(!b.producerId) return "Producer"
+
+return "Prod. "+String(b.producerId).slice(0,8)
+
 }
 
 function isFreeBeat(b){
 
-if(b.freeDownload === true) return true;
-if(b.isFree === true) return true;
+if(b.freeDownload === true) return true
+if(b.isFree === true) return true
 
-if(Number.isFinite(Number(b.price))){
-return Number(b.price) <= 0;
-}
+if(Number(b.price) === 0) return true
 
-const lic = b.licenses || {};
-
-const paid =
-lic?.basic?.enabled === true ||
-lic?.premium?.enabled === true ||
-lic?.exclusive?.enabled === true;
-
-return !paid;
-}
-
-function pillHTML(){
-return `
-<button class="pb-pill free">
-<span>⬇️</span>
-<span>Free</span>
-</button>
-`;
+return false
 }
 
 async function loadFreeBeats(){
 
-const status=document.getElementById("marketStatus");
-const grid=document.getElementById("beatsGrid");
+const status = document.getElementById("marketStatus")
+const grid = document.getElementById("beatsGrid")
 
 try{
 
-status.textContent="Loading free beats…";
+status.textContent="Loading free beats…"
 
-const beats=await window.FB.fetchBeats({max:60,force:true});
+const beats = await window.FB.fetchBeats({
+max:60,
+force:true
+})
 
-const freeBeats=beats.filter(b=>isFreeBeat(b));
+const freeBeats = beats.filter(isFreeBeat)
 
-grid.innerHTML="";
+grid.innerHTML=""
 
 if(!freeBeats.length){
-status.textContent="No free beats available yet";
-return;
+
+status.textContent="No free beats available yet"
+
+return
+
 }
 
-status.classList.add("hidden");
+status.classList.add("hidden")
 
 freeBeats.forEach((b)=>{
 
-const card=document.createElement("div");
-card.className="card beat-card";
-card.setAttribute("data-beat-id",b.id);
+const card = document.createElement("div")
 
-const audioUrl=b.audio||"";
+card.className="card beat-card"
 
-card.innerHTML=`
+card.setAttribute("data-beat-id",b.id)
+
+const audioUrl = b.audio || ""
+
+card.innerHTML = `
 
 <div class="beat-cover">
+
 ${coverHTML(b.artwork,b.title)}
 
-<button class="play-fab"
+<button
+class="play-fab"
 data-play-btn
 data-ignore-license="1"
 data-audio-url="${audioUrl}"
@@ -171,6 +186,7 @@ aria-label="Play">
 <span class="playIcon">▶</span>
 
 </button>
+
 </div>
 
 <div class="beat-meta">
@@ -179,7 +195,8 @@ aria-label="Play">
 
 <h3>${b.title}</h3>
 
-<a class="producer"
+<a
+class="producer"
 href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}">
 
 ${prettyProducerName(b)}
@@ -190,20 +207,27 @@ ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.
 
 </div>
 
-${pillHTML()}
+<button class="pb-pill free">
+
+<span>⬇️</span>
+
+<span>Free</span>
+
+</button>
 
 </div>
 
-`;
+`
 
-grid.appendChild(card);
+grid.appendChild(card)
 
-});
+})
 
 }catch(err){
 
-console.error(err);
-status.textContent="Could not load free beats";
+console.error(err)
+
+status.textContent="Could not load free beats"
 
 }
 
@@ -213,11 +237,11 @@ window.addEventListener("firebase-ready",()=>{
 
 if(window.FB && typeof window.FB.fetchBeats==="function"){
 
-loadFreeBeats();
+loadFreeBeats()
 
 }
 
-});
+})
 
 </script>
 
