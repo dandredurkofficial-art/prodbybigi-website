@@ -68,6 +68,13 @@
       border-color:rgba(59,130,246,.35);
     }
 
+    /* Beat card layout fix */
+    .chart-card{
+      display:flex;
+      flex-direction:column;
+      height:100%;
+    }
+
     .trend-meta .t,
     .home-title-clamp{
       display:-webkit-box;
@@ -90,11 +97,13 @@
       align-items:center;
       justify-content:space-between;
       gap:12px;
-      margin-top:10px;
+      margin-top:auto;
     }
     .chart-text{
       min-width:0;
       flex:1;
+      display:flex;
+      flex-direction:column;
     }
     .chart-pill{
       flex-shrink:0;
