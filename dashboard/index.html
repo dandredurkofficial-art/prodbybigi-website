@@ -269,6 +269,10 @@
     box-sizing: border-box;
   }
 
+  #aiTagBox input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+
   button.primary{
     background:#3b82f6;
     border:none;
@@ -279,8 +283,16 @@
     font-weight:600;
   }
 
-  #aiTagBox input::placeholder {
-    color: rgba(255,255,255,0.6);
+  /* Prevent buttons from breaking layout */
+  button.primary {
+    max-width: 100%;
+    width: auto;
+    display: block;
+  }
+
+  /* Finance page button */
+  #withdrawBtn{
+    width:100%;
   }
 </style>
 </head>
