@@ -774,6 +774,30 @@
 </div>
 
 <script>
+<script>
+  
+async function generateTags(){
+
+ const title = document.getElementById("title")?.value || "";
+ const genre = document.getElementById("genre")?.value || "";
+ const bpm = document.getElementById("bpm")?.value || "";
+
+ const r = await fetch("https://YOUR_FUNCTION_URL",{
+   method:"POST",
+   headers:{ "Content-Type":"application/json"},
+   body:JSON.stringify({title,genre,bpm})
+ });
+
+ const data = await r.json();
+
+ const tagsInput = document.getElementById("tags");
+
+ if(tagsInput && data.tags){
+   tagsInput.value = data.tags.join(", ");
+ }
+
+}
+
 /* ===========================
    ✅ PLAN + PAYPAL CONFIG
 =========================== */
