@@ -1993,9 +1993,9 @@ async function loadDashboardStats(){
 window.loadDashboardStats = loadDashboardStats;
 
 function limitRecentSales(){
-  const sales = document.querySelectorAll("#recentSalesList .sale-item");
+  const sales = document.querySelectorAll("#prodSalesList .sale-item");
 
-  sales.forEach((sale, index)=>{
+  sales.forEach((sale,index)=>{
     if(index >= 3){
       sale.classList.add("hidden-sale");
     }
@@ -2009,7 +2009,7 @@ function limitRecentSales(){
 let salesExpanded = false;
 
 function toggleSales(){
-  const sales = document.querySelectorAll("#recentSalesList .sale-item");
+  const sales = document.querySelectorAll("#prodSalesList .sale-item");
   const btn = document.getElementById("toggleSalesBtn");
 
   salesExpanded = !salesExpanded;
