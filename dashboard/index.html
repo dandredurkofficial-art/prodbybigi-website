@@ -2168,7 +2168,49 @@ async function disableCampaign(id){
 
   loadMarketingCampaigns();
 }
-window.disableCampaign = disableCampaign;  
+window.disableCampaign = disableCampaign;
+
+async function loadProducerBeatsForBoost(){
+
+  const select = document.getElementById("mkBeatId");
+  if(!select) return;
+
+  if(!window.currentUser){
+    select.innerHTML = `<option value="">Login first</option>`;
+    return;
+  }
+
+  try{
+
+    const q = window.query(
+      window.collection(window.db, "beats"),
+      window.where("producerId","==",window.currentUser.uid)
+    );
+
+    const snap = await window.getDocs(q);
+
+    if(snap.empty){
+      select.innerHTML = `<option value="">No beats found</option>`;
+      return;
+    }
+
+    let html = `<option value="">Select beat to boost</option>`;
+
+    snap.forEach(doc=>{
+      const b = doc.data();
+      html += `<option value="${doc.id}">${b.title || "Untitled Beat"}</option>`;
+    });
+
+    select.innerHTML = html;
+
+  }catch(err){
+    console.error(err);
+    select.innerHTML = `<option value="">Error loading beats</option>`;
+  }
+
+}
+
+window.loadProducerBeatsForBoost = loadProducerBeatsForBoost;
 
 /* ===========================
    PRIVATE MESSAGES (PRO)
