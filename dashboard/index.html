@@ -2051,37 +2051,31 @@ async function loadDashboardStats(){
 window.loadDashboardStats = loadDashboardStats;
 
 function limitRecentSales(){
-  const sales = document.querySelectorAll("#prodSalesList .sale-item");
 
-  sales.forEach((sale,index)=>{
-    if(index >= 3){
-      sale.classList.add("hidden-sale");
-    }
+  const items = document.querySelectorAll("#recentSalesList .sale-item");
+  const container = document.getElementById("recentSalesList");
+
+  const existingToggle = document.getElementById("salesToggleBtn");
+  if(existingToggle) existingToggle.remove();
+
+  if(items.length <= 3) return;
+
+  items.forEach((item,i)=>{
+    item.style.display = (showAllSales || i < 3) ? "block" : "none";
   });
 
-  if(sales.length <= 3){
-    document.getElementById("toggleSalesBtn").style.display="none";
-  }
+  const btn = document.createElement("button");
+  btn.id = "salesToggleBtn";
+  btn.className = "toggle-sales";
+  btn.textContent = showAllSales ? "View less" : "View more";
+
+  btn.onclick = () => {
+    showAllSales = !showAllSales;
+    limitRecentSales();
+  };
+
+  container.appendChild(btn);
 }
-
-let salesExpanded = false;
-
-function toggleSales(){
-  const sales = document.querySelectorAll("#prodSalesList .sale-item");
-  const btn = document.getElementById("toggleSalesBtn");
-
-  salesExpanded = !salesExpanded;
-
-  sales.forEach((sale,index)=>{
-    if(index >= 3){
-      sale.style.display = salesExpanded ? "block" : "none";
-    }
-  });
-
-  btn.textContent = salesExpanded ? "View less" : "View more";
-}
-
-document.addEventListener("DOMContentLoaded", limitRecentSales);
 
 /* ===========================
    MARKETING (PRO)
