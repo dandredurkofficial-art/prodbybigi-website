@@ -2087,7 +2087,11 @@ async function createMarketingCampaign(){
 
       if(!confirmBoost) return;
 
-      await startBoostPayment(price);
+      await startBoostPayment({
+        beatId: beatId,
+        days: boostDays,
+        producerId: window.currentUser.uid
+      });
 
       featuredUntil = Date.now() + (boostDays * 24 * 60 * 60 * 1000);
 
@@ -2137,7 +2141,7 @@ async function startBoostPayment({beatId, days, producerId}){
 
   const token = await user.getIdToken();
 
-  const res = await fetch("https://createboostorder-xxxxx.run.app",{
+  const res = await fetch("https://createboostorder-f65rhsquva-uc.a.run.app",{
     method:"POST",
     headers:{
       "Content-Type":"application/json",
