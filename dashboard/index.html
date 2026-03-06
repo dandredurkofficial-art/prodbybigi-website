@@ -2053,6 +2053,12 @@ document.addEventListener("DOMContentLoaded", limitRecentSales);
 /* ===========================
    MARKETING (PRO)
 =========================== */
+const BOOST_PRICES = {
+  1: 5,   // 24 hours
+  3: 12,  // 3 days
+  7: 25   // 7 days
+};
+  
 async function createMarketingCampaign(){
   if (!isPro()) return alert("Marketing tools are Pro/Elite only.");
   if (!window.currentUser) return alert("Login again.");
@@ -2071,12 +2077,22 @@ async function createMarketingCampaign(){
 
     if(type === "boost"){
 
-      if(!beatId) return alert("Enter beat ID to boost");
+      if(!beatId) return alert("Select beat to boost");
+
+      const price = BOOST_PRICES[boostDays] || 5;
+
+      const confirmBoost = confirm(
+        `Boost this beat for ${boostDays} day(s)?\n\nCost: $${price}`
+      );
+
+      if(!confirmBoost) return;
+
+      await startBoostPayment(price);
 
       featuredUntil = Date.now() + (boostDays * 24 * 60 * 60 * 1000);
 
       await window.updateDoc(
-        window.doc(window.db, "beats", beatId),
+        window.doc(window.db,"beats",beatId),
         {
           featured: true,
           featuredUntil
@@ -2111,6 +2127,39 @@ async function createMarketingCampaign(){
 }
 window.createMarketingCampaign = createMarketingCampaign;
 
+async function startBoostPayment(amount){
+
+  const method = prompt(
+`Choose payment method:
+
+1 = M-Pesa
+2 = PayPal`
+  );
+
+  if(method === "1"){
+
+    alert("M-Pesa payment coming next step.");
+
+  }
+
+  else if(method === "2"){
+
+    window.open(
+      `https://www.paypal.com/paypalme/YOURPAYPAL/${amount}`,
+      "_blank"
+    );
+
+    alert("Complete PayPal payment then return to continue.");
+
+  }
+
+  else{
+
+    throw new Error("Payment cancelled");
+
+  }
+
+}
 
 /* ===============================
    LOAD MARKETING CAMPAIGNS
