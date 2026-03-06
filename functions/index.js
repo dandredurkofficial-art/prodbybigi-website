@@ -3410,7 +3410,7 @@ exports.processPayoutRequest = onDocumentCreated(
 exports.stkpushBoost = onRequest(
 {
   region:"us-central1",
-  secrets:[MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET]
+  secrets:[DARAJA_CONSUMER_KEY, DARAJA_CONSUMER_SECRET,]
 },
 async (req,res)=>{
 
