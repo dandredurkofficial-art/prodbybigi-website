@@ -2093,16 +2093,7 @@ async function createMarketingCampaign(){
         producerId: window.currentUser.uid
       });
 
-      featuredUntil = Date.now() + (boostDays * 24 * 60 * 60 * 1000);
-
-      await window.updateDoc(
-        window.doc(window.db,"beats",beatId),
-        {
-          featured: true,
-          featuredUntil
-        }
-      );
-
+      return; // stop campaign creation until payment finishes
     }
     
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
