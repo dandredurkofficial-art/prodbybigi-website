@@ -2127,37 +2127,58 @@ async function createMarketingCampaign(){
 }
 window.createMarketingCampaign = createMarketingCampaign;
 
-async function startBoostPayment(amount){
+async function payForBoost(beatId, days){
 
-  const method = prompt(
-`Choose payment method:
+const token = await firebase.auth().currentUser.getIdToken();
 
-1 = M-Pesa
-2 = PayPal`
-  );
+const r = await fetch(
+"https://us-central1-audiory-beat-store.cloudfunctions.net/createBoostOrder",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`
+},
+body:JSON.stringify({
+beatId,
+boostDays:days
+})
+});
 
-  if(method === "1"){
+const data = await r.json();
 
-    alert("M-Pesa payment coming next step.");
+const approve = data.links.find(l=>l.rel==="approve");
 
-  }
+window.location = approve.href;
 
-  else if(method === "2"){
+}
 
-    window.open(
-      `https://www.paypal.com/paypalme/YOURPAYPAL/${amount}`,
-      "_blank"
-    );
+async function boostWithMpesa(beatId,days,phone){
 
-    alert("Complete PayPal payment then return to continue.");
+const token = await firebase.auth().currentUser.getIdToken();
 
-  }
+const r = await fetch(
+"https://us-central1-audiory-beat-store.cloudfunctions.net/stkpushBoost",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`
+},
+body:JSON.stringify({
+beatId,
+boostDays:days,
+phone
+})
+});
 
-  else{
+const data = await r.json();
 
-    throw new Error("Payment cancelled");
-
-  }
+if(data.success){
+alert("STK Push sent. Check your phone.");
+}else{
+alert("Payment failed");
+}
 
 }
 
