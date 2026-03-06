@@ -1718,6 +1718,47 @@ exports.paypalWebhook = onRequest(
 
       const { value, currency } = parseAmountFromPayPalEvent(event);
 
+      /* ============================
+      BOOST PAYMENT
+      ============================ */
+
+      const resourceCustomIdBoost =
+        safeStr(resource?.custom_id) ||
+        safeStr(resource?.invoice_id) ||
+        "";
+
+      if (resourceCustomIdBoost.startsWith("boost|")) {
+
+        const parts = resourceCustomIdBoost.split("|");
+
+        const producerId = parts[1];
+        const beatId = parts[2];
+        const days = Number(parts[3] || 1);
+
+        const featuredUntil =
+          Date.now() + (days * 24 * 60 * 60 * 1000);
+
+        await db.collection("beats").doc(beatId).set({
+          featured: true,
+          featuredUntil
+        }, { merge: true });
+
+        await db.collection("boostPayments").add({
+          producerId,
+          beatId,
+          days,
+          amount: Number(value || 0),
+          currency,
+          provider: "paypal",
+          createdAt: Date.now()
+        });
+
+        return res.status(200).json({
+          received: true,
+          boost: true
+        });
+      }
+
       const resourceCustomId =
         safeStr(resource?.custom_id) ||
         safeStr(resource?.invoice_id) ||
