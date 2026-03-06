@@ -2100,7 +2100,8 @@ async function createMarketingCampaign(){
       );
 
     }
-
+    
+    await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       name,
