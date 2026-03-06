@@ -2049,7 +2049,9 @@ async function loadDashboardStats(){
   }
 }
 window.loadDashboardStats = loadDashboardStats;
-
+  
+let showAllSales = false;
+  
 function limitRecentSales(){
 
   const items = document.querySelectorAll("#recentSalesList .sale-item");
@@ -2071,6 +2073,7 @@ function limitRecentSales(){
 
   btn.onclick = () => {
     showAllSales = !showAllSales;
+    limitRecentSales()
   };
 
   container.appendChild(btn);
