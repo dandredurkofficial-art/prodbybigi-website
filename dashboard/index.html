@@ -2064,6 +2064,23 @@ async function createMarketingCampaign(){
   if (!name) return alert("Enter campaign name");
 
   try {
+    let featuredUntil = null;
+
+    if(type === "boost"){
+
+      if(!beatId) return alert("Enter beat ID to boost");
+
+      featuredUntil = Date.now() + (boostDays * 24 * 60 * 60 * 1000);
+
+      await window.updateDoc(
+        window.doc(window.db, "beats", beatId),
+        {
+          featured: true,
+          featuredUntil
+        }
+      );
+
+    }
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
