@@ -1,1 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
+<title>Audiory Pricing</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:system-ui,Segoe UI,Roboto;
+}
+
+body{
+background:#05070d;
+color:white;
+}
+
+.container{
+width:90%;
+max-width:1200px;
+margin:auto;
+}
+
+/* HERO */
+
+.hero{
+padding:120px 0 80px;
+background:linear-gradient(135deg,#0c1120,#02040a);
+text-align:center;
+}
+
+.hero h1{
+font-size:48px;
+margin-bottom:15px;
+}
+
+.hero p{
+opacity:.8;
+font-size:18px;
+max-width:700px;
+margin:auto;
+}
+
+/* PRICING */
+
+.pricing{
+padding:80px 0;
+}
+
+.pricing-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+margin-top:40px;
+}
+
+.plan{
+background:#0b0f1a;
+border:1px solid rgba(255,255,255,.06);
+border-radius:12px;
+padding:40px 30px;
+text-align:center;
+transition:.3s;
+}
+
+.plan:hover{
+transform:translateY(-5px);
+border-color:#4f7cff;
+}
+
+.plan h3{
+font-size:22px;
+margin-bottom:10px;
+}
+
+.price{
+font-size:42px;
+margin:20px 0;
+font-weight:bold;
+}
+
+.plan ul{
+list-style:none;
+text-align:left;
+margin:25px 0;
+}
+
+.plan ul li{
+margin:10px 0;
+opacity:.85;
+}
+
+.btn{
+display:inline-block;
+padding:14px 26px;
+background:#4f7cff;
+border-radius:8px;
+text-decoration:none;
+color:white;
+margin-top:15px;
+}
+
+/* FEATURES */
+
+.features{
+padding:100px 0;
+background:#070b16;
+}
+
+.features-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:30px;
+margin-top:50px;
+}
+
+.feature{
+background:#0d1324;
+padding:25px;
+border-radius:10px;
+border:1px solid rgba(255,255,255,.05);
+}
+
+.feature h4{
+margin-bottom:10px;
+}
+
+/* TABLE */
+
+.compare{
+padding:100px 0;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:40px;
+}
+
+th,td{
+padding:16px;
+border-bottom:1px solid rgba(255,255,255,.08);
+text-align:center;
+}
+
+th:first-child,
+td:first-child{
+text-align:left;
+}
+
+/* FAQ */
+
+.faq{
+padding:100px 0;
+background:#070b16;
+}
+
+.faq-item{
+margin-bottom:20px;
+border-bottom:1px solid rgba(255,255,255,.08);
+padding-bottom:15px;
+}
+
+.faq-item h4{
+margin-bottom:10px;
+}
+
+/* CTA */
+
+.cta{
+text-align:center;
+padding:120px 0;
+}
+
+.cta h2{
+font-size:40px;
+margin-bottom:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- HERO -->
+
+<section class="hero">
+<div class="container">
+
+<h1>Choose your path to success</h1>
+
+<p>
+Start selling beats, sound kits and services on Audiory.
+Upgrade anytime to unlock more tools and grow your music business.
+</p>
+
+</div>
+</section>
+
+
+<!-- PRICING -->
+
+<section class="pricing">
+<div class="container">
+
+<h2 style="text-align:center;font-size:34px">Pricing Plans</h2>
+
+<div class="pricing-grid">
+
+<div class="plan">
+
+<h3>Starter</h3>
+
+<div class="price">$19.99</div>
+
+<ul>
+<li>Upload beats</li>
+<li>Basic analytics</li>
+<li>Custom licenses</li>
+<li>Sell beats online</li>
+<li>Email support</li>
+</ul>
+
+<a class="btn" href="#">Start 7-day trial</a>
+
+</div>
+
+
+<div class="plan">
+
+<h3>Growth</h3>
+
+<div class="price">$79.99</div>
+
+<ul>
+<li>Unlimited beat uploads</li>
+<li>Upload sound kits</li>
+<li>Advanced analytics</li>
+<li>Custom store page</li>
+<li>Priority support</li>
+</ul>
+
+<a class="btn" href="#">Start 7-day trial</a>
+
+</div>
+
+
+<div class="plan">
+
+<h3>Professional</h3>
+
+<div class="price">$179.88</div>
+
+<ul>
+<li>Everything in Growth</li>
+<li>Custom domain</li>
+<li>Marketing tools</li>
+<li>Promote campaigns</li>
+<li>Creator rights access</li>
+</ul>
+
+<a class="btn" href="#">Start 7-day trial</a>
+
+</div>
+
+</div>
+
+</div>
+</section>
+
+
+<!-- FEATURES -->
+
+<section class="features">
+
+<div class="container">
+
+<h2 style="text-align:center;font-size:34px">
+Tools to grow your music business
+</h2>
+
+<div class="features-grid">
+
+<div class="feature">
+<h4>Track your performance</h4>
+<p>See sales analytics and understand how your beats perform.</p>
+</div>
+
+<div class="feature">
+<h4>Sell beats easily</h4>
+<p>Upload beats and sell licenses directly to artists worldwide.</p>
+</div>
+
+<div class="feature">
+<h4>Upload sound kits</h4>
+<p>Sell drum kits, MIDI packs and sound libraries.</p>
+</div>
+
+<div class="feature">
+<h4>Marketing tools</h4>
+<p>Boost beats and reach more artists through promotion.</p>
+</div>
+
+<div class="feature">
+<h4>Custom store page</h4>
+<p>Create your own producer storefront on Audiory.</p>
+</div>
+
+<div class="feature">
+<h4>Instant payments</h4>
+<p>Receive payments via PayPal and M-Pesa instantly.</p>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- FEATURE COMPARISON -->
+
+<section class="compare">
+
+<div class="container">
+
+<h2 style="text-align:center;font-size:34px">
+Compare Plans
+</h2>
+
+<table>
+
+<tr>
+<th>Feature</th>
+<th>Starter</th>
+<th>Growth</th>
+<th>Professional</th>
+</tr>
+
+<tr>
+<td>Upload Beats</td>
+<td>✔</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+
+<tr>
+<td>Upload Sound Kits</td>
+<td>✖</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+
+<tr>
+<td>Advanced Analytics</td>
+<td>✖</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+
+<tr>
+<td>Custom Domain</td>
+<td>✖</td>
+<td>✖</td>
+<td>✔</td>
+</tr>
+
+<tr>
+<td>Marketing Tools</td>
+<td>✖</td>
+<td>✔</td>
+<td>✔</td>
+</tr>
+
+<tr>
+<td>Creator Rights Access</td>
+<td>✖</td>
+<td>✖</td>
+<td>✔</td>
+</tr>
+
+</table>
+
+</div>
+
+</section>
+
+
+<!-- FAQ -->
+
+<section class="faq">
+
+<div class="container">
+
+<h2 style="text-align:center;font-size:34px">Frequently Asked Questions</h2>
+
+<div style="margin-top:40px">
+
+<div class="faq-item">
+<h4>Do I have to commit long-term?</h4>
+<p>No. You can cancel your subscription anytime.</p>
+</div>
+
+<div class="faq-item">
+<h4>Does Audiory take a percentage?</h4>
+<p>Audiory only takes a small platform fee to maintain the marketplace.</p>
+</div>
+
+<div class="faq-item">
+<h4>How do I get paid?</h4>
+<p>You receive payments through PayPal or M-Pesa.</p>
+</div>
+
+<div class="faq-item">
+<h4>Can I sell sound kits?</h4>
+<p>Yes. Growth and Professional plans allow unlimited sound kit uploads.</p>
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- CTA -->
+
+<section class="cta">
+
+<div class="container">
+
+<h2>Start building your music business today</h2>
+
+<a class="btn" href="/signup">Create your Audiory account</a>
+
+</div>
+
+</section>
+
+
+</body>
+</html>
