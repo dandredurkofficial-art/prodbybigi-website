@@ -2055,8 +2055,8 @@ document.addEventListener("DOMContentLoaded", limitRecentSales);
 =========================== */
 const BOOST_PRICES = {
   1: 5,   // 24 hours
-  3: 12,  // 3 days
-  7: 25   // 7 days
+  3: 15,  // 3 days
+  7: 40   // 7 days
 };
   
 async function createMarketingCampaign(){
@@ -2127,31 +2127,43 @@ async function createMarketingCampaign(){
 }
 window.createMarketingCampaign = createMarketingCampaign;
 
-async function payForBoost(beatId, days){
+async function startBoostPayment({beatId, days, producerId}){
 
-const token = await firebase.auth().currentUser.getIdToken();
+  try{
 
-const r = await fetch(
-"https://createboostorder-f65rhsquva-uc.a.run.app",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${token}`
-},
-body:JSON.stringify({
-beatId,
-boostDays:days
-})
-});
+    const pricePerDay = 5; // $5 per day
+    const amount = days * pricePerDay;
 
-const data = await r.json();
+    const res = await fetch("https://createboostorder-f65rhsquva-uc.a.run.app",{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        beatId,
+        days,
+        producerId,
+        amount
+      })
+    });
 
-const approve = data.links.find(l=>l.rel==="approve");
+    const data = await res.json();
 
-window.location = approve.href;
+    if(!data.approvalUrl){
+      alert("Boost payment failed");
+      return;
+    }
+
+    window.location.href = data.approvalUrl;
+
+  }catch(err){
+    console.error(err);
+    alert("Payment error");
+  }
 
 }
+
+window.startBoostPayment = startBoostPayment;
 
 async function boostWithMpesa(beatId,days,phone){
 
