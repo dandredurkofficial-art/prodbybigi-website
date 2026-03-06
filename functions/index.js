@@ -2533,8 +2533,8 @@ async (req, res) => {
         brand_name:"Audiory",
         shipping_preference:"NO_SHIPPING",
         user_action:"PAY_NOW",
-        return_url:"https://audiory.site/boost-success.html",
-        cancel_url:"https://audiory.site/boost-cancel.html"
+        return_url:"https://audiory.site/dashboard/?boost=success#marketing",
+        cancel_url:"https://audiory.site/dashboard/?boost=cancel#marketing"
       }
     };
 
