@@ -1,45 +1,33 @@
 const { onRequest } = require("firebase-functions/v2/https");
+const cors = require("cors")({ origin: true });
 
 exports.generateTags = onRequest((req, res) => {
+  cors(req, res, async () => {
 
-  const { title, genre, bpm } = req.body;
+    if (req.method === "OPTIONS") {
+      return res.status(204).send("");
+    }
 
-  let tags = [];
+    try {
 
-  const text = (title || "").toLowerCase();
+      const { title } = req.body;
 
-  // genre tag
-  if (genre) tags.push(genre.toLowerCase());
+      if (!title) {
+        return res.status(400).json({ error: "Missing title" });
+      }
 
-  // bpm detection
-  if (bpm) {
-    if (bpm < 90) tags.push("slow beat");
-    if (bpm >= 90 && bpm <= 120) tags.push("mid tempo");
-    if (bpm > 120) tags.push("fast beat");
-  }
+      // your AI tagging logic here
+      const tags = title
+        .toLowerCase()
+        .split(" ")
+        .slice(0, 5);
 
-  // keyword detection
-  if (text.includes("trap")) tags.push("trap beat");
-  if (text.includes("drill")) tags.push("drill beat");
-  if (text.includes("afro")) tags.push("afrobeats");
-  if (text.includes("amapiano")) tags.push("amapiano");
-  if (text.includes("rage")) tags.push("rage beat");
-  if (text.includes("melodic")) tags.push("melodic beat");
+      return res.json({ tags });
 
-  // artist type beat detection
-  if (text.includes("lil baby")) tags.push("lil baby type beat");
-  if (text.includes("drake")) tags.push("drake type beat");
-  if (text.includes("future")) tags.push("future type beat");
-  if (text.includes("central cee")) tags.push("central cee type beat");
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ error: err.message });
+    }
 
-  // default tags
-  tags.push("instrumental", "freestyle beat");
-
-  // remove duplicates
-  tags = [...new Set(tags)];
-
-  res.json({
-    tags
   });
-
 });
