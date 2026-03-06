@@ -2101,7 +2101,6 @@ async function createMarketingCampaign(){
 
     }
 
-    await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       name,
@@ -2129,42 +2128,38 @@ window.createMarketingCampaign = createMarketingCampaign;
 
 async function startBoostPayment({beatId, days, producerId}){
 
-  try{
-
-    const pricePerDay = 5; // $5 per day
-    const amount = days * pricePerDay;
-
-    const res = await fetch("https://createboostorder-f65rhsquva-uc.a.run.app",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        beatId,
-        days,
-        producerId,
-        amount
-      })
-    });
-
-    const data = await res.json();
-
-    if(!data.approvalUrl){
-      alert("Boost payment failed");
-      return;
-    }
-
-    window.location.href = data.approvalUrl;
-
-  }catch(err){
-    console.error(err);
-    alert("Payment error");
+  const user = window.currentUser;
+  if(!user){
+    alert("Login first");
+    return;
   }
 
+  const token = await user.getIdToken();
+
+  const res = await fetch("https://createboostorder-xxxxx.run.app",{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization":"Bearer " + token
+    },
+    body:JSON.stringify({
+      beatId,
+      days,
+      producerId
+    })
+  });
+
+  const data = await res.json();
+
+  if(!data.approvalUrl){
+    throw new Error("Boost payment failed");
+  }
+
+  window.location.href = data.approvalUrl;
 }
 
 window.startBoostPayment = startBoostPayment;
-
+  
 async function boostWithMpesa(beatId,days,phone){
 
 const token = await firebase.auth().currentUser.getIdToken();
