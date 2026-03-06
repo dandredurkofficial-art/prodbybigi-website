@@ -957,7 +957,7 @@ async function generateTags(){
  const genre = document.getElementById("genre")?.value || "";
  const bpm = document.getElementById("bpm")?.value || "";
 
- const r = await fetch("https://YOUR_FUNCTION_URL",{
+ const r = await fetch("https://generatetags-f65rhsquva-uc.a.run.app",{
    method:"POST",
    headers:{ "Content-Type":"application/json"},
    body:JSON.stringify({title,genre,bpm})
