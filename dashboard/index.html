@@ -2132,7 +2132,7 @@ async function payForBoost(beatId, days){
 const token = await firebase.auth().currentUser.getIdToken();
 
 const r = await fetch(
-"https://us-central1-audiory-beat-store.cloudfunctions.net/createBoostOrder",
+"https://createboostorder-f65rhsquva-uc.a.run.app",
 {
 method:"POST",
 headers:{
@@ -2158,7 +2158,7 @@ async function boostWithMpesa(beatId,days,phone){
 const token = await firebase.auth().currentUser.getIdToken();
 
 const r = await fetch(
-"https://us-central1-audiory-beat-store.cloudfunctions.net/stkpushBoost",
+"https://stkpushboost-f65rhsquva-uc.a.run.app",
 {
 method:"POST",
 headers:{
