@@ -2511,8 +2511,8 @@ async (req, res) => {
 
     const priceMap = {
       1:5,
-      3:12,
-      7:25
+      3:15,
+      7:40
     };
 
     const price = priceMap[days] || 5;
@@ -3438,8 +3438,8 @@ async (req,res)=>{
 
     const priceMap = {
       1:500,
-      3:1200,
-      7:2500
+      3:1500,
+      7:4000
     };
 
     const amount = priceMap[days] || 500;
