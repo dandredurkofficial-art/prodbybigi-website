@@ -2184,11 +2184,13 @@ async function loadProducerBeatsForBoost(){
   try{
 
     const q = window.query(
-      window.collection(window.db, "beats"),
+      window.collection(window.db,"beats"),
       window.where("producerId","==",window.currentUser.uid)
     );
 
     const snap = await window.getDocs(q);
+
+    console.log("Producer beats found:", snap.size);
 
     if(snap.empty){
       select.innerHTML = `<option value="">No beats found</option>`;
@@ -2210,8 +2212,6 @@ async function loadProducerBeatsForBoost(){
   }
 
 }
-
-window.loadProducerBeatsForBoost = loadProducerBeatsForBoost;
 
 /* ===========================
    PRIVATE MESSAGES (PRO)
