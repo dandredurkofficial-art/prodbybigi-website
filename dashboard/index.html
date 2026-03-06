@@ -2147,11 +2147,14 @@ async function startBoostPayment({beatId, days, producerId}){
 
   const data = await res.json();
 
-  if(!data.approvalUrl){
+  const approvalLink = data.links?.find(l => l.rel === "approve");
+
+  if(!approvalLink){
+    console.error("Boost error:", data);
     throw new Error("Boost payment failed");
   }
 
-  window.location.href = data.approvalUrl;
+  window.location.href = approvalLink.href;
 }
 
 window.startBoostPayment = startBoostPayment;
