@@ -570,6 +570,16 @@
             <input id="mkDiscountPct" placeholder="Discount % (optional, e.g. 20)" />
             <div class="subtle">Used only when “Discount Campaign” is selected.</div>
           </div>
+          <div class="row">
+            <div class="col">
+              <select id="mkBoostDuration">
+                <option value="1">24 Hour Boost — $5</option>
+                <option value="3">3 Day Boost — $15</option>
+                <option value="7">7 Day Boost — $40</option>
+              </select>
+              <div class="subtle">Used only when Boost is selected.</div>
+            </div>
+          </div>
         </div>
 
         <button class="btn2" type="button" onclick="createMarketingCampaign()">Create Campaign</button>
