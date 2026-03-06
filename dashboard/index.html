@@ -284,8 +284,7 @@
   /* INPUTS & BUTTONS NEVER EXCEED CARD WIDTH */
   .card input,
   .card textarea,
-  .card select,
-  .card button{
+  .card select{
     width:100%;
     max-width:100%;
     box-sizing:border-box;
@@ -327,6 +326,14 @@
     max-width:100%;
     display:block;
     box-sizing:border-box;
+  }
+
+  /* Desktop Button */
+  @media (min-width:900px){
+   button.primary{
+     width:auto;
+     min-width:220px;
+   }
   }
 
   /* keep spacing nice between stacked buttons */
