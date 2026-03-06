@@ -2565,6 +2565,61 @@ async (req, res) => {
 
 });
 
+exports.captureBoostOrder = onRequest(async (req, res) => {
+  try {
+
+    const orderId = req.query.orderId;
+
+    if(!orderId){
+      res.status(400).send("Missing orderId");
+      return;
+    }
+
+    const accessToken = await getPayPalAccessToken();
+
+    const r = await fetch(
+      `${paypalBaseUrl()}/v2/checkout/orders/${orderId}/capture`,
+      {
+        method:"POST",
+        headers:{
+          Authorization:`Bearer ${accessToken}`,
+          "Content-Type":"application/json"
+        }
+      }
+    );
+
+    const data = await r.json();
+
+    if(data.status !== "COMPLETED"){
+      res.redirect("https://audiory.site/dashboard/?boost=cancel#marketing");
+      return;
+    }
+
+    const customId =
+      data.purchase_units[0].payments.captures[0].custom_id ||
+      data.purchase_units[0].custom_id;
+
+    const parts = customId.split("|");
+
+    const producerId = parts[1];
+    const beatId = parts[2];
+    const days = Number(parts[3]);
+
+    const featuredUntil = Date.now() + (days * 86400000);
+
+    await db.collection("beats").doc(beatId).update({
+      featured:true,
+      featuredUntil
+    });
+
+    res.redirect("https://audiory.site/dashboard/?boost=success#marketing");
+
+  } catch(err){
+    console.error(err);
+    res.redirect("https://audiory.site/dashboard/?boost=cancel#marketing");
+  }
+});
+
 /* =========================================================
 ✅ STK PUSH (M-PESA)
 ========================================================= */
