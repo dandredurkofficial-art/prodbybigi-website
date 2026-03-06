@@ -2055,27 +2055,38 @@ function limitRecentSales(){
   const items = document.querySelectorAll("#prodSalesList .sale-item");
   const container = document.getElementById("prodSalesList");
 
-  const existingToggle = document.getElementById("salesToggleBtn");
-  if(existingToggle) existingToggle.remove();
+  let btn = document.getElementById("salesToggleBtn");
 
-  if(items.length <= 3) return;
+  if(!btn){
+    btn = document.createElement("button");
+    btn.id = "salesToggleBtn";
+    btn.className = "toggle-sales";
+
+    btn.onclick = () => {
+      showAllSales = !showAllSales;
+      updateSalesVisibility();
+    };
+
+    container.appendChild(btn);
+  }
+
+  updateSalesVisibility();
+
+}
+
+function updateSalesVisibility(){
+
+  const items = document.querySelectorAll("#prodSalesList .sale-item");
+  const btn = document.getElementById("salesToggleBtn");
 
   items.forEach((item,i)=>{
     item.style.display = (showAllSales || i < 3) ? "block" : "none";
   });
 
-  const btn = document.createElement("button");
-  btn.id = "salesToggleBtn";
-  btn.className = "toggle-sales";
-  btn.textContent = showAllSales ? "View less" : "View more";
+  if(btn){
+    btn.textContent = showAllSales ? "View less" : "View more";
+  }
 
-  btn.onclick = () => {
-    showAllSales = !showAllSales;
-  };
-  
-  limitRecentSales();
-
-  container.appendChild(btn);
 }
 
 /* ===========================
