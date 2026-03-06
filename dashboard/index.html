@@ -3103,7 +3103,7 @@ async function loadProducerSalesFromUnlocks() {
         (typeof it.createdAt === "number" ? new Date(it.createdAt) : null);
 
       const div = document.createElement("div");
-      div.className = "sale-row";
+      div.className = "sale-item";
       div.innerHTML = `
         <div style="font-weight:800">${beatTitle}</div>
         <div style="opacity:.85">License: ${licenseKey}${status ? " • " + status : ""}</div>
@@ -3113,6 +3113,7 @@ async function loadProducerSalesFromUnlocks() {
         <hr style="opacity:.15;margin:12px 0;">
       `;
       listEl.appendChild(div);
+      limitRecentSales();
     }
   } catch (err) {
     console.error("loadProducerSalesFromUnlocks error:", err);
