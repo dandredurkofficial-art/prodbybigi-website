@@ -2102,6 +2102,7 @@ async function createMarketingCampaign(){
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
 
     await loadMarketingCampaigns(); // ✅ HERE (inside try)
+          loadProducerBeatsForBoost();
   } catch (err) {
     alert("Campaign failed: " + (err?.message || err));
   }
