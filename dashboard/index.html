@@ -1170,10 +1170,32 @@ function toggleMenu(){
 window.toggleMenu = toggleMenu;
 
 document.addEventListener("DOMContentLoaded", ()=>{
+
+  /* ===== BOOST RETURN DETECTOR ===== */
+  const params = new URLSearchParams(window.location.search);
+  const boostStatus = params.get("boost");
+
+  if(boostStatus === "success"){
+    alert("Boost payment successful 🎉");
+    showPage("marketingTools", document.getElementById("navMkt"));
+  }
+
+  if(boostStatus === "cancel"){
+    alert("Boost payment cancelled");
+    showPage("marketingTools", document.getElementById("navMkt"));
+  }
+
+  if(boostStatus){
+    window.history.replaceState({}, document.title, "/dashboard/#marketing");
+  }
+  /* ===== END BOOST RETURN DETECTOR ===== */
+
+
   const hb = $("hamburgerBtn");
   if (hb){
     hb.addEventListener("click", (e)=>{
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault(); 
+      e.stopPropagation();
       toggleMenu();
     });
   }
@@ -1181,7 +1203,8 @@ document.addEventListener("DOMContentLoaded", ()=>{
   const btn = $("logoutBtn");
   if (btn){
     btn.addEventListener("click", (e)=>{
-      e.preventDefault(); e.stopPropagation();
+      e.preventDefault(); 
+      e.stopPropagation();
       window.PB_LOGOUT && window.PB_LOGOUT();
     });
   }
