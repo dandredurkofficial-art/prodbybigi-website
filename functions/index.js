@@ -2436,6 +2436,95 @@ exports.paypalPayoutStatus = onRequest(
 );
 
 /* =========================================================
+✅ CREATE BOOST PAYMENT (PAYPAL)
+========================================================= */
+
+exports.createBoostOrder = onRequest(
+{
+  region: "us-central1",
+  secrets: [PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_MODE],
+},
+async (req, res) => {
+
+  const pre = handleCorsPreflight(req,res);
+  if(pre) return;
+  applyCors(req,res);
+
+  try{
+
+    if(req.method !== "POST")
+      return res.status(405).json({error:"Use POST"});
+
+    const decoded = await verifyFirebaseIdToken(req);
+    if(!decoded)
+      return res.status(401).json({error:"Login required"});
+
+    const producerId = decoded.uid;
+
+    const { beatId, boostDays } = req.body || {};
+
+    if(!beatId)
+      return res.status(400).json({error:"beatId required"});
+
+    const days = Number(boostDays || 1);
+
+    const priceMap = {
+      1:5,
+      3:12,
+      7:25
+    };
+
+    const price = priceMap[days] || 5;
+
+    const accessToken = await getPayPalAccessToken();
+
+    const payload = {
+      intent:"CAPTURE",
+      purchase_units:[{
+        custom_id:`boost|${producerId}|${beatId}|${days}`,
+        amount:{
+          currency_code:"USD",
+          value:price.toFixed(2)
+        },
+        description:`Audiory Beat Boost (${days} days)`
+      }],
+      application_context:{
+        brand_name:"Audiory",
+        shipping_preference:"NO_SHIPPING",
+        user_action:"PAY_NOW",
+        return_url:"https://audiory.site/boost-success.html",
+        cancel_url:"https://audiory.site/boost-cancel.html"
+      }
+    };
+
+    const r = await fetchFn(`${paypalBaseUrl()}/v2/checkout/orders`,{
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${accessToken}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+
+    const data = await r.json();
+
+    if(!r.ok){
+      return res.status(400).json({error:data});
+    }
+
+    return res.json({
+      orderId:data.id,
+      links:data.links
+    });
+
+  }catch(e){
+    console.error(e);
+    return res.status(500).json({error:e.message});
+  }
+
+});
+
+/* =========================================================
 ✅ STK PUSH (M-PESA)
 ========================================================= */
 exports.stkpush = onRequest(
@@ -3272,6 +3361,167 @@ exports.processPayoutRequest = onDocumentCreated(
     }
   }
 );
+
+/* =========================================================
+   STK PUSH BOOST PAYMENT
+========================================================= */
+
+exports.stkpushBoost = onRequest(
+{
+  region:"us-central1",
+  secrets:[MPESA_CONSUMER_KEY, MPESA_CONSUMER_SECRET]
+},
+async (req,res)=>{
+
+  const pre = handleCorsPreflight(req,res);
+  if(pre) return;
+  applyCors(req,res);
+
+  try{
+
+    if(req.method !== "POST")
+      return res.status(405).json({error:"Use POST"});
+
+    const decoded = await verifyFirebaseIdToken(req);
+    if(!decoded)
+      return res.status(401).json({error:"Login required"});
+
+    const producerId = decoded.uid;
+
+    const { phone, beatId, boostDays } = req.body || {};
+
+    if(!phone) return res.status(400).json({error:"Phone required"});
+    if(!beatId) return res.status(400).json({error:"Beat ID required"});
+
+    const days = Number(boostDays || 1);
+
+    const priceMap = {
+      1:500,
+      3:1200,
+      7:2500
+    };
+
+    const amount = priceMap[days] || 500;
+
+    const token = await getMpesaAccessToken();
+    const password = mpesaPassword();
+
+    const timestamp = darajaTimestamp();
+
+    const orderId = "boost_" + crypto.randomUUID();
+
+    const body = {
+      BusinessShortCode: process.env.MPESA_SHORTCODE,
+      Password: password,
+      Timestamp: timestamp,
+      TransactionType: "CustomerPayBillOnline",
+      Amount: amount,
+      PartyA: phone,
+      PartyB: process.env.MPESA_SHORTCODE,
+      PhoneNumber: phone,
+      CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/boostCallback",
+      AccountReference: "Audiory Boost",
+      TransactionDesc: `Boost beat ${beatId}`,
+    };
+
+    const r = await fetchFn(`${darajaBaseUrl()}/mpesa/stkpush/v1/processrequest`,{
+      method:"POST",
+      headers:{
+        Authorization:`Bearer ${token}`,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(body)
+    });
+
+    const data = await r.json();
+
+    if(!r.ok)
+      return res.status(400).json({error:data});
+
+    await db.collection("boostOrders").doc(orderId).set({
+      orderId,
+      producerId,
+      beatId,
+      boostDays:days,
+      amount,
+      phone,
+      checkoutRequestId:data.CheckoutRequestID,
+      status:"pending",
+      createdAt:Date.now()
+    });
+
+    return res.json({
+      success:true,
+      orderId,
+      checkoutRequestId:data.CheckoutRequestID
+    });
+
+  }catch(e){
+    console.error(e);
+    return res.status(500).json({error:e.message});
+  }
+
+});
+
+/* =========================================================
+   MPESA BOOST CALLBACK
+========================================================= */
+
+exports.boostCallback = onRequest(async (req,res)=>{
+
+  try{
+
+    const body = req.body?.Body?.stkCallback;
+
+    if(!body) return res.status(400).send("Invalid");
+
+    const checkoutRequestId = body.CheckoutRequestID;
+    const resultCode = body.ResultCode;
+
+    const snap = await db.collection("boostOrders")
+      .where("checkoutRequestId","==",checkoutRequestId)
+      .limit(1)
+      .get();
+
+    if(snap.empty)
+      return res.status(200).send("Order not found");
+
+    const doc = snap.docs[0];
+    const order = doc.data();
+
+    if(resultCode !== 0){
+
+      await doc.ref.update({
+        status:"failed",
+        updatedAt:Date.now()
+      });
+
+      return res.status(200).send("Failed");
+    }
+
+    const featuredUntil =
+      Date.now() + (order.boostDays * 24 * 60 * 60 * 1000);
+
+    await db.collection("beats")
+      .doc(order.beatId)
+      .set({
+        featured:true,
+        featuredUntil
+      },{merge:true});
+
+    await doc.ref.update({
+      status:"paid",
+      updatedAt:Date.now()
+    });
+
+    return res.status(200).send("Boost activated");
+
+  }catch(e){
+    console.error(e);
+    return res.status(500).send("Error");
+  }
+
+});
 
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
