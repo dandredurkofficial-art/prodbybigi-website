@@ -2056,6 +2056,8 @@ async function createMarketingCampaign(){
 
   const name = ($("mkCampaignName")?.value || "").trim();
   const type = ($("mkType")?.value || "boost").trim();
+  const beatId = ($("mkBeatId")?.value || "").trim();
+  const boostDays = Number($("mkBoostDuration")?.value || 1);
   const buyGetQty = Number($("mkBuyGetQty")?.value || 2);
   const discountPct = Number(($("mkDiscountPct")?.value || "").trim() || 0);
 
