@@ -2182,33 +2182,38 @@ async function startBoostPayment({beatId, days, producerId}){
 
 window.startBoostPayment = startBoostPayment;
   
-async function boostWithMpesa(beatId,days,phone){
+async function startBoostMpesa({beatId, days, phone}){
 
-const token = await firebase.auth().currentUser.getIdToken();
+  const user = firebase.auth().currentUser;
+  if(!user) throw new Error("Login required");
 
-const r = await fetch(
-"https://stkpushboost-f65rhsquva-uc.a.run.app",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${token}`
-},
-body:JSON.stringify({
-beatId,
-boostDays:days,
-phone
-})
-});
+  const token = await user.getIdToken();
 
-const data = await r.json();
+  const r = await fetch(
+    "https://us-central1-audiory-beat-store.cloudfunctions.net/stkpushBoost",
+    {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify({
+        phone,
+        beatId,
+        boostDays:days
+      })
+    }
+  );
 
-if(data.success){
-alert("STK Push sent. Check your phone.");
-}else{
-alert("Payment failed");
-}
+  const data = await r.json();
 
+  if(!r.ok){
+    throw new Error(data.error || "STK push failed");
+  }
+
+  alert("STK Push sent. Check your phone.");
+
+  return data;
 }
 
 /* ===============================
