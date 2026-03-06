@@ -2091,6 +2091,18 @@ function updateSalesVisibility(){
 
 }
 
+function initSalesToggle(){
+
+  const btn = document.getElementById("salesToggleBtn");
+  if(!btn) return;
+
+  btn.onclick = () => {
+    showAllSales = !showAllSales;
+    updateSalesVisibility();
+  };
+
+}
+
 /* ===========================
    MARKETING (PRO)
 =========================== */
@@ -3122,6 +3134,7 @@ async function loadProducerSalesFromUnlocks() {
       `;
       listEl.appendChild(div);
       limitRecentSales();
+      initSalesToggle();
     }
   } catch (err) {
     console.error("loadProducerSalesFromUnlocks error:", err);
