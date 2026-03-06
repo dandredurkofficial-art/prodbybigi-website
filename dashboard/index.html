@@ -2084,6 +2084,7 @@ async function createMarketingCampaign(){
       );
 
     }
+
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
@@ -2101,23 +2102,24 @@ async function createMarketingCampaign(){
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
 
-    await loadMarketingCampaigns(); // ✅ HERE (inside try)
+    await loadMarketingCampaigns();
     loadProducerBeatsForBoost();
+
   } catch (err) {
     alert("Campaign failed: " + (err?.message || err));
   }
 }
 window.createMarketingCampaign = createMarketingCampaign;
 
+
 /* ===============================
    LOAD MARKETING CAMPAIGNS
 =============================== */
-
 async function loadMarketingCampaigns(){
+
   const list = document.getElementById("mkList");
   if (!list) return;
 
-  // Always show something immediately
   if (!window.currentUser){
     list.textContent = "Login to view campaigns.";
     return;
@@ -2126,6 +2128,7 @@ async function loadMarketingCampaigns(){
   list.textContent = "Loading…";
 
   try{
+
     const q = window.query(
       window.collection(window.db, "marketingCampaigns"),
       window.where("producerId", "==", window.currentUser.uid)
@@ -2156,30 +2159,48 @@ async function loadMarketingCampaigns(){
     console.error("loadMarketingCampaigns error:", err);
     list.innerHTML = `<span style="color:#fecaca;">Could not load campaigns: ${err?.message || err}</span>`;
   }
+
 }
 window.loadMarketingCampaigns = loadMarketingCampaigns;
 
+
 async function disableCampaign(id){
+
   if (!window.currentUser) return alert("Login again.");
 
-  await window.updateDoc(window.doc(window.db, "marketingCampaigns", id), {
-    status: "disabled",
-    updatedAt: Date.now()
-  });
+  await window.updateDoc(
+    window.doc(window.db, "marketingCampaigns", id),
+    {
+      status: "disabled",
+      updatedAt: Date.now()
+    }
+  );
 
   loadMarketingCampaigns();
   loadProducerBeatsForBoost();
+
 }
 window.disableCampaign = disableCampaign;
+
+
+
+/* ===============================
+   LOAD PRODUCER BEATS FOR BOOST
+=============================== */
 
 async function loadProducerBeatsForBoost(){
 
   const select = document.getElementById("mkBeatId");
   if(!select) return;
 
+  /* WAIT until Firebase user exists */
   if(!window.currentUser){
-    select.innerHTML = `<option value="">Login first</option>`;
+
+    setTimeout(loadProducerBeatsForBoost, 1000);
+
+    select.innerHTML = `<option value="">Loading your beats...</option>`;
     return;
+
   }
 
   try{
@@ -2208,14 +2229,21 @@ async function loadProducerBeatsForBoost(){
     select.innerHTML = html;
 
   }catch(err){
+
     console.error(err);
     select.innerHTML = `<option value="">Error loading beats</option>`;
+
   }
 
 }
 
+
+/* RUN WHEN PAGE LOADS */
+
 document.addEventListener("DOMContentLoaded", () => {
+
   loadProducerBeatsForBoost();
+
 });
 
 /* ===========================
