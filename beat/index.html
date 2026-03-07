@@ -781,7 +781,7 @@
 
       const prodName = prettyProducerName(beat);
       const prodLink = $("beatProducerLink");
-      prodLink.textContent = prodName;
+      prodLink.innerHTML = `${prodName} ${AudioryVerify.badge(beat.producerPlan)}`;
       prodLink.href = `/producer-profile/?producerId=${encodeURIComponent(String(beat.producerId||""))}`;
 
       $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
