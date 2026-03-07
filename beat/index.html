@@ -739,6 +739,16 @@
 
     if (window.FB && typeof window.FB.fetchBeats === "function"){
       const beats = await window.FB.fetchBeats({ max: 160, force: false });
+
+      for (const b of beats){
+        try{
+          if (window.FB && typeof window.FB.getProducerProfile === "function"){
+            const prof = await window.FB.getProducerProfile(b.producerId);
+            b.producerPlan = prof?.plan || "";
+          }
+        }catch{}
+      }
+      
       window.__LATEST_BEATS__ = beats;
       return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
     }
