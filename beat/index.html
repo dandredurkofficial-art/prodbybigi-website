@@ -546,33 +546,33 @@
   }
 
   function pickBpm(beat){
-    const v =
-      beat?.bpm ??
-      beat?.BPM ??
-      beat?.bpmValue ??
-      beat?.tempo ??
-      beat?.Tempo ??
-      beat?.metadata?.bpm ??
-      null
+  const v =
+  beat?.bpm ??
+  beat?.BPM ??
+  beat?.bpmValue ??
+  beat?.tempo ??
+  beat?.Tempo ??
+  beat?.metadata?.bpm ??
+  null
 
-    if(!v) return "—"
+  if(!v) return "—"
 
-    return String(v)
+  return String(v)
 
   }
   function pickKey(beat){
-    const v =
-      beat?.key ??
-      beat?.Key ??
-      beat?.scale ??
-      beat?.Scale ??
-      beat?.musicalKey ??
-      beat?.metadata?.key ??
-      null
+  const v =
+  beat?.key ??
+  beat?.Key ??
+  beat?.scale ??
+  beat?.Scale ??
+  beat?.musicalKey ??
+  beat?.metadata?.key ??
+  null
 
-    if(!v) return "—"
+  if(!v) return "—"
 
-    return String(v)
+  return String(v)
 
   }
 
