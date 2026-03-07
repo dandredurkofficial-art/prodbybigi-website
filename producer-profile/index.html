@@ -792,7 +792,11 @@
             : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
 
           if (profName){
-            document.getElementById("prodName").textContent = profName;
+            const nameEl = document.getElementById("prodName");
+
+            nameEl.innerHTML =
+              profName +
+              AudioryVerify.badge(prof?.plan);
           }
 
           producerPhoto = prof?.photoURL || prof?.photoUrl || prof?.photo || "";
