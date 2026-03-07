@@ -181,6 +181,36 @@
       outline:none;
       font-size:13px;
     }
+
+    /* ======================================================
+       VERIFIED BADGES (Pro / Elite)
+    ====================================================== */
+
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+
+    .verify-badge svg{
+      width:16px;
+      height:16px;
+      display:block;
+    }
+
+    /* PRO (blue check) */
+
+    .verify-pro svg{
+      color:#1d9bf0;
+    }
+
+    /* ELITE (gold check) */
+
+    .verify-elite svg{
+      color:#fbbf24;
+    }
   </style>
 </head>
 
@@ -385,6 +415,35 @@
   }
 
   /* =========================
+     VERIFIED BADGE
+  ========================= */
+
+  function getVerificationBadge(plan){
+
+    const p = String(plan || "").toLowerCase();
+
+    if(p === "pro"){
+      return `
+      <span class="verify-badge verify-pro" title="Pro Verified">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.5 12l-2.1-2.4.3-3.2-3.1-.7L16 2.8l-3 1.7-3-1.7-1.6 2.9-3.1.7.3 3.2L1.5 12l2.1 2.4-.3 3.2 3.1.7L8 21.2l3-1.7 3 1.7 1.6-2.9 3.1-.7-.3-3.2L22.5 12zM10.2 15.3l-2.5-2.5 1.1-1.1 1.4 1.4 4-4 1.1 1.1-5.1 5.1z"/>
+        </svg>
+      </span>`;
+    }
+
+    if(p === "elite"){
+      return `
+      <span class="verify-badge verify-elite" title="Elite Verified">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M22.5 12l-2.1-2.4.3-3.2-3.1-.7L16 2.8l-3 1.7-3-1.7-1.6 2.9-3.1.7.3 3.2L1.5 12l2.1 2.4-.3 3.2 3.1.7L8 21.2l3-1.7 3 1.7 1.6-2.9 3.1-.7-.3-3.2L22.5 12zM10.2 15.3l-2.5-2.5 1.1-1.1 1.4 1.4 4-4 1.1 1.1-5.1 5.1z"/>
+        </svg>
+      </span>`;
+    }
+
+    return "";
+  }
+
+  /* =========================
      DM (Inbox)
   ========================= */
   let __dmUnsub = null;
@@ -531,15 +590,18 @@
       if (window.FB && typeof window.FB.getProducerProfile === "function"){
         const prof = await window.FB.getProducerProfile(p.id);
         if (prof){
+
           const profName =
             (prof?.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
             : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
 
           if (profName) p.name = profName;
+
           p.photoURL = prof?.photoURL || "";
+
+          /* ✅ verification plan */
+          p.plan = prof?.plan || "";
         }
-      }
-    }catch{}
 
     // followers count
     try{
@@ -602,7 +664,7 @@
       const fb = document.getElementById("fb_" + p.id);
       const mb = document.getElementById("mb_" + p.id);
 
-      if (nm) nm.textContent = p.name;
+      if (nm) nm.innerHTML = escapeHtml(p.name) + getVerificationBadge(p.plan);
       if (av) av.innerHTML = avatarHTML({ name: p.name, photoURL: p.photoURL });
       if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
 
