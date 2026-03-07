@@ -750,6 +750,15 @@
 
       const filtered = filterBeats(beats, params);
 
+      for (const b of filtered){
+        try{
+          if (window.FB && typeof window.FB.getProducerProfile === "function"){
+            const prof = await window.FB.getProducerProfile(b.producerId);
+            b.producerPlan = prof?.plan || "";
+          }
+        }catch{}
+      }
+
       grid.innerHTML = "";
 
       if(!filtered.length){
