@@ -194,6 +194,36 @@
         width:100%;
         min-width:0;
       }
+
+      /* ===================================
+         AUDIORY VERIFIED BADGES
+      =================================== */
+
+      .verify-badge{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        margin-left:6px;
+        vertical-align:middle;
+      }
+
+      .verify-badge svg{
+        width:16px;
+        height:16px;
+        display:block;
+      }
+
+      /* PRO (blue) */
+
+      .verify-pro svg{
+        color:#1d9bf0;
+      }
+
+      /* ELITE (gold) */
+
+      .verify-elite svg{
+        color:#fbbf24;
+      }
   </style>
 </head>
 <body>
@@ -419,6 +449,7 @@
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/player.js"></script>
 <script src="/js/cart.js"></script>
