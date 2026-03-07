@@ -805,7 +805,7 @@
                  href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}"
                  data-producer-id="${String(b.producerId||"")}"
                  data-beat-id="${String(b.id||"")}">
-                ${prettyProducerName(b)}
+                ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
               </a>
 
               ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
