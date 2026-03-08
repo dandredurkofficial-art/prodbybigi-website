@@ -644,7 +644,7 @@ window.FB.logAnalyticsEvent = async function ({ producerId, type, beatId = null 
 
       actorUid: u ? u.uid : null, // null if guest visitor
 
-      createdAt: serverTimestamp()
+      createdAt: Date.now()
 
     });
 
