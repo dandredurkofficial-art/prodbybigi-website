@@ -781,6 +781,8 @@
 
     try{
       const beat = await fetchBeatById(beatId);
+      console.log("Beat data:", beat);
+      
       if (!beat){
         status.textContent = "Beat not found.";
         return;
