@@ -795,12 +795,19 @@
 
     try{
 
-      await updateDoc(
-        doc(window.FB.db,"users",pid),
-        {
-          profileViews: increment(1)
-        }
-      )
+      const user = window.FB?.auth?.currentUser || null;
+
+      // don't count views if producer views their own profile
+      if(!user || user.uid !== pid){
+
+        await window.updateDoc(
+          window.doc(window.FB.db,"users",pid),
+          {
+            profileViews: window.increment(1)
+          }
+        );
+
+      }
 
     }catch(e){
       console.log("profile view tracking failed", e);
