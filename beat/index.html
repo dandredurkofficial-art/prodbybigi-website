@@ -767,34 +767,6 @@
     return null;
   }
 
-  async function getPlayCount(beatId){
-
-  try{
-
-  if(!window.FB?.db) return 0
-
-  const {collection,query,where,getCountFromServer} = window.FB
-
-  const q = query(
-  collection(window.FB.db,"analyticsEvents"),
-  where("beatId","==",beatId),
-  where("type","==","play")
-  )
-
-  const snap = await getCountFromServer(q)
-
-  return snap.data().count || 0
-
-  }catch(e){
-
-  console.error("play count error",e)
-
-  return 0
-
-  }
-
-  }
-
   async function loadBeatPage(){
     const beatId = qs("id");
     const status = $("beatStatus");
