@@ -2037,6 +2037,8 @@ async function playPreview(i){
   }catch(e){
     console.log("Play tracking failed", e);
   }
+
+}
 async function deleteBeat(i){
   const beat = beatsData[i];
   if(!confirm(`Delete "${beat.title}"? This cannot be undone.`)) return;
