@@ -851,14 +851,35 @@
 
       // ✅ Log "play" when user taps play (player.js will actually play/pause)
       // We log on click; if you want "only when audio truly starts", we’ll hook inside player.js next.
-      playBtn.addEventListener("click", ()=>{
+      playBtn.addEventListener("click", async ()=>{
+
         const pid = String(beat.producerId||"");
         const bid = String(beat.id||beatId);
         const key = `${pid}:${bid}`;
+
         if (pid && bid && !window.__ANA_SENT__.play[key]){
+
           window.__ANA_SENT__.play[key] = 1;
+
           logAnalyticsEvent({ producerId: pid, type:"play", beatId: bid });
+
+          // ✅ increment beat play counter
+          try{
+
+            const {doc,updateDoc,increment} = window.FB;
+
+            const ref = doc(window.FB.db,"beats",bid);
+
+            await updateDoc(ref,{
+              plays: increment(1)
+            });
+
+          }catch(e){
+            console.warn("play increment failed",e);
+          }
+
         }
+
       }, true);
 
       // ✅ Top-right price pill (clickable)
