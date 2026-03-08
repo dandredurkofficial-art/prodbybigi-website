@@ -790,31 +790,35 @@
     }
 
     /* =====================================
-       ✅ REAL PROFILE VIEW COUNTER
-    ===================================== */
+   ✅ REAL PROFILE VIEW COUNTER (Audiory)
+===================================== */
 
-    try{
+try{
 
-      const user = window.FB?.auth?.currentUser || null;
+  const user = window.FB?.auth?.currentUser || null;
 
-      if(!user || user.uid !== pid){
+  // don't count views if producer views their own profile
+  if(!user || user.uid !== pid){
 
-        await window.updateDoc(
-          window.doc(window.FB.db,"users",pid),
-          {
-            profileViews: window.increment(1)
-          }
-        );
-
-        await window.FB.trackEvent("view", {
-          producerId: pid
-        });
-
+    // increment producer profile view counter
+    await window.updateDoc(
+      window.doc(window.FB.db,"users",pid),
+      {
+        profileViews: window.increment(1)
       }
+    );
 
-    }catch(e){
-      console.log("profile view tracking failed", e);
-    }
+    // log analytics event
+    await window.logAnalyticsEvent({
+      producerId: pid,
+      type: "view"
+    });
+
+  }
+
+}catch(e){
+  console.log("profile view tracking failed", e);
+}
 
     // buttons
     const followBtn = document.getElementById("followBtn");
