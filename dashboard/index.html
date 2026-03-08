@@ -2012,17 +2012,29 @@ function playPreview(i){
 
   // ✅ increment real play counter
   try{
-    window.updateDoc(
+
+    // increment beat play counter
+    await window.updateDoc(
       window.doc(window.db,"beats",beat.id),
       {
         plays: window.increment(1)
       }
     );
+
+    // ✅ log analytics play event
+    await window.addDoc(
+      window.collection(window.db,"analyticsEvents"),
+      {
+        producerId: window.currentUser.uid,
+        beatId: beat.id,
+        type: "play",
+        createdAt: Date.now()
+      }
+    );
+
   }catch(e){
     console.log("Play tracking failed", e);
   }
-
-}
 async function deleteBeat(i){
   const beat = beatsData[i];
   if(!confirm(`Delete "${beat.title}"? This cannot be undone.`)) return;
