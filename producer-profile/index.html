@@ -797,7 +797,6 @@
 
       const user = window.FB?.auth?.currentUser || null;
 
-      // don't count views if producer views their own profile
       if(!user || user.uid !== pid){
 
         await window.updateDoc(
@@ -806,14 +805,10 @@
             profileViews: window.increment(1)
           }
         );
-        await window.addDoc(
-          window.collection(window.FB.db,"analyticsEvents"),
-          {
-            producerId: pid,
-            type: "view",
-            createdAt: Date.now()
-          }
-        );
+
+        await window.FB.trackEvent("view", {
+          producerId: pid
+        });
 
       }
 
