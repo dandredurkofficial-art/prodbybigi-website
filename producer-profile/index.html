@@ -790,35 +790,35 @@
     }
 
     /* =====================================
-   ✅ REAL PROFILE VIEW COUNTER (Audiory)
-===================================== */
+       ✅ REAL PROFILE VIEW COUNTER (Audiory)
+    ===================================== */
 
-try{
+    try{
 
-  const user = window.FB?.auth?.currentUser || null;
+      const user = window.FB?.auth?.currentUser || null;
 
-  // don't count views if producer views their own profile
-  if(!user || user.uid !== pid){
+      // don't count views if producer views their own profile
+      if(!user || user.uid !== pid){
 
-    // increment producer profile view counter
-    await window.updateDoc(
-      window.doc(window.FB.db,"users",pid),
-      {
-        profileViews: window.increment(1)
+        // increment producer profile view counter
+        await window.updateDoc(
+          window.doc(window.FB.db,"users",pid),
+          {
+            profileViews: window.increment(1)
+          }
+        );
+
+        // log analytics event
+        await window.logAnalyticsEvent({
+          producerId: pid,
+          type: "view"
+        });
+
       }
-    );
 
-    // log analytics event
-    await window.logAnalyticsEvent({
-      producerId: pid,
-      type: "view"
-    });
-
-  }
-
-}catch(e){
-  console.log("profile view tracking failed", e);
-}
+    }catch(e){
+      console.log("profile view tracking failed", e);
+    }
 
     // buttons
     const followBtn = document.getElementById("followBtn");
