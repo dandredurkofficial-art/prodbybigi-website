@@ -1,5 +1,6 @@
 // /js/player.js
 (function () {
+
   const audio = new Audio();
   audio.preload = "metadata";
 
@@ -9,6 +10,7 @@
   function setBtnState(btn, state) {
     // states: idle | loading | playing | paused
     if (!btn) return;
+
     btn.dataset.state = state;
 
     const icon = btn.querySelector(".playIcon");
@@ -33,11 +35,16 @@
   }
 
   async function playToggle(btn, url) {
+
     try {
+
       if (!url) return;
+
+      const beatId = btn.getAttribute("data-beat-id");
 
       // toggle same track
       if (currentUrl === url) {
+
         if (!audio.paused) {
           audio.pause();
           setBtnState(currentBtn, "paused");
@@ -48,6 +55,7 @@
           setBtnState(btn, "playing");
           return;
         }
+
       }
 
       // switch track
@@ -59,29 +67,62 @@
       setBtnState(btn, "loading");
       audio.src = url;
 
-      // wait a tiny bit so mobile Safari starts quicker
       await audio.play();
       setBtnState(btn, "playing");
+
+      /* =====================================
+         ✅ REAL PLAY COUNTER
+      ===================================== */
+
+      try {
+
+        if (beatId && window.FB && window.FB.db) {
+
+          await updateDoc(
+            doc(window.FB.db, "beats", beatId),
+            {
+              plays: increment(1)
+            }
+          );
+
+        }
+
+      } catch (e) {
+        console.log("[player] play count failed", e);
+      }
+
     } catch (e) {
+
       console.error("[player] play error:", e);
+
       if (btn) setBtnState(btn, "paused");
+
       alert("Audio could not play. Try again.");
+
     }
+
   }
 
-  // when audio ends, reset button
+  // when audio ends reset button
   audio.addEventListener("ended", () => {
+
     if (currentBtn) setBtnState(currentBtn, "paused");
+
   });
 
   // attach click handler
   document.addEventListener("click", (e) => {
+
     const btn = e.target.closest("[data-play-btn]");
     if (!btn) return;
+
     const url = btn.getAttribute("data-audio-url");
+
     playToggle(btn, url);
+
   });
 
   // expose
   window.Player = { playToggle };
+
 })();
