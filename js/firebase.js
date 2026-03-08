@@ -627,23 +627,37 @@ window.FB.trackEvent = async function ({
    ✅ Uses serverTimestamp() so Firestore writes are consistent
 ========================================================= */
 window.FB.logAnalyticsEvent = async function ({ producerId, type, beatId = null } = {}) {
-  try {
-    const u = auth.currentUser;
-    if (!u) return false; // your rules require signed-in
-    if (!producerId || !type) return false;
 
-    await addDoc(collection(db, "analyticsEvents"), {
+  try{
+
+    if(!producerId || !type) return false;
+
+    const u = auth.currentUser || null;
+
+    await addDoc(collection(db,"analyticsEvents"),{
+
       producerId: String(producerId),
-      type: String(type), // "view" | "play"
+
+      type: String(type), // view | play
+
       beatId: beatId ? String(beatId) : null,
-      actorUid: u.uid,
+
+      actorUid: u ? u.uid : null, // null if guest visitor
+
       createdAt: serverTimestamp()
+
     });
 
     return true;
-  } catch (e) {
+
+  }catch(e){
+
+    console.log("analytics event failed", e);
+
     return false;
+
   }
+
 };
 
 // ✅ convenience global alias (so pages can call logAnalyticsEvent directly)
