@@ -1998,11 +1998,29 @@ function editBeat(i){
   showPage("upload");
 }
 function playPreview(i){
+
   if(currentAudio) currentAudio.pause();
-  const url = beatsData[i]?.previewAudio;
-  if (!url) return alert("No previewAudio for this beat yet.");
+
+  const beat = beatsData[i];
+  const url = beat?.previewAudio;
+
+  if(!url) return alert("No previewAudio for this beat yet.");
+
   currentAudio = new Audio(url);
   currentAudio.play();
+
+  // ✅ increment real play counter
+  try{
+    window.updateDoc(
+      window.doc(window.db,"beats",beat.id),
+      {
+        plays: window.increment(1)
+      }
+    );
+  }catch(e){
+    console.log("Play tracking failed", e);
+  }
+
 }
 async function deleteBeat(i){
   const beat = beatsData[i];
