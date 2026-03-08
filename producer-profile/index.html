@@ -806,6 +806,14 @@
             profileViews: window.increment(1)
           }
         );
+        await window.addDoc(
+          window.collection(window.FB.db,"analyticsEvents"),
+          {
+            producerId: pid,
+            type: "view",
+            createdAt: Date.now()
+          }
+        );
 
       }
 
