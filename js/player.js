@@ -91,6 +91,37 @@
         console.log("[player] play count failed", e);
       }
 
+      /* =====================================
+         ✅ ADVANCED ANALYTICS PLAY EVENT
+      ===================================== */
+
+      try {
+
+        if (beatId && window.logAnalyticsEvent) {
+
+          const producerId = btn.getAttribute("data-producer-id") || "";
+
+          const key = beatId;
+
+          // prevent spam plays from same user session
+          if (!window.__ANA_SENT__.play[key]) {
+
+            window.__ANA_SENT__.play[key] = true;
+
+            await window.logAnalyticsEvent({
+              producerId: producerId,
+              type: "play",
+              beatId: beatId
+            });
+
+          }
+
+        }
+
+      } catch (e) {
+        console.log("[player] analytics play failed", e);
+      }
+
     } catch (e) {
 
       console.error("[player] play error:", e);
