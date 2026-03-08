@@ -1,0 +1,102 @@
+// AUDIORY GLOBAL PERFORMANCE BOOSTER
+
+(function(){
+
+/* =========================
+PAGE PREFETCH (INSTANT NAV)
+========================= */
+
+document.addEventListener("mouseover", e => {
+
+  const link = e.target.closest("a");
+
+  if(!link) return;
+
+  const href = link.getAttribute("href");
+
+  if(!href) return;
+
+  if(href.startsWith("http")) return;
+  if(href.startsWith("#")) return;
+
+  const prefetch = document.createElement("link");
+
+  prefetch.rel = "prefetch";
+  prefetch.href = href;
+
+  document.head.appendChild(prefetch);
+
+});
+
+
+/* =========================
+IMAGE LAZY LOADING
+========================= */
+
+document.querySelectorAll("img").forEach(img => {
+
+  if(!img.loading){
+    img.loading = "lazy";
+  }
+
+});
+
+
+/* =========================
+PRECONNECT FIREBASE
+========================= */
+
+[
+"https://firestore.googleapis.com",
+"https://identitytoolkit.googleapis.com",
+"https://firebasestorage.googleapis.com"
+].forEach(url => {
+
+  const link = document.createElement("link");
+
+  link.rel = "preconnect";
+  link.href = url;
+
+  document.head.appendChild(link);
+
+});
+
+
+/* =========================
+CACHE PAGE NAVIGATION
+========================= */
+
+document.addEventListener("click", e => {
+
+  const link = e.target.closest("a");
+
+  if(!link) return;
+
+  const href = link.href;
+
+  if(!href) return;
+  if(href.includes("#")) return;
+  if(link.target === "_blank") return;
+
+  e.preventDefault();
+
+  fetch(href)
+    .then(res => res.text())
+    .then(html => {
+
+      const doc = new DOMParser().parseFromString(html,"text/html");
+
+      document.title = doc.title;
+
+      document.body.innerHTML = doc.body.innerHTML;
+
+      history.pushState({}, "", href);
+
+      window.scrollTo(0,0);
+
+    });
+
+});
+
+
+})();
