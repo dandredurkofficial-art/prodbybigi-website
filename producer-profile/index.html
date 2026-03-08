@@ -789,6 +789,23 @@
       return;
     }
 
+    /* =====================================
+       ✅ REAL PROFILE VIEW COUNTER
+    ===================================== */
+
+    try{
+
+      await updateDoc(
+        doc(window.FB.db,"users",pid),
+        {
+          profileViews: increment(1)
+        }
+      )
+
+    }catch(e){
+      console.log("profile view tracking failed", e);
+    }
+
     // buttons
     const followBtn = document.getElementById("followBtn");
     followBtn?.addEventListener("click", ()=> toggleFollow(pid));
