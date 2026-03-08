@@ -829,20 +829,8 @@
       $("beatBpm").textContent = pickBpm(beat);
       $("beatKey").textContent = pickKey(beat);
       $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
-
-      // Plays placeholder for now (we’ll make it real when we update firebase.js with getCountFromServer)
-      try{
-
-      const plays = await getPlayCount(String(beat.id||beatId))
-      $("beatPlays").textContent = plays
-
-      }catch(e){
-
-      console.warn("play counter failed",e)
-      $("beatPlays").textContent = 0
-
-      }
-
+      $("beatPlays").textContent = Number(beat.plays || 0);
+      
       // ✅ Set play button attributes so your existing player.js controls it
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
