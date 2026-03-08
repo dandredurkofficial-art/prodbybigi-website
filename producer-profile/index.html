@@ -916,7 +916,14 @@
         card.innerHTML = `
           <div class="cover">
             ${coverHTML(b.artwork, b.title)}
-            <button class="play-fab" type="button" data-play-btn data-audio-url="${b.audio||""}" aria-label="Play">
+            <button
+              class="play-fab"
+              type="button"
+              data-play-btn
+              data-beat-id="${b.id}"
+              data-producer-id="${b.producerId}"
+              data-audio-url="${b.audio||""}"
+              aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
