@@ -1735,18 +1735,21 @@ planBackdrop?.addEventListener("click",()=>{
 document.getElementById("planPayPaypal")?.addEventListener("click",()=>{
 
   const tier = window.__PLAN_SELECTED__?.tier
-
   if(!tier) return
+
+  const planModal = document.getElementById("planPayModal")
+  const planBackdrop = document.getElementById("planPayBackdrop")
+
+  // close modal before opening PayPal
+  if(planModal) planModal.style.display = "none"
+  if(planBackdrop) planBackdrop.style.display = "none"
 
   renderPayPalButton(tier)
 
-  // wait a moment for PayPal button to render
   setTimeout(()=>{
-
     document
       .querySelector("#paypal-button-container button")
       ?.click()
-
   },500)
 
 })
