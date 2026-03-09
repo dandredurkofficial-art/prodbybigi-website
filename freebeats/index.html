@@ -280,11 +280,6 @@ window.FB.fetchBeats({ max:60, force:true }).then(fresh=>{
 
 });
 
-const beats = await window.FB.fetchBeats({
-max:60,
-force:true
-})
-
 /* ✅ LOAD PRODUCER VERIFICATION */
 for(const b of beats){
 try{
