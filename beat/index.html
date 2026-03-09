@@ -926,19 +926,19 @@
       // More from producer
       let list = [];
 
-try{
+      try{
 
-  if(window.FB && typeof window.FB.fetchProducerBeats === "function"){
+        if(window.FB && typeof window.FB.fetchProducerBeats === "function"){
 
-    list = await window.FB.fetchProducerBeats(beat.producerId, 6);
+          list = await window.FB.fetchProducerBeats(beat.producerId, 6);
 
-  }
+        }
 
-}catch(e){
-  console.warn("producer beats load failed",e);
-}
+      }catch(e){
+        console.warn("producer beats load failed",e);
+      }
 
-renderMoreFromProducer(list, beat);
+      renderMoreFromProducer(list, beat);
 
       /* ======================================
          PREFETCH PRODUCER BEATS
