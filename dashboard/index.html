@@ -1624,6 +1624,23 @@ window.startSubscription = startSubscription;
 window.renderPayPalButton = renderPayPalButton;
 
 /* ===========================
+PLAN PAYMENT MODAL
+=========================== */
+
+const planModal = document.getElementById("planPayModal")
+const planBackdrop = document.getElementById("planPayBackdrop")
+
+document.getElementById("planPayClose")?.addEventListener("click",()=>{
+  planModal.style.display="none"
+  planBackdrop.style.display="none"
+})
+
+planBackdrop?.addEventListener("click",()=>{
+  planModal.style.display="none"
+  planBackdrop.style.display="none"
+})
+
+/* ===========================
    ✅ UPLOAD LIMIT (Free=10)
 =========================== */
 function blockIfUploadLimitReached(){
