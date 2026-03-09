@@ -1640,6 +1640,73 @@ planBackdrop?.addEventListener("click",()=>{
   planBackdrop.style.display="none"
 })
 
+document.getElementById("planPayPaypal")?.addEventListener("click",()=>{
+
+  const tier = window.__PLAN_SELECTED__?.tier
+
+  if(!tier) return
+
+  renderPayPalButton(tier)
+
+  alert("Scroll down to PayPal button")
+
+})
+
+/* ===========================
+MPESA PLAN PAYMENT
+=========================== */
+
+document.getElementById("planPayMpesa")?.addEventListener("click",()=>{
+
+  document.getElementById("planMpesaBox").style.display="block"
+
+})
+
+document.getElementById("planMpesaSend")?.addEventListener("click",async()=>{
+
+  try{
+
+    const phone = document.getElementById("planMpesaPhone").value.trim()
+
+    const sel = window.__PLAN_SELECTED__
+
+    const u = window.currentUser
+
+    if(!phone) return alert("Enter phone number")
+
+    const payload = {
+
+      phone,
+      buyerId:u.uid,
+      plan:sel.tier,
+      type:"producer_subscription"
+
+    }
+
+    document.getElementById("planPayStatus").textContent="Sending STK Push..."
+
+    const r = await fetch(window.PB_MPESA_STKPUSH_URL,{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify(payload)
+    })
+
+    const j = await r.json().catch(()=>({}))
+
+    if(!r.ok) throw new Error(j?.error || "STK push failed")
+
+    document.getElementById("planPayStatus").textContent="Check your phone"
+
+  }catch(err){
+
+    console.error(err)
+
+    document.getElementById("planPayStatus").textContent="Payment failed"
+
+  }
+
+})
+
 /* ===========================
    ✅ UPLOAD LIMIT (Free=10)
 =========================== */
