@@ -1234,34 +1234,34 @@
       });
 
       /* ======================================
-   FAST PRODUCER PROFILE LOAD
-====================================== */
+         FAST PRODUCER PROFILE LOAD
+      ====================================== */
 
-try{
+      try{
 
-  const producerIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
+        const producerIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
 
-  const profilePromises = producerIds.map(id =>
-    window.FB.getProducerProfile(id).catch(()=>null)
-  );
+        const profilePromises = producerIds.map(id =>
+          window.FB.getProducerProfile(id).catch(()=>null)
+        );
 
-  const profiles = await Promise.all(profilePromises);
+        const profiles = await Promise.all(profilePromises);
 
-  const profileMap = {};
+        const profileMap = {};
 
-  profiles.forEach((p,i)=>{
-    if(!p) return;
-    profileMap[producerIds[i]] = p;
-  });
+       profiles.forEach((p,i)=>{
+         if(!p) return;
+         profileMap[producerIds[i]] = p;
+       });
 
-  beats.forEach(b=>{
-    const prof = profileMap[b.producerId];
-    b.producerPlan = prof?.plan || "";
-  });
+       beats.forEach(b=>{
+         const prof = profileMap[b.producerId];
+         b.producerPlan = prof?.plan || "";
+       });
 
-}catch(e){
-  console.warn("producer profiles load failed",e);
-}
+     }catch(e){
+       console.warn("producer profiles load failed",e);
+     }
       
       window.__LATEST_BEATS__ = beats;
 
