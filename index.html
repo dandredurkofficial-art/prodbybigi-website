@@ -1233,14 +1233,35 @@
         sessionStorage.setItem("audiory_home_beats",JSON.stringify(fresh));
       });
 
-      for (const b of beats){
-        try{
-          if (window.FB && typeof window.FB.getProducerProfile === "function"){
-            const prof = await window.FB.getProducerProfile(b.producerId);
-            b.producerPlan = prof?.plan || "";
-          }
-        }catch{}
-      }
+      /* ======================================
+   FAST PRODUCER PROFILE LOAD
+====================================== */
+
+try{
+
+  const producerIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
+
+  const profilePromises = producerIds.map(id =>
+    window.FB.getProducerProfile(id).catch(()=>null)
+  );
+
+  const profiles = await Promise.all(profilePromises);
+
+  const profileMap = {};
+
+  profiles.forEach((p,i)=>{
+    if(!p) return;
+    profileMap[producerIds[i]] = p;
+  });
+
+  beats.forEach(b=>{
+    const prof = profileMap[b.producerId];
+    b.producerPlan = prof?.plan || "";
+  });
+
+}catch(e){
+  console.warn("producer profiles load failed",e);
+}
       
       window.__LATEST_BEATS__ = beats;
 
