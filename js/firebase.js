@@ -217,7 +217,7 @@ window.FB.getProducerProfile = async function getProducerProfile(producerId) {
    ✅ BEATS CACHE + FETCH
 ========================================================= */
 const CACHE_KEY = "audiory_cached_beats_v3";
-const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
+const CACHE_TTL_MS = 1000 * 60 * 30;
 let memCache = null;
 let memCacheAt = 0;
 let inflight = null;
