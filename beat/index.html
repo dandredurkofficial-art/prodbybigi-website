@@ -795,6 +795,15 @@
 
     try{
       const beat = await fetchBeatById(beatId);
+
+      /* save beat cache */
+
+      try{
+        sessionStorage.setItem(
+          "audiory_beat_" + beatId,
+          JSON.stringify(beat)
+        );
+      }catch(e){}
       console.log("Beat data:", beat);
       
       if (!beat){
