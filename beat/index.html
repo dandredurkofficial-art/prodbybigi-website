@@ -794,27 +794,27 @@
     status.textContent = "Loading beat…";
     
     /* =========================================
-   INSTANT BEAT CACHE (super fast load)
-========================================= */
+       INSTANT BEAT CACHE (super fast load)
+    ========================================= */
 
-let cachedBeat = null;
+    let cachedBeat = null;
 
-try{
-  const cache = sessionStorage.getItem("audiory_beat_" + beatId);
+    try{
+      const cache = sessionStorage.getItem("audiory_beat_" + beatId);
 
-  if(cache){
-    cachedBeat = JSON.parse(cache);
-    console.log("⚡ beat loaded from cache");
-  }
-}catch(e){}
+      if(cache){
+        cachedBeat = JSON.parse(cache);
+        console.log("⚡ beat loaded from cache");
+      }
+    }catch(e){}
 
-/* render instantly if cached */
+    /* render instantly if cached */
 
-if(cachedBeat){
+    if(cachedBeat){
 
-  renderBeatInstant(cachedBeat);
+      renderBeatInstant(cachedBeat);
 
-}
+    }
     
     try{
       const beat = await fetchBeatById(beatId);
