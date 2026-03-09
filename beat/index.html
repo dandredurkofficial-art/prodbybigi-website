@@ -929,28 +929,28 @@
       renderMoreFromProducer(list, beat);
 
       /* ======================================
-   PREFETCH PRODUCER BEATS
-====================================== */
+         PREFETCH PRODUCER BEATS
+      ====================================== */
 
-setTimeout(()=>{
+      setTimeout(()=>{
 
-  if(!Array.isArray(list)) return;
+        if(!Array.isArray(list)) return;
 
-  const others = list
-    .filter(b => b.producerId === beat.producerId)
-    .slice(0,6);
+        const others = list
+          .filter(b => b.producerId === beat.producerId)
+          .slice(0,6);
 
-  others.forEach(b=>{
+        others.forEach(b=>{
 
-    const link = document.createElement("link");
-    link.rel = "prefetch";
-    link.href = "/beat/?id=" + encodeURIComponent(b.id);
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.href = "/beat/?id=" + encodeURIComponent(b.id);
 
-    document.head.appendChild(link);
+          document.head.appendChild(link);
 
-  });
+        });
 
-},1200);
+      },1200);
 
       // show content
       status.style.display = "none";
