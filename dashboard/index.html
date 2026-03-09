@@ -1509,8 +1509,21 @@ async function handlePayPalReturn(){
 window.handlePayPalReturn = handlePayPalReturn;
 
 function startSubscription(tier){
-  renderPayPalButton(tier);
-  alert("Scroll a little — the PayPal button is now ready under the plan.");
+
+  const planTier = normalizeTier(tier)
+
+  window.__PLAN_SELECTED__ = {
+    tier: planTier
+  }
+
+  const modal = document.getElementById("planPayModal")
+  const back = document.getElementById("planPayBackdrop")
+
+  if(modal && back){
+    modal.style.display="block"
+    back.style.display="block"
+  }
+
 }
 function renderPayPalButton(tier){
   const planTier = normalizeTier(tier);
