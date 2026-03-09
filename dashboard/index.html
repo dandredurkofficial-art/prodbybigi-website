@@ -961,6 +961,51 @@
 </main>
 </div>
 
+<!-- =============================
+PLAN PAYMENT MODAL
+============================= -->
+
+<div id="planPayBackdrop" class="pb-pay-backdrop"></div>
+
+<div id="planPayModal" class="pb-pay-modal">
+
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title">Upgrade Plan</div>
+      <div class="pb-pay-sub" id="planPaySub">Choose payment method</div>
+    </div>
+
+    <button id="planPayClose" class="pb-pay-close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+
+    <button id="planPayPaypal" class="pb-pay-btn primary">
+      Pay with PayPal
+    </button>
+
+    <button id="planPayMpesa" class="pb-pay-btn success">
+      Pay with M-Pesa
+    </button>
+
+    <div id="planMpesaBox" class="pb-pay-phone-wrap">
+      <div class="pb-pay-label">
+        Phone number (2547XXXXXXXX)
+      </div>
+
+      <input id="planMpesaPhone" class="pb-pay-input"/>
+
+      <button id="planMpesaSend" class="pb-pay-btn success">
+        Send STK Push
+      </button>
+
+      <div id="planPayStatus" class="pb-pay-status"></div>
+    </div>
+
+  </div>
+
+</div>
+
 <script>
   
 async function generateTags(){
