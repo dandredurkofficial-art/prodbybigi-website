@@ -3619,7 +3619,7 @@ exports.boostCallback = onRequest(async (req,res)=>{
 
 });
 
-exports.stkpushsubscription = onRequest(
+exports.stkpushSubscription = onRequest(
   {
     region: "us-central1",
     maxInstances: 1,
@@ -3729,7 +3729,7 @@ exports.stkpushsubscription = onRequest(
             PartyA: cleanPhone,
             PartyB: MPESA_SHORTCODE.value(),
             PhoneNumber: cleanPhone,
-            CallBackURL: MPESA_CALLBACK_URL.value(),
+            CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/subscriptionCallback"
             AccountReference: "Audiory Subscription",
             TransactionDesc: `Audiory ${planTier} plan`,
           }),
@@ -3775,6 +3775,97 @@ exports.stkpushsubscription = onRequest(
     }
   }
 );
+
+exports.subscriptionCallback = onRequest(async (req, res) => {
+
+  try {
+
+    const body = req.body;
+
+    const callback = body?.Body?.stkCallback;
+
+    if (!callback) {
+      console.log("Invalid callback body");
+      return res.json({ ok: true });
+    }
+
+    const resultCode = callback.ResultCode;
+    const checkoutRequestId = callback.CheckoutRequestID;
+
+    // Payment failed
+    if (resultCode !== 0) {
+      console.log("Payment failed", callback);
+      return res.json({ ok: true });
+    }
+
+    const items = callback.CallbackMetadata?.Item || [];
+
+    const amount =
+      items.find(i => i.Name === "Amount")?.Value || 0;
+
+    const phone =
+      items.find(i => i.Name === "PhoneNumber")?.Value || "";
+
+    const receipt =
+      items.find(i => i.Name === "MpesaReceiptNumber")?.Value || "";
+
+    const paidAt =
+      items.find(i => i.Name === "TransactionDate")?.Value || "";
+
+    // Find pending payment
+    const snap = await db
+      .collection("mpesaPending")
+      .where("checkoutRequestId", "==", checkoutRequestId)
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      console.log("No pending payment found");
+      return res.json({ ok: true });
+    }
+
+    const doc = snap.docs[0];
+    const data = doc.data();
+
+    const uid = data.uid;
+    const planTier = data.planTier;
+
+    // Activate subscription
+    await db.collection("users").doc(uid).set(
+      {
+        plan: planTier,
+        planTier: planTier,
+        subscriptionStatus: "active",
+        mpesaPhone: phone,
+        mpesaReceipt: receipt,
+        planUpdatedAt: Date.now()
+      },
+      { merge: true }
+    );
+
+    // Mark payment complete
+    await doc.ref.update({
+      status: "paid",
+      amount,
+      receipt,
+      paidAt
+    });
+
+    console.log("Subscription activated for", uid);
+
+    return res.json({ ok: true });
+
+  } catch (e) {
+
+    console.error("subscriptionCallback error:", e);
+
+    return res.status(500).json({
+      error: e.message
+    });
+
+  }
+
+});
 
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
