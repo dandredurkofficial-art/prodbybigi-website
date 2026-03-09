@@ -1244,6 +1244,26 @@
       
       window.__LATEST_BEATS__ = beats;
 
+/* ======================================
+   PRELOAD BEAT PAGES
+====================================== */
+
+setTimeout(()=>{
+
+  (beats || []).slice(0,10).forEach(b=>{
+
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+    document.head.appendChild(link);
+
+  });
+
+},1500);
+
+const now = Date.now();
+
       const now = Date.now();
 
       const featuredBeats = beats.filter(b =>
