@@ -3619,6 +3619,163 @@ exports.boostCallback = onRequest(async (req,res)=>{
 
 });
 
+exports.stkpushsubscription = onRequest(
+  {
+    region: "us-central1",
+    maxInstances: 1,
+    secrets: [
+      DARAJA_CONSUMER_KEY,
+      DARAJA_CONSUMER_SECRET,
+      MPESA_SHORTCODE,
+      MPESA_PASSKEY,
+      MPESA_CALLBACK_URL
+    ],
+  },
+  async (req, res) => {
+
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
+
+      const { phone, uid, planTier } = req.body || {};
+
+      if (!phone) return res.status(400).json({ error: "phone required" });
+      if (!uid) return res.status(400).json({ error: "uid required" });
+      if (!planTier) return res.status(400).json({ error: "planTier required" });
+
+      const cleanPhone = String(phone).replace(/\D/g, "");
+
+      if (!cleanPhone.startsWith("254")) {
+        return res.status(400).json({ error: "Phone must start with 254" });
+      }
+
+      // -------------------------------
+      // PLAN PRICE MAP
+      // -------------------------------
+
+      const PLAN_PRICE = {
+        starter: 1500,
+        pro: 3500,
+        elite: 6500
+      };
+
+      const amount = PLAN_PRICE[planTier] || 1500;
+
+      // -------------------------------
+      // ACCESS TOKEN
+      // -------------------------------
+
+      const auth = Buffer.from(
+        `${DARAJA_CONSUMER_KEY.value()}:${DARAJA_CONSUMER_SECRET.value()}`
+      ).toString("base64");
+
+      const tokenRes = await fetchFn(
+        "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Basic ${auth}`,
+          },
+        }
+      );
+
+      const tokenData = await tokenRes.json();
+
+      if (!tokenRes.ok) {
+        return res.status(400).json({ error: "Failed to get M-Pesa access token" });
+      }
+
+      const accessToken = tokenData.access_token;
+
+      // -------------------------------
+      // TIMESTAMP
+      // -------------------------------
+
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[-:TZ.]/g, "")
+        .slice(0, 14);
+
+      const password = Buffer.from(
+        MPESA_SHORTCODE.value() +
+        MPESA_PASSKEY.value() +
+        timestamp
+      ).toString("base64");
+
+      // -------------------------------
+      // STK PUSH REQUEST
+      // -------------------------------
+
+      const stkRes = await fetchFn(
+        "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            BusinessShortCode: MPESA_SHORTCODE.value(),
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: "CustomerPayBillOnline",
+            Amount: amount,
+            PartyA: cleanPhone,
+            PartyB: MPESA_SHORTCODE.value(),
+            PhoneNumber: cleanPhone,
+            CallBackURL: MPESA_CALLBACK_URL.value(),
+            AccountReference: "Audiory Subscription",
+            TransactionDesc: `Audiory ${planTier} plan`,
+          }),
+        }
+      );
+
+      const stkData = await stkRes.json().catch(() => ({}));
+
+      if (!stkRes.ok) {
+        return res.status(400).json({
+          error: "STK push failed",
+          details: stkData
+        });
+      }
+
+      // Save pending payment
+
+      await db.collection("mpesaPending").add({
+        uid,
+        phone: cleanPhone,
+        planTier,
+        amount,
+        checkoutRequestId: stkData.CheckoutRequestID,
+        merchantRequestId: stkData.MerchantRequestID,
+        createdAt: Date.now()
+      });
+
+      return res.json({
+        ok: true,
+        message: "STK push sent",
+        checkoutRequestId: stkData.CheckoutRequestID
+      });
+
+    } catch (e) {
+
+      console.error("stkpushsubscription error:", e);
+
+      try { applyCors(req, res); } catch (_) {}
+
+      return res.status(500).json({
+        error: e.message
+      });
+    }
+  }
+);
+
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
   async (event) => {
