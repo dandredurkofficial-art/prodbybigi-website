@@ -1202,9 +1202,36 @@
     
     try{
       status.textContent = "Loading beats…";
-      status.classList.remove("hidden");
+status.classList.remove("hidden");
 
-      const beats = await window.FB.fetchBeats({ max: 30, force: true });
+/* =========================================
+   INSTANT LOAD (cache first)
+========================================= */
+
+let beats = [];
+
+try{
+
+  const cached = sessionStorage.getItem("audiory_home_beats");
+
+  if(cached){
+    beats = JSON.parse(cached);
+    console.log("⚡ home beats loaded from cache");
+  }
+
+}catch(e){
+  console.warn("cache parse failed",e);
+}
+
+if(!beats.length){
+  beats = await window.FB.fetchBeats({ max:30 });
+  sessionStorage.setItem("audiory_home_beats",JSON.stringify(beats));
+}
+
+window.FB.fetchBeats({ max:30, force:true }).then(fresh=>{
+  if(!fresh?.length) return;
+  sessionStorage.setItem("audiory_home_beats",JSON.stringify(fresh));
+});
 
       for (const b of beats){
         try{
