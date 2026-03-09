@@ -1695,11 +1695,40 @@ function renderPayPalButton(tier){
     },
 
     onApprove: async function(data) {
+
       const subscriptionId = data.subscriptionID || data.subscriptionId || "";
-      if (subscriptionId){
-        await setUserPlanLocal({ planTier, subscriptionId, status: "pending" });
-        alert("Approved! Subscription ID: " + subscriptionId);
+      if(!subscriptionId) return alert("Subscription ID missing");
+
+      try{
+
+        const r = await fetch("/verifySubscription",{
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body: JSON.stringify({
+            subscriptionId: subscriptionId,
+            uid: auth.currentUser.uid
+          })
+        });
+
+        const j = await r.json();
+
+        if(!r.ok){
+          throw new Error(j.error || "Verification failed");
+        }
+
+        alert("Subscription activated!");
+
+        location.reload();
+
+      }catch(e){
+
+        console.error("verifySubscription error:",e);
+        alert("Subscription verification failed");
+
       }
+
     },
 
     onCancel: function() {
