@@ -233,6 +233,53 @@ try{
 
 status.textContent="Loading free beats…"
 
+/* =========================================
+   INSTANT FREE BEATS CACHE
+========================================= */
+
+let beats = [];
+
+try{
+
+  const cached = sessionStorage.getItem("audiory_free_beats");
+
+  if(cached){
+    beats = JSON.parse(cached);
+    console.log("⚡ free beats loaded from cache");
+  }
+
+}catch(e){}
+
+/* if no cache load from firestore */
+
+if(!beats.length){
+
+  beats = await window.FB.fetchBeats({
+    max:60
+  });
+
+  sessionStorage.setItem(
+    "audiory_free_beats",
+    JSON.stringify(beats)
+  );
+
+}
+
+/* background refresh */
+
+window.FB.fetchBeats({ max:60, force:true }).then(fresh=>{
+
+  if(!fresh?.length) return;
+
+  sessionStorage.setItem(
+    "audiory_free_beats",
+    JSON.stringify(fresh)
+  );
+
+  console.log("♻️ free beats refreshed");
+
+});
+
 const beats = await window.FB.fetchBeats({
 max:60,
 force:true
