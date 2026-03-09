@@ -340,6 +340,39 @@ async function fetchBeats({ max = 60, force = false } = {}) {
 window.FB.fetchBeats = fetchBeats;
 
 /* =========================================================
+   ✅ FETCH PRODUCER BEATS (FAST RELATED BEATS)
+========================================================= */
+
+async function fetchProducerBeats(producerId, limit = 6){
+
+  if(!producerId) return [];
+
+  const { collection, query, where, limit: qLimit, getDocs } = window.FB;
+
+  const q = query(
+    collection(window.FB.db, "beats"),
+    where("producerId","==",producerId),
+    qLimit(limit)
+  );
+
+  const snap = await getDocs(q);
+
+  const arr = [];
+
+  snap.forEach(doc=>{
+    arr.push({
+      id: doc.id,
+      ...doc.data()
+    });
+  });
+
+  return arr;
+
+}
+
+window.FB.fetchProducerBeats = fetchProducerBeats;
+
+/* =========================================================
    ✅ FOLLOW SYSTEM
    producerFollows/{producerId}/followers/{uid}
 ========================================================= */
