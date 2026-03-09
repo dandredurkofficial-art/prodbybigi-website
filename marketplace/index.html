@@ -947,12 +947,6 @@
     }
 
   }
-  
-    }catch(err){
-      console.error("[marketplace] load error:", err);
-      status.textContent = "Could not load beats. Check Firestore rules & console.";
-    }
-  }
 
   window.addEventListener("firebase-ready", () => {
     if (window.FB && typeof window.FB.fetchBeats === "function") loadMarketplace();
