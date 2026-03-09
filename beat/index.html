@@ -928,6 +928,30 @@
       if (Array.isArray(list)) window.__LATEST_BEATS__ = list;
       renderMoreFromProducer(list, beat);
 
+      /* ======================================
+   PREFETCH PRODUCER BEATS
+====================================== */
+
+setTimeout(()=>{
+
+  if(!Array.isArray(list)) return;
+
+  const others = list
+    .filter(b => b.producerId === beat.producerId)
+    .slice(0,6);
+
+  others.forEach(b=>{
+
+    const link = document.createElement("link");
+    link.rel = "prefetch";
+    link.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+    document.head.appendChild(link);
+
+  });
+
+},1200);
+
       // show content
       status.style.display = "none";
       content.style.display = "grid";
