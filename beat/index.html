@@ -770,6 +770,17 @@
     return null;
   }
 
+  function renderBeatInstant(beat){
+
+    $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
+    $("beatTitle").textContent = beat.title || "Beat";
+
+    $("beatBpm").textContent = pickBpm(beat);
+    $("beatKey").textContent = pickKey(beat);
+    $("beatDate").textContent = formatDate(beat.createdAt);
+
+  }
+
   async function loadBeatPage(){
     const beatId = qs("id");
     const status = $("beatStatus");
