@@ -722,53 +722,108 @@
   window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
 
   async function loadMarketplace(){
-    const status = document.getElementById("marketStatus");
-    const grid   = document.getElementById("beatsGrid");
-    const inp = document.getElementById("marketSearchInput");
-    const btn = document.getElementById("marketSearchBtn");
 
-    const params = getParams();
-    applyHeader(params);
-    buildChips(params.genre);
+  const status = document.getElementById("marketStatus");
+  const grid   = document.getElementById("beatsGrid");
+  const inp = document.getElementById("marketSearchInput");
+  const btn = document.getElementById("marketSearchBtn");
 
-    if (inp) inp.value = params.q || "";
+  const params = getParams();
+  applyHeader(params);
+  buildChips(params.genre);
 
-    function goSearch(){
-      const newQ = (inp?.value || "").trim();
-      setParams({ q: newQ, genre: getParams().genre });
-    }
-    btn?.addEventListener("click", goSearch);
-    inp?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
+  if (inp) inp.value = params.q || "";
 
-    try{
-      status.textContent = "Loading marketplace…";
-      status.classList.remove("hidden");
+  function goSearch(){
+    const newQ = (inp?.value || "").trim();
+    setParams({ q: newQ, genre: getParams().genre });
+  }
 
-      // ✅ Force refresh once to avoid old cached “free”
-      const beats = await window.FB.fetchBeats({ max: 60, force: true });
+  btn?.addEventListener("click", goSearch);
+  inp?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
 
-      window.__LATEST_BEATS__ = beats;
+  status.textContent = "Loading marketplace…";
+  status.classList.remove("hidden");
+
+  let beats = [];
+
+  /* --------------------------
+  1️⃣ SHOW CACHED BEATS INSTANTLY
+  --------------------------- */
+
+  try{
+
+    const cached = localStorage.getItem("audiory_cached_beats");
+
+    if(cached){
+
+      beats = JSON.parse(cached);
 
       const filtered = filterBeats(beats, params);
 
-      for (const b of filtered){
-        try{
-          if (window.FB && typeof window.FB.getProducerProfile === "function"){
-            const prof = await window.FB.getProducerProfile(b.producerId);
-            b.producerPlan = prof?.plan || "";
-          }
-        }catch{}
+      if(filtered.length){
+
+        status.classList.add("hidden");
+        grid.innerHTML = "";
+
+        renderMarketplace(filtered, grid);
+
       }
 
-      grid.innerHTML = "";
+    }
 
-      if(!filtered.length){
-        status.classList.remove("hidden");
-        status.textContent = "No beats found for this filter.";
-        return;
-      }
+  }catch(e){}
 
-      status.classList.add("hidden");
+
+  /* --------------------------
+  2️⃣ FETCH FRESH BEATS
+  --------------------------- */
+
+  try{
+
+    beats = await window.FB.fetchBeats({ max:60 });
+
+    window.__LATEST_BEATS__ = beats;
+
+    localStorage.setItem(
+      "audiory_cached_beats",
+      JSON.stringify(beats)
+    );
+
+    const filtered = filterBeats(beats, params);
+
+    for (const b of filtered){
+      try{
+        if (window.FB && typeof window.FB.getProducerProfile === "function"){
+          const prof = await window.FB.getProducerProfile(b.producerId);
+          b.producerPlan = prof?.plan || "";
+        }
+      }catch{}
+    }
+
+    grid.innerHTML = "";
+
+    if(!filtered.length){
+      status.classList.remove("hidden");
+      status.textContent = "No beats found for this filter.";
+      return;
+    }
+
+    status.classList.add("hidden");
+
+    renderMarketplace(filtered, grid);
+
+  }catch(err){
+
+    console.error("[marketplace] load error:", err);
+
+    if(!beats.length){
+      status.textContent = "Could not load beats. Check Firestore rules & console.";
+    }
+
+  }
+
+}
 
       filtered.forEach((b)=>{
         const card = document.createElement("div");
