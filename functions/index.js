@@ -3884,6 +3884,41 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
 
 });
 
+exports.checkSubscriptionExpiry = onSchedule(
+{
+  region:"us-central1",
+  schedule:"every 24 hours"
+},
+async () => {
+
+  const now = Date.now()
+
+  const snap = await db.collection("users")
+    .where("subscriptionExpires","<", now)
+    .get()
+
+  if(snap.empty) return
+
+  const batch = db.batch()
+
+  snap.docs.forEach(doc => {
+
+    batch.update(doc.ref,{
+      plan:"free",
+      planTier:"free",
+      subscriptionStatus:"expired",
+      subscriptionProvider:null,
+      planUpdatedAt: now
+    })
+
+  })
+
+  await batch.commit()
+
+  console.log("Expired subscriptions downgraded:", snap.size)
+
+})
+
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
   async (event) => {
