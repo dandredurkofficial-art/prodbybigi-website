@@ -387,6 +387,18 @@ ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.
 
 grid.appendChild(card)
 
+/* preload beat page */
+
+setTimeout(()=>{
+
+  const link = document.createElement("link");
+  link.rel = "prefetch";
+  link.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+  document.head.appendChild(link);
+
+},1200);
+
 })
 
 }catch(err){
