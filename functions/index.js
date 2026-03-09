@@ -3729,7 +3729,7 @@ exports.stkpushSubscription = onRequest(
             PartyA: cleanPhone,
             PartyB: MPESA_SHORTCODE.value(),
             PhoneNumber: cleanPhone,
-            CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/subscriptionCallback"
+            CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/subscriptionCallback",
             AccountReference: "Audiory Subscription",
             TransactionDesc: `Audiory ${planTier} plan`,
           }),
