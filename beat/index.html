@@ -924,9 +924,21 @@
       renderLicenses(beat);
 
       // More from producer
-      const list = window.__LATEST_BEATS__ || (window.FB ? await window.FB.fetchBeats({ max: 160, force:false }) : []);
-      if (Array.isArray(list)) window.__LATEST_BEATS__ = list;
-      renderMoreFromProducer(list, beat);
+      let list = [];
+
+try{
+
+  if(window.FB && typeof window.FB.fetchProducerBeats === "function"){
+
+    list = await window.FB.fetchProducerBeats(beat.producerId, 6);
+
+  }
+
+}catch(e){
+  console.warn("producer beats load failed",e);
+}
+
+renderMoreFromProducer(list, beat);
 
       /* ======================================
          PREFETCH PRODUCER BEATS
