@@ -1292,6 +1292,15 @@
           el.setAttribute("data-beat-id", b.id);
 
           const audioUrl = b.audio || "";
+
+          /* preload audio preview */
+
+          if(audioUrl){
+            const a = new Audio();
+            a.preload = "auto";
+            a.src = audioUrl;
+          }
+
           const beatUrl = beatPageUrl(b);
           const prodUrl = producerPageUrl(b);
 
