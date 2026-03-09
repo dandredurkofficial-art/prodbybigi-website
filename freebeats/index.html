@@ -280,14 +280,36 @@ window.FB.fetchBeats({ max:60, force:true }).then(fresh=>{
 
 });
 
-/* ✅ LOAD PRODUCER VERIFICATION */
+/* =========================================
+   FAST PRODUCER PLAN CACHE
+========================================= */
+
+const producerCache = {};
+
 for(const b of beats){
-try{
-if(window.FB && typeof window.FB.getProducerProfile==="function"){
-const prof = await window.FB.getProducerProfile(b.producerId)
-b.producerPlan = prof?.plan || ""
-}
-}catch{}
+
+  if(!b.producerId) continue;
+
+  if(producerCache[b.producerId]){
+
+    b.producerPlan = producerCache[b.producerId];
+
+    continue;
+
+  }
+
+  try{
+
+    const prof = await window.FB.getProducerProfile(b.producerId);
+
+    const plan = prof?.plan || "";
+
+    producerCache[b.producerId] = plan;
+
+    b.producerPlan = plan;
+
+  }catch{}
+
 }
 
 const freeBeats = beats.filter(isFreeBeat)
