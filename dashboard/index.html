@@ -1740,10 +1740,17 @@ document.getElementById("planPayPaypal")?.addEventListener("click",()=>{
 
   renderPayPalButton(tier)
 
-  alert("Scroll down to PayPal button")
+  // wait a moment for PayPal button to render
+  setTimeout(()=>{
+
+    document
+      .querySelector("#paypal-button-container button")
+      ?.click()
+
+  },500)
 
 })
-
+  
 /* ===========================
 MPESA PLAN PAYMENT
 =========================== */
