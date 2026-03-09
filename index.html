@@ -1244,25 +1244,23 @@
       
       window.__LATEST_BEATS__ = beats;
 
-/* ======================================
-   PRELOAD BEAT PAGES
-====================================== */
+      /* ======================================
+         PRELOAD BEAT PAGES
+      ====================================== */
 
-setTimeout(()=>{
+      setTimeout(()=>{
 
-  (beats || []).slice(0,10).forEach(b=>{
+        (beats || []).slice(0,10).forEach(b=>{
 
-    const link = document.createElement("link");
-    link.rel = "prefetch";
-    link.href = "/beat/?id=" + encodeURIComponent(b.id);
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.href = "/beat/?id=" + encodeURIComponent(b.id);
 
-    document.head.appendChild(link);
+          document.head.appendChild(link);
 
-  });
+        });
 
-},1500);
-
-const now = Date.now();
+      },1500);
 
       const now = Date.now();
 
