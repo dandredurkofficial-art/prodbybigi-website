@@ -822,6 +822,17 @@
       // ✅ Set play button attributes so your existing player.js controls it
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
+      
+      /* preload beat audio */
+
+      if(beat.audio){
+
+        const a = new Audio();
+        a.preload = "auto";
+        a.src = beat.audio;
+
+      }
+      
       playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
