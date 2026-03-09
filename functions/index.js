@@ -3830,15 +3830,31 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
     const uid = data.uid;
     const planTier = data.planTier;
 
+    // Prevent duplicate processing
+    if (data.status === "paid") {
+      console.log("Already processed payment");
+      return res.json({ ok: true });
+    }
+
+    const now = Date.now();
+    const expires = now + (30 * 24 * 60 * 60 * 1000); // 30 days
+
     // Activate subscription
     await db.collection("users").doc(uid).set(
       {
         plan: planTier,
         planTier: planTier,
+
         subscriptionStatus: "active",
+        subscriptionProvider: "mpesa",
+
+        subscriptionStarted: now,
+        subscriptionExpires: expires,
+
         mpesaPhone: phone,
         mpesaReceipt: receipt,
-        planUpdatedAt: Date.now()
+
+        planUpdatedAt: now
       },
       { merge: true }
     );
@@ -3848,7 +3864,8 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
       status: "paid",
       amount,
       receipt,
-      paidAt
+      paidAt,
+      processedAt: now
     });
 
     console.log("Subscription activated for", uid);
