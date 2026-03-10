@@ -675,12 +675,12 @@
 
     (list || []).forEach(m=>{
       const wrap = document.createElement("div");
-      wrap.className = "dm-msg" + (m.fromUid === me ? " me" : "");
+      wrap.className = "dm-msg" + (m.senderId === me ? " me" : "");
       const safeText = String(m.text || "");
       wrap.innerHTML = `
         <div>${safeText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
         <div class="dm-meta">
-          <span>${m.fromUid === me ? "You" : (__dmOtherName || "Them")}</span>
+          <span>${m.senderId === me ? "You" : (__dmOtherName || "Them")}</span>
           <span>${fmtTime(m.createdAt)}</span>
         </div>
       `;
