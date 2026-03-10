@@ -480,7 +480,7 @@
 
     (list || []).forEach(m=>{
       const wrap = document.createElement("div");
-      wrap.className = "dm-msg" + (m.fromUid === me ? " me" : "");
+      wrap.className = "dm-msg" + (m.senderId === me ? " me" : "");
       wrap.innerHTML = `
         <div>${escapeHtml(m.text || "")}</div>
         <div class="dm-meta">
