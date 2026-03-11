@@ -484,7 +484,7 @@
       wrap.innerHTML = `
         <div>${escapeHtml(m.text || "")}</div>
         <div class="dm-meta">
-          <span>${m.fromUid === me ? "You" : (__dmOtherName || "Them")}</span>
+          <span>${m.senderId === me ? "You" : (__dmOtherName || "Them")}</span>
           <span>${fmtTime(m.createdAt)}</span>
         </div>
       `;
