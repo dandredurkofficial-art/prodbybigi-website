@@ -2750,21 +2750,14 @@ async function loadMessagesThreadList(){
     list.innerHTML = `<div class="subtle">Upgrade to Pro to view message threads.</div>`;
     return;
   }
+
   if (!window.currentUser){
     list.innerHTML = `<div class="subtle">Login to view threads.</div>`;
     return;
   }
 
   try{
-    const q = window.query(
-      window.collection(window.db,"messagesThreads"),
-      window.where("producerId","==",window.currentUser.uid)
-    );
-    const snap = await window.getDocs(q);
-
-    const threads = [];
-    snap.forEach(d=> threads.push({ id:d.id, ...d.data() }));
-    threads.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+    const threads = await window.FB.getMyThreads({ max: 50 });
 
     if (!threads.length){
       list.innerHTML = `<div class="subtle">No threads yet.</div>`;
@@ -2772,25 +2765,33 @@ async function loadMessagesThreadList(){
     }
 
     threads.slice(0,15).forEach(t=>{
-      const txt = String(t.lastMessage||"").trim() || "—";
-      const other = (t.participants||[]).find(x=> x !== window.currentUser.uid) || "buyer";
+      const me = window.currentUser.uid;
+      const otherUid = (t.members || []).find(x => x !== me) || "user";
+      const otherName =
+        (t.memberNames && t.memberNames[otherUid]) ||
+        otherUid;
+
+      const txt = String(t.lastMessageText || "").trim() || "—";
+      const unread = Number((t.unreadMap && t.unreadMap[me]) || 0);
+
       list.innerHTML += `
-        <div class="msg-item" onclick="alert('Thread: ${t.id}')">
-          <div class="avatar">${initials(other)}</div>
+        <div class="msg-item" onclick="openProducerThread('${t.id}','${otherUid}','${String(otherName).replace(/'/g,"\\'")}')">
+          <div class="avatar">${initials(otherName)}</div>
           <div class="msg-meta">
-            <strong>${other}</strong>
+            <strong>${otherName}</strong>
             <small>${txt}</small>
           </div>
-          <small class="subtle">›</small>
+          <small class="subtle">${unread > 0 ? unread : "›"}</small>
         </div>
       `;
     });
+
   }catch(err){
-    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Could not load threads: ${err?.message||err}</div>`;
+    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Could not load threads: ${err?.message || err}</div>`;
   }
 }
 window.loadMessagesThreadList = loadMessagesThreadList;
-
+  
 /* ===========================
    UPGRADE UI
 =========================== */
