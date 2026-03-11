@@ -494,12 +494,15 @@
     body.scrollTop = body.scrollHeight;
   }
   async function startDM({ otherUid, otherName }){
+
     const user = window.FB?.auth?.currentUser || null;
+
     if (!user){
       const ret = encodeURIComponent(location.pathname + location.search);
       location.href = "/login/?return=" + ret;
       return;
     }
+
     if (user.uid === otherUid){
       alert("You can’t message yourself.");
       return;
@@ -514,29 +517,35 @@
     openDM();
 
     if (!window.FB || typeof window.FB.ensureThread !== "function"){
-      renderMessages([{ text: "Inbox is not ready yet. Update /js/firebase.js with threads helpers.", fromUid: "system", createdAt: Date.now() }]);
+      renderMessages([{ text:"Inbox not ready", fromUid:"system", createdAt:Date.now() }]);
       return;
     }
 
-    const t = await window.FB.ensureThread({ otherUid });
-    __dmThreadId = t;
+    // create or get thread
+    const threadId = await window.FB.ensureThread({ otherUid });
+
+    __dmThreadId = threadId;
 
     if (!__dmThreadId){
-      renderMessages([{ text: "Could not open thread.", fromUid: "system", createdAt: Date.now() }]);
+      renderMessages([{ text:"Could not open thread.", fromUid:"system", createdAt:Date.now() }]);
       return;
     }
 
     try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
 
-    if (typeof __dmUnsub === "function") { try{ __dmUnsub(); }catch{} }
-    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId, {
-      onData: (msgs) => {
+    if (typeof __dmUnsub === "function"){
+      try{ __dmUnsub(); }catch{}
+    }
+
+    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId,{
+      onData:(msgs)=>{
         renderMessages(msgs || []);
       }
     });
-    
-    await track("open_inbox", { targetUid: otherUid });
+
+    await track("open_inbox",{ targetUid: otherUid });
   }
+  
   async function sendDM(){
     const input = document.getElementById("dmInput");
     const btn = document.getElementById("dmSendBtn");
