@@ -720,7 +720,7 @@
     }
 
     const t = await window.FB.ensureThread({ otherUid });
-    __dmThreadId = t.threadId || "";
+    __dmThreadId = t;
 
     if (!__dmThreadId){
       renderMessages([{ text: "Could not open thread.", fromUid: "system", createdAt: Date.now() }]);
