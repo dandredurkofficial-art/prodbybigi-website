@@ -2766,6 +2766,11 @@ async function loadMessagesThreadList(){
     return;
   }
 
+  if (!window.FB || typeof window.FB.getMyThreads !== "function"){
+    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Inbox not ready yet. Firebase helpers did not load.</div>`;
+    return;
+  }
+
   try{
     const threads = await window.FB.getMyThreads({ max: 50 });
 
@@ -2777,15 +2782,12 @@ async function loadMessagesThreadList(){
     threads.slice(0,15).forEach(t=>{
       const me = window.currentUser.uid;
       const otherUid = (t.members || []).find(x => x !== me) || "user";
-      const otherName =
-        (t.memberNames && t.memberNames[otherUid]) ||
-        otherUid;
-
+      const otherName = (t.memberNames && t.memberNames[otherUid]) || otherUid;
       const txt = String(t.lastMessageText || "").trim() || "—";
       const unread = Number((t.unreadMap && t.unreadMap[me]) || 0);
 
       list.innerHTML += `
-        <div class="msg-item" onclick="openProducerThread('${t.id}','${otherUid}','${String(otherName).replace(/'/g,"\\'")}')">
+        <div class="msg-item">
           <div class="avatar">${initials(otherName)}</div>
           <div class="msg-meta">
             <strong>${otherName}</strong>
