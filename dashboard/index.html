@@ -1577,6 +1577,16 @@ async function loadAdvancedAnalyticsReal(){
 }
 window.loadAdvancedAnalyticsReal = loadAdvancedAnalyticsReal;
 
+async function openProducerThread(threadId, otherUid, otherName){
+  try{
+    // if you already have a modal, hook this into it
+    alert(`Open thread with ${otherName} (${threadId})`);
+  }catch(err){
+    alert("Could not open thread: " + (err?.message || err));
+  }
+}
+window.openProducerThread = openProducerThread;
+
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
