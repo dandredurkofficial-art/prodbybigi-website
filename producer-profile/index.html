@@ -730,8 +730,10 @@
     try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
 
     if (typeof __dmUnsub === "function") { try{ __dmUnsub(); }catch{} }
-    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId, (msgs)=> {
-      renderMessages(msgs || []);
+    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId, {
+      onData: (msgs) => {
+        renderMessages(msgs || []);
+      }
     });
 
     await track("open_inbox", { targetUid: otherUid });
