@@ -2760,19 +2760,21 @@ async function loadMessagesThreadList(){
     list.innerHTML = `<div class="subtle">Upgrade to Pro to view message threads.</div>`;
     return;
   }
-
   if (!window.currentUser){
     list.innerHTML = `<div class="subtle">Login to view threads.</div>`;
     return;
   }
 
-  if (!window.FB || typeof window.FB.getMyThreads !== "function"){
-    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Inbox not ready yet. Firebase helpers did not load.</div>`;
-    return;
-  }
-
   try{
-    const threads = await window.FB.getMyThreads({ max: 50 });
+    const q = window.query(
+      window.collection(window.db,"messagesThreads"),
+      window.where("producerId","==",window.currentUser.uid)
+    );
+    const snap = await window.getDocs(q);
+
+    const threads = [];
+    snap.forEach(d=> threads.push({ id:d.id, ...d.data() }));
+    threads.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
 
     if (!threads.length){
       list.innerHTML = `<div class="subtle">No threads yet.</div>`;
@@ -2780,26 +2782,21 @@ async function loadMessagesThreadList(){
     }
 
     threads.slice(0,15).forEach(t=>{
-      const me = window.currentUser.uid;
-      const otherUid = (t.members || []).find(x => x !== me) || "user";
-      const otherName = (t.memberNames && t.memberNames[otherUid]) || otherUid;
-      const txt = String(t.lastMessageText || "").trim() || "—";
-      const unread = Number((t.unreadMap && t.unreadMap[me]) || 0);
-
+      const txt = String(t.lastMessage||"").trim() || "—";
+      const other = (t.participants||[]).find(x=> x !== window.currentUser.uid) || "buyer";
       list.innerHTML += `
-        <div class="msg-item">
-          <div class="avatar">${initials(otherName)}</div>
+        <div class="msg-item" onclick="alert('Thread: ${t.id}')">
+          <div class="avatar">${initials(other)}</div>
           <div class="msg-meta">
-            <strong>${otherName}</strong>
+            <strong>${other}</strong>
             <small>${txt}</small>
           </div>
-          <small class="subtle">${unread > 0 ? unread : "›"}</small>
+          <small class="subtle">›</small>
         </div>
       `;
     });
-
   }catch(err){
-    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Could not load threads: ${err?.message || err}</div>`;
+    list.innerHTML = `<div class="subtle" style="color:#fecaca;">Could not load threads: ${err?.message||err}</div>`;
   }
 }
 window.loadMessagesThreadList = loadMessagesThreadList;
