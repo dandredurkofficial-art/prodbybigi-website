@@ -43,40 +43,63 @@
   <link rel="stylesheet" href="/css/cart.css">
 
   <style>
-    /* ✅ BeatStars-like price pills */
+    /* ✅ tighter BeatStars-style price pill */
     .pb-pill{
       display:inline-flex;
       align-items:center;
-      gap:6px;
+      justify-content:center;
+      gap:7px;
 
-      padding:6px 12px;
-      border-radius:999px;
+      min-height:36px;
+      padding:0 14px;
 
-      font-size:13px;
-      font-weight:700;
+      border-radius:12px;
+      border:1px solid #295dff;
+      background:#0a0d14;
 
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(255,255,255,0.18);
-
-      color:#ffffff;           /* ← this fixes the black text */
+      color:#ffffff;
       white-space:nowrap;
+      text-decoration:none;
+
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
+    }
+
+    .pb-pill:hover{
+      background:#101521;
+      transform:none;
+    }
+
+    .pb-pill:active{
+      transform:none;
     }
 
     .pb-pill .ic{
-      color:#facc15;           /* gold lock icon */
-    }
-    .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
-    .pb-pill:active{transform:translateY(0px)}
-    .pb-pill .ic{font-size:16px; line-height:1}
-    .pb-pill.free{
-      background:rgba(59,130,246,.16);
-      border-color:rgba(59,130,246,.35);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      font-size:13px;
+      line-height:1;
+      color:#facc15;
+      flex-shrink:0;
     }
 
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
+    }
     /* Beat card layout fix */
     .chart-card{
       display:flex;
       flex-direction:column;
+      gap:10px;
     }
 
     /* text area */
@@ -110,17 +133,40 @@
     /* row that contains text + price */
     .chart-meta-row{
       display:flex;
-      align-items:center;
+      align-items:flex-end;
       justify-content:space-between;
-      gap:12px;
-      margin-top:10px;
+      gap:10px;
+      margin-top:2px;
     }
 
     /* price pill container */
     .chart-pill{
       flex-shrink:0;
       display:flex;
-      align-items:center;
+      align-items:flex-end;
+    }
+
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-weight:800 !important;
+      font-size:12.5px !important;
+      line-height:1.2 !important;
+      margin:0;
+    }
+
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:11.5px !important;
+      line-height:1.2 !important;
+      margin-top:4px !important;
+      pacity:.82;
     }
 
     .producer-link{
@@ -1439,8 +1485,8 @@
         const el = document.createElement("div");
         el.className = "card chart-card";
         el.setAttribute("data-beat-id", b.id);
-        el.style.padding = "12px";
-        el.style.borderRadius = "20px";
+        el.style.padding = "10px";
+        el.style.borderRadius = "18px";
 
         const audioUrl = b.audio || "";
         const beatUrl = beatPageUrl(b);
@@ -1460,12 +1506,11 @@
           <div class="chart-meta-row">
             <div class="chart-text">
               <a class="home-title-clamp" href="${beatUrl}" data-open-beat="1"
-                 style="display:block;font-weight:900;font-size:13px;line-height:1.2;color:inherit;text-decoration:none;">
+                 style="color:inherit;text-decoration:none;">
                  ${b.title}
               </a>
 
-              <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1"
-                 style="display:block;font-size:12px;margin-top:4px;">
+              <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1">
                  ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
               </a>
             </div>
