@@ -395,6 +395,81 @@
       .verify-elite svg{
         color:#fbbf24;
       }
+
+      /* =========================
+         ✅ MOBILE FIX
+      ========================= */
+      @media (max-width: 768px){
+
+      .chart-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:14px;
+      }
+
+      .trending-strip{
+        display:flex;
+        gap:14px;
+        overflow-x:auto;
+        padding-bottom:6px;
+        scroll-snap-type:x proximity;
+      }
+
+      .trending-strip .trend-card{
+        min-width:168px;
+        width:168px;
+        flex:0 0 168px;
+        scroll-snap-align:start;
+      }
+
+      .chart-card,
+      .trend-card{
+        padding:9px !important;
+        border-radius:18px !important;
+        gap:9px;
+      }
+
+      .chart-card .beat-cover,
+      .trend-card .beat-cover{
+        border-radius:15px;
+      }
+
+      .chart-card .beat-cover img,
+      .trend-card .beat-cover img{
+        border-radius:15px;
+      }
+
+      .chart-card .t,
+      .trend-card .t,
+      .home-title-clamp{
+        font-size:11.5px !important;
+        line-height:1.18 !important;
+      }
+
+      .chart-card .p,
+      .trend-card .p,
+      .home-producer-clamp{
+        font-size:10.8px !important;
+      }
+
+      .pb-pill{
+        min-height:34px;
+        padding:0 13px;
+        font-size:11.5px;
+        border-radius:11px;
+      }
+
+      .pb-pill .ic{
+        width:13px;
+        height:13px;
+        font-size:12px;
+      }
+
+      .play-fab{
+        width:42px;
+        height:42px;
+        border-radius:13px;
+      }
   </style>
 
   <div class="audiory-support-fab" onclick="location.href='/help/'">
