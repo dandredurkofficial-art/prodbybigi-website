@@ -169,6 +169,232 @@
       pacity:.82;
     }
 
+    /* =========================
+       ✅ BeatStars-like card layout
+    ========================= */
+
+    /* top charting + trending cards */
+    .chart-card,
+    .trend-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:10px !important;
+      border-radius:18px !important;
+      box-sizing:border-box;
+    }
+
+    /* make image block clean and tight */
+    .chart-card .beat-cover,
+    .trend-card .beat-cover{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    /* image fills card like BeatStars */
+    .chart-card .beat-cover img,
+    .trend-card .beat-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      border-radius:16px;
+    }
+
+    /* text stack */
+    .chart-card .trend-meta,
+    .trend-card .trend-meta{
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+      min-width:0;
+    }
+
+    /* title */
+    .chart-card .t,
+    .trend-card .t,
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:#fff !important;
+      text-decoration:none !important;
+      font-size:12.5px !important;
+      font-weight:800 !important;
+      line-height:1.2 !important;
+      margin:0;
+    }
+
+    /* producer */
+    .chart-card .p,
+    .trend-card .p,
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      color:rgba(255,255,255,.72) !important;
+      text-decoration:none !important;
+      font-size:11.5px !important;
+      line-height:1.2 !important;
+      margin:0;
+    }
+
+    /* bottom row */
+    .trend-actions,
+    .chart-meta-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:2px;
+      min-width:0;
+    }
+
+    /* pill holder */
+    .chart-pill,
+    .trend-actions{
+      flex-wrap:nowrap;
+    }
+
+    /* tighter BeatStars-style pill */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      min-height:36px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #295dff;
+      background:#0a0d14;
+      color:#fff;
+      white-space:nowrap;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
+    }
+
+    .pb-pill:hover{
+      background:#101521;
+      transform:none;
+    }
+
+    .pb-pill:active{
+      transform:none;
+    }
+
+    .pb-pill .ic{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      font-size:13px;
+      line-height:1;
+      color:#facc15;
+      flex-shrink:0;
+    }
+
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
+    }
+
+    /* play button cleaner like BeatStars */
+    .play-fab{
+      width:46px;
+      height:46px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    /* =========================
+       ✅ MOBILE FIX
+    ========================= */
+    @media (max-width: 768px){
+
+    .chart-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .trending-strip{
+      display:flex;
+      gap:14px;
+      overflow-x:auto;
+      padding-bottom:6px;
+      scroll-snap-type:x proximity;
+    }
+
+    .trending-strip .trend-card{
+      min-width:168px;
+      width:168px;
+      flex:0 0 168px;
+      scroll-snap-align:start;
+    }
+
+    .chart-card,
+    .trend-card{
+      padding:9px !important;
+      border-radius:18px !important;
+      gap:9px;
+    }
+
+    .chart-card .beat-cover,
+    .trend-card .beat-cover{
+      border-radius:15px;
+    }
+
+    .chart-card .beat-cover img,
+    .trend-card .beat-cover img{
+      border-radius:15px;
+    }
+
+    .chart-card .t,
+    .trend-card .t,
+    .home-title-clamp{
+      font-size:11.5px !important;
+      line-height:1.18 !important;
+    }
+
+    .chart-card .p,
+    .trend-card .p,
+    .home-producer-clamp{
+      font-size:10.8px !important;
+    }
+
+    .pb-pill{
+      min-height:34px;
+      padding:0 13px;
+      font-size:11.5px;
+      border-radius:11px;
+    }
+
+    .pb-pill .ic{
+      width:13px;
+      height:13px;
+      font-size:12px;
+    }
+
+    .play-fab{
+      width:42px;
+      height:42px;
+      border-radius:13px;
+    }
+
     .producer-link{
       color:var(--muted);
       text-decoration:none;
@@ -1447,10 +1673,17 @@
               <span class="playIcon">▶</span>
             </button>
           </div>
+
           <div class="trend-meta">
-            <a class="t" href="${beatUrl}" data-open-beat="1" style="color:inherit;text-decoration:none;">${b.title}</a>
-            <a class="p producer-link" href="${prodUrl}" data-producer-link="1">${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}</a>
+            <a class="t" href="${beatUrl}" data-open-beat="1">
+              ${b.title}
+            </a>
+
+            <a class="p producer-link" href="${prodUrl}" data-producer-link="1">
+              ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
+            </a>
           </div>
+
           <div class="trend-actions">
             ${pillHTML(b)}
           </div>
