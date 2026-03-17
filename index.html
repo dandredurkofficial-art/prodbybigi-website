@@ -1406,11 +1406,8 @@
 
       const now = Date.now();
 
-      const featuredBeats = beats.filter(b =>
-        b.featured === true &&
-        b.featuredUntil &&
-        b.featuredUntil > now
-      );
+      const featuredBeats = beats.filter(b => b.featured === true);
+      console.log("ALL FEATURED TEST:", featuredBeats);
 
       /* RANDOMIZE FEATURED ORDER */
       featuredBeats.sort(() => Math.random() - 0.5);
