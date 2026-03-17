@@ -464,12 +464,25 @@
     __dmUnsub = null;
     __dmThreadId = "";
   }
-  function fmtTime(ms){
-    const n = Number(ms || 0);
-    if (!n) return "";
-    const d = new Date(n);
-    if (isNaN(d.getTime())) return "";
-    return d.toLocaleString(undefined, { month:"short", day:"numeric", hour:"2-digit", minute:"2-digit" });
+  function fmtTime(value){
+    if (!value) return "";
+
+    let d = null;
+
+    if (typeof value === "number") {
+      d = new Date(value);
+    } else if (typeof value?.toDate === "function") {
+      d = value.toDate();
+    }
+
+    if (!d || isNaN(d.getTime())) return "";
+
+    return d.toLocaleString(undefined, {
+      month:"short",
+      day:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
   }
   function renderMessages(list){
     const body = document.getElementById("dmBody");
