@@ -290,6 +290,8 @@ function normalizeBeat(docId, data) {
     licenses: data.licenses || null,
     freeDownload: data.freeDownload === true,
     downloadUrl: data.downloadUrl || data.freeDownloadUrl || ""
+    featured: data.featured === true,
+    featuredUntil: data.featuredUntil || null,
   };
 }
 
