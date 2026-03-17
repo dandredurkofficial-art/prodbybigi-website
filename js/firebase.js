@@ -433,8 +433,8 @@ window.FB.getProducerFollowerCount = async function (producerId, { fast = true }
    threads/{threadId}/messages/{messageId}
 ========================================================= */
 function _sortedPair(a, b) {
-  const x = String(a || "");
-  const y = String(b || "");
+  const x = String(a || "").trim();
+  const y = String(b || "").trim();
   return [x, y].sort();
 }
 
@@ -450,27 +450,58 @@ window.FB.getThreadId = function (otherUid) {
 
 window.FB.ensureThread = async function ({ otherUid, otherDisplayName = "" } = {}) {
   const me = _requireUser();
-  if (!otherUid) throw new Error("Missing otherUid");
-  if (otherUid === me.uid) throw new Error("Cannot DM yourself");
+  const other = String(otherUid || "").trim();
 
-  const threadId = _threadIdFor(me.uid, otherUid);
+  if (!other) throw new Error("Missing otherUid");
+  if (other === me.uid) throw new Error("Cannot DM yourself");
+
+  const threadId = _threadIdFor(me.uid, other);
   const tref = doc(db, "threads", threadId);
   const snap = await getDoc(tref);
+
+  const correctMembers = _sortedPair(me.uid, other);
+  const myName = me.displayName || me.email || me.uid;
 
   if (!snap.exists()) {
     await setDoc(tref, {
       threadId,
-      members: [me.uid, otherUid],
+      members: correctMembers,
       createdAt: serverTimestamp(),
       lastMessageText: "",
       lastMessageAt: serverTimestamp(),
       lastSenderId: "",
-      unreadMap: { [me.uid]: 0, [otherUid]: 0 },
+      unreadMap: {
+        [me.uid]: 0,
+        [other]: 0
+      },
       memberNames: {
-        [me.uid]: me.displayName || me.email || me.uid,
-        [otherUid]: otherDisplayName || otherUid
+        [me.uid]: myName,
+        [other]: otherDisplayName || other
       }
-    }, { merge: true });
+    });
+    return threadId;
+  }
+
+  const data = snap.data() || {};
+  const members = Array.isArray(data.members) ? data.members.map(v => String(v || "").trim()).sort() : [];
+  const shouldRepair =
+    members.length !== 2 ||
+    members[0] !== correctMembers[0] ||
+    members[1] !== correctMembers[1];
+
+  if (shouldRepair) {
+    await updateDoc(tref, {
+      members: correctMembers,
+      [`memberNames.${me.uid}`]: myName,
+      [`memberNames.${other}`]: otherDisplayName || data?.memberNames?.[other] || other,
+      [`unreadMap.${me.uid}`]: Number(data?.unreadMap?.[me.uid] || 0),
+      [`unreadMap.${other}`]: Number(data?.unreadMap?.[other] || 0)
+    });
+  } else {
+    await updateDoc(tref, {
+      [`memberNames.${me.uid}`]: myName,
+      [`memberNames.${other}`]: otherDisplayName || data?.memberNames?.[other] || other
+    });
   }
 
   return threadId;
@@ -478,28 +509,28 @@ window.FB.ensureThread = async function ({ otherUid, otherDisplayName = "" } = {
 
 window.FB.sendMessage = async function ({ otherUid, text, otherDisplayName = "" } = {}) {
   const me = _requireUser();
+  const other = String(otherUid || "").trim();
   const clean = String(text || "").trim();
-  if (!otherUid) throw new Error("Missing otherUid");
+
+  if (!other) throw new Error("Missing otherUid");
   if (!clean) throw new Error("Empty message");
 
-  const threadId = await window.FB.ensureThread({ otherUid, otherDisplayName });
-  const mcol = collection(db, "threads", threadId, "messages");
+  const threadId = await window.FB.ensureThread({ otherUid: other, otherDisplayName });
 
-  await addDoc(mcol, {
+  await addDoc(collection(db, "threads", threadId, "messages"), {
     threadId,
     senderId: me.uid,
     text: clean,
     createdAt: serverTimestamp()
   });
 
-  const tref = doc(db, "threads", threadId);
-  const other = String(otherUid);
-
-  await updateDoc(tref, {
+  await updateDoc(doc(db, "threads", threadId), {
     lastMessageText: clean.slice(0, 300),
     lastMessageAt: serverTimestamp(),
     lastSenderId: me.uid,
-    [`unreadMap.${other}`]: increment(1)
+    [`unreadMap.${other}`]: increment(1),
+    [`memberNames.${me.uid}`]: me.displayName || me.email || me.uid,
+    [`memberNames.${other}`]: otherDisplayName || other
   });
 
   return threadId;
@@ -508,8 +539,9 @@ window.FB.sendMessage = async function ({ otherUid, text, otherDisplayName = "" 
 window.FB.markThreadRead = async function (threadId) {
   const me = _requireUser();
   if (!threadId) throw new Error("Missing threadId");
-  const tref = doc(db, "threads", threadId);
-  await updateDoc(tref, { [`unreadMap.${me.uid}`]: 0 });
+  await updateDoc(doc(db, "threads", threadId), {
+    [`unreadMap.${me.uid}`]: 0
+  });
   return true;
 };
 
