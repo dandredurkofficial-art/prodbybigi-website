@@ -2476,9 +2476,9 @@ function initSalesToggle(){
    MARKETING (PRO)
 =========================== */
 const BOOST_PRICES = {
-  1: 5,   // 24 hours
-  3: 15,  // 3 days
-  7: 40   // 7 days
+  1: 5,
+  3: 15,
+  7: 40
 };
 
 window.__BOOST_SELECTED__ = null;
@@ -2490,13 +2490,13 @@ function openBoostPayModal({ beatId, days, name }) {
     name: name || "Boost"
   };
 
-  const sub = document.getElementById("mkBoostSub");
-  const modal = document.getElementById("mkBoostModal");
-  const back = document.getElementById("mkBoostBackdrop");
-  const box = document.getElementById("mkBoostMpesaBox");
-  const status = document.getElementById("mkBoostStatus");
-  const phone = document.getElementById("mkBoostMpesaPhone");
-  
+  const sub = document.getElementById("boostPaySub");
+  const modal = document.getElementById("boostPayModal");
+  const back = document.getElementById("boostPayBackdrop");
+  const box = document.getElementById("boostMpesaBox");
+  const status = document.getElementById("boostPayStatus");
+  const phone = document.getElementById("boostMpesaPhone");
+
   if (sub) sub.textContent = `Boost for ${days} day(s)`;
   if (box) box.style.display = "none";
   if (status) status.textContent = "";
@@ -2507,18 +2507,18 @@ function openBoostPayModal({ beatId, days, name }) {
 }
 
 function closeBoostPayModal() {
-  const modal = document.getElementById("mkBoostModal");
-  const back = document.getElementById("mkBoostBackdrop");
-  const box = document.getElementById("mkBoostMpesaBox");
-  const status = document.getElementById("mkBoostStatus");
+  const modal = document.getElementById("boostPayModal");
+  const back = document.getElementById("boostPayBackdrop");
+  const box = document.getElementById("boostMpesaBox");
+  const status = document.getElementById("boostPayStatus");
 
   if (modal) modal.style.display = "none";
   if (back) back.style.display = "none";
   if (box) box.style.display = "none";
   if (status) status.textContent = "";
 }
-  
-async function createMarketingCampaign(){
+
+async function createMarketingCampaign() {
   if (!isPro()) return alert("Marketing tools are Pro/Elite only.");
   if (!window.currentUser) return alert("Login again.");
 
@@ -2534,25 +2534,24 @@ async function createMarketingCampaign(){
   try {
     let featuredUntil = null;
 
-    if(type === "boost"){
-
-      if(!beatId) return alert("Select beat to boost");
+    if (type === "boost") {
+      if (!beatId) return alert("Select beat to boost");
 
       openBoostPayModal({
-        beatId: beatId,
-        days: boostDays
+        beatId,
+        days: boostDays,
+        name
       });
-
       return;
     }
-    
+
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       name,
       type,
-      beatId: (type === "boost" ? beatId : null),
-      boostDays: (type === "boost" ? boostDays : null),
+      beatId: null,
+      boostDays: null,
       featuredUntil,
       buyGetQty: (type === "buy_x_get_y" ? buyGetQty : null),
       discountPct: (type === "discount" ? discountPct : null),
@@ -2565,54 +2564,82 @@ async function createMarketingCampaign(){
 
     await loadMarketingCampaigns();
     loadProducerBeatsForBoost();
-
   } catch (err) {
     alert("Campaign failed: " + (err?.message || err));
   }
 }
 window.createMarketingCampaign = createMarketingCampaign;
 
-async function startBoostMpesa({beatId, days, phone}){
+async function startBoostPayment({ beatId, days, producerId }) {
+  const user = window.currentUser;
+  if (!user) throw new Error("Login first");
 
-  const user = window.auth?.currentUser;
-  if(!user) throw new Error("Login required");
+  const token = await user.getIdToken();
 
-  let cleanPhone = String(phone || "").trim().replace(/\s+/g,"");
+  const res = await fetch("https://createboostorder-f65rhsquva-uc.a.run.app", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + token
+    },
+    body: JSON.stringify({
+      beatId,
+      days,
+      producerId
+    })
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data?.error || "Boost payment failed");
+  }
+
+  const approvalLink = data.links?.find(l => l.rel === "approve");
+  if (!approvalLink?.href) {
+    throw new Error("Boost payment failed");
+  }
+
+  window.location.href = approvalLink.href;
+}
+
+async function startBoostMpesa({ beatId, days, phone }) {
+  const user = window.currentUser;
+  if (!user) throw new Error("Login required");
+
+  let cleanPhone = String(phone || "").trim().replace(/\s+/g, "");
   if (cleanPhone.startsWith("+")) cleanPhone = cleanPhone.slice(1);
   if (cleanPhone.startsWith("0")) cleanPhone = "254" + cleanPhone.slice(1);
   if (cleanPhone.startsWith("7")) cleanPhone = "254" + cleanPhone;
 
   const token = await user.getIdToken();
 
-  const r = await fetch(
-    "https://stkpushboost-f65rhsquva-uc.a.run.app",
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        Authorization:`Bearer ${token}`
-      },
-      body:JSON.stringify({
-        phone: cleanPhone,
-        beatId,
-        boostDays: days
-      })
-    }
-  );
+  const r = await fetch("https://stkpushboost-f65rhsquva-uc.a.run.app", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      phone: cleanPhone,
+      beatId,
+      boostDays: days
+    })
+  });
 
-  const data = await r.json().catch(()=> ({}));
+  const data = await r.json().catch(() => ({}));
 
-  if(!r.ok){
+  if (!r.ok) {
     throw new Error(data.error || "STK push failed");
   }
 
   return data;
 }
 
-document.getElementById("mkBoostClose")?.addEventListener("click", closeBoostPayModal);
-document.getElementById("mkBoostBackdrop")?.addEventListener("click", closeBoostPayModal);
+document.getElementById("boostPayClose")?.addEventListener("click", closeBoostPayModal);
+document.getElementById("boostPayBackdrop")?.addEventListener("click", closeBoostPayModal);
 
-document.getElementById("mkBoostPaypal")?.addEventListener("click", async () => {
+document.getElementById("boostPayPaypal")?.addEventListener("click", async () => {
   try {
     const sel = window.__BOOST_SELECTED__;
     if (!sel?.beatId) return alert("Select beat first");
@@ -2627,16 +2654,16 @@ document.getElementById("mkBoostPaypal")?.addEventListener("click", async () => 
   }
 });
 
-document.getElementById("mkBoostMpesa")?.addEventListener("click", () => {
-  const box = document.getElementById("mkBoostMpesaBox");
+document.getElementById("boostPayMpesa")?.addEventListener("click", () => {
+  const box = document.getElementById("boostMpesaBox");
   if (box) box.style.display = "block";
 });
 
-document.getElementById("mkBoostMpesaSend")?.addEventListener("click", async () => {
+document.getElementById("boostMpesaSend")?.addEventListener("click", async () => {
   try {
     const sel = window.__BOOST_SELECTED__;
-    const phone = (document.getElementById("mkBoostMpesaPhone")?.value || "").trim();
-    const status = document.getElementById("mkBoostStatus");
+    const phone = (document.getElementById("boostMpesaPhone")?.value || "").trim();
+    const status = document.getElementById("boostPayStatus");
 
     if (!sel?.beatId) return alert("Select beat first");
     if (!phone) return alert("Enter phone number");
@@ -2652,44 +2679,10 @@ document.getElementById("mkBoostMpesaSend")?.addEventListener("click", async () 
     if (status) status.textContent = "STK Push sent. Check your phone.";
   } catch (err) {
     console.error(err);
-    const status = document.getElementById("mkBoostStatus");
+    const status = document.getElementById("boostPayStatus");
     if (status) status.textContent = "Failed: " + (err?.message || err);
   }
 });
-  
-async function startBoostMpesa({beatId, days, phone}){
-
-  const user = window.currentUser;
-  if(!user) throw new Error("Login required");
-
-  const token = await user.getIdToken();
-
-  const r = await fetch(
-    "https://stkpushboost-f65rhsquva-uc.a.run.app",
-    {
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-        Authorization:`Bearer ${token}`
-      },
-      body:JSON.stringify({
-        phone,
-        beatId,
-        boostDays:days
-      })
-    }
-  );
-
-  const data = await r.json();
-
-  if(!r.ok){
-    throw new Error(data.error || "STK push failed");
-  }
-
-  alert("STK Push sent. Check your phone.");
-
-  return data;
-}
 
 /* ===============================
    LOAD MARKETING CAMPAIGNS
