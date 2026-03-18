@@ -655,14 +655,13 @@
           <div class="col">
             <select id="mkType">
               <option value="boost">Boost (featured)</option>
-              <option value="promo_link">Promo Link</option>
               <option value="discount">Discount Campaign</option>
               <option value="buy_x_get_y">Buy 1 Get 2-5 Beats</option>
             </select>
           </div>
         </div>
 
-        <div class="row">
+        <div class="row" id="mkBuyGetWrap" style="display:none;">
           <div class="col">
             <select id="mkBuyGetQty">
               <option value="2">Buy 1 Get 2</option>
@@ -672,19 +671,23 @@
             </select>
             <div class="subtle">Used only when “Buy 1 Get …” is selected.</div>
           </div>
+        </div>
+
+        <div class="row" id="mkDiscountWrap" style="display:none;">
           <div class="col">
             <input id="mkDiscountPct" placeholder="Discount % (optional, e.g. 20)" />
             <div class="subtle">Used only when “Discount Campaign” is selected.</div>
           </div>
-          <div class="row">
-            <div class="col">
-              <select id="mkBoostDuration">
-                <option value="1">24 Hour Boost — $5</option>
-                <option value="3">3 Day Boost — $15</option>
-                <option value="7">7 Day Boost — $40</option>
-              </select>
-              <div class="subtle">Used only when Boost is selected.</div>
-            </div>
+        </div>
+
+        <div class="row" id="mkBoostWrap" style="display:none;">
+          <div class="col">
+            <select id="mkBoostDuration">
+              <option value="1">24 Hour Boost — $5</option>
+              <option value="3">3 Day Boost — $15</option>
+              <option value="7">7 Day Boost — $40</option>
+            </select>
+            <div class="subtle">Used only when Boost is selected.</div>
           </div>
         </div>
 
@@ -1453,6 +1456,7 @@ function showPage(id, el){
   // ✅ Auto-load campaigns when opening marketing page
   if (id === "marketingTools" && typeof window.loadMarketingCampaigns === "function") {
     window.loadMarketingCampaigns();
+    updateMarketingToolUI();
   }
 
   refreshProLocks();
@@ -2597,6 +2601,12 @@ async function createMarketingCampaign() {
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
 
+    if ($("mkDiscountPct")) $("mkDiscountPct").value = "";
+    if ($("mkBuyGetQty")) $("mkBuyGetQty").value = "2";
+    if ($("mkBoostDuration")) $("mkBoostDuration").value = "1";
+    if ($("mkType")) $("mkType").value = "boost";
+    updateMarketingToolUI();
+
     await loadMarketingCampaigns();
     loadProducerBeatsForBoost();
   } catch (err) {
@@ -2604,6 +2614,31 @@ async function createMarketingCampaign() {
   }
 }
 window.createMarketingCampaign = createMarketingCampaign;
+
+function updateMarketingToolUI(){
+  const type = String($("mkType")?.value || "boost").trim();
+
+  const buyWrap = $("mkBuyGetWrap");
+  const discountWrap = $("mkDiscountWrap");
+  const boostWrap = $("mkBoostWrap");
+
+  if (buyWrap) buyWrap.style.display = "none";
+  if (discountWrap) discountWrap.style.display = "none";
+  if (boostWrap) boostWrap.style.display = "none";
+
+  if (type === "boost") {
+    if (boostWrap) boostWrap.style.display = "flex";
+  }
+
+  if (type === "buy_x_get_y") {
+    if (buyWrap) buyWrap.style.display = "flex";
+  }
+
+  if (type === "discount") {
+    if (discountWrap) discountWrap.style.display = "flex";
+  }
+}
+window.updateMarketingToolUI = updateMarketingToolUI;
 
 async function startBoostPayment({ beatId, days, producerId }) {
   const user = window.currentUser;
@@ -2963,6 +2998,9 @@ async function loadProducerBeatsForBoost(){
 document.addEventListener("DOMContentLoaded", () => {
 
   loadProducerBeatsForBoost();
+  updateMarketingToolUI();
+
+  $("mkType")?.addEventListener("change", updateMarketingToolUI);
 
 });
 
