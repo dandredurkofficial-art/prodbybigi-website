@@ -1639,6 +1639,40 @@ async function openProducerThread(threadId, otherUid, otherName){
 }
 window.openProducerThread = openProducerThread;
 
+function msLeftText(featuredUntil){
+  const end = Number(featuredUntil || 0);
+  if (!end) return "";
+
+  const diff = end - Date.now();
+
+  if (diff <= 0) return "Expired";
+
+  const days = Math.floor(diff / (24 * 60 * 60 * 1000));
+  const hours = Math.floor(diff / (60 * 60 * 1000));
+  const mins = Math.floor(diff / (60 * 1000));
+
+  if (days >= 1) {
+    return `Active (${days} day${days === 1 ? "" : "s"} left)`;
+  }
+
+  if (hours >= 1) {
+    return `Active (${hours} hour${hours === 1 ? "" : "s"} left)`;
+  }
+
+  return `Active (${mins} min left)`;
+}
+
+function campaignStatusLabel(c){
+  const type = String(c?.type || "").toLowerCase();
+
+  if (type === "boost" && c?.featuredUntil) {
+    return msLeftText(c.featuredUntil);
+  }
+
+  const status = String(c?.status || "").trim();
+  return status || "-";
+}
+
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
