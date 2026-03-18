@@ -697,6 +697,14 @@
               <option value="">Select beat to boost</option>
             </select>
 
+            <div class="row" id="mkBonusBeatsWrap" style="display:none;">
+              <div class="col">
+                <select id="mkBonusBeats" multiple size="5" style="min-height:140px;">
+                </select>
+                <div class="subtle">Choose the bonus beats buyers will receive.</div>
+              </div>
+            </div>
+
             <div class="subtle">Choose one of your beats to promote.</div>
           </div>
         </div>
@@ -2610,6 +2618,10 @@ async function createMarketingCampaign() {
 
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
+
+    if ($("mkBonusBeats")) {
+      Array.from($("mkBonusBeats").options).forEach(o => o.selected = false);
+    }
 
     if ($("mkDiscountPct")) $("mkDiscountPct").value = "";
     if ($("mkBuyGetQty")) $("mkBuyGetQty").value = "2";
