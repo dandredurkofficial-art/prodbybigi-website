@@ -2567,6 +2567,7 @@ async function createMarketingCampaign() {
   const boostDays = Number($("mkBoostDuration")?.value || 1);
   const buyGetQty = Number($("mkBuyGetQty")?.value || 2);
   const discountPct = Number(($("mkDiscountPct")?.value || "").trim() || 0);
+  const bonusBeatIds = Array.from($("mkBonusBeats")?.selectedOptions || []).map(o => o.value).filter(Boolean);
 
   if (!name) return alert("Enter campaign name");
 
@@ -2584,15 +2585,24 @@ async function createMarketingCampaign() {
       return;
     }
 
+    if (type === "buy_x_get_y") {
+      if (!beatId) return alert("Select the main beat");
+      if (!bonusBeatIds.length) return alert("Select the bonus beats");
+      if (bonusBeatIds.includes(beatId)) {
+        return alert("Main beat cannot also be one of the bonus beats");
+      }
+    }
+
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
       name,
       type,
-      beatId: null,
+      beatId: (type === "buy_x_get_y" || type === "discount" ? beatId : null),
       boostDays: null,
       featuredUntil,
       buyGetQty: (type === "buy_x_get_y" ? buyGetQty : null),
+      bonusBeatIds: (type === "buy_x_get_y" ? bonusBeatIds : []),
       discountPct: (type === "discount" ? discountPct : null),
       status: "active",
       createdAt: Date.now()
@@ -2621,10 +2631,12 @@ function updateMarketingToolUI(){
   const buyWrap = $("mkBuyGetWrap");
   const discountWrap = $("mkDiscountWrap");
   const boostWrap = $("mkBoostWrap");
+  const bonusWrap = $("mkBonusBeatsWrap");
 
   if (buyWrap) buyWrap.style.display = "none";
   if (discountWrap) discountWrap.style.display = "none";
   if (boostWrap) boostWrap.style.display = "none";
+  if (bonusWrap) bonusWrap.style.display = "none";
 
   if (type === "boost") {
     if (boostWrap) boostWrap.style.display = "flex";
@@ -2632,6 +2644,7 @@ function updateMarketingToolUI(){
 
   if (type === "buy_x_get_y") {
     if (buyWrap) buyWrap.style.display = "flex";
+    if (bonusWrap) bonusWrap.style.display = "flex";
   }
 
   if (type === "discount") {
@@ -2946,20 +2959,19 @@ async function disableCampaign(id){
 async function loadProducerBeatsForBoost(){
 
   const select = document.getElementById("mkBeatId");
+  const bonusSelect = document.getElementById("mkBonusBeats");
+
   if(!select) return;
 
-  /* WAIT until Firebase user exists */
   if(!window.currentUser){
-
     setTimeout(loadProducerBeatsForBoost, 1000);
 
     select.innerHTML = `<option value="">Loading your beats...</option>`;
+    if (bonusSelect) bonusSelect.innerHTML = "";
     return;
-
   }
 
   try{
-
     const q = window.query(
       window.collection(window.db,"beats"),
       window.where("producerId","==",window.currentUser.uid)
@@ -2967,29 +2979,31 @@ async function loadProducerBeatsForBoost(){
 
     const snap = await window.getDocs(q);
 
-    console.log("Producer beats found:", snap.size);
-
     if(snap.empty){
       select.innerHTML = `<option value="">No beats found</option>`;
+      if (bonusSelect) bonusSelect.innerHTML = "";
       return;
     }
 
-    let html = `<option value="">Select beat to boost</option>`;
+    let mainHtml = `<option value="">Select beat to promote</option>`;
+    let bonusHtml = "";
 
     snap.forEach(doc=>{
       const b = doc.data();
-      html += `<option value="${doc.id}">${b.title || "Untitled Beat"}</option>`;
+      const title = b.title || "Untitled Beat";
+
+      mainHtml += `<option value="${doc.id}">${title}</option>`;
+      bonusHtml += `<option value="${doc.id}">${title}</option>`;
     });
 
-    select.innerHTML = html;
+    select.innerHTML = mainHtml;
+    if (bonusSelect) bonusSelect.innerHTML = bonusHtml;
 
   }catch(err){
-
     console.error(err);
     select.innerHTML = `<option value="">Error loading beats</option>`;
-
+    if (bonusSelect) bonusSelect.innerHTML = "";
   }
-
 }
 
 
