@@ -2483,16 +2483,20 @@ const BOOST_PRICES = {
 
 window.__BOOST_SELECTED__ = null;
 
-function openBoostPayModal({ beatId, days }){
-  window.__BOOST_SELECTED__ = { beatId, days };
+function openBoostPayModal({ beatId, days, name }) {
+  window.__BOOST_SELECTED__ = {
+    beatId,
+    days,
+    name: name || "Boost"
+  };
 
-  const modal = document.getElementById("boostPayModal");
-  const back = document.getElementById("boostPayBackdrop");
-  const sub = document.getElementById("boostPaySub");
-  const box = document.getElementById("boostMpesaBox");
-  const status = document.getElementById("boostPayStatus");
-  const phone = document.getElementById("boostMpesaPhone");
-
+  const sub = document.getElementById("mkBoostSub");
+  const modal = document.getElementById("mkBoostModal");
+  const back = document.getElementById("mkBoostBackdrop");
+  const box = document.getElementById("mkBoostMpesaBox");
+  const status = document.getElementById("mkBoostStatus");
+  const phone = document.getElementById("mkBoostMpesaPhone");
+  
   if (sub) sub.textContent = `Boost for ${days} day(s)`;
   if (box) box.style.display = "none";
   if (status) status.textContent = "";
@@ -2502,11 +2506,11 @@ function openBoostPayModal({ beatId, days }){
   if (back) back.style.display = "block";
 }
 
-function closeBoostPayModal(){
-  const modal = document.getElementById("boostPayModal");
-  const back = document.getElementById("boostPayBackdrop");
-  const box = document.getElementById("boostMpesaBox");
-  const status = document.getElementById("boostPayStatus");
+function closeBoostPayModal() {
+  const modal = document.getElementById("mkBoostModal");
+  const back = document.getElementById("mkBoostBackdrop");
+  const box = document.getElementById("mkBoostMpesaBox");
+  const status = document.getElementById("mkBoostStatus");
 
   if (modal) modal.style.display = "none";
   if (back) back.style.display = "none";
@@ -2605,34 +2609,39 @@ async function startBoostMpesa({beatId, days, phone}){
   return data;
 }
 
-document.getElementById("boostPayClose")?.addEventListener("click", closeBoostPayModal);
-document.getElementById("boostPayBackdrop")?.addEventListener("click", closeBoostPayModal);
+document.getElementById("mkBoostClose")?.addEventListener("click", closeBoostPayModal);
+document.getElementById("mkBoostBackdrop")?.addEventListener("click", closeBoostPayModal);
 
-document.getElementById("boostPayPaypal")?.addEventListener("click", async () => {
-  try{
+document.getElementById("mkBoostPaypal")?.addEventListener("click", async () => {
+  try {
     const sel = window.__BOOST_SELECTED__;
-    if(!sel?.beatId) return alert("No beat selected");
+    if (!sel?.beatId) return alert("Select beat first");
 
     await startBoostPayment({
       beatId: sel.beatId,
       days: sel.days,
       producerId: window.currentUser.uid
     });
-  }catch(err){
+  } catch (err) {
     alert("Boost payment failed: " + (err?.message || err));
   }
 });
 
+document.getElementById("mkBoostMpesa")?.addEventListener("click", () => {
+  const box = document.getElementById("mkBoostMpesaBox");
+  if (box) box.style.display = "block";
+});
+
 document.getElementById("mkBoostMpesaSend")?.addEventListener("click", async () => {
   try {
+    const sel = window.__BOOST_SELECTED__;
     const phone = (document.getElementById("mkBoostMpesaPhone")?.value || "").trim();
-    const sel = window.__BOOST_SELECTED__ || {};
+    const status = document.getElementById("mkBoostStatus");
 
+    if (!sel?.beatId) return alert("Select beat first");
     if (!phone) return alert("Enter phone number");
-    if (!sel.beatId) return alert("Select beat first");
-    if (!sel.days) return alert("Select boost duration");
 
-    document.getElementById("mkBoostStatus").textContent = "Sending STK Push...";
+    if (status) status.textContent = "Sending STK Push...";
 
     await startBoostMpesa({
       beatId: sel.beatId,
@@ -2640,11 +2649,11 @@ document.getElementById("mkBoostMpesaSend")?.addEventListener("click", async () 
       phone
     });
 
-    document.getElementById("mkBoostStatus").textContent = "STK Push sent. Check your phone.";
+    if (status) status.textContent = "STK Push sent. Check your phone.";
   } catch (err) {
     console.error(err);
-    document.getElementById("mkBoostStatus").textContent =
-      "Failed: " + (err?.message || err);
+    const status = document.getElementById("mkBoostStatus");
+    if (status) status.textContent = "Failed: " + (err?.message || err);
   }
 });
   
