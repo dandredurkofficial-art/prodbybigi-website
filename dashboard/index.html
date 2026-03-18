@@ -2670,19 +2670,110 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
 
     if (status) status.textContent = "Sending STK Push...";
 
-    await startBoostMpesa({
+    const res = await startBoostMpesa({
       beatId: sel.beatId,
       days: sel.days,
       phone
     });
 
-    if (status) status.textContent = "STK Push sent. Check your phone.";
+    if (status) status.textContent = "STK Push sent. Complete payment on your phone...";
+
+    if (res?.orderId) {
+      waitForBoostPayment(res.orderId);
+    }
   } catch (err) {
     console.error(err);
     const status = document.getElementById("boostPayStatus");
     if (status) status.textContent = "Failed: " + (err?.message || err);
   }
 });
+
+let __boostPollTimer = null;
+
+async function getBoostOrderStatus(orderId){
+  const user = window.currentUser;
+  if (!user) throw new Error("Login required");
+
+  const token = await user.getIdToken();
+
+  const r = await fetch(
+    `${window.PB_BOOST_STATUS_URL}?orderId=${encodeURIComponent(orderId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }
+  );
+
+  const data = await r.json().catch(() => ({}));
+
+  if (!r.ok) {
+    throw new Error(data.error || "Could not check boost status");
+  }
+
+  return data;
+}
+
+async function waitForBoostPayment(orderId){
+  const statusEl = document.getElementById("boostPayStatus");
+  let tries = 0;
+  const maxTries = 40; // about 2 minutes if every 3 sec
+
+  if (__boostPollTimer) {
+    clearInterval(__boostPollTimer);
+    __boostPollTimer = null;
+  }
+
+  __boostPollTimer = setInterval(async () => {
+    tries++;
+
+    try {
+      const data = await getBoostOrderStatus(orderId);
+      const status = String(data.status || "").toLowerCase();
+
+      if (statusEl) {
+        statusEl.textContent = `Payment status: ${status}`;
+      }
+
+      if (status === "paid") {
+        clearInterval(__boostPollTimer);
+        __boostPollTimer = null;
+
+        closeBoostPayModal();
+
+        if ($("mkStatus")) {
+          $("mkStatus").textContent = "✅ Boost activated successfully.";
+        }
+
+        await loadMarketingCampaigns();
+        loadProducerBeatsForBoost();
+
+        alert("Boost payment successful 🎉");
+      }
+
+      if (status === "failed") {
+        clearInterval(__boostPollTimer);
+        __boostPollTimer = null;
+
+        if (statusEl) {
+          statusEl.textContent = "Payment failed.";
+        }
+      }
+
+      if (tries >= maxTries) {
+        clearInterval(__boostPollTimer);
+        __boostPollTimer = null;
+
+        if (statusEl) {
+          statusEl.textContent = "Still waiting for payment confirmation. Refresh later.";
+        }
+      }
+    } catch (err) {
+      console.error("waitForBoostPayment:", err);
+    }
+  }, 3000);
+}
 
 /* ===============================
    LOAD MARKETING CAMPAIGNS
