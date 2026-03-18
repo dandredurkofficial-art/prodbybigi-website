@@ -3669,6 +3669,57 @@ exports.boostCallback = onRequest(async (req,res)=>{
 
 });
 
+exports.getBoostOrderStatus = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
+
+    try {
+      if (req.method !== "GET") {
+        return res.status(405).json({ error: "Use GET" });
+      }
+
+      const decoded = await verifyFirebaseIdToken(req);
+      if (!decoded) {
+        return res.status(401).json({ error: "Login required" });
+      }
+
+      const producerId = decoded.uid;
+      const orderId = String(req.query.orderId || "").trim();
+
+      if (!orderId) {
+        return res.status(400).json({ error: "orderId required" });
+      }
+
+      const snap = await db.collection("boostOrders").doc(orderId).get();
+
+      if (!snap.exists) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      const data = snap.data() || {};
+
+      if (String(data.producerId || "") !== producerId) {
+        return res.status(403).json({ error: "Not allowed" });
+      }
+
+      return res.json({
+        ok: true,
+        orderId,
+        status: data.status || "pending",
+        beatId: data.beatId || "",
+        boostDays: data.boostDays || 1
+      });
+
+    } catch (e) {
+      console.error("getBoostOrderStatus error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  }
+);
+
 exports.stkpushSubscription = onRequest(
   {
     region: "us-central1",
