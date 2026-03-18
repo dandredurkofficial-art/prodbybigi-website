@@ -2724,6 +2724,7 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
 });
 
 let __boostPollTimer = null;
+let __campaignCountdownTimer = null;
 
 async function getBoostOrderStatus(orderId){
   const user = window.currentUser;
@@ -2853,6 +2854,16 @@ async function loadMarketingCampaigns(){
       </div>
     `).join("");
 
+    if (__campaignCountdownTimer) {
+      clearInterval(__campaignCountdownTimer);
+    }
+
+    __campaignCountdownTimer = setInterval(() => {
+      if (document.getElementById("marketingTools")?.classList.contains("active")) {
+        loadMarketingCampaigns();
+      }
+    }, 60000);
+
   }catch(err){
     console.error("loadMarketingCampaigns error:", err);
     list.innerHTML = `<span style="color:#fecaca;">Could not load campaigns: ${err?.message || err}</span>`;
@@ -2863,24 +2874,35 @@ window.loadMarketingCampaigns = loadMarketingCampaigns;
 
 
 async function disableCampaign(id){
-
   if (!window.currentUser) return alert("Login again.");
 
-  await window.updateDoc(
-    window.doc(window.db, "marketingCampaigns", id),
-    {
-      status: "disabled",
-      updatedAt: Date.now()
-    }
-  );
+  const ref = window.doc(window.db, "marketingCampaigns", id);
+  const snap = await window.getDoc(ref);
+
+  if (!snap.exists()) {
+    return alert("Campaign not found.");
+  }
+
+  const campaign = snap.data() || {};
+
+  await window.updateDoc(ref, {
+    status: "disabled",
+    updatedAt: Date.now()
+  });
+
+  if (String(campaign.type || "").toLowerCase() === "boost" && campaign.beatId) {
+    await window.updateDoc(
+      window.doc(window.db, "beats", campaign.beatId),
+      {
+        featured: false,
+        featuredUntil: null
+      }
+    );
+  }
 
   loadMarketingCampaigns();
   loadProducerBeatsForBoost();
-
 }
-window.disableCampaign = disableCampaign;
-
-
 
 /* ===============================
    LOAD PRODUCER BEATS FOR BOOST
