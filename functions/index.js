@@ -3463,98 +3463,151 @@ exports.processPayoutRequest = onDocumentCreated(
 ========================================================= */
 
 exports.stkpushBoost = onRequest(
-{
-  region:"us-central1",
-  secrets:[DARAJA_CONSUMER_KEY, DARAJA_CONSUMER_SECRET,]
-},
-async (req,res)=>{
+  {
+    region: "us-central1",
+    maxInstances: 1,
+    secrets: [
+      DARAJA_CONSUMER_KEY,
+      DARAJA_CONSUMER_SECRET,
+      MPESA_SHORTCODE,
+      MPESA_PASSKEY
+    ],
+  },
+  async (req, res) => {
+    const pre = handleCorsPreflight(req, res);
+    if (pre) return;
+    applyCors(req, res);
 
-  const pre = handleCorsPreflight(req,res);
-  if(pre) return;
-  applyCors(req,res);
+    try {
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
 
-  try{
+      const decoded = await verifyFirebaseIdToken(req);
+      if (!decoded) {
+        return res.status(401).json({ error: "Login required" });
+      }
 
-    if(req.method !== "POST")
-      return res.status(405).json({error:"Use POST"});
+      const producerId = decoded.uid;
+      const { phone, beatId, boostDays } = req.body || {};
 
-    const decoded = await verifyFirebaseIdToken(req);
-    if(!decoded)
-      return res.status(401).json({error:"Login required"});
+      if (!phone) return res.status(400).json({ error: "Phone required" });
+      if (!beatId) return res.status(400).json({ error: "Beat ID required" });
 
-    const producerId = decoded.uid;
+      const cleanPhone = String(phone).replace(/\D/g, "");
 
-    const { phone, beatId, boostDays } = req.body || {};
+      if (!cleanPhone.startsWith("254")) {
+        return res.status(400).json({ error: "Phone must start with 254" });
+      }
 
-    if(!phone) return res.status(400).json({error:"Phone required"});
-    if(!beatId) return res.status(400).json({error:"Beat ID required"});
+      const days = Number(boostDays || 1);
 
-    const days = Number(boostDays || 1);
+      const priceMap = {
+        1: 500,
+        3: 1500,
+        7: 4000
+      };
 
-    const priceMap = {
-      1:500,
-      3:1500,
-      7:4000
-    };
+      const amount = priceMap[days] || 500;
 
-    const amount = priceMap[days] || 500;
+      // same token logic as stkpushSubscription
+      const auth = Buffer.from(
+        `${DARAJA_CONSUMER_KEY.value()}:${DARAJA_CONSUMER_SECRET.value()}`
+      ).toString("base64");
 
-    const token = await getMpesaAccessToken();
-    const timestamp = nowTimestamp();
-    const password = mpesaPassword(timestamp);
+      const tokenRes = await fetchFn(
+        "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Basic ${auth}`,
+          },
+        }
+      );
 
-    const body = {
-      BusinessShortCode: process.env.MPESA_SHORTCODE,
-      Password: password,
-      Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
-      PartyA: phone,
-      PartyB: process.env.MPESA_SHORTCODE,
-      PhoneNumber: phone,
-      CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/boostCallback",
-      AccountReference: "Audiory Boost",
-      TransactionDesc: `Boost beat ${beatId}`,
-    };
+      const tokenData = await tokenRes.json();
 
-    const r = await fetchFn(`${darajaBase()}/mpesa/stkpush/v1/processrequest`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+      if (!tokenRes.ok) {
+        return res.status(400).json({ error: "Failed to get M-Pesa access token" });
+      }
 
-    const data = await r.json();
+      const accessToken = tokenData.access_token;
 
-    if(!r.ok)
-      return res.status(400).json({error:data});
+      // same timestamp/password logic as stkpushSubscription
+      const timestamp = new Date()
+        .toISOString()
+        .replace(/[-:TZ.]/g, "")
+        .slice(0, 14);
 
-    await db.collection("boostOrders").doc(orderId).set({
-      orderId,
-      producerId,
-      beatId,
-      boostDays:days,
-      amount,
-      phone,
-      checkoutRequestId:data.CheckoutRequestID,
-      status:"pending",
-      createdAt:Date.now()
-    });
+      const password = Buffer.from(
+        MPESA_SHORTCODE.value() +
+        MPESA_PASSKEY.value() +
+        timestamp
+      ).toString("base64");
 
-    return res.json({
-      success:true,
-      orderId,
-      checkoutRequestId:data.CheckoutRequestID
-    });
+      const orderId = "boost_" + crypto.randomUUID();
 
-  }catch(e){
-    console.error(e);
-    return res.status(500).json({error:e.message});
+      const stkRes = await fetchFn(
+        "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            BusinessShortCode: MPESA_SHORTCODE.value(),
+            Password: password,
+            Timestamp: timestamp,
+            TransactionType: "CustomerPayBillOnline",
+            Amount: amount,
+            PartyA: cleanPhone,
+            PartyB: MPESA_SHORTCODE.value(),
+            PhoneNumber: cleanPhone,
+            CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/boostCallback",
+            AccountReference: "Audiory Boost",
+            TransactionDesc: `Boost beat ${beatId}`,
+          }),
+        }
+      );
+
+      const stkData = await stkRes.json().catch(() => ({}));
+
+      if (!stkRes.ok) {
+        return res.status(400).json({
+          error: "STK push failed",
+          details: stkData
+        });
+      }
+
+      await db.collection("boostOrders").doc(orderId).set({
+        orderId,
+        producerId,
+        beatId,
+        boostDays: days,
+        amount,
+        phone: cleanPhone,
+        checkoutRequestId: stkData.CheckoutRequestID,
+        merchantRequestId: stkData.MerchantRequestID || "",
+        status: "pending",
+        createdAt: Date.now()
+      });
+
+      return res.json({
+        ok: true,
+        success: true,
+        message: "STK push sent",
+        orderId,
+        checkoutRequestId: stkData.CheckoutRequestID
+      });
+
+    } catch (e) {
+      console.error("stkpushBoost error:", e);
+      try { applyCors(req, res); } catch (_) {}
+      return res.status(500).json({ error: e.message });
+    }
   }
-
-});
+);
 
 /* =========================================================
    MPESA BOOST CALLBACK
