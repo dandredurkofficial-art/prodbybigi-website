@@ -2623,24 +2623,16 @@ document.getElementById("boostPayPaypal")?.addEventListener("click", async () =>
   }
 });
 
-document.getElementById("boostPayMpesa")?.addEventListener("click", () => {
-  const box = document.getElementById("boostMpesaBox");
-  const status = document.getElementById("boostPayStatus");
+document.getElementById("mkBoostMpesaSend")?.addEventListener("click", async () => {
+  try {
+    const phone = (document.getElementById("mkBoostMpesaPhone")?.value || "").trim();
+    const sel = window.__BOOST_SELECTED__ || {};
 
-  if (box) box.style.display = "block";
-  if (status) status.textContent = "Enter your M-Pesa number.";
-});
+    if (!phone) return alert("Enter phone number");
+    if (!sel.beatId) return alert("Select beat first");
+    if (!sel.days) return alert("Select boost duration");
 
-document.getElementById("boostMpesaSend")?.addEventListener("click", async () => {
-  const sel = window.__BOOST_SELECTED__;
-  const phone = (document.getElementById("boostMpesaPhone")?.value || "").trim();
-  const status = document.getElementById("boostPayStatus");
-
-  if(!sel?.beatId) return alert("No beat selected");
-  if(!phone) return alert("Enter phone number");
-
-  try{
-    if (status) status.textContent = "Sending STK Push...";
+    document.getElementById("mkBoostStatus").textContent = "Sending STK Push...";
 
     await startBoostMpesa({
       beatId: sel.beatId,
@@ -2648,10 +2640,11 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
       phone
     });
 
-    if (status) status.textContent = "STK Push sent. Check your phone.";
-  }catch(err){
+    document.getElementById("mkBoostStatus").textContent = "STK Push sent. Check your phone.";
+  } catch (err) {
     console.error(err);
-    if (status) status.textContent = "Failed: " + (err?.message || err);
+    document.getElementById("mkBoostStatus").textContent =
+      "Failed: " + (err?.message || err);
   }
 });
   
