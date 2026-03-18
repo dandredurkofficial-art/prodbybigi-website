@@ -480,6 +480,64 @@
     margin-top:8px;
     color:#9ca3af;
   }
+
+  .bonus-beat-card{
+    background:#05070c;
+    border:1px solid #1f2937;
+    border-radius:14px;
+    padding:10px;
+    cursor:pointer;
+    transition:.18s ease;
+    user-select:none;
+  }
+
+  .bonus-beat-card:hover{
+    border-color:#3b82f6;
+    transform:translateY(-1px);
+  }
+
+  .bonus-beat-card.selected{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 1px rgba(59,130,246,.35) inset;
+    background:rgba(59,130,246,.08);
+  }
+
+  .bonus-beat-cover{
+    width:100%;
+    aspect-ratio:1/1;
+    border-radius:10px;
+    overflow:hidden;
+    background:#0b1220;
+    border:1px solid #1f2937;
+    margin-bottom:8px;
+  }
+
+  .bonus-beat-cover img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .bonus-beat-title{
+    font-size:13px;
+    font-weight:800;
+    line-height:1.25;
+    color:#fff;
+  }
+
+  .bonus-beat-meta{
+    margin-top:4px;
+    font-size:12px;
+    color:#9ca3af;
+  }
+
+  .bonus-beat-check{
+    margin-top:8px;
+    font-size:12px;
+    font-weight:800;
+    color:#60a5fa;
+  }
   
 </style>
 </head>
@@ -2529,6 +2587,7 @@ const BOOST_PRICES = {
 };
 
 window.__BOOST_SELECTED__ = null;
+window.__BONUS_BEAT_IDS__ = [];
 
 function openBoostPayModal({ beatId, days, name }) {
   window.__BOOST_SELECTED__ = {
@@ -2563,6 +2622,67 @@ function closeBoostPayModal() {
   if (back) back.style.display = "none";
   if (box) box.style.display = "none";
   if (status) status.textContent = "";
+}
+
+function renderBonusBeatGrid() {
+  const grid = $("mkBonusGrid");
+  const help = $("mkBonusHelp");
+  const qty = Number($("mkBuyGetQty")?.value || 2);
+  const mainBeatId = String($("mkBeatId")?.value || "").trim();
+
+  if (!grid) return;
+
+  grid.innerHTML = "";
+
+  const mine = (beatsData || []).filter(b => b && b.id);
+  const available = mine.filter(b => String(b.id) !== mainBeatId);
+
+  if (help) {
+    help.textContent = `Choose ${qty} bonus beat${qty === 1 ? "" : "s"} buyers will receive.`;
+  }
+
+  if (!available.length) {
+    grid.innerHTML = `<div class="subtle">No extra beats available.</div>`;
+    return;
+  }
+
+  available.forEach((b) => {
+    const selected = window.__BONUS_BEAT_IDS__.includes(b.id);
+
+    const card = document.createElement("div");
+    card.className = "bonus-beat-card" + (selected ? " selected" : "");
+    card.setAttribute("data-beat-id", b.id);
+
+    const art = b.artwork
+      ? `<img src="${b.artwork}" alt="${(b.title || "Beat").replace(/"/g, "&quot;")}">`
+      : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-weight:800;">No Art</div>`;
+
+    card.innerHTML = `
+      <div class="bonus-beat-cover">${art}</div>
+      <div class="bonus-beat-title">${b.title || "Untitled Beat"}</div>
+      <div class="bonus-beat-meta">${money(b.price || 0)}</div>
+      <div class="bonus-beat-check">${selected ? "Selected" : "Tap to select"}</div>
+    `;
+
+    card.addEventListener("click", () => {
+      const ids = [...window.__BONUS_BEAT_IDS__];
+      const exists = ids.includes(b.id);
+
+      if (exists) {
+        window.__BONUS_BEAT_IDS__ = ids.filter(id => id !== b.id);
+      } else {
+        if (ids.length >= qty) {
+          alert(`You can only choose ${qty} bonus beat${qty === 1 ? "" : "s"}.`);
+          return;
+        }
+        window.__BONUS_BEAT_IDS__ = [...ids, b.id];
+      }
+
+      renderBonusBeatGrid();
+    });
+
+    grid.appendChild(card);
+  });
 }
 
 async function createMarketingCampaign() {
