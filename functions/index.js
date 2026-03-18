@@ -3500,11 +3500,8 @@ async (req,res)=>{
     const amount = priceMap[days] || 500;
 
     const token = await getMpesaAccessToken();
-    const password = mpesaPassword();
-
-    const timestamp = darajaTimestamp();
-
-    const orderId = "boost_" + crypto.randomUUID();
+    const timestamp = nowTimestamp();
+    const password = mpesaPassword(timestamp);
 
     const body = {
       BusinessShortCode: process.env.MPESA_SHORTCODE,
@@ -3520,13 +3517,13 @@ async (req,res)=>{
       TransactionDesc: `Boost beat ${beatId}`,
     };
 
-    const r = await fetchFn(`${darajaBaseUrl()}/mpesa/stkpush/v1/processrequest`,{
-      method:"POST",
-      headers:{
-        Authorization:`Bearer ${token}`,
-        "Content-Type":"application/json"
+    const r = await fetchFn(`${darajaBase()}/mpesa/stkpush/v1/processrequest`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
       },
-      body:JSON.stringify(body)
+      body: JSON.stringify(body)
     });
 
     const data = await r.json();
