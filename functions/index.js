@@ -3648,16 +3648,30 @@ exports.boostCallback = onRequest(async (req,res)=>{
     const featuredUntil =
       Date.now() + (order.boostDays * 24 * 60 * 60 * 1000);
 
+    // ✅ 1. Update beat (feature it)
     await db.collection("beats")
       .doc(order.beatId)
       .set({
-        featured:true,
+        featured: true,
         featuredUntil
-      },{merge:true});
+      }, { merge: true });
 
+    // ✅ 2. Create marketing campaign (ADD HERE)
+    await db.collection("marketingCampaigns").add({
+      producerId: order.producerId,
+      name: "Boost Campaign",
+      type: "boost",
+      beatId: order.beatId,
+      boostDays: order.boostDays,
+      featuredUntil,
+      status: "active",
+      createdAt: Date.now()
+    });
+
+    // ✅ 3. Mark order as paid
     await doc.ref.update({
-      status:"paid",
-      updatedAt:Date.now()
+      status: "paid",
+      updatedAt: Date.now()
     });
 
     return res.status(200).send("Boost activated");
