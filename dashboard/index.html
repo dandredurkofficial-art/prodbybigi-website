@@ -2581,7 +2581,7 @@ async function startBoostMpesa({beatId, days, phone}){
   const token = await user.getIdToken();
 
   const r = await fetch(
-    "https://us-central1-audiory-beat-store.cloudfunctions.net/stkpushBoost",
+    "https://stkpushboost-f65rhsquva-uc.a.run.app",
     {
       method:"POST",
       headers:{
