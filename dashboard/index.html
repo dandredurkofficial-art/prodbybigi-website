@@ -757,9 +757,20 @@
 
             <div class="row" id="mkBonusBeatsWrap" style="display:none;">
               <div class="col">
-                <select id="mkBonusBeats" multiple size="5" style="min-height:140px;">
-                </select>
-                <div class="subtle">Choose the bonus beats buyers will receive.</div>
+                <div class="card" style="padding:14px; margin-top:10px;">
+                  <div style="font-weight:900; margin-bottom:6px;">Bonus Beats</div>
+                  <div class="subtle" id="mkBonusHelp">Choose the bonus beats buyers will receive.</div>
+
+                  <div
+                    id="mkBonusGrid"
+                    style="
+                      display:grid;
+                      grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+                      gap:12px;
+                      margin-top:12px;
+                    ">
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -2695,7 +2706,7 @@ async function createMarketingCampaign() {
   const boostDays = Number($("mkBoostDuration")?.value || 1);
   const buyGetQty = Number($("mkBuyGetQty")?.value || 2);
   const discountPct = Number(($("mkDiscountPct")?.value || "").trim() || 0);
-  const bonusBeatIds = Array.from($("mkBonusBeats")?.selectedOptions || []).map(o => o.value).filter(Boolean);
+  const bonusBeatIds = [...(window.__BONUS_BEAT_IDS__ || [])];
 
   if (!name) return alert("Enter campaign name");
 
@@ -2714,13 +2725,12 @@ async function createMarketingCampaign() {
     }
 
     if (type === "buy_x_get_y") {
-      if (!beatId) return alert("Select the main beat");
-      if (!bonusBeatIds.length) return alert("Select the bonus beats");
-      if (bonusBeatIds.includes(beatId)) {
-        return alert("Main beat cannot also be one of the bonus beats");
+      if (!beatId) return alert("Select the main beat for this campaign.");
+
+      if (bonusBeatIds.length !== buyGetQty) {
+        return alert(`Choose exactly ${buyGetQty} bonus beat${buyGetQty === 1 ? "" : "s"}.`);
       }
     }
-
     await window.addDoc(window.collection(window.db, "marketingCampaigns"), {
       producerId: window.currentUser.uid,
       producerName: getProducerDisplayName(),
@@ -2739,9 +2749,8 @@ async function createMarketingCampaign() {
     if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
 
-    if ($("mkBonusBeats")) {
-      Array.from($("mkBonusBeats").options).forEach(o => o.selected = false);
-    }
+    window.__BONUS_BEAT_IDS__ = [];
+    renderBonusBeatGrid();
 
     if ($("mkDiscountPct")) $("mkDiscountPct").value = "";
     if ($("mkBuyGetQty")) $("mkBuyGetQty").value = "2";
@@ -2774,9 +2783,15 @@ function updateMarketingToolUI(){
     if (boostWrap) boostWrap.style.display = "flex";
   }
 
+  if (bonusWrap) {
+    bonusWrap.style.display = (type === "buy_x_get_y") ? "block" : "none";
+  }
+
+  window.__BONUS_BEAT_IDS__ = [];
+
   if (type === "buy_x_get_y") {
     if (buyWrap) buyWrap.style.display = "flex";
-    if (bonusWrap) bonusWrap.style.display = "flex";
+    renderBonusBeatGrid();
   }
 
   if (type === "discount") {
@@ -3091,7 +3106,6 @@ async function disableCampaign(id){
 async function loadProducerBeatsForBoost(){
 
   const select = document.getElementById("mkBeatId");
-  const bonusSelect = document.getElementById("mkBonusBeats");
 
   if(!select) return;
 
@@ -3129,6 +3143,7 @@ async function loadProducerBeatsForBoost(){
     });
 
     select.innerHTML = mainHtml;
+    renderBonusBeatGrid();
     if (bonusSelect) bonusSelect.innerHTML = bonusHtml;
 
   }catch(err){
@@ -3147,6 +3162,20 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMarketingToolUI();
 
   $("mkType")?.addEventListener("change", updateMarketingToolUI);
+
+  document.getElementById("mkBeatId")?.addEventListener("change", () => {
+    if (($("mkType")?.value || "").trim() === "buy_x_get_y") {
+      window.__BONUS_BEAT_IDS__ = [];
+      renderBonusBeatGrid();
+    }
+  });
+
+  document.getElementById("mkBuyGetQty")?.addEventListener("change", () => {
+    if (($("mkType")?.value || "").trim() === "buy_x_get_y") {
+      window.__BONUS_BEAT_IDS__ = [];
+      renderBonusBeatGrid();
+    }
+  });
 
 });
 
