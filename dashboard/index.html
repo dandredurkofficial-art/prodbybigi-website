@@ -2847,7 +2847,7 @@ async function loadMarketingCampaigns(){
       <div class="track" style="margin-bottom:10px;">
         <div style="flex:1">
           <strong>${(c.name||"Campaign")}</strong><br>
-          <span class="subtle">Type: ${c.type||"-"} • Status: ${c.status||"-"}</span>
+          <span class="subtle">Type: ${c.type||"-"} • Status: ${campaignStatusLabel(c)}</span>
         </div>
         <button type="button" onclick="disableCampaign('${c.id}')">Disable</button>
       </div>
