@@ -2603,11 +2603,11 @@ async function startBoostPayment({ beatId, days, producerId }) {
   window.location.href = approvalLink.href;
 }
 
-async function startBoostMpesa({ beatId, days, phone }) {
+async function startBoostMpesa({beatId, days, phone}){
   const user = window.currentUser;
-  if (!user) throw new Error("Login required");
+  if(!user) throw new Error("Login required");
 
-  let cleanPhone = String(phone || "").trim().replace(/\s+/g, "");
+  let cleanPhone = String(phone || "").trim().replace(/\D/g,"");
   if (cleanPhone.startsWith("+")) cleanPhone = cleanPhone.slice(1);
   if (cleanPhone.startsWith("0")) cleanPhone = "254" + cleanPhone.slice(1);
   if (cleanPhone.startsWith("7")) cleanPhone = "254" + cleanPhone;
@@ -2615,10 +2615,10 @@ async function startBoostMpesa({ beatId, days, phone }) {
   const token = await user.getIdToken();
 
   const r = await fetch("https://stkpushboost-f65rhsquva-uc.a.run.app", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify({
       phone: cleanPhone,
@@ -2627,9 +2627,9 @@ async function startBoostMpesa({ beatId, days, phone }) {
     })
   });
 
-  const data = await r.json().catch(() => ({}));
+  const data = await r.json().catch(()=> ({}));
 
-  if (!r.ok) {
+  if(!r.ok){
     throw new Error(data.error || "STK push failed");
   }
 
