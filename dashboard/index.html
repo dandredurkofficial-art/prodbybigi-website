@@ -2657,7 +2657,7 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
   
 async function startBoostMpesa({beatId, days, phone}){
 
-  const user = firebase.auth().currentUser;
+  const user = window.currentUser;
   if(!user) throw new Error("Login required");
 
   const token = await user.getIdToken();
