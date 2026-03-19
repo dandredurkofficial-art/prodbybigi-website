@@ -2636,6 +2636,28 @@ function closeBoostPayModal() {
   if (status) status.textContent = "";
 }
 
+function dedupeBeats(list) {
+  const map = new Map();
+
+  (list || []).forEach((b) => {
+    if (!b) return;
+
+    const id = String(b.id || "").trim();
+    const title = String(b.title || "").trim().toLowerCase();
+    const audio = String(b.previewAudio || b.fullAudio || "").trim();
+
+    // prefer real doc id, fallback to title+audio
+    const key = id || `${title}__${audio}`;
+    if (!key) return;
+
+    if (!map.has(key)) {
+      map.set(key, b);
+    }
+  });
+
+  return Array.from(map.values());
+}
+
 function renderBonusBeatGrid() {
   const grid = $("mkBonusGrid");
   const help = $("mkBonusHelp");
@@ -2646,7 +2668,7 @@ function renderBonusBeatGrid() {
 
   grid.innerHTML = "";
 
-  const mine = (beatsData || []).filter(b => b && b.id);
+  const mine = dedupeBeats((beatsData || []).filter(b => b && b.id));
   const available = mine.filter(b => String(b.id) !== mainBeatId);
 
   if (help) {
@@ -3121,9 +3143,11 @@ async function loadProducerBeatsForBoost() {
       await loadBeats();
     }
 
-    const mine = (beatsData || []).filter(
-      b => String(b.producerId || "") === String(user.uid)
+    const mineRaw = (beatsData || []).filter(
+      b => String(b?.producerId || "") === String(user.uid)
     );
+
+    const mine = dedupeBeats(mineRaw);
 
     if (!mine.length) {
       select.innerHTML = `<option value="">No beats found</option>`;
@@ -3132,7 +3156,7 @@ async function loadProducerBeatsForBoost() {
 
     let html = `<option value="">Select beat to promote</option>`;
 
-    mine.forEach(b => {
+    mine.forEach((b) => {
       html += `<option value="${b.id}">${b.title || "Untitled Beat"}</option>`;
     });
 
