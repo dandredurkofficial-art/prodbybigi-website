@@ -389,7 +389,7 @@
 
     async function createMpesaOrder(items, phone){
       const url = String(window.PB_MPESA_CART_ORDER_URL || "").trim();
-      if (!url || url === "PUT-YOUR-EXISTING-MPESA-CART-ENDPOINT-HERE") {
+      if (!url || url === "https://stkpush-f65rhsquva-uc.a.run.app") {
         throw new Error("Set window.PB_MPESA_CART_ORDER_URL to your existing M-Pesa cart endpoint.");
       }
 
@@ -470,10 +470,11 @@
       render();
     };
 
-    const newCheckoutBtn = checkoutBtn.cloneNode(true);
-    checkoutBtn.parentNode.replaceChild(newCheckoutBtn, checkoutBtn);
+    const cleanCheckoutBtn = checkoutBtn.cloneNode(true);
+    checkoutBtn.parentNode.replaceChild(cleanCheckoutBtn, checkoutBtn);
+    checkoutBtn = cleanCheckoutBtn;
 
-    newCheckoutBtn.addEventListener("click", (e) => {
+    checkoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
 
