@@ -197,7 +197,7 @@
   <script>
     const list = document.getElementById("list");
     const clearBtn = document.getElementById("clearBtn");
-    const checkoutBtn = document.getElementById("checkoutBtn");
+    let checkoutBtn = document.getElementById("checkoutBtn");
     const totalEl = document.getElementById("total");
     const subEl = document.getElementById("sub");
     const statusEl = document.getElementById("status");
@@ -262,7 +262,7 @@
       subEl.textContent = `${count} item(s)`;
       totalEl.textContent = money(calcTotal(items));
 
-      checkoutBtn.disabled = items.length === 0;
+      newCheckoutBtn.disabled = items.length === 0;
 
       if (!items.length){
         list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
@@ -470,11 +470,18 @@
       render();
     };
 
-    checkoutBtn.onclick = () => {
+    const newCheckoutBtn = checkoutBtn.cloneNode(true);
+    checkoutBtn.parentNode.replaceChild(newCheckoutBtn, checkoutBtn);
+
+    newCheckoutBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
       const items = getItems();
       if (!items.length) return;
+
       openPayModal();
-    };
+    });
 
     payClose?.addEventListener("click", closePayModal);
     payBackdrop?.addEventListener("click", (e) => {
@@ -485,7 +492,7 @@
       const items = getItems();
       if (!items.length) return;
 
-      checkoutBtn.disabled = true;
+      newCheckoutBtn.disabled = true;
       setStatus("Creating PayPal checkout…");
       closePayModal();
 
@@ -496,7 +503,7 @@
       }catch(err){
         console.error(err);
         setStatus("Load failed:\n" + (err?.message || err), "bad");
-        checkoutBtn.disabled = false;
+        newCheckoutBtn.disabled = false;
       }
     });
 
