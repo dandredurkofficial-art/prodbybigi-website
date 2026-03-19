@@ -1128,8 +1128,15 @@
 
       <div id="domainUnlocked" style="display:none; margin-top:10px;">
         <div class="okbox">Unlocked</div>
+
         <input id="customDomain" placeholder="yourdomain.com" />
-        <button class="btn2" type="button" onclick="saveCustomDomain()">Save Domain</button>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+          <button class="btn2" id="saveDomainBtn" type="button" onclick="saveCustomDomain()">Save Domain</button>
+          <button class="btn2" id="verifyDomainBtn" type="button" onclick="verifyCustomDomain()">Verify DNS</button>
+        </div>
+
+        <div id="domainCurrent" class="subtle" style="margin-top:10px;"></div>
         <div id="domainStatus" class="subtle" style="margin-top:10px;"></div>
       </div>
     </div>
@@ -1753,6 +1760,15 @@ function campaignStatusLabel(c){
 
   const status = String(c?.status || "").trim();
   return status || "-";
+}
+
+function normalizeCustomDomainInput(v){
+  let s = String(v || "").trim().toLowerCase();
+  s = s.replace(/^https?:\/\//, "");
+  s = s.replace(/^www\./, "");
+  s = s.replace(/\/.*$/, "");
+  s = s.replace(/:\d+$/, "");
+  return s;
 }
 
 /* ===========================
@@ -3737,6 +3753,7 @@ async function uploadProfilePic(){
 }
 function fillSettingsForm(){
   const prof = window.currentProfile || {};
+
   $("firstName").value = prof.firstName || "";
   $("lastName").value = prof.lastName || "";
   $("displayName").value = prof.displayName || "";
@@ -3753,6 +3770,21 @@ function fillSettingsForm(){
 
   const cd = $("customDomain");
   if (cd) cd.value = String(prof.customDomain || "").trim();
+
+  const current = $("domainCurrent");
+  if (current){
+    const domain = String(prof.customDomain || "").trim();
+    const status = String(prof.customDomainStatus || "").trim();
+    const verified = prof.customDomainVerified === true;
+
+    if (!domain){
+      current.textContent = "No custom domain saved yet.";
+    } else if (verified || status === "verified"){
+      current.innerHTML = `Current domain: <b>${domain}</b> ✅ Verified`;
+    } else {
+      current.innerHTML = `Current domain: <b>${domain}</b> ⏳ Pending DNS verification`;
+    }
+  }
 
   refreshProLocks();
 }
@@ -3798,70 +3830,171 @@ async function saveCustomDomain(){
     return;
   }
 
-  const d = ($("customDomain")?.value || "").trim().toLowerCase();
-  if (!d || !d.includes(".")) return alert("Enter a valid domain like yourdomain.com");
-
+  const input = $("customDomain");
+  const saveBtn = $("saveDomainBtn");
+  const verifyBtn = $("verifyDomainBtn");
   const status = $("domainStatus");
+  const current = $("domainCurrent");
+
+  const d = normalizeCustomDomainInput(input?.value || "");
+  if (!d || !d.includes(".")) {
+    return alert("Enter a valid domain like yourdomain.com");
+  }
+
+  if (input) input.value = d;
+
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+  }
+  if (verifyBtn) verifyBtn.disabled = true;
   if (status) status.textContent = "Generating DNS records…";
 
-  const r = await fetch(window.PB_CREATE_DOMAIN_CHALLENGE_URL, {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ uid: window.currentUser.uid, domain: d })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if (!r.ok) return alert(j?.error || "Could not create challenge");
+  try{
+    const r = await fetch(window.PB_CREATE_DOMAIN_CHALLENGE_URL, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        uid: window.currentUser.uid,
+        domain: d
+      })
+    });
 
-  const txtHost = j?.dns?.txt?.host || `_audiory-verify.${d}`;
-  const txtVal  = j?.dns?.txt?.value || "";
-  const cnameW  = j?.dns?.cname_www?.value || "audiory.site";
-  const cnameA  = j?.dns?.cname_apex?.value || "audiory.site";
+    const j = await r.json().catch(()=> ({}));
 
-  if (status){
-    status.innerHTML = `
-      <div class="okbox">DNS records generated</div>
-      <div class="subtle" style="margin-top:10px;"><b>1) Add TXT (Verification)</b></div>
-      <div class="subtle">Name/Host: <b>_audiory-verify</b> (or full: ${txtHost})</div>
-      <div class="subtle">Value: <b>${txtVal}</b></div>
+    if (!r.ok){
+      throw new Error(j?.error || "Could not create challenge");
+    }
 
-      <div class="subtle" style="margin-top:10px;"><b>2) Add CNAME (www)</b></div>
-      <div class="subtle">Host: <b>www</b></div>
-      <div class="subtle">Target: <b>${cnameW}</b></div>
+    const txtHost = j?.dns?.txt?.host || `_audiory-verify.${d}`;
+    const txtVal  = j?.dns?.txt?.value || "";
+    const cnameW  = j?.dns?.cname_www?.value || "audiory.site";
+    const cnameA  = j?.dns?.cname_apex?.value || "audiory.site";
 
-      <div class="subtle" style="margin-top:10px;"><b>3) Optional (apex/root)</b></div>
-      <div class="subtle">Host: <b>@</b> → Target: <b>${cnameA}</b></div>
+    window.currentProfile = {
+      ...(window.currentProfile || {}),
+      customDomain: d,
+      customDomainStatus: "pending_dns",
+      customDomainVerified: false
+    };
 
-      <div style="margin-top:12px;">
-        <button class="btn2" type="button" onclick="verifyCustomDomain()">Verify DNS Now</button>
-      </div>
-      <div class="subtle" style="margin-top:10px;">DNS can take a few minutes. If it fails, wait then retry.</div>
-    `;
+    if (current){
+      current.innerHTML = `Current domain: <b>${d}</b> ⏳ Pending DNS verification`;
+    }
+
+    if (status){
+      status.innerHTML = `
+        <div class="okbox">DNS records generated</div>
+
+        <div class="subtle" style="margin-top:10px;"><b>1) Add TXT record</b></div>
+        <div class="subtle">Host/Name: <b>_audiory-verify</b></div>
+        <div class="subtle">Value: <b>${txtVal}</b></div>
+
+        <div class="subtle" style="margin-top:10px;"><b>2) Add WWW CNAME</b></div>
+        <div class="subtle">Host/Name: <b>www</b></div>
+        <div class="subtle">Target: <b>${cnameW}</b></div>
+
+        <div class="subtle" style="margin-top:10px;"><b>3) Optional apex/root</b></div>
+        <div class="subtle">Host/Name: <b>@</b></div>
+        <div class="subtle">Target: <b>${cnameA}</b></div>
+
+        <div class="subtle" style="margin-top:12px;">
+          DNS changes can take a few minutes. After adding records, click <b>Verify DNS</b>.
+        </div>
+      `;
+    }
+
+  }catch(err){
+    console.error(err);
+    if (status){
+      status.innerHTML = `<div class="lockbox">❌ ${err?.message || err}</div>`;
+    }
+  }finally{
+    if (saveBtn){
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Domain";
+    }
+    if (verifyBtn) verifyBtn.disabled = false;
   }
 }
 async function verifyCustomDomain(){
   if (!window.currentUser) return alert("Login again.");
-  const d = ($("customDomain")?.value || "").trim().toLowerCase();
+
+  const verifyBtn = $("verifyDomainBtn");
+  const status = $("domainStatus");
+  const current = $("domainCurrent");
+
+  const d = normalizeCustomDomainInput(($("customDomain")?.value || "").trim());
   if (!d) return alert("Enter your domain first");
 
-  const status = $("domainStatus");
+  if (verifyBtn){
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = "Verifying...";
+  }
+
   if (status) status.textContent = "Verifying DNS…";
 
-  const r = await fetch(window.PB_VERIFY_DOMAIN_DNS_URL, {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ uid: window.currentUser.uid, domain: d })
-  });
-  const j = await r.json().catch(()=> ({}));
-  if (!r.ok) return alert(j?.error || "Verify failed");
+  try{
+    const r = await fetch(window.PB_VERIFY_DOMAIN_DNS_URL, {
+      method: "POST",
+      headers: { "Content-Type":"application/json" },
+      body: JSON.stringify({
+        uid: window.currentUser.uid,
+        domain: d
+      })
+    });
 
-  if (j.ok){
-    if (status) status.innerHTML = `<div class="okbox">Verified! Domain connected: ${d}</div>`;
-    window.currentProfile = { ...(window.currentProfile||{}), customDomain: d, customDomainVerified: true, customDomainStatus: "verified" };
-    refreshProLocks();
-  } else {
-    if (status) status.innerHTML = `<div class="lockbox">❌ Not verified yet. Reason: ${j.reason || "UNKNOWN"}</div>`;
+    const j = await r.json().catch(()=> ({}));
+
+    if (!r.ok){
+      throw new Error(j?.error || "Verify failed");
+    }
+
+    if (j.ok){
+      if (status){
+        status.innerHTML = `<div class="okbox">✅ Verified! Domain connected: <b>${d}</b></div>`;
+      }
+
+      if (current){
+        current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
+      }
+
+      window.currentProfile = {
+        ...(window.currentProfile || {}),
+        customDomain: d,
+        customDomainVerified: true,
+        customDomainStatus: "verified"
+      };
+
+      refreshProLocks();
+    } else {
+      const reason =
+        j.reason === "TXT_NOT_FOUND"
+          ? "TXT record not found yet. Wait a few minutes and try again."
+          : (j.reason || "Domain not verified yet.");
+
+      if (status){
+        status.innerHTML = `<div class="lockbox">❌ ${reason}</div>`;
+      }
+
+      if (current){
+        current.innerHTML = `Current domain: <b>${d}</b> ⏳ Pending DNS verification`;
+      }
+    }
+
+  }catch(err){
+    console.error(err);
+    if (status){
+      status.innerHTML = `<div class="lockbox">❌ ${err?.message || err}</div>`;
+    }
+  }finally{
+    if (verifyBtn){
+      verifyBtn.disabled = false;
+      verifyBtn.textContent = "Verify DNS";
+    }
   }
 }
+
 window.saveCustomDomain = saveCustomDomain;
 window.verifyCustomDomain = verifyCustomDomain;
 
