@@ -176,15 +176,22 @@
       if (!items.length) return;
 
       // ✅ Build payload (server must calculate prices; client only sends ids/keys/qty)
-      const payload = {
-        items: items
-          .map((x) => ({
-            beatId: String(x.beatId || "").trim(),
-            licenseKey: toKey(x.licenseKey),
-            qty: toQty(x.qty || 1),
-          }))
-          .filter((i) => i.beatId && i.licenseKey),
-      };
+            const payload = {
+              items: items
+                .map((x) => ({
+                  beatId: String(x.beatId || "").trim(),
+                  licenseKey: toKey(x.licenseKey),
+                  qty: toQty(x.qty || 1),
+
+                  campaignType: String(x.campaignType || ""),
+                  campaignId: String(x.campaignId || ""),
+                  discountPct: Number(x.discountPct || 0),
+                  originalPrice: Number(x.originalPrice || 0),
+                  isBonus: x.isBonus === true,
+                  parentBeatId: String(x.parentBeatId || ""),
+                }))
+                .filter((i) => i.beatId && i.licenseKey),
+            };
 
       if (!payload.items.length) {
         alert("Invalid cart items. Please clear cart and add again.");
