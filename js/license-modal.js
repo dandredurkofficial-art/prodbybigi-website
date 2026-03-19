@@ -43,6 +43,68 @@
     return Number(beat.price || 0) === 0;
   }
 
+    async function getCampaignForBeat(beatId) {
+    try {
+      if (!window.collection || !window.query || !window.where || !window.getDocs || !window.db) {
+        return null;
+      }
+
+      const q = window.query(
+        window.collection(window.db, "marketingCampaigns"),
+        window.where("beatId", "==", String(beatId || "").trim()),
+        window.where("status", "==", "active")
+      );
+
+      const snap = await window.getDocs(q);
+      const arr = [];
+      snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+
+      if (!arr.length) return null;
+
+      arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+
+      // priority: buy_x_get_y first, then discount
+      const buyGet = arr.find(x => String(x.type || "").trim() === "buy_x_get_y");
+      if (buyGet) return buyGet;
+
+      const discount = arr.find(x => String(x.type || "").trim() === "discount");
+      if (discount) return discount;
+
+      return arr[0] || null;
+    } catch (e) {
+      console.warn("Campaign lookup failed:", e);
+      return null;
+    }
+  }
+
+  async function getBeatByIdForCart(beatId) {
+    const id = String(beatId || "").trim();
+    if (!id) return null;
+
+    try {
+      const list = Array.isArray(window.__LATEST_BEATS__) ? window.__LATEST_BEATS__ : [];
+      const found = list.find(b => String(b.id || "") === id);
+      if (found) return found;
+    } catch {}
+
+    try {
+      if (!window.doc || !window.getDoc || !window.db) return null;
+      const snap = await window.getDoc(window.doc(window.db, "beats", id));
+      if (!snap.exists()) return null;
+      return { id: snap.id, ...snap.data() };
+    } catch (e) {
+      console.warn("Bonus beat lookup failed:", e);
+      return null;
+    }
+  }
+
+  function discountedPrice(price, pct) {
+    const p = Number(price || 0);
+    const d = Number(pct || 0);
+    if (!d || d <= 0) return p;
+    return Math.max(0, Number((p * (1 - d / 100)).toFixed(2)));
+  }
+
   // ✅ FAST token getter (from /js/firebase.js)
   async function getBuyerIdTokenFast() {
     try {
