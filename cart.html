@@ -477,6 +477,9 @@
     checkoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      alert("checkout button clicked");
 
       const items = getItems();
       if (!items.length) return;
