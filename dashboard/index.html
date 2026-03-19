@@ -100,6 +100,7 @@
       if (typeof window.loadProducerSalesFromUnlocks === "function") window.loadProducerSalesFromUnlocks();
 
       if (typeof window.loadMarketingCampaigns === "function") window.loadMarketingCampaigns();
+      if (typeof window.loadProducerBeatsForBoost === "function") window.loadProducerBeatsForBoost();
 
       if (typeof window.refreshProLocks === "function") window.refreshProLocks();
       if (typeof window.loadMessagesThreadList === "function") window.loadMessagesThreadList();
@@ -3107,8 +3108,11 @@ async function loadProducerBeatsForBoost() {
   const select = document.getElementById("mkBeatId");
   if (!select) return;
 
-  if (!window.currentUser) {
+  const user = window.currentUser || window.auth?.currentUser || null;
+
+  if (!user) {
     select.innerHTML = `<option value="">Loading your beats...</option>`;
+    setTimeout(loadProducerBeatsForBoost, 800);
     return;
   }
 
@@ -3118,7 +3122,7 @@ async function loadProducerBeatsForBoost() {
     }
 
     const mine = (beatsData || []).filter(
-      b => String(b.producerId || "") === String(window.currentUser.uid)
+      b => String(b.producerId || "") === String(user.uid)
     );
 
     if (!mine.length) {
@@ -3133,6 +3137,10 @@ async function loadProducerBeatsForBoost() {
     });
 
     select.innerHTML = html;
+
+    if (($("mkType")?.value || "").trim() === "buy_x_get_y") {
+      renderBonusBeatGrid();
+    }
   } catch (err) {
     console.error("loadProducerBeatsForBoost error:", err);
     select.innerHTML = `<option value="">No beats found</option>`;
