@@ -405,8 +405,8 @@
     }
   });
 
-  // ✅ ADD TO CART
-  cartBtn?.addEventListener("click", () => {
+    // ✅ ADD TO CART
+  cartBtn?.addEventListener("click", async () => {
     if (!currentBeat || !selectedLicense) return;
 
     const beatId = resolveBeatId(currentBeat);
@@ -418,24 +418,75 @@
     }
 
     if (!window.PB_CART || typeof window.PB_CART.add !== "function") {
-      alert(
-        "Cart not loaded. Make sure /js/cart.js is included before /js/license-modal.js"
-      );
+      alert("Cart not loaded. Make sure /js/cart.js is included before /js/license-modal.js");
       return;
     }
 
-    window.PB_CART.add({
-      beatId,
-      title: safeTitle(currentBeat),
-      artwork: String(currentBeat.artwork || ""),
-      price: Number(selectedLicense.price || 0),
-      licenseKey,
-      licenseName: String(selectedLicense.name || licenseKey),
-      producerId: String(currentBeat.producerId || ""),
-      producerName: String(currentBeat.producerName || ""),
-    });
+    try {
+      const campaign = await getCampaignForBeat(beatId);
 
-    alert("Added to cart ✅");
+      let finalPrice = Number(selectedLicense.price || 0);
+      let discountPct = 0;
+      let campaignType = "";
+      let campaignId = "";
+
+      if (campaign && String(campaign.type || "").trim() === "discount") {
+        discountPct = Number(campaign.discountPct || 0);
+        finalPrice = discountedPrice(finalPrice, discountPct);
+        campaignType = "discount";
+        campaignId = String(campaign.id || "");
+      }
+
+      window.PB_CART.add({
+        beatId,
+        title: safeTitle(currentBeat),
+        artwork: String(currentBeat.artwork || ""),
+        price: finalPrice,
+        originalPrice: Number(selectedLicense.price || 0),
+        discountPct,
+        campaignType,
+        campaignId,
+        licenseKey,
+        licenseName: String(selectedLicense.name || licenseKey),
+        producerId: String(currentBeat.producerId || ""),
+        producerName: String(currentBeat.producerName || ""),
+      });
+
+      // ✅ auto-add bonus beats
+      if (campaign && String(campaign.type || "").trim() === "buy_x_get_y") {
+        const bonusIds = Array.isArray(campaign.bonusBeatIds) ? campaign.bonusBeatIds : [];
+
+        for (const bonusBeatId of bonusIds) {
+          if (!bonusBeatId || String(bonusBeatId) === beatId) continue;
+
+          const bonusBeat = await getBeatByIdForCart(bonusBeatId);
+          if (!bonusBeat) continue;
+
+          window.PB_CART.add({
+            beatId: String(bonusBeat.id || bonusBeatId),
+            title: String(bonusBeat.title || "Bonus Beat"),
+            artwork: String(bonusBeat.artwork || ""),
+            price: 0,
+            originalPrice: 0,
+            licenseKey,
+            licenseName: `Bonus • ${String(selectedLicense.name || licenseKey)}`,
+            producerId: String(bonusBeat.producerId || currentBeat.producerId || ""),
+            producerName: String(bonusBeat.producerName || currentBeat.producerName || ""),
+            campaignType: "buy_x_get_y",
+            campaignId: String(campaign.id || ""),
+            isBonus: true,
+            parentBeatId: beatId,
+            parentLicenseKey: licenseKey,
+            bonusLabel: "Included bonus beat",
+          });
+        }
+      }
+
+      alert("Added to cart ✅");
+    } catch (err) {
+      console.error(err);
+      alert("Could not apply campaign: " + (err?.message || err));
+    }
   });
 
   closeBtn?.addEventListener("click", closeModal);
