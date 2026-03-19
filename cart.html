@@ -64,205 +64,351 @@
   <script src="/js/cart.js"></script>
   <script src="/js/cart-ui.js"></script>
 
-  <script>
-    const list = document.getElementById("list");
-    const clearBtn = document.getElementById("clearBtn");
-    const checkoutBtn = document.getElementById("checkoutBtn");
-    const totalEl = document.getElementById("total");
-    const subEl = document.getElementById("sub");
-    const statusEl = document.getElementById("status");
+    <script>
+      const list = document.getElementById("list");
+      const clearBtn = document.getElementById("clearBtn");
+      const checkoutBtn = document.getElementById("checkoutBtn");
+      const totalEl = document.getElementById("total");
+      const subEl = document.getElementById("sub");
+      const statusEl = document.getElementById("status");
 
-    function money(n){
-      const v = Number(n || 0);
-      return "$" + (Number.isFinite(v) ? v.toFixed(2) : "0.00");
-    }
-    function setStatus(msg, type=""){
-      statusEl.className = "status" + (type ? (" " + type) : "");
-      statusEl.textContent = msg || "";
-    }
+      const payBackdrop = document.getElementById("payBackdrop");
+      const payClose = document.getElementById("payClose");
+      const payWithPaypal = document.getElementById("payWithPaypal");
+      const payWithMpesa = document.getElementById("payWithMpesa");
+      const mpesaBox = document.getElementById("mpesaBox");
+      const mpesaPhone = document.getElementById("mpesaPhone");
+      const sendMpesaBtn = document.getElementById("sendMpesaBtn");
 
-    function getItems(){
-      const items = window.PB_CART?.list?.() || [];
-      return items.map(it => ({
-        ...it,
-        beatId: String(it.beatId || "").trim(),
-        licenseKey: String(it.licenseKey || "basic").trim().toLowerCase(),
-        qty: Math.max(1, Number(it.qty || 1)),
-        price: Number(it.price || 0)
-      })).filter(it => it.beatId && it.licenseKey);
-    }
-
-    function calcTotal(items){
-      return items.reduce((sum, it) => sum + (Number(it.price||0) * Math.max(1, Number(it.qty||1))), 0);
-    }
-
-    function render(){
-      const items = getItems();
-      list.innerHTML = "";
-
-      const count = items.reduce((a,b)=>a + (b.qty||1), 0);
-      subEl.textContent = `${count} item(s)`;
-      totalEl.textContent = money(calcTotal(items));
-
-      checkoutBtn.disabled = items.length === 0;
-
-      if (!items.length){
-        list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
-        return;
+      function money(n){
+        const v = Number(n || 0);
+        return "$" + (Number.isFinite(v) ? v.toFixed(2) : "0.00");
       }
 
-      items.forEach(it=>{
-        const el = document.createElement("div");
-        el.className = "row";
-        el.innerHTML = `
-          <div class="img">${it.artwork ? `<img src="${it.artwork}" alt="">` : ""}</div>
-          <div class="meta">
-            <div class="t">${it.title || it.beatId}</div>
-            <div class="s">License: ${it.licenseName || it.licenseKey || "—"} • ${money(it.price)} each</div>
-          </div>
-          <div class="right">
+      function setStatus(msg, type=""){
+        statusEl.className = "status" + (type ? (" " + type) : "");
+        statusEl.textContent = msg || "";
+      }
+
+      function openPayModal(){
+        payBackdrop.classList.add("show");
+        mpesaBox.classList.remove("show");
+        if (mpesaPhone) mpesaPhone.value = "";
+      }
+
+      function closePayModal(){
+        payBackdrop.classList.remove("show");
+        mpesaBox.classList.remove("show");
+      }
+
+      function getItems(){
+        const items = window.PB_CART?.list?.() || [];
+        return items.map(it => ({
+          ...it,
+          beatId: String(it.beatId || "").trim(),
+          licenseKey: String(it.licenseKey || "basic").trim().toLowerCase(),
+          qty: Math.max(1, Number(it.qty || 1)),
+          price: Number(it.price || 0),
+          originalPrice: Number(it.originalPrice || 0),
+          discountPct: Number(it.discountPct || 0),
+          campaignType: String(it.campaignType || ""),
+          campaignId: String(it.campaignId || ""),
+          isBonus: it.isBonus === true,
+          parentBeatId: String(it.parentBeatId || ""),
+          parentLicenseKey: String(it.parentLicenseKey || "basic").trim().toLowerCase(),
+          bonusLabel: String(it.bonusLabel || "")
+        })).filter(it => it.beatId && it.licenseKey);
+      }
+
+      function calcTotal(items){
+        return items.reduce((sum, it) => sum + (Number(it.price||0) * Math.max(1, Number(it.qty||1))), 0);
+      }
+
+      function render(){
+        const items = getItems();
+        list.innerHTML = "";
+
+        const count = items.reduce((a,b)=>a + (b.qty||1), 0);
+        subEl.textContent = `${count} item(s)`;
+        totalEl.textContent = money(calcTotal(items));
+
+        checkoutBtn.disabled = items.length === 0;
+
+        if (!items.length){
+          list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
+          return;
+        }
+
+        items.forEach(it=>{
+          const isDiscount = it.campaignType === "discount" && Number(it.discountPct || 0) > 0;
+          const isBonus = it.isBonus === true;
+
+          const priceLine = isDiscount
+            ? `<span class="price-old">${money(it.originalPrice)}</span>${money(it.price)} each`
+            : `${money(it.price)} each`;
+
+          const badges = `
+            ${isDiscount ? `<span class="cart-badge discount">-${it.discountPct}% OFF</span>` : ``}
+            ${isBonus ? `<span class="cart-badge bonus">${it.bonusLabel || "Bonus Beat"}</span>` : ``}
+          `;
+
+          const controls = isBonus ? `
+            <div class="qty">
+              <div class="n">1</div>
+            </div>
+          ` : `
             <div class="qty">
               <button type="button" data-dec="1">−</button>
               <div class="n">${it.qty}</div>
               <button type="button" data-inc="1">+</button>
             </div>
-            <button class="btn danger" type="button" data-remove="1">Remove</button>
-          </div>
-        `;
+          `;
 
-        el.querySelector('[data-remove="1"]').onclick = () => {
-          window.PB_CART.remove(it.beatId, it.licenseKey);
-          setStatus("");
-          render();
+          const removeBtn = isBonus ? `` : `<button class="btn danger" type="button" data-remove="1">Remove</button>`;
+
+          const el = document.createElement("div");
+          el.className = "row";
+          el.innerHTML = `
+            <div class="img">${it.artwork ? `<img src="${it.artwork}" alt="">` : ""}</div>
+            <div class="meta">
+              <div class="t">${it.title || it.beatId}</div>
+              <div class="s">License: ${it.licenseName || it.licenseKey || "—"} • ${priceLine}</div>
+              <div>${badges}</div>
+            </div>
+            <div class="right">
+              ${controls}
+              ${removeBtn}
+            </div>
+          `;
+
+          if (!isBonus) {
+            el.querySelector('[data-remove="1"]').onclick = () => {
+              window.PB_CART.remove(it.beatId, it.licenseKey);
+              setStatus("");
+              render();
+            };
+
+            el.querySelector('[data-inc="1"]').onclick = () => {
+              window.PB_CART.setQty(it.beatId, it.licenseKey, it.qty + 1);
+              setStatus("");
+              render();
+            };
+
+            el.querySelector('[data-dec="1"]').onclick = () => {
+              window.PB_CART.setQty(it.beatId, it.licenseKey, Math.max(1, it.qty - 1));
+              setStatus("");
+              render();
+            };
+          }
+
+          list.appendChild(el);
+        });
+      }
+
+      async function safeReadText(res){
+        try { return await res.text(); } catch { return ""; }
+      }
+
+      async function createOrder(items){
+        const total = Number(calcTotal(items).toFixed(2));
+
+        const payload = {
+          total,
+          currency: "USD",
+          items: items.map(it => ({
+            beatId: it.beatId,
+            licenseKey: it.licenseKey,
+            qty: Math.max(1, Number(it.qty||1)),
+            price: Number(Number(it.price||0).toFixed(2)),
+            title: it.title || "",
+            artwork: it.artwork || "",
+            campaignType: it.campaignType || "",
+            campaignId: it.campaignId || "",
+            discountPct: Number(it.discountPct || 0),
+            originalPrice: Number(it.originalPrice || 0),
+            isBonus: it.isBonus === true,
+            parentBeatId: it.parentBeatId || ""
+          }))
         };
 
-        el.querySelector('[data-inc="1"]').onclick = () => {
-          window.PB_CART.setQty(it.beatId, it.licenseKey, it.qty + 1);
-          setStatus("");
-          render();
+        const res = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+          method:"POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+
+        const text = await safeReadText(res);
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+        if (!res.ok){
+          throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Create order failed: " + text));
+        }
+
+        const approveUrl =
+          data.approveUrl ||
+          data.approval_url ||
+          (Array.isArray(data.links) ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href) : null);
+
+        if (!approveUrl){
+          throw new Error("Create order succeeded but no approval URL returned.\nServer response:\n" + (text || JSON.stringify(data)));
+        }
+
+        return { approveUrl, orderId: (data.id || data.orderID || data.orderId || null) };
+      }
+
+      async function createMpesaOrder(items, phone){
+        const url = String(window.PB_MPESA_CART_ORDER_URL || "").trim();
+        if (!url || url === "PUT-YOUR-EXISTING-MPESA-CART-ENDPOINT-HERE") {
+          throw new Error("Set window.PB_MPESA_CART_ORDER_URL to your existing M-Pesa cart endpoint.");
+        }
+
+        const payload = {
+          phone,
+          total: Number(calcTotal(items).toFixed(2)),
+          currency: "USD",
+          items: items.map(it => ({
+            beatId: it.beatId,
+            licenseKey: it.licenseKey,
+            qty: Math.max(1, Number(it.qty || 1)),
+            price: Number(Number(it.price || 0).toFixed(2)),
+            title: it.title || "",
+            campaignType: it.campaignType || "",
+            campaignId: it.campaignId || "",
+            discountPct: Number(it.discountPct || 0),
+            originalPrice: Number(it.originalPrice || 0),
+            isBonus: it.isBonus === true,
+            parentBeatId: it.parentBeatId || ""
+          }))
         };
 
-        el.querySelector('[data-dec="1"]').onclick = () => {
-          window.PB_CART.setQty(it.beatId, it.licenseKey, Math.max(1, it.qty - 1));
-          setStatus("");
+        const res = await fetch(url, {
+          method: "POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(payload)
+        });
+
+        const text = await safeReadText(res);
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+        if (!res.ok) {
+          throw new Error(data.error || data.message || "M-Pesa checkout failed");
+        }
+
+        return data;
+      }
+
+      async function capture(orderID){
+        const res = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
+          method:"POST",
+          headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ orderID })
+        });
+
+        const text = await safeReadText(res);
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+
+        if (!res.ok){
+          throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Capture failed: " + text));
+        }
+        return data;
+      }
+
+      async function handleReturn(){
+        const qs = new URLSearchParams(location.search);
+        const token = qs.get("token") || qs.get("orderID") || qs.get("orderId");
+        if (!token) return;
+
+        setStatus("Finalizing payment…");
+        try{
+          await capture(token);
+          window.PB_CART.clear();
+          setStatus("Payment complete ✅", "ok");
+          history.replaceState({}, "", location.pathname);
           render();
-        };
+        }catch(err){
+          console.error(err);
+          setStatus("Payment capture failed:\n" + (err?.message || err), "bad");
+        }
+      }
 
-        list.appendChild(el);
-      });
-    }
-
-    async function safeReadText(res){
-      try { return await res.text(); } catch { return ""; }
-    }
-
-    // ✅ FIXED payload: send beatId + licenseKey (required by your backend)
-    async function createOrder(items){
-      const total = Number(calcTotal(items).toFixed(2));
-
-      const payload = {
-        total,
-        currency: "USD",
-        items: items.map(it => ({
-          beatId: it.beatId,                 // ✅ required
-          licenseKey: it.licenseKey,         // ✅ required
-          qty: Math.max(1, Number(it.qty||1)),
-          price: Number(Number(it.price||0).toFixed(2)),
-          title: it.title || "",
-          artwork: it.artwork || ""
-        }))
+      clearBtn.onclick = () => {
+        window.PB_CART.clear();
+        setStatus("");
+        render();
       };
 
-      const res = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify(payload)
+      checkoutBtn.onclick = () => {
+        const items = getItems();
+        if (!items.length) return;
+        openPayModal();
+      };
+
+      payClose?.addEventListener("click", closePayModal);
+      payBackdrop?.addEventListener("click", (e) => {
+        if (e.target === payBackdrop) closePayModal();
       });
 
-      const text = await safeReadText(res);
-      let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+      payWithPaypal?.addEventListener("click", async () => {
+        const items = getItems();
+        if (!items.length) return;
 
-      if (!res.ok){
-        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Create order failed: " + text));
-      }
+        checkoutBtn.disabled = true;
+        setStatus("Creating PayPal checkout…");
+        closePayModal();
 
-      const approveUrl =
-        data.approveUrl ||
-        data.approval_url ||
-        (Array.isArray(data.links) ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href) : null);
-
-      if (!approveUrl){
-        throw new Error("Create order succeeded but no approval URL returned.\nServer response:\n" + (text || JSON.stringify(data)));
-      }
-
-      return { approveUrl, orderId: (data.id || data.orderID || data.orderId || null) };
-    }
-
-    async function capture(orderID){
-      const res = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ orderID })
+        try{
+          const { approveUrl } = await createOrder(items);
+          setStatus("Redirecting to PayPal…");
+          location.href = approveUrl;
+        }catch(err){
+          console.error(err);
+          setStatus("Load failed:\n" + (err?.message || err), "bad");
+          checkoutBtn.disabled = false;
+        }
       });
 
-      const text = await safeReadText(res);
-      let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+      payWithMpesa?.addEventListener("click", () => {
+        mpesaBox.classList.add("show");
+        if (mpesaPhone) mpesaPhone.focus();
+      });
 
-      if (!res.ok){
-        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Capture failed: " + text));
-      }
-      return data;
-    }
+      sendMpesaBtn?.addEventListener("click", async () => {
+        const items = getItems();
+        if (!items.length) return;
 
-    async function handleReturn(){
-      const qs = new URLSearchParams(location.search);
-      const token = qs.get("token") || qs.get("orderID") || qs.get("orderId");
-      if (!token) return;
+        const phone = String(mpesaPhone?.value || "").trim();
+        if (!phone) {
+          alert("Enter phone number");
+          return;
+        }
 
-      setStatus("Finalizing payment…");
-      try{
-        await capture(token);
-        window.PB_CART.clear();
-        setStatus("Payment complete ✅", "ok");
-        history.replaceState({}, "", location.pathname);
+        checkoutBtn.disabled = true;
+        setStatus("Sending M-Pesa STK Push…");
+
+        try {
+          const res = await createMpesaOrder(items, phone);
+          closePayModal();
+          setStatus(res.message || "STK Push sent. Check your phone.", "ok");
+        } catch (err) {
+          console.error(err);
+          setStatus("M-Pesa failed:\n" + (err?.message || err), "bad");
+        } finally {
+          checkoutBtn.disabled = false;
+        }
+      });
+
+      (function(){
+        if (!window.PB_CART) {
+          setStatus("Cart system not loaded. Check /js/cart.js path.", "bad");
+          return;
+        }
         render();
-      }catch(err){
-        console.error(err);
-        setStatus("Payment capture failed:\n" + (err?.message || err), "bad");
-      }
-    }
-
-    clearBtn.onclick = () => { window.PB_CART.clear(); setStatus(""); render(); };
-
-    checkoutBtn.onclick = async () => {
-      const items = getItems();
-      if (!items.length) return;
-
-      checkoutBtn.disabled = true;
-      setStatus("Creating checkout…");
-
-      try{
-        const { approveUrl } = await createOrder(items);
-        setStatus("Redirecting to PayPal…");
-        location.href = approveUrl;
-      }catch(err){
-        console.error(err);
-        setStatus("Load failed:\n" + (err?.message || err), "bad");
-        checkoutBtn.disabled = false;
-      }
-    };
-
-    (function(){
-      if (!window.PB_CART) {
-        setStatus("Cart system not loaded. Check /js/cart.js path.", "bad");
-        return;
-      }
-      render();
-      handleReturn();
-      window.addEventListener("pb-cart-updated", render);
-    })();
-  </script>
+        handleReturn();
+        window.addEventListener("pb-cart-updated", render);
+      })();
+    </script>
 </body>
 </html>
