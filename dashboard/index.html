@@ -2381,11 +2381,12 @@ function resetUploadForm(){
 /* ===========================
    LOAD / RENDER BEATS
 =========================== */
+let __loadBeatsToken = 0;
+
 async function loadBeats(){
   if(!window.currentUser) return;
 
-  $("beats").innerHTML = "";
-  beatsData = [];
+  const myToken = ++__loadBeatsToken;
 
   const q = window.query(
     window.collection(window.db,"beats"),
@@ -2393,22 +2394,66 @@ async function loadBeats(){
   );
 
   const snap = await window.getDocs(q);
-  snap.forEach(d => beatsData.push({ id: d.id, ...d.data() }));
+
+  let nextBeats = [];
+  snap.forEach(d => {
+    nextBeats.push({ id: d.id, ...d.data() });
+  });
+
+  // stop old requests from overwriting new ones
+  if (myToken !== __loadBeatsToken) return;
 
   try{
     const name = getProducerDisplayName();
-    const toFix = beatsData.filter(b => !b.producerName || String(b.producerName).trim() === "");
+    const toFix = nextBeats.filter(
+      b => !b.producerName || String(b.producerName).trim() === ""
+    );
+
     if (toFix.length){
-      await Promise.all(toFix.map(b => window.updateDoc(window.doc(window.db,"beats",b.id), { producerName: name })));
-      beatsData = beatsData.map(b => ({...b, producerName: (b.producerName && String(b.producerName).trim()) ? b.producerName : name }));
+      await Promise.all(
+        toFix.map(b =>
+          window.updateDoc(
+            window.doc(window.db,"beats",b.id),
+            { producerName: name }
+          )
+        )
+      );
+
+      nextBeats = nextBeats.map(b => ({
+        ...b,
+        producerName:
+          (b.producerName && String(b.producerName).trim())
+            ? b.producerName
+            : name
+      }));
     }
-  }catch(e){}
+  }catch(e){
+    console.log("producer name fix skipped", e);
+  }
+
+  beatsData = dedupeBeats(nextBeats);
 
   renderTracks();
   loadDashboardStats();
 }
+
+function dedupeBeats(list){
+  const map = new Map();
+
+  (list || []).forEach((b) => {
+    const id = String(b?.id || "").trim();
+    if (!id) return;
+    if (!map.has(id)) map.set(id, b);
+  });
+
+  return Array.from(map.values());
+}
+
 function renderTracks(){
   $("beats").innerHTML = "";
+
+  beatsData = dedupeBeats(beatsData);
+
   beatsData.forEach((b,i)=>{
     $("beats").innerHTML += `
       <div class="track">
