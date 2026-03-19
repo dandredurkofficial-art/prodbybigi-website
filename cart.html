@@ -262,7 +262,7 @@
       subEl.textContent = `${count} item(s)`;
       totalEl.textContent = money(calcTotal(items));
 
-      newCheckoutBtn.disabled = items.length === 0;
+      checkoutBtn.disabled = items.length === 0;
 
       if (!items.length){
         list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
@@ -493,7 +493,7 @@
       const items = getItems();
       if (!items.length) return;
 
-      newCheckoutBtn.disabled = true;
+      checkoutBtn.disabled = true;
       setStatus("Creating PayPal checkout…");
       closePayModal();
 
@@ -504,7 +504,7 @@
       }catch(err){
         console.error(err);
         setStatus("Load failed:\n" + (err?.message || err), "bad");
-        newCheckoutBtn.disabled = false;
+        checkoutBtn.disabled = false;
       }
     });
 
