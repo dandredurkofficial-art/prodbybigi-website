@@ -221,14 +221,20 @@
     }
 
     function openPayModal(){
+      if (!payBackdrop) return;
+      payBackdrop.style.display = "flex";
       payBackdrop.classList.add("show");
-      mpesaBox.classList.remove("show");
+
+      if (mpesaBox) mpesaBox.classList.remove("show");
       if (mpesaPhone) mpesaPhone.value = "";
     }
 
     function closePayModal(){
+      if (!payBackdrop) return;
       payBackdrop.classList.remove("show");
-      mpesaBox.classList.remove("show");
+      payBackdrop.style.display = "none";
+
+      if (mpesaBox) mpesaBox.classList.remove("show");
     }
 
     function getItems(){
@@ -474,18 +480,17 @@
     checkoutBtn.parentNode.replaceChild(cleanCheckoutBtn, checkoutBtn);
     checkoutBtn = cleanCheckoutBtn;
 
-    checkoutBtn.addEventListener("click", (e) => {
+    checkoutBtn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
-
-      alert("checkout button clicked");
 
       const items = getItems();
       if (!items.length) return;
 
       openPayModal();
-    });
+      return false;
+    };
 
     payClose?.addEventListener("click", closePayModal);
     payBackdrop?.addEventListener("click", (e) => {
