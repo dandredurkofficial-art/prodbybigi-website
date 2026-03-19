@@ -476,21 +476,24 @@
       render();
     };
 
-    const cleanCheckoutBtn = checkoutBtn.cloneNode(true);
-    checkoutBtn.parentNode.replaceChild(cleanCheckoutBtn, checkoutBtn);
-    checkoutBtn = cleanCheckoutBtn;
+    // FORCE override checkout completely
+    document.addEventListener("click", function(e){
+      const btn = e.target.closest("#checkoutBtn");
+      if (!btn) return;
 
-    checkoutBtn.onclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation();
+
+      console.log("CHECKOUT INTERCEPTED ✅");
 
       const items = getItems();
       if (!items.length) return;
 
       openPayModal();
+
       return false;
-    };
+    }, true); // 👈 VERY IMPORTANT (capture phase)
 
     payClose?.addEventListener("click", closePayModal);
     payBackdrop?.addEventListener("click", (e) => {
