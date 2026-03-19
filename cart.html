@@ -31,6 +31,114 @@
     .status{margin-top:12px;color:#a9b1c7;font-size:13px;white-space:pre-wrap}
     .status.ok{color:#22c55e}
     .status.bad{color:#ff7b7b}
+    
+    .price-old{
+      text-decoration:line-through;
+      color:#8b93a7;
+      margin-right:6px;
+    }
+    .cart-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      margin-top:6px;
+      margin-right:6px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+    }
+    .cart-badge.discount{
+      color:#86efac;
+      border-color:rgba(34,197,94,.25);
+      background:rgba(34,197,94,.08);
+    }
+    .cart-badge.bonus{
+      color:#93c5fd;
+      border-color:rgba(59,130,246,.25);
+      background:rgba(59,130,246,.08);
+    }
+
+    .pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9998;
+      padding:16px;
+    }
+    .pay-backdrop.show{
+      display:flex;
+    }
+    .pay-modal{
+      width:min(460px,100%);
+      background:#0f1424;
+      border:1px solid #1d2230;
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 20px 80px rgba(0,0,0,.4);
+    }
+    .pay-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .pay-title{
+      font-size:18px;
+      font-weight:1000;
+    }
+    .pay-close{
+      background:none;
+      border:0;
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+    }
+    .pay-methods{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .pay-method-btn{
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .pay-method-btn.primary{
+      background:#2b6cff;
+      border-color:#2b6cff;
+    }
+    .pay-method-btn.success{
+      background:#16a34a;
+      border-color:#16a34a;
+    }
+    .pay-phone-wrap{
+      display:none;
+      margin-top:10px;
+    }
+    .pay-phone-wrap.show{
+      display:block;
+    }
+    .pay-phone{
+      width:100%;
+      background:#0b0d12;
+      border:1px solid #1d2230;
+      border-radius:12px;
+      padding:12px;
+      color:#fff;
+      margin-bottom:10px;
+      box-sizing:border-box;
+    }
   </style>
 </head>
 <body>
@@ -53,6 +161,28 @@
     </div>
 
     <div class="status" id="status"></div>
+  </div>
+
+    <div class="pay-backdrop" id="payBackdrop">
+    <div class="pay-modal">
+      <div class="pay-head">
+        <div>
+          <div class="pay-title">Choose Payment Method</div>
+          <div class="muted" style="font-size:13px;">Pay with PayPal or M-Pesa</div>
+        </div>
+        <button class="pay-close" id="payClose" type="button">✕</button>
+      </div>
+
+      <div class="pay-methods">
+        <button class="pay-method-btn primary" id="payWithPaypal" type="button">Pay with PayPal</button>
+        <button class="pay-method-btn success" id="payWithMpesa" type="button">Pay with M-Pesa</button>
+      </div>
+
+      <div class="pay-phone-wrap" id="mpesaBox">
+        <input id="mpesaPhone" class="pay-phone" placeholder="2547XXXXXXXX" />
+        <button class="pay-method-btn success" id="sendMpesaBtn" type="button">Send STK Push</button>
+      </div>
+    </div>
   </div>
 
   <script>
