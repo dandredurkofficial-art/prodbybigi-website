@@ -389,8 +389,8 @@
 
     async function createMpesaOrder(items, phone){
       const url = String(window.PB_MPESA_CART_ORDER_URL || "").trim();
-      if (!url || url === "https://stkpush-f65rhsquva-uc.a.run.app") {
-        throw new Error("Set window.PB_MPESA_CART_ORDER_URL to your existing M-Pesa cart endpoint.");
+      if (!url) {
+        throw new Error("Missing M-Pesa cart endpoint.");
       }
 
       const payload = {
