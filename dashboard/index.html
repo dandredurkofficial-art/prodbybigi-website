@@ -3103,53 +3103,39 @@ async function disableCampaign(id){
    LOAD PRODUCER BEATS FOR BOOST
 =============================== */
 
-async function loadProducerBeatsForBoost(){
-
+async function loadProducerBeatsForBoost() {
   const select = document.getElementById("mkBeatId");
+  if (!select) return;
 
-  if(!select) return;
-
-  if(!window.currentUser){
-    setTimeout(loadProducerBeatsForBoost, 1000);
-
+  if (!window.currentUser) {
     select.innerHTML = `<option value="">Loading your beats...</option>`;
-    if (bonusSelect) bonusSelect.innerHTML = "";
     return;
   }
 
-  try{
-    const q = window.query(
-      window.collection(window.db,"beats"),
-      window.where("producerId","==",window.currentUser.uid)
+  try {
+    if (!Array.isArray(beatsData) || !beatsData.length) {
+      await loadBeats();
+    }
+
+    const mine = (beatsData || []).filter(
+      b => String(b.producerId || "") === String(window.currentUser.uid)
     );
 
-    const snap = await window.getDocs(q);
-
-    if(snap.empty){
+    if (!mine.length) {
       select.innerHTML = `<option value="">No beats found</option>`;
-      if (bonusSelect) bonusSelect.innerHTML = "";
       return;
     }
 
-    let mainHtml = `<option value="">Select beat to promote</option>`;
-    let bonusHtml = "";
+    let html = `<option value="">Select beat to promote</option>`;
 
-    snap.forEach(doc=>{
-      const b = doc.data();
-      const title = b.title || "Untitled Beat";
-
-      mainHtml += `<option value="${doc.id}">${title}</option>`;
-      bonusHtml += `<option value="${doc.id}">${title}</option>`;
+    mine.forEach(b => {
+      html += `<option value="${b.id}">${b.title || "Untitled Beat"}</option>`;
     });
 
-    select.innerHTML = mainHtml;
-    renderBonusBeatGrid();
-    if (bonusSelect) bonusSelect.innerHTML = bonusHtml;
-
-  }catch(err){
-    console.error(err);
-    select.innerHTML = `<option value="">Error loading beats</option>`;
-    if (bonusSelect) bonusSelect.innerHTML = "";
+    select.innerHTML = html;
+  } catch (err) {
+    console.error("loadProducerBeatsForBoost error:", err);
+    select.innerHTML = `<option value="">No beats found</option>`;
   }
 }
 
