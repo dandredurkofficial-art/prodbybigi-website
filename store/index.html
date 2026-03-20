@@ -673,6 +673,7 @@
   let STORE_PRODUCER = null;
   let STORE_BEATS = [];
   let FILTERED_BEATS = [];
+  let __STORE_LOADED__ = false;
 
   function money(n){
     const v = Number(n || 0);
@@ -757,24 +758,32 @@
     const snap = await getDocs(qy);
     if (snap.empty) return null;
 
-    const doc = snap.docs[0];
-    const data = doc.data() || {};
-    return { id: doc.id, ...data };
+    const d = snap.docs[0];
+    return { id: d.id, ...d.data() };
   }
 
   async function getProducerFromRoute(){
     const byId = getProducerIdFromUrl();
+    console.log("producerId from URL =", byId);
+
     if (byId){
       const prof = await window.FB.getProducerProfile(byId);
+      console.log("profile from users/{producerId} =", prof);
       return prof ? { id: byId, ...prof } : null;
     }
 
     const host = getCurrentHostname();
+    console.log("current host =", host);
+
     if (host && !isAudioryMainHost(host)){
       const prof = await findProducerByCustomDomain(host);
+      console.log("profile from customDomain =", prof);
+
       if (!prof) return null;
 
       const full = await window.FB.getProducerProfile(prof.id);
+      console.log("full profile =", full);
+
       return full ? { id: prof.id, ...full } : prof;
     }
 
@@ -783,6 +792,7 @@
 
   async function getProducerBeats(producerId){
     const rows = await window.FB.fetchProducerBeats(producerId, 100);
+
     const mapped = (rows || [])
       .map((b) => {
         const title = b.title || "Untitled Beat";
@@ -817,7 +827,10 @@
   }
 
   function setProducerHero(profile){
-    const display = safeText(profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(), "Producer");
+    const display = safeText(
+      profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(),
+      "Producer"
+    );
     const plan = safeText(profile?.plan, "Free");
     const location = safeText(profile?.location, "Location not set");
     const bio = safeText(profile?.bio, "This producer has not added a bio yet.");
@@ -970,6 +983,7 @@
     const user = window.FB?.auth?.currentUser || null;
     if (!user){
       followBtn.textContent = "Sign in to Follow";
+      followBtn.disabled = false;
       return;
     }
 
@@ -1027,12 +1041,18 @@
   }
 
   async function loadStore(){
+    if (__STORE_LOADED__) return;
+    __STORE_LOADED__ = true;
+
     try{
       storeStatus.textContent = "Loading producer store…";
 
       const producer = await getProducerFromRoute();
+      console.log("resolved producer =", producer);
+
       if (!producer){
         storeStatus.textContent = "Producer store not found.";
+        __STORE_LOADED__ = false;
         return;
       }
 
@@ -1052,6 +1072,7 @@
     } catch (err){
       console.error(err);
       storeStatus.textContent = "Failed to load store.";
+      __STORE_LOADED__ = false;
     }
   }
 
@@ -1059,8 +1080,13 @@
   genreFilter?.addEventListener("change", applyFilters);
   followBtn?.addEventListener("click", handleFollowClick);
 
-  window.addEventListener("firebase-ready", loadStore);
   window.addEventListener("firebase-auth-changed", refreshFollowButton);
+
+  if (window.FB && window.FB.db) {
+    loadStore();
+  } else {
+    window.addEventListener("firebase-ready", loadStore, { once: true });
+  }
 </script>
 
 </body>
