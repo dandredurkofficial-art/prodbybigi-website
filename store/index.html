@@ -1,1 +1,1067 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Producer Store | Audiory</title>
+  <meta name="description" content="Audiory producer storefront" />
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
 
+  <style>
+    body{
+      background:#070a12;
+      color:#fff;
+      margin:0;
+      font-family:Inter,system-ui,sans-serif;
+    }
+
+    .store-wrap{
+      max-width:1280px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .store-status{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:18px;
+      padding:18px;
+      color:rgba(255,255,255,.78);
+    }
+
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.10);
+      background:
+        linear-gradient(180deg, rgba(8,15,28,.95), rgba(6,11,20,.98));
+      border-radius:24px;
+      padding:24px;
+      margin-bottom:18px;
+    }
+
+    .hero-banner{
+      height:220px;
+      border-radius:20px;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at top left, rgba(59,130,246,.22), transparent 35%),
+        radial-gradient(circle at top right, rgba(34,197,94,.16), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .hero-banner img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .hero-main{
+      display:flex;
+      gap:18px;
+      align-items:flex-end;
+      margin-top:-58px;
+      position:relative;
+      z-index:2;
+      flex-wrap:wrap;
+    }
+
+    .producer-avatar{
+      width:120px;
+      height:120px;
+      border-radius:26px;
+      overflow:hidden;
+      background:#0f172a;
+      border:4px solid #0b1220;
+      box-shadow:0 18px 50px rgba(0,0,0,.35);
+      flex:0 0 auto;
+      display:grid;
+      place-items:center;
+      font-size:34px;
+      font-weight:900;
+      color:#93c5fd;
+    }
+
+    .producer-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .producer-meta{
+      flex:1;
+      min-width:260px;
+    }
+
+    .producer-name{
+      margin:0;
+      font-size:34px;
+      line-height:1.05;
+      font-weight:1000;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .producer-sub{
+      margin-top:8px;
+      color:rgba(255,255,255,.72);
+      font-size:14px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .hero-bio{
+      margin-top:12px;
+      color:rgba(255,255,255,.82);
+      max-width:760px;
+      line-height:1.6;
+      font-size:14px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .btnx{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:#111827;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .btnx.primary{
+      background:#2563eb;
+      border-color:#2563eb;
+    }
+
+    .btnx.ghost{
+      background:rgba(255,255,255,.05);
+    }
+
+    .chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      color:#e5e7eb;
+      font-weight:800;
+    }
+
+    .store-grid{
+      display:grid;
+      grid-template-columns:300px 1fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.10);
+      background:#0b1220;
+      border-radius:20px;
+      padding:18px;
+    }
+
+    .panel h3{
+      margin:0 0 8px 0;
+      font-size:18px;
+    }
+
+    .muted{
+      color:rgba(255,255,255,.68);
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .section-title{
+      margin:0;
+      font-size:22px;
+      font-weight:1000;
+    }
+
+    .filter-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .filter-row input,
+    .filter-row select{
+      background:#05070c;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      color:#fff;
+      padding:12px;
+      min-width:180px;
+      outline:none;
+    }
+
+    .beats-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:14px;
+    }
+
+    .beat-card{
+      border:1px solid rgba(255,255,255,.10);
+      background:#0a101b;
+      border-radius:18px;
+      overflow:hidden;
+      transition:.18s ease;
+      cursor:pointer;
+    }
+
+    .beat-card:hover{
+      transform:translateY(-2px);
+      border-color:rgba(59,130,246,.40);
+    }
+
+    .beat-cover{
+      position:relative;
+      aspect-ratio:1/1;
+      background:#0f172a;
+      overflow:hidden;
+    }
+
+    .beat-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .cover-fallback{
+      width:100%;
+      height:100%;
+      display:grid;
+      place-items:center;
+      font-weight:1000;
+      color:#9ca3af;
+      font-size:28px;
+    }
+
+    .play-fab{
+      position:absolute;
+      left:12px;
+      bottom:12px;
+      width:46px;
+      height:46px;
+      border-radius:999px;
+      border:none;
+      cursor:pointer;
+      background:rgba(0,0,0,.55);
+      color:#fff;
+      display:grid;
+      place-items:center;
+      box-shadow:0 10px 24px rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+    }
+
+    .play-fab:active{ transform:scale(.98); }
+
+    .playIcon{
+      font-weight:900;
+      font-size:18px;
+      line-height:1;
+    }
+
+    .beat-badges{
+      position:absolute;
+      top:10px;
+      left:10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.35);
+      color:#fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .badge.featured{
+      background:rgba(59,130,246,.18);
+      border-color:rgba(59,130,246,.35);
+    }
+
+    .badge.free{
+      background:rgba(34,197,94,.18);
+      border-color:rgba(34,197,94,.35);
+    }
+
+    .beat-body{
+      padding:14px;
+    }
+
+    .beat-title{
+      font-size:16px;
+      font-weight:900;
+      line-height:1.3;
+      margin:0 0 8px 0;
+    }
+
+    .beat-meta{
+      font-size:13px;
+      color:rgba(255,255,255,.66);
+      line-height:1.5;
+    }
+
+    .beat-foot{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+
+    .price-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-width:102px;
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:900;
+      font-size:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .price-pill:hover{
+      background:rgba(255,255,255,.10);
+    }
+
+    .price-pill .ic{
+      font-size:16px;
+      line-height:1;
+    }
+
+    .empty-box{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:20px;
+      text-align:center;
+      color:rgba(255,255,255,.68);
+    }
+
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      vertical-align:middle;
+    }
+
+    .verify-badge svg{
+      width:16px;
+      height:16px;
+      display:block;
+    }
+
+    .verify-pro svg{ color:#1d9bf0; }
+    .verify-elite svg{ color:#fbbf24; }
+
+    @media (max-width: 980px){
+      .store-grid{
+        grid-template-columns:1fr;
+      }
+
+      .hero-main{
+        margin-top:16px;
+        align-items:flex-start;
+      }
+
+      .producer-avatar{
+        width:96px;
+        height:96px;
+        border-radius:22px;
+      }
+
+      .producer-name{
+        font-size:28px;
+      }
+    }
+
+    @media (max-width: 640px){
+      .store-wrap{
+        padding:14px;
+      }
+
+      .hero{
+        padding:16px;
+      }
+
+      .hero-banner{
+        height:160px;
+      }
+
+      .beats-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .producer-name{
+        font-size:24px;
+      }
+
+      .chip{
+        font-size:12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden" type="button">Sign out</button>
+</nav>
+
+<main class="store-wrap">
+  <div id="storeStatus" class="store-status">Loading producer store…</div>
+
+  <section id="storeContent" style="display:none;">
+    <section class="hero">
+      <div class="hero-banner" id="heroBanner"></div>
+
+      <div class="hero-main">
+        <div class="producer-avatar" id="producerAvatar">A</div>
+
+        <div class="producer-meta">
+          <h1 class="producer-name" id="producerName">Producer</h1>
+
+          <div class="producer-sub">
+            <span id="producerLocation">—</span>
+            <span id="producerPlan">Plan: Free</span>
+            <span id="producerFollowers">0 followers</span>
+          </div>
+
+          <div class="hero-bio" id="producerBio"></div>
+
+          <div class="hero-actions">
+            <button class="btnx primary" id="followBtn" type="button">Follow</button>
+            <a class="btnx ghost" id="producerProfileBtn" href="/producer-profile/">View Profile</a>
+          </div>
+
+          <div class="chips" id="producerStats"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="store-grid">
+      <aside class="panel">
+        <h3>Store Info</h3>
+        <div class="muted" style="line-height:1.7;" id="sideInfo">
+          Producer storefront
+        </div>
+
+        <div style="margin-top:18px;">
+          <h3 style="margin-bottom:8px;">Quick Filters</h3>
+          <div class="filter-row" style="display:block;">
+            <input id="searchInput" placeholder="Search beats..." style="width:100%;margin-bottom:10px;box-sizing:border-box;">
+            <select id="genreFilter" style="width:100%;box-sizing:border-box;">
+              <option value="">All genres</option>
+            </select>
+          </div>
+        </div>
+      </aside>
+
+      <div>
+        <section class="panel" style="margin-bottom:18px;">
+          <div class="section-head">
+            <h2 class="section-title">Featured Beats</h2>
+            <div class="muted" id="featuredCount">0 featured</div>
+          </div>
+          <div class="beats-grid" id="featuredGrid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-head">
+            <h2 class="section-title">All Beats</h2>
+            <div class="muted" id="allCount">0 beats</div>
+          </div>
+          <div class="beats-grid" id="beatsGrid"></div>
+        </section>
+      </div>
+    </section>
+  </section>
+</main>
+
+<!-- License Modal -->
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const storeStatus = $("storeStatus");
+  const storeContent = $("storeContent");
+  const heroBanner = $("heroBanner");
+  const producerAvatar = $("producerAvatar");
+  const producerName = $("producerName");
+  const producerBio = $("producerBio");
+  const producerLocation = $("producerLocation");
+  const producerPlan = $("producerPlan");
+  const producerFollowers = $("producerFollowers");
+  const producerStats = $("producerStats");
+  const producerProfileBtn = $("producerProfileBtn");
+  const followBtn = $("followBtn");
+  const featuredGrid = $("featuredGrid");
+  const beatsGrid = $("beatsGrid");
+  const featuredCount = $("featuredCount");
+  const allCount = $("allCount");
+  const searchInput = $("searchInput");
+  const genreFilter = $("genreFilter");
+  const sideInfo = $("sideInfo");
+
+  let STORE_PRODUCER = null;
+  let STORE_BEATS = [];
+  let FILTERED_BEATS = [];
+
+  function money(n){
+    const v = Number(n || 0);
+    return "$" + (Number.isFinite(v) ? v.toFixed(2) : "0.00");
+  }
+
+  function safeText(v, fallback = "—"){
+    const s = String(v || "").trim();
+    return s || fallback;
+  }
+
+  function initials(name){
+    const t = String(name || "A").trim();
+    if (!t) return "A";
+    const parts = t.split(/\s+/).filter(Boolean);
+    const a = (parts[0] || "A")[0] || "A";
+    const b = (parts[1] || "")[0] || "";
+    return (a + b).toUpperCase();
+  }
+
+  function formatCount(n, label){
+    const x = Number(n || 0);
+    return `${x} ${label}`;
+  }
+
+  function producerBadge(plan){
+    const p = String(plan || "").toLowerCase().trim();
+    if (window.AudioryVerify && typeof window.AudioryVerify.badge === "function"){
+      return window.AudioryVerify.badge(plan);
+    }
+    if (p === "elite"){
+      return `
+        <span class="verify-badge verify-elite" title="Elite verified">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.7 2.1 3.4-.3 1.4 3.1 3.1 1.4-.3 3.4L24 12l-2.1 2.7.3 3.4-3.1 1.4-1.4 3.1-3.4-.3L12 24l-2.7-2.1-3.4.3-1.4-3.1-3.1-1.4.3-3.4L0 12l2.1-2.7-.3-3.4 3.1-1.4 1.4-3.1 3.4.3L12 2zm-1.1 14.2l6-6-1.4-1.4-4.6 4.6-2.4-2.4-1.4 1.4 3.8 3.8z"/></svg>
+        </span>`;
+    }
+    if (p === "pro"){
+      return `
+        <span class="verify-badge verify-pro" title="Pro verified">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.7 2.1 3.4-.3 1.4 3.1 3.1 1.4-.3 3.4L24 12l-2.1 2.7.3 3.4-3.1 1.4-1.4 3.1-3.4-.3L12 24l-2.7-2.1-3.4.3-1.4-3.1-3.1-1.4.3-3.4L0 12l2.1-2.7-.3-3.4 3.1-1.4 1.4-3.1 3.4.3L12 2zm-1.1 14.2l6-6-1.4-1.4-4.6 4.6-2.4-2.4-1.4 1.4 3.8 3.8z"/></svg>
+        </span>`;
+    }
+    return "";
+  }
+
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title || "Beat"}" loading="lazy" />`;
+    return `<div class="cover-fallback">${initials(title)}</div>`;
+  }
+
+  function bannerHTML(profile){
+    const pic = String(profile?.photoURL || "").trim();
+    if (pic){
+      return `<img src="${pic}" alt="${safeText(profile?.displayName, "Producer")}" loading="lazy" />`;
+    }
+    return "";
+  }
+
+  function getProducerIdFromUrl(){
+    const u = new URL(location.href);
+    return String(u.searchParams.get("producerId") || "").trim();
+  }
+
+  function getCurrentHostname(){
+    return String(location.hostname || "").trim().toLowerCase();
+  }
+
+  function isAudioryMainHost(host){
+    return host === "audiory.site" || host === "www.audiory.site" || host.endsWith(".web.app") || host.endsWith(".firebaseapp.com");
+  }
+
+  async function findProducerByCustomDomain(host){
+    const domain = String(host || "").trim().toLowerCase();
+    if (!domain) return null;
+
+    const { collection, query, where, getDocs } = window.FB;
+    const qy = query(
+      collection(window.FB.db, "users"),
+      where("customDomain", "==", domain)
+    );
+
+    const snap = await getDocs(qy);
+    if (snap.empty) return null;
+
+    const doc = snap.docs[0];
+    const data = doc.data() || {};
+    return { id: doc.id, ...data };
+  }
+
+  async function getProducerFromRoute(){
+    const byId = getProducerIdFromUrl();
+    if (byId){
+      const prof = await window.FB.getProducerProfile(byId);
+      return prof ? { id: byId, ...prof } : null;
+    }
+
+    const host = getCurrentHostname();
+    if (host && !isAudioryMainHost(host)){
+      const prof = await findProducerByCustomDomain(host);
+      if (!prof) return null;
+
+      const full = await window.FB.getProducerProfile(prof.id);
+      return full ? { id: prof.id, ...full } : prof;
+    }
+
+    return null;
+  }
+
+  async function getProducerBeats(producerId){
+    const rows = await window.FB.fetchProducerBeats(producerId, 100);
+    const mapped = (rows || [])
+      .map((b) => {
+        const title = b.title || "Untitled Beat";
+        const artwork = b.artwork || "";
+        const previewAudio = b.previewAudio || b.audio || "";
+        const basicPrice = Number(b?.licenses?.basic?.price ?? b.price ?? 0);
+        const isFree = b.freeDownload === true || basicPrice === 0;
+
+        return {
+          ...b,
+          id: b.id,
+          title,
+          artwork,
+          audio: previewAudio,
+          previewAudio,
+          price: basicPrice,
+          isFree,
+          featured: b.featured === true,
+          genre: String(b.genre || "").trim(),
+          bpm: b.bpm || "",
+          key: b.key || "",
+          plays: Number(b.plays || 0),
+          producerId: b.producerId || producerId,
+          producerName: b.producerName || STORE_PRODUCER?.displayName || "",
+          licenses: b.licenses || null,
+          freeDownload: b.freeDownload === true
+        };
+      })
+      .filter((b) => b && b.id && b.published === true);
+
+    return mapped;
+  }
+
+  function setProducerHero(profile){
+    const display = safeText(profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(), "Producer");
+    const plan = safeText(profile?.plan, "Free");
+    const location = safeText(profile?.location, "Location not set");
+    const bio = safeText(profile?.bio, "This producer has not added a bio yet.");
+    const followers = Number(profile?.followersCount || 0);
+    const views = Number(profile?.profileViews || 0);
+
+    heroBanner.innerHTML = bannerHTML(profile);
+
+    const photo = String(profile?.photoURL || "").trim();
+    producerAvatar.innerHTML = photo
+      ? `<img src="${photo}" alt="${display}" loading="lazy" />`
+      : initials(display);
+
+    producerName.innerHTML = `${display} ${producerBadge(plan)}`;
+    producerBio.textContent = bio;
+    producerLocation.textContent = location;
+    producerPlan.textContent = `Plan: ${plan}`;
+    producerFollowers.textContent = formatCount(followers, followers === 1 ? "follower" : "followers");
+
+    producerStats.innerHTML = `
+      <span class="chip">🎵 ${STORE_BEATS.length} beat${STORE_BEATS.length === 1 ? "" : "s"}</span>
+      <span class="chip">👀 ${views} profile view${views === 1 ? "" : "s"}</span>
+      <span class="chip">📍 ${location}</span>
+    `;
+
+    producerProfileBtn.href = `/producer-profile/?producerId=${encodeURIComponent(profile.id)}`;
+
+    sideInfo.innerHTML = `
+      <div><b>Name:</b> ${display}</div>
+      <div><b>Plan:</b> ${plan}</div>
+      <div><b>Location:</b> ${location}</div>
+      <div><b>Followers:</b> ${followers}</div>
+      <div style="margin-top:10px;">${bio}</div>
+    `;
+  }
+
+  function fillGenreFilter(beats){
+    const genres = [...new Set(
+      beats.map(b => String(b.genre || "").trim()).filter(Boolean)
+    )].sort((a,b) => a.localeCompare(b));
+
+    genreFilter.innerHTML = `<option value="">All genres</option>`;
+    genres.forEach(g => {
+      genreFilter.innerHTML += `<option value="${g}">${g}</option>`;
+    });
+  }
+
+  function applyFilters(){
+    const q = String(searchInput.value || "").trim().toLowerCase();
+    const genre = String(genreFilter.value || "").trim().toLowerCase();
+
+    FILTERED_BEATS = STORE_BEATS.filter((b) => {
+      const title = String(b.title || "").toLowerCase();
+      const g = String(b.genre || "").toLowerCase();
+      const inSearch = !q || title.includes(q);
+      const inGenre = !genre || g === genre;
+      return inSearch && inGenre;
+    });
+
+    renderBeatSections();
+  }
+
+  function buildBeatCard(beat){
+    const div = document.createElement("div");
+    div.className = "beat-card";
+    div.setAttribute("data-beat-id", String(beat.id || ""));
+
+    const featuredBadge = beat.featured ? `<span class="badge featured">Featured</span>` : "";
+    const freeBadge = beat.isFree ? `<span class="badge free">Free</span>` : "";
+    const metaLine = [beat.genre || "—", beat.bpm ? `BPM ${beat.bpm}` : "", beat.key || ""].filter(Boolean).join(" • ");
+
+    div.innerHTML = `
+      <div class="beat-cover">
+        ${coverHTML(beat.artwork, beat.title)}
+
+        <div class="beat-badges">
+          ${featuredBadge}
+          ${freeBadge}
+        </div>
+
+        <button class="play-fab"
+          type="button"
+          data-play-btn
+          data-ignore-license="1"
+          data-audio-url="${String(beat.previewAudio || "").replace(/"/g, "&quot;")}"
+          data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}"
+          data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
+          aria-label="Play">
+          <span class="playIcon">▶</span>
+        </button>
+      </div>
+
+      <div class="beat-body">
+        <div class="beat-title">${beat.title || "Untitled Beat"}</div>
+        <div class="beat-meta">${metaLine || "—"}</div>
+
+        <div class="beat-foot">
+          <div class="muted">${beat.plays || 0} plays</div>
+
+          <button class="price-pill price-pill-trigger" type="button"
+            data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
+            data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}">
+            <span class="ic">🛍️</span>
+            <span>${beat.isFree ? "Free" : money(beat.price)}</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    div.addEventListener("click", (e) => {
+      const isPlay = e.target.closest("[data-play-btn]");
+      const isPrice = e.target.closest(".price-pill-trigger");
+      if (isPlay || isPrice) return;
+
+      if (typeof window.PB_OPEN_LICENSE_MODAL === "function"){
+        window.PB_OPEN_LICENSE_MODAL(beat);
+      }
+    });
+
+    return div;
+  }
+
+  function renderBeatList(target, beats){
+    target.innerHTML = "";
+
+    if (!beats.length){
+      target.innerHTML = `<div class="empty-box" style="grid-column:1/-1;">No beats found.</div>`;
+      return;
+    }
+
+    beats.forEach((beat) => {
+      target.appendChild(buildBeatCard(beat));
+    });
+  }
+
+  function renderBeatSections(){
+    const featured = FILTERED_BEATS.filter(b => b.featured === true);
+    const regular = FILTERED_BEATS;
+
+    featuredCount.textContent = `${featured.length} featured`;
+    allCount.textContent = `${regular.length} beat${regular.length === 1 ? "" : "s"}`;
+
+    renderBeatList(featuredGrid, featured);
+    renderBeatList(beatsGrid, regular);
+  }
+
+  async function refreshFollowButton(){
+    if (!STORE_PRODUCER?.id || !followBtn) return;
+
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      followBtn.textContent = "Sign in to Follow";
+      return;
+    }
+
+    if (user.uid === STORE_PRODUCER.id){
+      followBtn.textContent = "Your Store";
+      followBtn.disabled = true;
+      return;
+    }
+
+    try{
+      const following = await window.FB.isFollowingProducer(STORE_PRODUCER.id);
+      followBtn.textContent = following ? "Following" : "Follow";
+      followBtn.dataset.following = following ? "1" : "0";
+      followBtn.disabled = false;
+    }catch{
+      followBtn.textContent = "Follow";
+      followBtn.disabled = false;
+    }
+  }
+
+  async function handleFollowClick(){
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      location.href = "/login/";
+      return;
+    }
+
+    if (!STORE_PRODUCER?.id) return;
+    if (user.uid === STORE_PRODUCER.id) return;
+
+    followBtn.disabled = true;
+
+    try{
+      const isFollowing = followBtn.dataset.following === "1";
+
+      if (isFollowing){
+        await window.FB.unfollowProducer(STORE_PRODUCER.id);
+        STORE_PRODUCER.followersCount = Math.max(0, Number(STORE_PRODUCER.followersCount || 0) - 1);
+      } else {
+        await window.FB.followProducer(STORE_PRODUCER.id);
+        STORE_PRODUCER.followersCount = Number(STORE_PRODUCER.followersCount || 0) + 1;
+      }
+
+      producerFollowers.textContent = formatCount(
+        Number(STORE_PRODUCER.followersCount || 0),
+        Number(STORE_PRODUCER.followersCount || 0) === 1 ? "follower" : "followers"
+      );
+
+      await refreshFollowButton();
+    } catch (err){
+      console.error(err);
+      alert(err?.message || "Could not update follow status");
+      followBtn.disabled = false;
+    }
+  }
+
+  async function loadStore(){
+    try{
+      storeStatus.textContent = "Loading producer store…";
+
+      const producer = await getProducerFromRoute();
+      if (!producer){
+        storeStatus.textContent = "Producer store not found.";
+        return;
+      }
+
+      STORE_PRODUCER = producer;
+      STORE_BEATS = await getProducerBeats(producer.id);
+      FILTERED_BEATS = [...STORE_BEATS];
+
+      window.__LATEST_BEATS__ = STORE_BEATS;
+
+      setProducerHero(producer);
+      fillGenreFilter(STORE_BEATS);
+      renderBeatSections();
+      await refreshFollowButton();
+
+      storeStatus.style.display = "none";
+      storeContent.style.display = "block";
+    } catch (err){
+      console.error(err);
+      storeStatus.textContent = "Failed to load store.";
+    }
+  }
+
+  searchInput?.addEventListener("input", applyFilters);
+  genreFilter?.addEventListener("change", applyFilters);
+  followBtn?.addEventListener("click", handleFollowClick);
+
+  window.addEventListener("firebase-ready", loadStore);
+  window.addEventListener("firebase-auth-changed", refreshFollowButton);
+</script>
+
+</body>
+</html>
