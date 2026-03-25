@@ -30,6 +30,12 @@
       color:rgba(255,255,255,.78);
     }
 
+    .store-shell{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
     .hero{
       position:relative;
       overflow:hidden;
@@ -37,13 +43,13 @@
       background:
         linear-gradient(180deg, rgba(8,15,28,.95), rgba(6,11,20,.98));
       border-radius:24px;
-      padding:24px;
-      margin-bottom:18px;
+      padding:20px;
     }
 
     .hero-banner{
-      height:220px;
-      border-radius:20px;
+      position:relative;
+      height:300px;
+      border-radius:22px;
       overflow:hidden;
       background:
         radial-gradient(circle at top left, rgba(59,130,246,.22), transparent 35%),
@@ -59,28 +65,37 @@
       display:block;
     }
 
-    .hero-main{
+    .hero-banner::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(3,7,14,.10), rgba(3,7,14,.55) 60%, rgba(3,7,14,.82));
+      pointer-events:none;
+    }
+
+    .hero-overlay{
+      position:absolute;
+      inset:auto 0 0 0;
+      z-index:2;
+      padding:22px;
       display:flex;
       gap:18px;
       align-items:flex-end;
-      margin-top:-58px;
-      position:relative;
-      z-index:2;
       flex-wrap:wrap;
     }
 
     .producer-avatar{
-      width:120px;
-      height:120px;
+      width:108px;
+      height:108px;
       border-radius:26px;
       overflow:hidden;
       background:#0f172a;
-      border:4px solid #0b1220;
+      border:4px solid rgba(11,18,32,.95);
       box-shadow:0 18px 50px rgba(0,0,0,.35);
       flex:0 0 auto;
       display:grid;
       place-items:center;
-      font-size:34px;
+      font-size:32px;
       font-weight:900;
       color:#93c5fd;
     }
@@ -99,31 +114,34 @@
 
     .producer-name{
       margin:0;
-      font-size:34px;
+      font-size:36px;
       line-height:1.05;
       font-weight:1000;
       display:flex;
       align-items:center;
       gap:8px;
       flex-wrap:wrap;
+      text-shadow:0 8px 24px rgba(0,0,0,.45);
     }
 
     .producer-sub{
       margin-top:8px;
-      color:rgba(255,255,255,.72);
+      color:rgba(255,255,255,.86);
       font-size:14px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
       align-items:center;
+      text-shadow:0 6px 18px rgba(0,0,0,.4);
     }
 
     .hero-bio{
       margin-top:12px;
-      color:rgba(255,255,255,.82);
-      max-width:760px;
+      color:rgba(255,255,255,.92);
+      max-width:780px;
       line-height:1.6;
       font-size:14px;
+      text-shadow:0 6px 18px rgba(0,0,0,.4);
     }
 
     .hero-actions{
@@ -142,6 +160,10 @@
       color:#fff;
       background:#111827;
       border:1px solid rgba(255,255,255,.10);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
 
     .btnx.primary{
@@ -150,7 +172,7 @@
     }
 
     .btnx.ghost{
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.08);
     }
 
     .chips{
@@ -165,12 +187,13 @@
       align-items:center;
       gap:8px;
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.08);
       padding:8px 12px;
       border-radius:999px;
       font-size:13px;
       color:#e5e7eb;
       font-weight:800;
+      backdrop-filter:blur(8px);
     }
 
     .store-grid{
@@ -178,6 +201,18 @@
       grid-template-columns:300px 1fr;
       gap:18px;
       align-items:start;
+    }
+
+    .left-col{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .right-col{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
     }
 
     .panel{
@@ -188,7 +223,7 @@
     }
 
     .panel h3{
-      margin:0 0 8px 0;
+      margin:0 0 10px 0;
       font-size:18px;
     }
 
@@ -227,6 +262,10 @@
       padding:12px;
       min-width:180px;
       outline:none;
+    }
+
+    .filter-row input::placeholder{
+      color:rgba(255,255,255,.45);
     }
 
     .beats-grid{
@@ -407,13 +446,82 @@
     .verify-pro svg{ color:#1d9bf0; }
     .verify-elite svg{ color:#fbbf24; }
 
+    .social-links{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .social-link{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:#fff;
+      text-decoration:none;
+      font-size:13px;
+      font-weight:800;
+      word-break:break-word;
+    }
+
+    .social-link:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .services-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .service-item{
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      font-size:13px;
+      color:#e5e7eb;
+      font-weight:800;
+    }
+
+    .store-search-bar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .store-search-bar input,
+    .store-search-bar select{
+      flex:1;
+      min-width:180px;
+      background:#05070c;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:12px;
+      color:#fff;
+      padding:12px;
+      outline:none;
+    }
+
     @media (max-width: 980px){
       .store-grid{
         grid-template-columns:1fr;
       }
 
-      .hero-main{
-        margin-top:16px;
+      .hero-banner{
+        height:250px;
+      }
+
+      .hero-overlay{
+        position:relative;
+        inset:auto;
+        padding:16px 0 0;
         align-items:flex-start;
       }
 
@@ -438,7 +546,7 @@
       }
 
       .hero-banner{
-        height:160px;
+        height:180px;
       }
 
       .beats-grid{
@@ -452,6 +560,10 @@
       .chip{
         font-size:12px;
       }
+
+      .store-search-bar{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
@@ -461,7 +573,7 @@
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</div>
+      <div class="logo" id="storeBrandText">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -507,69 +619,101 @@
   <div id="storeStatus" class="store-status">Loading producer store…</div>
 
   <section id="storeContent" style="display:none;">
-    <section class="hero">
-      <div class="hero-banner" id="heroBanner"></div>
+    <div class="store-shell">
 
-      <div class="hero-main">
-        <div class="producer-avatar" id="producerAvatar">A</div>
+      <section class="hero">
+        <div class="hero-banner" id="heroBanner"></div>
 
-        <div class="producer-meta">
-          <h1 class="producer-name" id="producerName">Producer</h1>
+        <div class="hero-overlay">
+          <div class="producer-avatar" id="producerAvatar">A</div>
 
-          <div class="producer-sub">
-            <span id="producerLocation">—</span>
-            <span id="producerPlan">Plan: Free</span>
-            <span id="producerFollowers">0 followers</span>
-          </div>
+          <div class="producer-meta">
+            <h1 class="producer-name" id="producerName">Producer</h1>
 
-          <div class="hero-bio" id="producerBio"></div>
+            <div class="producer-sub">
+              <span id="producerLocation">—</span>
+              <span id="producerPlan">Plan: Free</span>
+              <span id="producerFollowers">0 followers</span>
+            </div>
 
-          <div class="hero-actions">
-            <button class="btnx primary" id="followBtn" type="button">Follow</button>
-            <a class="btnx ghost" id="producerProfileBtn" href="/producer-profile/">View Profile</a>
-          </div>
+            <div class="hero-bio" id="producerBio"></div>
 
-          <div class="chips" id="producerStats"></div>
-        </div>
-      </div>
-    </section>
+            <div class="hero-actions">
+              <button class="btnx primary" id="followBtn" type="button">Follow</button>
+              <a class="btnx ghost" id="producerProfileBtn" href="/producer-profile/">View Profile</a>
+            </div>
 
-    <section class="store-grid">
-      <aside class="panel">
-        <h3>Store Info</h3>
-        <div class="muted" style="line-height:1.7;" id="sideInfo">
-          Producer storefront
-        </div>
-
-        <div style="margin-top:18px;">
-          <h3 style="margin-bottom:8px;">Quick Filters</h3>
-          <div class="filter-row" style="display:block;">
-            <input id="searchInput" placeholder="Search beats..." style="width:100%;margin-bottom:10px;box-sizing:border-box;">
-            <select id="genreFilter" style="width:100%;box-sizing:border-box;">
-              <option value="">All genres</option>
-            </select>
+            <div class="chips" id="producerStats"></div>
           </div>
         </div>
-      </aside>
+      </section>
 
-      <div>
-        <section class="panel" style="margin-bottom:18px;">
-          <div class="section-head">
-            <h2 class="section-title">Featured Beats</h2>
-            <div class="muted" id="featuredCount">0 featured</div>
-          </div>
-          <div class="beats-grid" id="featuredGrid"></div>
-        </section>
+      <section class="panel">
+        <div class="section-head">
+          <h2 class="section-title">Search the Store</h2>
+          <div class="muted">Find beats fast</div>
+        </div>
 
-        <section class="panel">
-          <div class="section-head">
-            <h2 class="section-title">All Beats</h2>
-            <div class="muted" id="allCount">0 beats</div>
-          </div>
-          <div class="beats-grid" id="beatsGrid"></div>
-        </section>
-      </div>
-    </section>
+        <div class="store-search-bar">
+          <input id="searchInput" placeholder="Search beats..." />
+          <select id="genreFilter">
+            <option value="">All genres</option>
+          </select>
+        </div>
+      </section>
+
+      <section class="store-grid">
+        <aside class="left-col">
+
+          <section class="panel">
+            <h3>Store Info</h3>
+            <div class="muted" style="line-height:1.7;" id="sideInfo">
+              Producer storefront
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3>Services</h3>
+            <div class="services-list" id="servicesList">
+              <div class="service-item">Custom beats</div>
+              <div class="service-item">Mixing & mastering</div>
+              <div class="service-item">Exclusive licenses</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3>Social Links</h3>
+            <div class="social-links" id="socialLinks">
+              <div class="muted">No social links added yet.</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h3>Quick Filters</h3>
+            <div class="muted">Use search and genre to filter this producer’s beats.</div>
+          </section>
+
+        </aside>
+
+        <div class="right-col">
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">Featured Beats</h2>
+              <div class="muted" id="featuredCount">0 featured</div>
+            </div>
+            <div class="beats-grid" id="featuredGrid"></div>
+          </section>
+
+          <section class="panel">
+            <div class="section-head">
+              <h2 class="section-title">All Beats</h2>
+              <div class="muted" id="allCount">0 beats</div>
+            </div>
+            <div class="beats-grid" id="beatsGrid"></div>
+          </section>
+        </div>
+      </section>
+    </div>
   </section>
 </main>
 
@@ -669,6 +813,9 @@
   const searchInput = $("searchInput");
   const genreFilter = $("genreFilter");
   const sideInfo = $("sideInfo");
+  const servicesList = $("servicesList");
+  const socialLinks = $("socialLinks");
+  const storeBrandText = $("storeBrandText");
 
   let STORE_PRODUCER = null;
   let STORE_BEATS = [];
@@ -725,7 +872,7 @@
   }
 
   function bannerHTML(profile){
-    const pic = String(profile?.photoURL || "").trim();
+    const pic = String(profile?.storeBannerURL || profile?.bannerURL || profile?.photoURL || "").trim();
     if (pic){
       return `<img src="${pic}" alt="${safeText(profile?.displayName, "Producer")}" loading="lazy" />`;
     }
@@ -743,6 +890,10 @@
 
   function isAudioryMainHost(host){
     return host === "audiory.site" || host === "www.audiory.site" || host.endsWith(".web.app") || host.endsWith(".firebaseapp.com");
+  }
+
+  function isCustomStoreHost(host){
+    return !!host && !isAudioryMainHost(host);
   }
 
   async function findProducerByCustomDomain(host){
@@ -764,26 +915,19 @@
 
   async function getProducerFromRoute(){
     const byId = getProducerIdFromUrl();
-    console.log("producerId from URL =", byId);
 
     if (byId){
       const prof = await window.FB.getProducerProfile(byId);
-      console.log("profile from users/{producerId} =", prof);
       return prof ? { id: byId, ...prof } : null;
     }
 
     const host = getCurrentHostname();
-    console.log("current host =", host);
 
     if (host && !isAudioryMainHost(host)){
       const prof = await findProducerByCustomDomain(host);
-      console.log("profile from customDomain =", prof);
-
       if (!prof) return null;
 
       const full = await window.FB.getProducerProfile(prof.id);
-      console.log("full profile =", full);
-
       return full ? { id: prof.id, ...full } : prof;
     }
 
@@ -826,6 +970,83 @@
     return mapped;
   }
 
+  function parseServices(profile){
+    const raw =
+      profile?.services ||
+      profile?.storeServices ||
+      profile?.servicesText ||
+      "";
+
+    if (Array.isArray(raw)){
+      return raw.map(x => String(x || "").trim()).filter(Boolean);
+    }
+
+    return String(raw || "")
+      .split(/[\n,|]/g)
+      .map(x => String(x || "").trim())
+      .filter(Boolean);
+  }
+
+  function renderServices(profile){
+    const items = parseServices(profile);
+
+    if (!items.length){
+      servicesList.innerHTML = `
+        <div class="service-item">Custom beats</div>
+        <div class="service-item">Exclusive licenses</div>
+        <div class="service-item">Mixing & mastering</div>
+      `;
+      return;
+    }
+
+    servicesList.innerHTML = "";
+    items.forEach(item => {
+      const el = document.createElement("div");
+      el.className = "service-item";
+      el.textContent = item;
+      servicesList.appendChild(el);
+    });
+  }
+
+  function buildSocialList(profile){
+    const candidates = [
+      { label: "Instagram", value: profile?.instagram || profile?.instagramUrl || profile?.socialInstagram || "" },
+      { label: "TikTok", value: profile?.tiktok || profile?.tiktokUrl || profile?.socialTiktok || "" },
+      { label: "YouTube", value: profile?.youtube || profile?.youtubeUrl || profile?.socialYoutube || "" },
+      { label: "X / Twitter", value: profile?.twitter || profile?.twitterUrl || profile?.xUrl || "" },
+      { label: "Facebook", value: profile?.facebook || profile?.facebookUrl || profile?.socialFacebook || "" },
+      { label: "WhatsApp", value: profile?.whatsapp || profile?.whatsappUrl || profile?.socialWhatsapp || "" },
+      { label: "Website", value: profile?.website || profile?.websiteUrl || "" }
+    ];
+
+    return candidates
+      .map(item => ({
+        label: item.label,
+        value: String(item.value || "").trim()
+      }))
+      .filter(item => item.value);
+  }
+
+  function renderSocialLinks(profile){
+    const links = buildSocialList(profile);
+
+    if (!links.length){
+      socialLinks.innerHTML = `<div class="muted">No social links added yet.</div>`;
+      return;
+    }
+
+    socialLinks.innerHTML = "";
+    links.forEach(link => {
+      const a = document.createElement("a");
+      a.className = "social-link";
+      a.href = link.value;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = `<span>${link.label}</span><span>↗</span>`;
+      socialLinks.appendChild(a);
+    });
+  }
+
   function setProducerHero(profile){
     const display = safeText(
       profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(),
@@ -836,6 +1057,7 @@
     const bio = safeText(profile?.bio, "This producer has not added a bio yet.");
     const followers = Number(profile?.followersCount || 0);
     const views = Number(profile?.profileViews || 0);
+    const customHost = isCustomStoreHost(getCurrentHostname());
 
     heroBanner.innerHTML = bannerHTML(profile);
 
@@ -863,8 +1085,17 @@
       <div><b>Plan:</b> ${plan}</div>
       <div><b>Location:</b> ${location}</div>
       <div><b>Followers:</b> ${followers}</div>
+      <div><b>Beats:</b> ${STORE_BEATS.length}</div>
       <div style="margin-top:10px;">${bio}</div>
     `;
+
+    renderServices(profile);
+    renderSocialLinks(profile);
+
+    document.title = `${display} Store`;
+    if (storeBrandText){
+      storeBrandText.textContent = customHost ? display : "Audiory";
+    }
   }
 
   function fillGenreFilter(beats){
@@ -1048,7 +1279,6 @@
       storeStatus.textContent = "Loading producer store…";
 
       const producer = await getProducerFromRoute();
-      console.log("resolved producer =", producer);
 
       if (!producer){
         storeStatus.textContent = "Producer store not found.";
