@@ -999,21 +999,21 @@
   }
 
   function renderServices(profile){
-  const items = parseServices(profile);
+    const items = parseServices(profile);
 
-  if (!items.length){
-    servicesList.innerHTML = `<div class="muted">No services added yet.</div>`;
-    return;
+    if (!items.length){
+      servicesList.innerHTML = `<div class="muted">No services added yet.</div>`;
+      return;
+    }
+
+    servicesList.innerHTML = "";
+    items.forEach(item => {
+      const el = document.createElement("div");
+      el.className = "service-item";
+      el.textContent = item;
+      servicesList.appendChild(el);
+    });
   }
-
-  servicesList.innerHTML = "";
-  items.forEach(item => {
-    const el = document.createElement("div");
-    el.className = "service-item";
-    el.textContent = item;
-    servicesList.appendChild(el);
-  });
-}
 
   function buildSocialList(profile){
     const candidates = [
