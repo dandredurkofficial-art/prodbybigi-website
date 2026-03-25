@@ -832,6 +832,43 @@
     return s || fallback;
   }
 
+  function safeUrl(url){
+  let s = String(url || "").trim();
+  if (!s) return "";
+  if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+  return s;
+}
+
+function renderSocialLinks(profile){
+  if (!storeSocials) return;
+
+  const socials = [
+    { label: "Instagram", value: profile?.storeInstagram || profile?.instagram || "" },
+    { label: "TikTok", value: profile?.storeTiktok || profile?.tiktok || "" },
+    { label: "YouTube", value: profile?.storeYoutube || profile?.youtube || "" },
+    { label: "BeatStars", value: profile?.storeBeatstars || profile?.beatstars || "" },
+    { label: "Website", value: profile?.storeWebsite || profile?.website || "" }
+  ];
+
+  const valid = socials.filter(item => String(item.value || "").trim());
+
+  if (!valid.length){
+    storeSocials.innerHTML = `<div class="muted">No social links added yet.</div>`;
+    return;
+  }
+
+  storeSocials.innerHTML = valid.map(item => `
+    <a
+      href="${safeUrl(item.value)}"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="btnx ghost"
+      style="text-decoration:none;text-align:center;">
+      ${item.label}
+    </a>
+  `).join("");
+}
+
   function initials(name){
     const t = String(name || "A").trim();
     if (!t) return "A";
