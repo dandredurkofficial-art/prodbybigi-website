@@ -879,7 +879,14 @@
   }
 
   function bannerHTML(profile){
-    const pic = String(profile?.storeBannerURL || profile?.bannerURL || profile?.photoURL || "").trim();
+    const pic = String(
+      profile?.storeSettings?.bannerUrl ||
+      profile?.storeSettings?.bannerURL ||
+      profile?.storeBannerURL || 
+      profile?.bannerURL || 
+      profile?.photoURL || 
+      ""
+    ).trim();
     if (pic){
       return `<img src="${pic}" alt="${safeText(profile?.displayName, "Producer")}" loading="lazy" />`;
     }
