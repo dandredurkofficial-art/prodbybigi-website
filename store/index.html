@@ -1434,139 +1434,139 @@
   }
 
   function buildBeatRow(beat){
-  const row = document.createElement("div");
-  row.className = "beat-row";
-  row.setAttribute("data-beat-id", String(beat.id || ""));
+    const row = document.createElement("div");
+    row.className = "beat-row";
+    row.setAttribute("data-beat-id", String(beat.id || ""));
 
-  const metaLine = [
-    beat.genre || "—",
-    beat.bpm ? `BPM ${beat.bpm}` : "",
-    beat.key || ""
-  ].filter(Boolean).join(" • ");
+    const metaLine = [
+      beat.genre || "—",
+      beat.bpm ? `BPM ${beat.bpm}` : "",
+      beat.key || ""
+    ].filter(Boolean).join(" • ");
 
-  const featuredBadge = beat.featured
-    ? `<span class="beat-row-badge featured">Featured</span>`
-    : "";
+    const featuredBadge = beat.featured
+      ? `<span class="beat-row-badge featured">Featured</span>`
+      : "";
 
-  const freeBadge = beat.isFree
-    ? `<span class="beat-row-badge free">Free</span>`
-    : "";
+    const freeBadge = beat.isFree
+      ? `<span class="beat-row-badge free">Free</span>`
+      : "";
 
-  row.innerHTML = `
-    <div class="beat-row-cover">
-      ${coverHTML(beat.artwork, beat.title)}
-    </div>
-
-    <div class="beat-row-main">
-      <div class="beat-row-title">${beat.title || "Untitled Beat"}</div>
-      <div class="beat-row-meta">${metaLine || "—"}</div>
-      <div class="beat-row-badges">
-        ${featuredBadge}
-        ${freeBadge}
+    row.innerHTML = `
+      <div class="beat-row-cover">
+        ${coverHTML(beat.artwork, beat.title)}
       </div>
-    </div>
 
-    <div class="beat-row-actions">
-      <button
-        class="beat-download-btn"
-        type="button"
-        data-play-btn
-        aria-label="Play preview"
-        title="Play preview">
-        <span class="playIcon">▶</span>
-      </button>
-    </div>
+      <div class="beat-row-main">
+        <div class="beat-row-title">${beat.title || "Untitled Beat"}</div>
+        <div class="beat-row-meta">${metaLine || "—"}</div>
+        <div class="beat-row-badges">
+          ${featuredBadge}
+          ${freeBadge}
+        </div>
+      </div>
 
-    <div class="beat-row-actions">
-      <button
-        class="beat-add-btn"
-        type="button"
-        aria-label="Add to cart">
-        <span>🛒</span>
-        <span>${beat.isFree ? "ADD" : `ADD ${money(beat.price)}`}</span>
-      </button>
-    </div>
-  `;
+      <div class="beat-row-actions">
+        <button
+          class="beat-download-btn"
+          type="button"
+          data-play-btn
+          aria-label="Play preview"
+          title="Play preview">
+          <span class="playIcon">▶</span>
+        </button>
+      </div>
 
-  const playBtn = row.querySelector("[data-play-btn]");
-  const playIcon = row.querySelector(".playIcon");
-  const addBtn = row.querySelector(".beat-add-btn");
+      <div class="beat-row-actions">
+        <button
+          class="beat-add-btn"
+          type="button"
+          aria-label="Add to cart">
+          <span>🛒</span>
+          <span>${beat.isFree ? "ADD" : `ADD ${money(beat.price)}`}</span>
+        </button>
+      </div>
+    `;
 
-  playBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    const playBtn = row.querySelector("[data-play-btn]");
+    const playIcon = row.querySelector(".playIcon");
+    const addBtn = row.querySelector(".beat-add-btn");
 
-    try {
-      const previewUrl = String(beat.previewAudio || beat.audio || "").trim();
-      if (!previewUrl) {
-        alert("No preview available for this beat.");
+    playBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      try {
+        const previewUrl = String(beat.previewAudio || beat.audio || "").trim();
+        if (!previewUrl) {
+          alert("No preview available for this beat.");
+          return;
+        }
+
+        if (!window.__storeAudio) {
+          window.__storeAudio = new Audio();
+        }
+
+        const audio = window.__storeAudio;
+
+        // if same beat is already playing -> pause
+        if (audio.src === previewUrl && !audio.paused) {
+          audio.pause();
+          document.querySelectorAll(".beat-row .playIcon").forEach(el => {
+            el.textContent = "▶";
+          });
+          return;
+        }
+
+        // load new preview if changed
+        if (audio.src !== previewUrl) {
+          audio.src = previewUrl;
+        }
+
+        audio.play();
+
+        document.querySelectorAll(".beat-row .playIcon").forEach(el => {
+          el.textContent = "▶";
+        });
+        if (playIcon) playIcon.textContent = "❚❚";
+
+        audio.onpause = () => {
+          document.querySelectorAll(".beat-row .playIcon").forEach(el => {
+            el.textContent = "▶";
+          });
+        };
+
+        audio.onended = () => {
+          document.querySelectorAll(".beat-row .playIcon").forEach(el => {
+            el.textContent = "▶";
+          });
+        };
+      } catch (err) {
+        console.error(err);
+        alert("Could not play preview");
+      }
+    });
+
+    addBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
+        window.PB_OPEN_LICENSE_MODAL(beat);
         return;
       }
 
-      if (!window.__storeAudio) {
-        window.__storeAudio = new Audio();
+      alert("License modal is not loaded.");
+    });
+
+    row.addEventListener("click", () => {
+      if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
+        window.PB_OPEN_LICENSE_MODAL(beat);
       }
+    });
 
-      const audio = window.__storeAudio;
-
-      // if same beat is already playing -> pause
-      if (audio.src === previewUrl && !audio.paused) {
-        audio.pause();
-        document.querySelectorAll(".beat-row .playIcon").forEach(el => {
-          el.textContent = "▶";
-        });
-        return;
-      }
-
-      // load new preview if changed
-      if (audio.src !== previewUrl) {
-        audio.src = previewUrl;
-      }
-
-      audio.play();
-
-      document.querySelectorAll(".beat-row .playIcon").forEach(el => {
-        el.textContent = "▶";
-      });
-      if (playIcon) playIcon.textContent = "❚❚";
-
-      audio.onpause = () => {
-        document.querySelectorAll(".beat-row .playIcon").forEach(el => {
-          el.textContent = "▶";
-        });
-      };
-
-      audio.onended = () => {
-        document.querySelectorAll(".beat-row .playIcon").forEach(el => {
-          el.textContent = "▶";
-        });
-      };
-    } catch (err) {
-      console.error(err);
-      alert("Could not play preview");
-    }
-  });
-
-  addBtn?.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
-      window.PB_OPEN_LICENSE_MODAL(beat);
-      return;
-    }
-
-    alert("License modal is not loaded.");
-  });
-
-  row.addEventListener("click", () => {
-    if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
-      window.PB_OPEN_LICENSE_MODAL(beat);
-    }
-  });
-
-  return row;
-}
+    return row;
+  }
 
   function renderBeatList(target, beats){
     target.innerHTML = "";
