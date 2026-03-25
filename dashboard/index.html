@@ -3913,6 +3913,139 @@ async function saveProfile(){
   btn.textContent = "Save Profile";
 }
 
+async function uploadStoreBanner(){
+  try{
+    if (!window.currentUser) return alert("Login again.");
+    if (!isElite()){
+      alert("Store customization is Elite only.");
+      showPage("upgrade", document.getElementById("navUpg"));
+      return;
+    }
+
+    const file = await pickFile("image/*");
+    if (!file) return;
+
+    $("storeBannerStatus").innerHTML = `<div class="upload-status">Uploading store banner…</div>`;
+
+    const uid = window.auth?.currentUser?.uid || "anon";
+    const ext = extFromName(file.name) || ".jpg";
+
+    const upload = await uploadToStorage({
+      file,
+      path: `audiory/producers/store/${uid}/banner${ext}`,
+      onProgress:(p)=> $("storeBannerStatus").innerHTML = `<div class="upload-status">Uploading store banner… ${p}%</div>`
+    });
+
+    storeBannerUrl = upload.downloadURL;
+    storeBannerPath = upload.storagePath;
+
+    $("storeBannerBox").innerHTML = `<img src="${storeBannerUrl}">`;
+    $("storeBannerStatus").innerHTML = `<div class="upload-status">✔ Store banner uploaded</div>`;
+  }catch(err){
+    console.error(err);
+    $("storeBannerStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
+    alert("Store banner upload failed: " + (err?.message || err));
+  }
+}
+
+function fillStoreSettingsForm(){
+  const prof = window.currentProfile || {};
+  const store = prof.storeSettings || {};
+
+  $("storeHeadline").value = store.headline || "";
+  $("storeSubtitle").value = store.subtitle || "";
+  $("storeBio").value = store.bio || "";
+  $("storeServices").value = Array.isArray(store.services) ? store.services.join(", ") : (store.servicesText || "");
+  $("storeInstagram").value = store.instagram || "";
+  $("storeTiktok").value = store.tiktok || "";
+  $("storeYoutube").value = store.youtube || "";
+  $("storeWhatsapp").value = store.whatsapp || "";
+
+  $("storeShowFeatured").checked = store.showFeatured !== false;
+  $("storeShowAllBeats").checked = store.showAllBeats !== false;
+  $("storeShowFollow").checked = store.showFollow !== false;
+  $("storeShowProfileBtn").checked = store.showProfileBtn !== false;
+
+  $("storePrimaryColor").value = store.primaryColor || "#2563eb";
+  $("storeAccentColor").value = store.accentColor || "#22c55e";
+
+  storeBannerUrl = store.bannerUrl || "";
+  storeBannerPath = store.bannerPath || "";
+
+  if (storeBannerUrl){
+    $("storeBannerBox").innerHTML = `<img src="${storeBannerUrl}">`;
+  } else {
+    $("storeBannerBox").innerHTML = `<span>Store Banner Preview</span>`;
+  }
+
+  $("saveStoreStatus").textContent = "";
+}
+
+async function saveStoreSettings(){
+  if (!window.currentUser) return alert("Login again.");
+  if (!isElite()){
+    alert("Store customization is Elite only.");
+    showPage("upgrade", document.getElementById("navUpg"));
+    return;
+  }
+
+  const btn = $("saveStoreBtn");
+  btn.disabled = true;
+  btn.textContent = "Saving...";
+
+  try{
+    const servicesRaw = ($("storeServices").value || "").trim();
+
+    const storeSettings = {
+      headline: ($("storeHeadline").value || "").trim(),
+      subtitle: ($("storeSubtitle").value || "").trim(),
+      bio: ($("storeBio").value || "").trim(),
+
+      services: servicesRaw
+        ? servicesRaw.split(",").map(x => x.trim()).filter(Boolean)
+        : [],
+
+      servicesText: servicesRaw,
+
+      instagram: ($("storeInstagram").value || "").trim(),
+      tiktok: ($("storeTiktok").value || "").trim(),
+      youtube: ($("storeYoutube").value || "").trim(),
+      whatsapp: ($("storeWhatsapp").value || "").trim(),
+
+      bannerUrl: storeBannerUrl || "",
+      bannerPath: storeBannerPath || "",
+
+      showFeatured: $("storeShowFeatured").checked === true,
+      showAllBeats: $("storeShowAllBeats").checked === true,
+      showFollow: $("storeShowFollow").checked === true,
+      showProfileBtn: $("storeShowProfileBtn").checked === true,
+
+      primaryColor: ($("storePrimaryColor").value || "#2563eb").trim(),
+      accentColor: ($("storeAccentColor").value || "#22c55e").trim(),
+
+      updatedAt: Date.now()
+    };
+
+    await window.updateDoc(
+      window.doc(window.db, "users", window.currentUser.uid),
+      { storeSettings }
+    );
+
+    window.currentProfile = {
+      ...(window.currentProfile || {}),
+      storeSettings
+    };
+
+    $("saveStoreStatus").textContent = "✅ Store settings updated";
+  }catch(err){
+    console.error(err);
+    alert("Save failed: " + (err?.message || err));
+  }
+
+  btn.disabled = false;
+  btn.textContent = "Save Store Settings";
+}
+
 /* Domain connect (unchanged) */
 async function saveCustomDomain(){
   if (!window.currentUser) return alert("Login again.");
