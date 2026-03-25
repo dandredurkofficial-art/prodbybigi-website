@@ -1417,7 +1417,7 @@ function beatLimitForTier(t){
 function setPlanChips(){
   const tier = getPlanTier();
   const label = "Plan: " + tier.charAt(0).toUpperCase() + tier.slice(1);
-  ["planChipAdv","planChipMkt","planChipMsg","planChipUpg","planChipDash"].forEach(id=>{
+  ["planChipAdv","planChipMkt","planChipMsg","planChipUpg","planChipDash","planChipStore"].forEach(id=>{
     const el = $(id);
     if (el) el.textContent = label;
   });
