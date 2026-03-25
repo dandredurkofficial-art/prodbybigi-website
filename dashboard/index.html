@@ -1609,6 +1609,7 @@ function showPage(id, el){
   if (sb) sb.classList.remove("open");
 
   if (id === "settings") fillSettingsForm();
+  if (id === "customizeStore") fillStoreSettingsForm();
   if (id === "soundkits") loadKits();
   if (id === "finance") {
     loadPayoutUI();
