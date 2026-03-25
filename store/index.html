@@ -833,21 +833,21 @@
   }
 
   function safeUrl(url){
-  let s = String(url || "").trim();
-  if (!s) return "";
-  if (!/^https?:\/\//i.test(s)) s = "https://" + s;
-  return s;
-}
+    let s = String(url || "").trim();
+    if (!s) return "";
+    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
+    return s;
+  }
 
-function renderSocialLinks(profile){
-  if (!storeSocials) return;
+  function renderSocialLinks(profile){
+    if (!storeSocials) return;
 
-  const socials = [
-    { label: "Instagram", value: profile?.storeInstagram || profile?.instagram || "" },
-    { label: "TikTok", value: profile?.storeTiktok || profile?.tiktok || "" },
-    { label: "YouTube", value: profile?.storeYoutube || profile?.youtube || "" },
-    { label: "BeatStars", value: profile?.storeBeatstars || profile?.beatstars || "" },
-    { label: "Website", value: profile?.storeWebsite || profile?.website || "" }
+    const socials = [
+      { label: "Instagram", value: profile?.storeInstagram || profile?.instagram || "" },
+      { label: "TikTok", value: profile?.storeTiktok || profile?.tiktok || "" },
+      { label: "YouTube", value: profile?.storeYoutube || profile?.youtube || "" },
+      { label: "BeatStars", value: profile?.storeBeatstars || profile?.beatstars || "" },
+      { label: "Website", value: profile?.storeWebsite || profile?.website || "" }
   ];
 
   const valid = socials.filter(item => String(item.value || "").trim());
