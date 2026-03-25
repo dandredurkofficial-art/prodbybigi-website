@@ -1533,6 +1533,11 @@ function refreshProLocks(){
   const dUnlocked = $("domainUnlocked");
   if (dLocked) dLocked.style.display = elite ? "none" : "block";
   if (dUnlocked) dUnlocked.style.display = elite ? "block" : "none";
+
+  const storeLocked = $("storeLocked");
+  const storeUnlocked = $("storeUnlocked");
+  if (storeLocked) storeLocked.style.display = elite ? "none" : "block";
+  if (storeUnlocked) storeUnlocked.style.display = elite ? "block" : "none";
 }
 window.refreshProLocks = refreshProLocks;
 
