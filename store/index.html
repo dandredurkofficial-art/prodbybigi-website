@@ -978,25 +978,25 @@
   }
 
   function parseServices(profile){
-  const raw =
-    profile?.services ??
-    profile?.storeServices ??
-    profile?.servicesText ??
-    "";
+    const raw =
+      profile?.services ??
+      profile?.storeServices ??
+      profile?.servicesText ??
+      "";
 
-  if (Array.isArray(raw)){
-    return raw.map(x => String(x || "").trim()).filter(Boolean);
+    if (Array.isArray(raw)){
+      return raw.map(x => String(x || "").trim()).filter(Boolean);
+    }
+
+    if (raw && typeof raw === "object"){
+      return Object.values(raw).map(x => String(x || "").trim()).filter(Boolean);
+    }
+
+    return String(raw || "")
+      .split(/[\n,|]/g)
+      .map(x => String(x || "").trim())
+      .filter(Boolean);
   }
-
-  if (raw && typeof raw === "object"){
-    return Object.values(raw).map(x => String(x || "").trim()).filter(Boolean);
-  }
-
-  return String(raw || "")
-    .split(/[\n,|]/g)
-    .map(x => String(x || "").trim())
-    .filter(Boolean);
-}
 
   function renderServices(profile){
     const items = parseServices(profile);
