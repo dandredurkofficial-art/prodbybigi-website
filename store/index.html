@@ -1519,15 +1519,30 @@
   }
 
   function renderBeatSections(){
-    const featured = FILTERED_BEATS.filter(b => b.featured === true);
-    const regular = FILTERED_BEATS;
+  const featured = FILTERED_BEATS.filter(b => b.featured === true);
+  const regular = FILTERED_BEATS;
 
-    featuredCount.textContent = `${featured.length} featured`;
-    allCount.textContent = `${regular.length} beat${regular.length === 1 ? "" : "s"}`;
+  featuredCount.textContent = `${featured.length} featured`;
+  allCount.textContent = `${regular.length} beat${regular.length === 1 ? "" : "s"}`;
 
-    renderBeatList(featuredGrid, featured);
-    renderBeatList(beatsGrid, regular);
+  featuredGrid.innerHTML = "";
+  if (!featured.length){
+    featuredGrid.innerHTML = `<div class="empty-box" style="grid-column:1/-1;">No featured beats.</div>`;
+  } else {
+    featured.forEach((beat) => {
+      featuredGrid.appendChild(buildBeatCard(beat));
+    });
   }
+
+  beatsGrid.innerHTML = "";
+  if (!regular.length){
+    beatsGrid.innerHTML = `<div class="empty-box">No beats found.</div>`;
+  } else {
+    regular.forEach((beat) => {
+      beatsGrid.appendChild(buildBeatRow(beat));
+    });
+  }
+}
 
   async function refreshFollowButton(){
     if (!STORE_PRODUCER?.id || !followBtn) return;
