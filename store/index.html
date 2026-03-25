@@ -982,6 +982,8 @@
       profile?.services ??
       profile?.storeServices ??
       profile?.servicesText ??
+      profile?.storeSettings?.services ??
+      profile?.storeSettings?.servicesText ??
       "";
 
     if (Array.isArray(raw)){
@@ -1016,14 +1018,80 @@
   }
 
   function buildSocialList(profile){
+    const store = profile?.storeSettings || {};
+
     const candidates = [
-      { label: "Instagram", value: profile?.instagram || profile?.instagramUrl || profile?.socialInstagram || "" },
-      { label: "TikTok", value: profile?.tiktok || profile?.tiktokUrl || profile?.socialTiktok || "" },
-      { label: "YouTube", value: profile?.youtube || profile?.youtubeUrl || profile?.socialYoutube || "" },
-      { label: "X / Twitter", value: profile?.twitter || profile?.twitterUrl || profile?.xUrl || "" },
-      { label: "Facebook", value: profile?.facebook || profile?.facebookUrl || profile?.socialFacebook || "" },
-      { label: "WhatsApp", value: profile?.whatsapp || profile?.whatsappUrl || profile?.socialWhatsapp || "" },
-      { label: "Website", value: profile?.website || profile?.websiteUrl || "" }
+      {
+        label: "Instagram",
+        value:
+          profile?.instagram ||
+          profile?.storeInstagram ||
+          profile?.instagramUrl ||
+          profile?.socialInstagram ||
+          store?.instagram ||
+          ""
+      },
+      {
+        label: "TikTok",
+        value:
+          profile?.tiktok ||
+          profile?.storeTiktok ||
+          profile?.tiktokUrl ||
+          profile?.socialTiktok ||
+          store?.tiktok ||
+          ""
+      },
+      {
+        label: "YouTube",
+        value:
+          profile?.youtube ||
+          profile?.storeYoutube ||
+          profile?.youtubeUrl ||
+          profile?.socialYoutube ||
+          store?.youtube ||
+          ""
+      },
+      {
+        label: "X / Twitter",
+        value:
+          profile?.twitter ||
+          profile?.x ||
+          profile?.storeTwitter ||
+          profile?.twitterUrl ||
+          profile?.xUrl ||
+          store?.twitter ||
+          store?.x ||
+          ""
+      },
+      {
+        label: "Facebook",
+        value:
+          profile?.facebook ||
+          profile?.storeFacebook ||
+          profile?.facebookUrl ||
+          profile?.socialFacebook ||
+          store?.facebook ||
+          ""
+      },
+      {
+        label: "WhatsApp",
+        value:
+          profile?.whatsapp ||
+          profile?.storeWhatsapp ||
+          profile?.whatsappUrl ||
+          profile?.socialWhatsapp ||
+          store?.whatsapp ||
+          ""
+      },
+      {
+        label: "Website",
+        value:
+          profile?.website ||
+          profile?.storeWebsite ||
+          profile?.websiteUrl ||
+          store?.website ||
+          ""
+      }
     ];
 
     return candidates
@@ -1031,11 +1099,13 @@
         label: item.label,
         value: String(item.value || "").trim()
       }))
-      .filter(item => item.value);
+      .filter(item => item.value)
+  
   }
-
   function renderSocialLinks(profile){
     const links = buildSocialList(profile);
+
+    if (!socialLinks) return;
 
     if (!links.length){
       socialLinks.innerHTML = `<div class="muted">No social links added yet.</div>`;
@@ -1043,10 +1113,24 @@
     }
 
     socialLinks.innerHTML = "";
+
     links.forEach(link => {
+      let href = String(link.value || "").trim();
+
+      if (link.label === "WhatsApp") {
+        const digits = href.replace(/[^\d]/g, "");
+        if (digits && !/^https?:\/\//i.test(href)) {
+          href = `https://wa.me/${digits}`;
+        } else {
+          href = safeUrl(href);
+        }
+      } else {
+        href = safeUrl(href);
+      }
+
       const a = document.createElement("a");
       a.className = "social-link";
-      a.href = safeUrl(link.value);
+      a.href = href;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.innerHTML = `<span>${link.label}</span><span>↗</span>`;
@@ -1294,6 +1378,8 @@
       }
 
       STORE_PRODUCER = producer;
+      console.log("STORE PRODUCER DATA =", STORE_PRODUCER);
+
       STORE_BEATS = await getProducerBeats(producer.id);
       FILTERED_BEATS = [...STORE_BEATS];
 
