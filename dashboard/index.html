@@ -1096,6 +1096,91 @@
   </div>
 </section>
 
+<!-- ✅ CUSTOMIZE STORE -->
+<section id="customizeStore" class="page">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Customize Store</h2>
+        <div class="subtle">Customize your storefront appearance and content.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="planChipStore">Plan: Free</span>
+      </div>
+    </div>
+
+    <div id="storeLocked" class="lockbox" style="display:none;">
+      🔒 Customize Store is Elite only.
+      <div style="margin-top:10px;">
+        <button class="btn2" type="button" onclick="showPage('upgrade', document.getElementById('navUpg'))">Upgrade to Elite</button>
+      </div>
+    </div>
+
+    <div id="storeUnlocked" style="display:none; margin-top:14px;">
+      <div class="okbox">Unlocked ✅</div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Store Content</h3>
+
+        <input id="storeHeadline" placeholder="Store headline (e.g. Premium Trap Beats by Bigi Beats)" />
+        <input id="storeSubtitle" placeholder="Store subtitle (e.g. Beats, services, custom production)" />
+        <textarea id="storeBio" placeholder="Short store intro for your storefront"></textarea>
+
+        <input id="storeServices" placeholder="Services offered (comma separated, e.g. Mixing, Mastering, Custom Beats)" />
+
+        <input id="storeInstagram" placeholder="Instagram link" />
+        <input id="storeTiktok" placeholder="TikTok link" />
+        <input id="storeYoutube" placeholder="YouTube link" />
+        <input id="storeWhatsapp" placeholder="WhatsApp link or number" />
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Store Banner</h3>
+
+        <div class="artwork-preview" id="storeBannerBox">
+          <span>Store Banner Preview</span>
+        </div>
+        <div id="storeBannerStatus"></div>
+        <button class="primary" type="button" onclick="uploadStoreBanner()">Upload Store Banner</button>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Store Display</h3>
+
+        <div class="toggle">
+          <label>Show Featured Beats</label>
+          <input type="checkbox" id="storeShowFeatured" checked />
+        </div>
+
+        <div class="toggle">
+          <label>Show All Beats</label>
+          <input type="checkbox" id="storeShowAllBeats" checked />
+        </div>
+
+        <div class="toggle">
+          <label>Show Follow Button</label>
+          <input type="checkbox" id="storeShowFollow" checked />
+        </div>
+
+        <div class="toggle">
+          <label>Show View Profile Button</label>
+          <input type="checkbox" id="storeShowProfileBtn" checked />
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin-top:0;">Store Theme</h3>
+
+        <input id="storePrimaryColor" placeholder="Primary color (e.g. #2563eb)" />
+        <input id="storeAccentColor" placeholder="Accent color (e.g. #22c55e)" />
+      </div>
+
+      <button class="primary" id="saveStoreBtn" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
+      <div id="saveStoreStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+    </div>
+  </div>
+</section>
+
 <!-- ✅ SETTINGS -->
 <section id="settings" class="page">
   <div class="card">
