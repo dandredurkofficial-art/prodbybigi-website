@@ -839,36 +839,6 @@
     return s;
   }
 
-  function renderSocialLinks(profile){
-    if (!storeSocials) return;
-
-    const socials = [
-      { label: "Instagram", value: profile?.storeInstagram || profile?.instagram || "" },
-      { label: "TikTok", value: profile?.storeTiktok || profile?.tiktok || "" },
-      { label: "YouTube", value: profile?.storeYoutube || profile?.youtube || "" },
-      { label: "BeatStars", value: profile?.storeBeatstars || profile?.beatstars || "" },
-      { label: "Website", value: profile?.storeWebsite || profile?.website || "" }
-  ];
-
-  const valid = socials.filter(item => String(item.value || "").trim());
-
-  if (!valid.length){
-    storeSocials.innerHTML = `<div class="muted">No social links added yet.</div>`;
-    return;
-  }
-
-  storeSocials.innerHTML = valid.map(item => `
-    <a
-      href="${safeUrl(item.value)}"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="btnx ghost"
-      style="text-decoration:none;text-align:center;">
-      ${item.label}
-    </a>
-  `).join("");
-}
-
   function initials(name){
     const t = String(name || "A").trim();
     if (!t) return "A";
@@ -1008,21 +978,25 @@
   }
 
   function parseServices(profile){
-    const raw =
-      profile?.services ||
-      profile?.storeServices ||
-      profile?.servicesText ||
-      "";
+  const raw =
+    profile?.services ??
+    profile?.storeServices ??
+    profile?.servicesText ??
+    "";
 
-    if (Array.isArray(raw)){
-      return raw.map(x => String(x || "").trim()).filter(Boolean);
-    }
-
-    return String(raw || "")
-      .split(/[\n,|]/g)
-      .map(x => String(x || "").trim())
-      .filter(Boolean);
+  if (Array.isArray(raw)){
+    return raw.map(x => String(x || "").trim()).filter(Boolean);
   }
+
+  if (raw && typeof raw === "object"){
+    return Object.values(raw).map(x => String(x || "").trim()).filter(Boolean);
+  }
+
+  return String(raw || "")
+    .split(/[\n,|]/g)
+    .map(x => String(x || "").trim())
+    .filter(Boolean);
+}
 
   function renderServices(profile){
     const items = parseServices(profile);
@@ -1076,7 +1050,7 @@
     links.forEach(link => {
       const a = document.createElement("a");
       a.className = "social-link";
-      a.href = link.value;
+      a.href = safeUrl(link.value);
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       a.innerHTML = `<span>${link.label}</span><span>↗</span>`;
