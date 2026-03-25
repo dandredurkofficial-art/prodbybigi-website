@@ -1283,76 +1283,76 @@
   }
 
   function buildBeatRow(beat){
-  const row = document.createElement("div");
-  row.className = "beat-row";
-  row.setAttribute("data-beat-id", String(beat.id || ""));
+    const row = document.createElement("div");
+    row.className = "beat-row";
+    row.setAttribute("data-beat-id", String(beat.id || ""));
 
-  const metaLine = [
-    beat.genre || "—",
-    beat.bpm ? `BPM ${beat.bpm}` : "",
-    beat.key || ""
-  ].filter(Boolean).join(" • ");
+    const metaLine = [
+      beat.genre || "—",
+      beat.bpm ? `BPM ${beat.bpm}` : "",
+      beat.key || ""
+    ].filter(Boolean).join(" • ");
 
-  const featuredBadge = beat.featured
-    ? `<span class="beat-row-badge featured">Featured</span>`
-    : "";
+    const featuredBadge = beat.featured
+      ? `<span class="beat-row-badge featured">Featured</span>`
+      : "";
 
-  const freeBadge = beat.isFree
-    ? `<span class="beat-row-badge free">Free</span>`
-    : "";
+    const freeBadge = beat.isFree
+      ? `<span class="beat-row-badge free">Free</span>`
+      : "";
 
-  row.innerHTML = `
-    <div class="beat-row-cover">
-      ${coverHTML(beat.artwork, beat.title)}
-    </div>
-
-    <div class="beat-row-main">
-      <div class="beat-row-title">${beat.title || "Untitled Beat"}</div>
-      <div class="beat-row-meta">${metaLine || "—"}</div>
-      <div class="beat-row-badges">
-        ${featuredBadge}
-        ${freeBadge}
+    row.innerHTML = `
+      <div class="beat-row-cover">
+        ${coverHTML(beat.artwork, beat.title)}
       </div>
-    </div>
 
-    <div class="beat-row-actions">
-      <button
-        class="beat-download-btn"
-        type="button"
-        data-play-btn
-        data-ignore-license="1"
-        data-audio-url="${String(beat.previewAudio || "").replace(/"/g, "&quot;")}"
-        data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}"
-        data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
-        aria-label="Play preview"
-        title="Play preview"
-      >▶</button>
-    </div>
+      <div class="beat-row-main">
+        <div class="beat-row-title">${beat.title || "Untitled Beat"}</div>
+        <div class="beat-row-meta">${metaLine || "—"}</div>
+        <div class="beat-row-badges">
+          ${featuredBadge}
+          ${freeBadge}
+        </div>
+      </div>
 
-    <div class="beat-row-actions">
-      <button
-        class="beat-add-btn price-pill-trigger"
-        type="button"
-        data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
-        data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}">
-        <span>🛒</span>
-        <span>${beat.isFree ? "ADD" : `ADD ${money(beat.price)}`}</span>
-      </button>
-    </div>
-  `;
+      <div class="beat-row-actions">
+        <button
+          class="beat-download-btn"
+          type="button"
+          data-play-btn
+          data-ignore-license="1"
+          data-audio-url="${String(beat.previewAudio || "").replace(/"/g, "&quot;")}"
+          data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}"
+          data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
+          aria-label="Play preview"
+          title="Play preview"
+        >▶</button>
+      </div>
 
-  row.addEventListener("click", (e) => {
-    const isPlay = e.target.closest("[data-play-btn]");
-    const isPrice = e.target.closest(".price-pill-trigger");
-    if (isPlay || isPrice) return;
+      <div class="beat-row-actions">
+        <button
+          class="beat-add-btn price-pill-trigger"
+          type="button"
+          data-beat-id="${String(beat.id || "").replace(/"/g, "&quot;")}"
+          data-producer-id="${String(beat.producerId || "").replace(/"/g, "&quot;")}">
+          <span>🛒</span>
+          <span>${beat.isFree ? "ADD" : `ADD ${money(beat.price)}`}</span>
+        </button>
+      </div>
+    `;
 
-    if (typeof window.PB_OPEN_LICENSE_MODAL === "function"){
-      window.PB_OPEN_LICENSE_MODAL(beat);
-    }
-  });
+    row.addEventListener("click", (e) => {
+      const isPlay = e.target.closest("[data-play-btn]");
+      const isPrice = e.target.closest(".price-pill-trigger");
+      if (isPlay || isPrice) return;
 
-  return row;
-}
+      if (typeof window.PB_OPEN_LICENSE_MODAL === "function"){
+        window.PB_OPEN_LICENSE_MODAL(beat);
+      }
+    });
+
+    return row;
+  }
 
   function renderBeatList(target, beats){
     target.innerHTML = "";
