@@ -3978,6 +3978,80 @@ function fillStoreSettingsForm(){
     $("storeBannerBox").innerHTML = `<span>Store Banner Preview</span>`;
   }
 
+  const navLinks = Array.isArray(store.navLinks) ? store.navLinks : [];
+  $("navLabel1").value = navLinks[0]?.label || "Tracks";
+  $("navValue1").value = navLinks[0]?.value || "#tracks";
+  $("navLabel2").value = navLinks[1]?.label || "Sound Kits";
+  $("navValue2").value = navLinks[1]?.value || "#soundkits";
+  $("navLabel3").value = navLinks[2]?.label || "Services";
+  $("navValue3").value = navLinks[2]?.value || "#services";
+  $("navLabel4").value = navLinks[3]?.label || "Licensing";
+  $("navValue4").value = navLinks[3]?.value || "#licensing";
+  $("navLabel5").value = navLinks[4]?.label || "Contact";
+  $("navValue5").value = navLinks[4]?.value || "#contact";
+
+  const contact = store.contact || {};
+  $("storeContactEmail").value = contact.email || "";
+  $("storeContactPhone").value = contact.phone || "";
+  $("storeContactWhatsapp").value = contact.whatsapp || "";
+  $("storeContactInstagram").value = contact.instagram || "";
+  $("storeContactLocation").value = contact.location || "";
+  $("storeContactBookingText").value = contact.bookingText || "";
+
+  const licensing = store.licensing || {};
+  const cards = Array.isArray(licensing.cards) ? licensing.cards : [];
+
+  $("licensingTitle").value = licensing.title || "Licensing Info";
+  $("licensingIntro").value = licensing.intro || "";
+
+  $("license1Name").value = cards[0]?.name || "Basic License";
+  $("license1Price").value = cards[0]?.price || "";
+  $("license1Features").value = Array.isArray(cards[0]?.features) ? cards[0].features.join("\n") : "";
+  $("license1Btn").value = cards[0]?.buttonText || "Read Full License";
+
+  $("license2Name").value = cards[1]?.name || "Premium License";
+  $("license2Price").value = cards[1]?.price || "";
+  $("license2Features").value = Array.isArray(cards[1]?.features) ? cards[1].features.join("\n") : "";
+  $("license2Btn").value = cards[1]?.buttonText || "Read Full License";
+
+  $("license3Name").value = cards[2]?.name || "Exclusive License";
+  $("license3Price").value = cards[2]?.price || "";
+  $("license3Features").value = Array.isArray(cards[2]?.features) ? cards[2].features.join("\n") : "";
+  $("license3Btn").value = cards[2]?.buttonText || "Read Full License";
+
+  const servicesPage = store.servicesPage || {};
+  const items = Array.isArray(servicesPage.items) ? servicesPage.items : [];
+
+  $("servicesPageTitle").value = servicesPage.title || "Services";
+  $("servicesPageIntro").value = servicesPage.intro || "";
+
+  $("service1Title").value = items[0]?.title || "";
+  $("service1Desc").value = items[0]?.description || "";
+  $("service1Price").value = items[0]?.price || "";
+
+  $("service2Title").value = items[1]?.title || "";
+  $("service2Desc").value = items[1]?.description || "";
+  $("service2Price").value = items[1]?.price || "";
+
+  $("service3Title").value = items[2]?.title || "";
+  $("service3Desc").value = items[2]?.description || "";
+  $("service3Price").value = items[2]?.price || "";
+
+  const footer = store.footer || {};
+  const footerLinks = Array.isArray(footer.links) ? footer.links : [];
+
+  $("footerCopyrightText").value = footer.copyrightText || "";
+  $("footerShowSocialIcons").checked = footer.showSocialIcons !== false;
+
+  $("footerLink1Label").value = footerLinks[0]?.label || "Privacy Policy";
+  $("footerLink1Url").value = footerLinks[0]?.url || "";
+
+  $("footerLink2Label").value = footerLinks[1]?.label || "Terms of Use";
+  $("footerLink2Url").value = footerLinks[1]?.url || "";
+
+  $("footerLink3Label").value = footerLinks[2]?.label || "Cookies";
+  $("footerLink3Url").value = footerLinks[2]?.url || "";
+
   $("saveStoreStatus").textContent = "";
 }
 
@@ -3996,6 +4070,68 @@ async function saveStoreSettings(){
   try{
     const servicesRaw = ($("storeServices").value || "").trim();
 
+    const navLinks = [
+      { label: ($("navLabel1").value || "").trim(), enabled: true, type: "anchor", value: ($("navValue1").value || "").trim() },
+      { label: ($("navLabel2").value || "").trim(), enabled: true, type: "anchor", value: ($("navValue2").value || "").trim() },
+      { label: ($("navLabel3").value || "").trim(), enabled: true, type: "anchor", value: ($("navValue3").value || "").trim() },
+      { label: ($("navLabel4").value || "").trim(), enabled: true, type: "anchor", value: ($("navValue4").value || "").trim() },
+      { label: ($("navLabel5").value || "").trim(), enabled: true, type: "anchor", value: ($("navValue5").value || "").trim() }
+    ].filter(x => x.label && x.value);
+
+    const licensingCards = [
+      {
+        name: ($("license1Name").value || "").trim(),
+        price: ($("license1Price").value || "").trim(),
+        features: ($("license1Features").value || "").split("\n").map(x => x.trim()).filter(Boolean),
+        buttonText: ($("license1Btn").value || "").trim()
+      },
+      {
+        name: ($("license2Name").value || "").trim(),
+        price: ($("license2Price").value || "").trim(),
+        features: ($("license2Features").value || "").split("\n").map(x => x.trim()).filter(Boolean),
+        buttonText: ($("license2Btn").value || "").trim()
+      },
+      {
+        name: ($("license3Name").value || "").trim(),
+        price: ($("license3Price").value || "").trim(),
+        features: ($("license3Features").value || "").split("\n").map(x => x.trim()).filter(Boolean),
+        buttonText: ($("license3Btn").value || "").trim()
+      }
+    ].filter(x => x.name);
+
+    const servicesItems = [
+      {
+        title: ($("service1Title").value || "").trim(),
+        description: ($("service1Desc").value || "").trim(),
+        price: ($("service1Price").value || "").trim()
+      },
+      {
+        title: ($("service2Title").value || "").trim(),
+        description: ($("service2Desc").value || "").trim(),
+        price: ($("service2Price").value || "").trim()
+      },
+      {
+        title: ($("service3Title").value || "").trim(),
+        description: ($("service3Desc").value || "").trim(),
+        price: ($("service3Price").value || "").trim()
+      }
+    ].filter(x => x.title || x.description || x.price);
+
+    const footerLinks = [
+      {
+        label: ($("footerLink1Label").value || "").trim(),
+        url: ($("footerLink1Url").value || "").trim()
+      },
+      {
+        label: ($("footerLink2Label").value || "").trim(),
+        url: ($("footerLink2Url").value || "").trim()
+      },
+      {
+        label: ($("footerLink3Label").value || "").trim(),
+        url: ($("footerLink3Url").value || "").trim()
+      }
+    ].filter(x => x.label && x.url);
+
     const storeSettings = {
       headline: ($("storeHeadline").value || "").trim(),
       subtitle: ($("storeSubtitle").value || "").trim(),
@@ -4004,7 +4140,6 @@ async function saveStoreSettings(){
       services: servicesRaw
         ? servicesRaw.split(",").map(x => x.trim()).filter(Boolean)
         : [],
-
       servicesText: servicesRaw,
 
       instagram: ($("storeInstagram").value || "").trim(),
@@ -4022,6 +4157,35 @@ async function saveStoreSettings(){
 
       primaryColor: ($("storePrimaryColor").value || "#2563eb").trim(),
       accentColor: ($("storeAccentColor").value || "#22c55e").trim(),
+
+      navLinks,
+
+      contact: {
+        email: ($("storeContactEmail").value || "").trim(),
+        phone: ($("storeContactPhone").value || "").trim(),
+        whatsapp: ($("storeContactWhatsapp").value || "").trim(),
+        instagram: ($("storeContactInstagram").value || "").trim(),
+        location: ($("storeContactLocation").value || "").trim(),
+        bookingText: ($("storeContactBookingText").value || "").trim()
+      },
+
+      licensing: {
+        title: ($("licensingTitle").value || "").trim() || "Licensing Info",
+        intro: ($("licensingIntro").value || "").trim(),
+        cards: licensingCards
+      },
+
+      servicesPage: {
+        title: ($("servicesPageTitle").value || "").trim() || "Services",
+        intro: ($("servicesPageIntro").value || "").trim(),
+        items: servicesItems
+      },
+
+      footer: {
+        copyrightText: ($("footerCopyrightText").value || "").trim(),
+        showSocialIcons: $("footerShowSocialIcons").checked === true,
+        links: footerLinks
+      },
 
       updatedAt: Date.now()
     };
