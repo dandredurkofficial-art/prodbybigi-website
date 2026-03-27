@@ -4176,9 +4176,37 @@ async function verifyCustomDomain(){
     }
 
     if (j.ok){
+      const cfStatus = String(j?.cloudflare?.status || "").trim();
+      const sslStatus = String(j?.cloudflare?.sslStatus || "").trim();
+
       if (status){
-        status.innerHTML = `<div class="okbox">✅ Verified! Domain connected: <b>${d}</b></div>`;
-      }
+        status.innerHTML = `
+          <div class="okbox">
+        ✅ TXT verified for <b>${d}</b><br>
+        Cloudflare hostname status: <b>${cfStatus || "unknown"}</b><br>
+        SSL status: <b>${sslStatus || "unknown"}</b>
+      </div>
+      <div class="subtle" style="margin-top:10px;">
+        If SSL is still pending, wait a little and test the domain again.
+      </div>
+    `;
+  }
+
+  if (current){
+    current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
+  }
+
+  window.currentProfile = {
+    ...(window.currentProfile || {}),
+    customDomain: d,
+    customDomainVerified: true,
+    customDomainStatus: "verified",
+    cloudflareHostnameStatus: cfStatus,
+    cloudflareSslStatus: sslStatus
+  };
+
+  refreshProLocks();
+}
 
       if (current){
         current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
