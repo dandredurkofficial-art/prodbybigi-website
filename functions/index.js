@@ -412,6 +412,148 @@ async function dohTxtLookup(name) {
 }
 
 /* =========================================================
+✅ CLOUDFLARE HELPERS
+========================================================= */
+async function cfCreateCustomHostname({ zoneId, apiToken, hostname, uid }) {
+  const r = await fetchFn(
+    `https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(zoneId)}/custom_hostnames`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        hostname,
+        ssl: {
+          method: "txt",
+          type: "dv",
+        },
+      }),
+    }
+  );
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok || j?.success === false) {
+    const msg =
+      j?.errors?.[0]?.message ||
+      j?.result?.message ||
+      `Cloudflare create custom hostname failed (${r.status})`;
+    throw new Error(msg);
+  }
+
+  const result = j?.result || {};
+
+  // optional: attach metadata so Worker can read it later if needed
+  if (result?.id && uid) {
+    try {
+      await cfUpdateCustomHostnameMetadata({
+        zoneId,
+        apiToken,
+        customHostnameId: result.id,
+        hostname,
+        uid,
+      });
+    } catch (e) {
+      console.warn("cfUpdateCustomHostnameMetadata failed:", e?.message || e);
+    }
+  }
+
+  return result;
+}
+
+async function cfUpdateCustomHostnameMetadata({
+  zoneId,
+  apiToken,
+  customHostnameId,
+  hostname,
+  uid,
+}) {
+  const r = await fetchFn(
+    `https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(zoneId)}/custom_hostnames/${encodeURIComponent(customHostnameId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ssl: {
+          method: "txt",
+          type: "dv",
+        },
+        custom_metadata: {
+          uid: String(uid || ""),
+          hostname: String(hostname || ""),
+          app: "audiory",
+        },
+      }),
+    }
+  );
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok || j?.success === false) {
+    const msg =
+      j?.errors?.[0]?.message ||
+      `Cloudflare update custom hostname metadata failed (${r.status})`;
+    throw new Error(msg);
+  }
+
+  return j?.result || {};
+}
+
+async function cfGetCustomHostname({ zoneId, apiToken, customHostnameId }) {
+  const r = await fetchFn(
+    `https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(zoneId)}/custom_hostnames/${encodeURIComponent(customHostnameId)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok || j?.success === false) {
+    const msg =
+      j?.errors?.[0]?.message ||
+      `Cloudflare get custom hostname failed (${r.status})`;
+    throw new Error(msg);
+  }
+
+  return j?.result || {};
+}
+
+async function cfFindCustomHostnameByName({ zoneId, apiToken, hostname }) {
+  const r = await fetchFn(
+    `https://api.cloudflare.com/client/v4/zones/${encodeURIComponent(zoneId)}/custom_hostnames?hostname=${encodeURIComponent(hostname)}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const j = await r.json().catch(() => ({}));
+
+  if (!r.ok || j?.success === false) {
+    const msg =
+      j?.errors?.[0]?.message ||
+      `Cloudflare list custom hostnames failed (${r.status})`;
+    throw new Error(msg);
+  }
+
+  const arr = Array.isArray(j?.result) ? j.result : [];
+  return arr.find((x) => String(x?.hostname || "").toLowerCase() === String(hostname || "").toLowerCase()) || null;
+}
+
+/* =========================================================
 ✅ SENDGRID EMAIL HELPERS
 ========================================================= */
 let SENDGRID_READY = false;
@@ -810,7 +952,7 @@ exports.verifySubscription = onRequest(
 exports.createDomainChallenge = onRequest(
   {
     region: "us-central1",
-    secrets: [], // no secrets needed
+    secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID"],
   },
   async (req, res) => {
     const pre = handleCorsPreflight(req, res);
@@ -871,7 +1013,7 @@ exports.createDomainChallenge = onRequest(
 exports.verifyDomainDns = onRequest(
   {
     region: "us-central1",
-    secrets: [], // no secrets needed
+    secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID"],
   },
   async (req, res) => {
     const pre = handleCorsPreflight(req, res);
@@ -879,27 +1021,65 @@ exports.verifyDomainDns = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
 
       const { uid, domain } = req.body || {};
       if (!uid) return res.status(400).json({ error: "uid is required" });
       if (!domain) return res.status(400).json({ error: "domain is required" });
 
       const d = normDomain(domain);
+      if (!d.includes(".")) {
+        return res.status(400).json({ error: "Invalid domain" });
+      }
 
       const usnap = await db.collection("users").doc(uid).get();
-      if (!usnap.exists) return res.status(404).json({ error: "User not found" });
+      if (!usnap.exists) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
       const u = usnap.data() || {};
       const expected = String(u.customDomainToken || "").trim();
-      if (!expected) return res.status(400).json({ error: "No token found. Create challenge first." });
-      if (normDomain(u.customDomain || "") !== d) return res.status(400).json({ error: "Domain mismatch. Save the same domain first." });
 
+      if (!expected) {
+        return res.status(400).json({ error: "No token found. Create challenge first." });
+      }
+
+      if (normDomain(u.customDomain || "") !== d) {
+        return res.status(400).json({ error: "Domain mismatch. Save the same domain first." });
+      }
+
+      // 1) Verify TXT first (keep your existing behavior)
       const txtHost = `_audiory-verify.${d}`;
       const txts = await dohTxtLookup(txtHost);
-      const ok = txts.some((v) => String(v || "").includes(expected));
+      const txtOk = txts.some((v) => String(v || "").includes(expected));
 
-      if (!ok) {
+      if (!txtOk) {
+        await db.collection("domains").doc(safeIdFromDomain(d)).set(
+          {
+            domain: d,
+            uid,
+            verified: false,
+            txtVerified: false,
+            status: "pending_dns",
+            checkedHost: txtHost,
+            checkedTxts: txts,
+            updatedAt: Date.now(),
+          },
+          { merge: true }
+        );
+
+        await db.collection("users").doc(uid).set(
+          {
+            customDomain: d,
+            customDomainVerified: false,
+            customDomainStatus: "pending_dns",
+            customDomainUpdatedAt: Date.now(),
+          },
+          { merge: true }
+        );
+
         return res.status(200).json({
           ok: false,
           reason: "TXT_NOT_FOUND",
@@ -908,12 +1088,82 @@ exports.verifyDomainDns = onRequest(
         });
       }
 
+      // 2) Create or reuse Cloudflare custom hostname
+      const zoneId = process.env.CLOUDFLARE_ZONE_ID;
+      const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+
+      if (!zoneId || !apiToken) {
+        throw new Error("Missing CLOUDFLARE_ZONE_ID or CLOUDFLARE_API_TOKEN secret.");
+      }
+
+      let cfHost = null;
+
+      try {
+        cfHost = await cfFindCustomHostnameByName({
+          zoneId,
+          apiToken,
+          hostname: d,
+        });
+      } catch (e) {
+        console.warn("cfFindCustomHostnameByName failed:", e?.message || e);
+      }
+
+      if (!cfHost) {
+        cfHost = await cfCreateCustomHostname({
+          zoneId,
+          apiToken,
+          hostname: d,
+          uid,
+        });
+      } else {
+        // keep metadata fresh
+        try {
+          await cfUpdateCustomHostnameMetadata({
+            zoneId,
+            apiToken,
+            customHostnameId: cfHost.id,
+            hostname: d,
+            uid,
+          });
+
+          cfHost = await cfGetCustomHostname({
+            zoneId,
+            apiToken,
+            customHostnameId: cfHost.id,
+          });
+        } catch (e) {
+          console.warn("Cloudflare metadata refresh failed:", e?.message || e);
+        }
+      }
+
+      const cfStatus = String(cfHost?.status || "").trim();
+      const sslStatus = String(cfHost?.ssl?.status || "").trim();
+      const ownershipStatus = String(
+        cfHost?.ownership_verification?.status ||
+        cfHost?.ownership_verification_http?.status ||
+        ""
+      ).trim();
+
+      // 3) Save full state in Firestore
       await db.collection("domains").doc(safeIdFromDomain(d)).set(
         {
           domain: d,
           uid,
           verified: true,
+          txtVerified: true,
           verifiedAt: Date.now(),
+          updatedAt: Date.now(),
+
+          status: "verified",
+          checkedHost: txtHost,
+          checkedTxts: txts,
+
+          cloudflareHostnameId: cfHost?.id || "",
+          cloudflareHostname: cfHost?.hostname || d,
+          cloudflareStatus: cfStatus,
+          cloudflareSslStatus: sslStatus,
+          cloudflareOwnershipStatus: ownershipStatus,
+          cloudflareCreatedAt: Date.now(),
         },
         { merge: true }
       );
@@ -924,11 +1174,27 @@ exports.verifyDomainDns = onRequest(
           customDomainVerified: true,
           customDomainStatus: "verified",
           customDomainVerifiedAt: Date.now(),
+          customDomainUpdatedAt: Date.now(),
+
+          cloudflareHostnameId: cfHost?.id || "",
+          cloudflareHostnameStatus: cfStatus,
+          cloudflareSslStatus: sslStatus,
         },
         { merge: true }
       );
 
-      return res.json({ ok: true, domain: d });
+      return res.json({
+        ok: true,
+        domain: d,
+        txtVerified: true,
+        cloudflare: {
+          hostnameId: cfHost?.id || "",
+          hostname: cfHost?.hostname || d,
+          status: cfStatus,
+          sslStatus: sslStatus,
+          ownershipStatus: ownershipStatus,
+        },
+      });
     } catch (e) {
       console.error("verifyDomainDns:", e);
       return res.status(500).json({ error: e.message });
