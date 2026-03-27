@@ -64,6 +64,10 @@ const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
 const PAYPAL_WEBHOOK_ID = defineSecret("PAYPAL_WEBHOOK_ID");
 const PAYPAL_MODE = defineSecret("PAYPAL_MODE");
 
+// Cloudflare
+const CLOUDFLARE_API_TOKEN = defineSecret("CLOUDFLARE_API_TOKEN");
+const CLOUDFLARE_ZONE_ID = defineSecret("CLOUDFLARE_ZONE_ID");
+
 /* =========================================================
 ✅ PERMANENT CORS FIX (FOREVER)
 ========================================================= */
