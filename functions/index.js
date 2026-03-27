@@ -956,7 +956,6 @@ exports.verifySubscription = onRequest(
 exports.createDomainChallenge = onRequest(
   {
     region: "us-central1",
-    secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID"],
   },
   async (req, res) => {
     const pre = handleCorsPreflight(req, res);
@@ -964,14 +963,18 @@ exports.createDomainChallenge = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
 
       const { uid, domain } = req.body || {};
       if (!uid) return res.status(400).json({ error: "uid is required" });
       if (!domain) return res.status(400).json({ error: "domain is required" });
 
       const d = normDomain(domain);
-      if (!d.includes(".")) return res.status(400).json({ error: "Invalid domain" });
+      if (!d.includes(".")) {
+        return res.status(400).json({ error: "Invalid domain" });
+      }
 
       const token = `audiory-${Math.random().toString(36).slice(2, 10)}${Date.now().toString(36)}`;
 
@@ -979,6 +982,7 @@ exports.createDomainChallenge = onRequest(
         {
           customDomain: d,
           customDomainStatus: "pending_dns",
+          customDomainVerified: false,
           customDomainToken: token,
           customDomainUpdatedAt: Date.now(),
         },
@@ -1017,7 +1021,7 @@ exports.createDomainChallenge = onRequest(
 exports.verifyDomainDns = onRequest(
   {
     region: "us-central1",
-    secrets: ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ZONE_ID"],
+    secrets: [CLOUDFLARE_API_TOKEN, CLOUDFLARE_ZONE_ID],
   },
   async (req, res) => {
     const pre = handleCorsPreflight(req, res);
@@ -1054,7 +1058,7 @@ exports.verifyDomainDns = onRequest(
         return res.status(400).json({ error: "Domain mismatch. Save the same domain first." });
       }
 
-      // 1) Verify TXT first (keep your existing behavior)
+      // 1) Verify TXT first
       const txtHost = `_audiory-verify.${d}`;
       const txts = await dohTxtLookup(txtHost);
       const txtOk = txts.some((v) => String(v || "").includes(expected));
@@ -1092,14 +1096,15 @@ exports.verifyDomainDns = onRequest(
         });
       }
 
-      // 2) Create or reuse Cloudflare custom hostname
-      const zoneId = process.env.CLOUDFLARE_ZONE_ID;
-      const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+      // 2) Read Firebase secret values properly
+      const zoneId = CLOUDFLARE_ZONE_ID.value();
+      const apiToken = CLOUDFLARE_API_TOKEN.value();
 
       if (!zoneId || !apiToken) {
         throw new Error("Missing CLOUDFLARE_ZONE_ID or CLOUDFLARE_API_TOKEN secret.");
       }
 
+      // 3) Create or reuse Cloudflare custom hostname
       let cfHost = null;
 
       try {
@@ -1120,7 +1125,6 @@ exports.verifyDomainDns = onRequest(
           uid,
         });
       } else {
-        // keep metadata fresh
         try {
           await cfUpdateCustomHostnameMetadata({
             zoneId,
@@ -1148,7 +1152,7 @@ exports.verifyDomainDns = onRequest(
         ""
       ).trim();
 
-      // 3) Save full state in Firestore
+      // 4) Save full state
       await db.collection("domains").doc(safeIdFromDomain(d)).set(
         {
           domain: d,
