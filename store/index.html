@@ -660,6 +660,162 @@
       outline:none;
     }
 
+    .producer-domain-nav{
+      display:none;
+      gap:18px;
+      align-items:center;
+      margin-left:auto;
+      margin-right:18px;
+      flex-wrap:wrap;
+    }
+
+    .producer-domain-nav a{
+      color:#fff;
+      text-decoration:none;
+      font-weight:900;
+      font-size:14px;
+      opacity:.88;
+    }
+
+    .producer-domain-nav a:hover{
+      opacity:1;
+    }
+
+    .producer-footer{
+      margin-top:18px;
+      border-top:1px solid rgba(255,255,255,.08);
+      background:#08101d;
+      border-radius:22px 22px 0 0;
+      padding:28px 18px;
+    }
+
+    .producer-footer-inner{
+      max-width:1280px;
+      margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .producer-footer-brand{
+      font-size:22px;
+      font-weight:1000;
+    }
+
+    .producer-footer-socials,
+    .producer-footer-links{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .producer-footer-socials a,
+    .producer-footer-links a{
+      color:#dbeafe;
+      text-decoration:none;
+      font-weight:700;
+      font-size:14px;
+    }
+
+    .producer-footer-copy{
+      color:rgba(255,255,255,.58);
+      font-size:13px;
+    }
+
+    .licensing-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:14px;
+    }
+
+    .license-card{
+      border:1px solid rgba(255,255,255,.10);
+      background:#09111d;
+      border-radius:18px;
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .license-card.popular{
+      border-color:rgba(59,130,246,.45);
+      box-shadow:0 0 0 1px rgba(59,130,246,.18) inset;
+    }
+
+    .license-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .license-name{
+      font-weight:1000;
+      font-size:18px;
+    }
+
+    .license-price{
+      font-weight:1000;
+      font-size:30px;
+      line-height:1;
+    }
+
+    .license-features{
+      margin:0;
+      padding-left:18px;
+      color:rgba(255,255,255,.80);
+      line-height:1.55;
+      font-size:14px;
+    }
+
+    .license-note{
+      color:rgba(255,255,255,.62);
+      font-size:13px;
+    }
+
+    .section-anchor{
+      scroll-margin-top:100px;
+    }
+
+    .custom-store-mode .desktop-nav{
+      display:none !important;
+    }
+
+    .custom-store-mode .producer-domain-nav{
+      display:flex;
+    }
+
+    .custom-store-mode .logo{
+      min-width:120px;
+    }
+
+    .custom-store-mode .logo:empty::before{
+      content:"";
+    }
+
+    .custom-store-mode .menu-backdrop{
+      z-index:10040 !important;
+    }
+
+    .custom-store-mode .mobile-menu{
+      z-index:10041 !important;
+      pointer-events:auto !important;
+    }
+
+    .pb-cart-backdrop{
+      z-index:10050 !important;
+    }
+
+    .pb-cart{
+      z-index:10051 !important;
+      width:420px;
+      max-width:100vw;
+      height:100vh;
+      overflow:auto;
+    }
+
     @media (max-width: 980px){
       .store-grid{
         grid-template-columns:1fr;
@@ -719,6 +875,23 @@
       .logo{
         min-width:120px;
       }
+
+      .producer-domain-nav{
+        display:none !important;
+      }
+
+      .pb-cart{
+        width:100vw;
+        max-width:100vw;
+        border-radius:0;
+      }
+
+      .pb-cart-foot{
+        position:sticky;
+        bottom:0;
+        background:#0b1220;
+        padding-bottom:calc(12px + env(safe-area-inset-bottom));
+      }
     }
   </style>
 </head>
@@ -727,9 +900,11 @@
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="brand">
-      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu" type="button">☰</button>
       <div class="logo" id="storeBrandText"></div>
     </div>
+
+    <nav class="producer-domain-nav" id="producerDomainNav" aria-label="Producer navigation"></nav>
 
     <nav class="desktop-nav" aria-label="Main">
       <a href="/index.html">Feed</a>
@@ -754,8 +929,8 @@
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="menu-head">
-    <div class="menu-title">Menu</div>
-    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+    <div class="menu-title" id="mobileMenuTitle">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close" type="button">✕</button>
   </div>
 
   <a href="/index.html">Feed</a>
@@ -820,14 +995,14 @@
       <section class="store-grid">
         <aside class="left-col">
 
-          <section class="panel">
+          <section class="panel section-anchor" id="store-info">
             <h3>Store Info</h3>
             <div class="muted" style="line-height:1.7;" id="sideInfo">
               Producer storefront
             </div>
           </section>
 
-          <section class="panel">
+          <section class="panel section-anchor" id="services">
             <h3>Services</h3>
             <div class="services-list" id="servicesList">
               <div class="service-item">Custom beats</div>
@@ -851,7 +1026,7 @@
         </aside>
 
         <div class="right-col">
-          <section class="panel">
+          <section class="panel section-anchor" id="tracksSection">
             <div class="section-head">
               <h2 class="section-title">Featured Beats</h2>
               <div class="muted" id="featuredCount">0 featured</div>
@@ -859,18 +1034,51 @@
             <div class="beats-grid" id="featuredGrid"></div>
           </section>
 
-          <section class="panel">
+          <section class="panel section-anchor" id="tracks">
             <div class="section-head">
               <h2 class="section-title">All Beats</h2>
               <div class="muted" id="allCount">0 beats</div>
             </div>
             <div class="beats-list" id="beatsGrid"></div>
           </section>
+
+          <section class="panel section-anchor" id="soundkits">
+            <div class="section-head">
+              <h2 class="section-title">Sound Kits</h2>
+              <div class="muted" id="soundkitsCount">0 kits</div>
+            </div>
+            <div id="soundkitsBox" class="muted">No sound kits added yet.</div>
+          </section>
+
+          <section class="panel section-anchor" id="licensing">
+            <div class="section-head">
+              <h2 class="section-title">Licensing Info</h2>
+              <div class="muted">License options for this store</div>
+            </div>
+            <div class="licensing-grid" id="licensingGrid"></div>
+          </section>
+
+          <section class="panel section-anchor" id="contact">
+            <div class="section-head">
+              <h2 class="section-title">Contact</h2>
+              <div class="muted">Reach this producer</div>
+            </div>
+            <div id="contactBox" class="muted">No contact details added yet.</div>
+          </section>
         </div>
       </section>
     </div>
   </section>
 </main>
+
+<footer class="producer-footer" id="producerFooter" style="display:none;">
+  <div class="producer-footer-inner">
+    <div class="producer-footer-brand" id="producerFooterBrand">Store</div>
+    <div class="producer-footer-socials" id="producerFooterSocials"></div>
+    <div class="producer-footer-links" id="producerFooterLinks"></div>
+    <div class="producer-footer-copy" id="producerFooterCopy"></div>
+  </div>
+</footer>
 
 <!-- License Modal -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
@@ -882,7 +1090,7 @@
         <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
         <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
       </div>
-      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close" type="button">✕</button>
     </div>
 
     <div class="pb-licenses" id="pbLicensesGrid"></div>
@@ -971,9 +1179,22 @@
   const servicesList = $("servicesList");
   const socialLinks = $("socialLinks");
   const storeBrandText = $("storeBrandText");
+  const producerDomainNav = $("producerDomainNav");
+  const mobileMenu = $("mobileMenu");
+  const mobileMenuTitle = $("mobileMenuTitle");
+  const soundkitsBox = $("soundkitsBox");
+  const soundkitsCount = $("soundkitsCount");
+  const licensingGrid = $("licensingGrid");
+  const contactBox = $("contactBox");
+  const producerFooter = $("producerFooter");
+  const producerFooterBrand = $("producerFooterBrand");
+  const producerFooterSocials = $("producerFooterSocials");
+  const producerFooterLinks = $("producerFooterLinks");
+  const producerFooterCopy = $("producerFooterCopy");
 
   let STORE_PRODUCER = null;
   let STORE_BEATS = [];
+  let STORE_KITS = [];
   let FILTERED_BEATS = [];
   let __STORE_LOADED__ = false;
 
@@ -990,8 +1211,8 @@
   function safeUrl(url){
     let s = String(url || "").trim();
     if (!s) return "";
-    if (!/^https?:\/\//i.test(s)) s = "https://" + s;
-    return s;
+    if (/^(mailto:|tel:|https?:\/\/)/i.test(s)) return s;
+    return "https://" + s;
   }
 
   function initials(name){
@@ -1037,9 +1258,9 @@
     const pic = String(
       profile?.storeSettings?.bannerUrl ||
       profile?.storeSettings?.bannerURL ||
-      profile?.storeBannerURL || 
-      profile?.bannerURL || 
-      profile?.photoURL || 
+      profile?.storeBannerURL ||
+      profile?.bannerURL ||
+      profile?.photoURL ||
       ""
     ).trim();
     if (pic){
@@ -1137,6 +1358,24 @@
       .filter((b) => b && b.id && b.published === true);
 
     return mapped;
+  }
+
+  async function getProducerSoundKits(producerId){
+    if (!window.FB?.db) return [];
+    try{
+      const { collection, query, where, getDocs } = window.FB;
+      const qy = query(
+        collection(window.FB.db, "soundkits"),
+        where("producerId", "==", producerId)
+      );
+      const snap = await getDocs(qy);
+      return snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(k => k && k.published === true);
+    }catch(err){
+      console.warn("getProducerSoundKits:", err);
+      return [];
+    }
   }
 
   function parseServices(profile){
@@ -1261,9 +1500,9 @@
         label: item.label,
         value: String(item.value || "").trim()
       }))
-      .filter(item => item.value)
-  
+      .filter(item => item.value);
   }
+
   function renderSocialLinks(profile){
     const links = buildSocialList(profile);
 
@@ -1300,17 +1539,139 @@
     });
   }
 
+  function parseLicensingCards(profile){
+    const store = profile?.storeSettings || {};
+    const cards = store?.licensingCards;
+
+    if (Array.isArray(cards) && cards.length){
+      return cards.map((c, idx) => ({
+        name: safeText(c?.name, `License ${idx + 1}`),
+        price: safeText(c?.price, ""),
+        features: Array.isArray(c?.features) ? c.features.map(x => String(x || "").trim()).filter(Boolean) : [],
+        note: safeText(c?.note, ""),
+        popular: c?.popular === true
+      }));
+    }
+
+    return [
+      {
+        name: "Basic License",
+        price: "29.99",
+        features: ["MP3", "Streaming rights", "Music video", "Live performances"],
+        note: "",
+        popular: false
+      },
+      {
+        name: "Premium License",
+        price: "79.99",
+        features: ["MP3 + WAV", "More streams", "Commercial use", "Live performances"],
+        note: "",
+        popular: true
+      },
+      {
+        name: "Exclusive License",
+        price: "299.99",
+        features: ["Full rights", "Stems if provided", "Unlimited streams", "Exclusive use"],
+        note: "",
+        popular: false
+      }
+    ];
+  }
+
+  function renderLicensing(profile){
+    const cards = parseLicensingCards(profile);
+    if (!licensingGrid) return;
+
+    licensingGrid.innerHTML = "";
+
+    cards.forEach(card => {
+      const el = document.createElement("div");
+      el.className = "license-card" + (card.popular ? " popular" : "");
+      el.innerHTML = `
+        <div class="license-top">
+          <div class="license-name">${card.name}</div>
+          ${card.popular ? `<span class="badge featured">Popular</span>` : ``}
+        </div>
+        <div class="license-price">${card.price ? money(card.price) : "—"}</div>
+        <ul class="license-features">
+          ${(card.features || []).map(item => `<li>${item}</li>`).join("")}
+        </ul>
+        ${card.note && card.note !== "—" ? `<div class="license-note">${card.note}</div>` : ``}
+      `;
+      licensingGrid.appendChild(el);
+    });
+  }
+
+  function renderSoundKits(kits){
+    if (!soundkitsBox || !soundkitsCount) return;
+
+    soundkitsCount.textContent = `${kits.length} kit${kits.length === 1 ? "" : "s"}`;
+
+    if (!kits.length){
+      soundkitsBox.innerHTML = `<div class="muted">No sound kits added yet.</div>`;
+      return;
+    }
+
+    soundkitsBox.innerHTML = kits.map(k => {
+      const title = safeText(k.title, "Untitled Kit");
+      const category = safeText(k.category, "Kit");
+      const price = Number(k.price || 0) <= 0 ? "Free" : money(k.price);
+      const cover = k.cover
+        ? `<img src="${k.cover}" alt="${title}" loading="lazy" style="width:72px;height:72px;object-fit:cover;border-radius:12px;border:1px solid rgba(255,255,255,.08);">`
+        : `<div style="width:72px;height:72px;border-radius:12px;display:grid;place-items:center;background:#0f172a;border:1px solid rgba(255,255,255,.08);font-weight:900;color:#9ca3af;">${initials(title)}</div>`;
+
+      const url = String(k.downloadUrl || "").trim();
+
+      return `
+        <div class="track" style="margin-bottom:10px;">
+          ${cover}
+          <div style="flex:1">
+            <strong>${title}</strong><br>
+            <span class="muted">${category} • ${price}</span>
+          </div>
+          ${url ? `<a class="btnx ghost" href="${safeUrl(url)}" target="_blank" rel="noopener noreferrer">Open</a>` : ``}
+        </div>
+      `;
+    }).join("");
+  }
+
+  function renderContact(profile){
+    const store = profile?.storeSettings || {};
+    const contactEmail = String(store.contactEmail || profile.email || "").trim();
+    const contactPhone = String(store.contactPhone || store.whatsapp || profile.whatsapp || "").trim();
+    const site = String(store.website || profile.website || "").trim();
+
+    const rows = [];
+
+    if (contactEmail){
+      rows.push(`<div><b>Email:</b> <a href="mailto:${contactEmail}" style="color:#dbeafe;">${contactEmail}</a></div>`);
+    }
+    if (contactPhone){
+      const digits = contactPhone.replace(/[^\d]/g, "");
+      const href = digits ? `https://wa.me/${digits}` : safeUrl(contactPhone);
+      rows.push(`<div><b>WhatsApp:</b> <a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${contactPhone}</a></div>`);
+    }
+    if (site){
+      rows.push(`<div><b>Website:</b> <a href="${safeUrl(site)}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${site}</a></div>`);
+    }
+
+    contactBox.innerHTML = rows.length ? rows.join("") : `No contact details added yet.`;
+  }
+
   function setProducerHero(profile){
     const display = safeText(
       profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(),
       "Producer"
     );
+    const store = profile?.storeSettings || {};
     const plan = safeText(profile?.plan, "Free");
     const location = safeText(profile?.location, "Location not set");
-    const bio = safeText(profile?.bio, "This producer has not added a bio yet.");
+    const bio = safeText(store?.bio || profile?.bio, "This producer has not added a bio yet.");
     const followers = Number(profile?.followersCount || 0);
     const views = Number(profile?.profileViews || 0);
     const customHost = isCustomStoreHost(getCurrentHostname());
+    const headline = safeText(store?.headline || display, display);
+    const subtitle = String(store?.subtitle || "").trim();
 
     heroBanner.innerHTML = bannerHTML(profile);
 
@@ -1319,7 +1680,7 @@
       ? `<img src="${photo}" alt="${display}" loading="lazy" />`
       : initials(display);
 
-    producerName.innerHTML = `${display} ${producerBadge(plan)}`;
+    producerName.innerHTML = `${headline} ${producerBadge(plan)}`;
     producerBio.textContent = bio;
     producerLocation.textContent = location;
     producerPlan.textContent = `Plan: ${plan}`;
@@ -1339,16 +1700,121 @@
       <div><b>Location:</b> ${location}</div>
       <div><b>Followers:</b> ${followers}</div>
       <div><b>Beats:</b> ${STORE_BEATS.length}</div>
+      ${subtitle ? `<div><b>Subtitle:</b> ${subtitle}</div>` : ``}
       <div style="margin-top:10px;">${bio}</div>
     `;
 
     renderServices(profile);
     renderSocialLinks(profile);
+    renderSoundKits(STORE_KITS);
+    renderLicensing(profile);
+    renderContact(profile);
+    renderProducerFooter(profile);
+    renderProducerNav(profile);
+    applyCustomDomainMode(profile);
 
-    document.title = `${display} Store`;
+    document.title = customHost ? `${display}` : `${display} Store`;
     if (storeBrandText){
       storeBrandText.textContent = customHost ? display : "Audiory";
     }
+  }
+
+  function renderProducerNav(profile){
+    const customHost = isCustomStoreHost(getCurrentHostname());
+    if (!producerDomainNav) return;
+
+    if (!customHost){
+      producerDomainNav.innerHTML = "";
+      return;
+    }
+
+    const store = profile?.storeSettings || {};
+    const showTracks = store.showAllBeats !== false;
+    const showKits = true;
+    const showServices = true;
+    const showContact = true;
+
+    producerDomainNav.innerHTML = `
+      ${showTracks ? `<a href="#tracks">Tracks</a>` : ``}
+      ${showKits ? `<a href="#soundkits">Sound Kits</a>` : ``}
+      ${showServices ? `<a href="#services">Services</a>` : ``}
+      <a href="#licensing">Licensing</a>
+      ${showContact ? `<a href="#contact">Contact</a>` : ``}
+    `;
+  }
+
+  function applyCustomDomainMode(profile){
+    const customHost = isCustomStoreHost(getCurrentHostname());
+    document.body.classList.toggle("custom-store-mode", customHost);
+
+    if (!customHost) return;
+
+    const display = safeText(profile?.displayName, "Store");
+    if (mobileMenuTitle) mobileMenuTitle.textContent = display;
+
+    if (mobileMenu){
+      mobileMenu.innerHTML = `
+        <div class="menu-head">
+          <div class="menu-title" id="mobileMenuTitle">${display}</div>
+          <button class="icon-btn" id="menuCloseBtn" aria-label="Close" type="button">✕</button>
+        </div>
+
+        <a href="#tracks">Tracks</a>
+        <a href="#soundkits">Sound Kits</a>
+        <a href="#services">Services</a>
+        <a href="#licensing">Licensing</a>
+        <a href="#contact">Contact</a>
+
+        <a id="mNavSignIn" href="/login/">Sign in</a>
+        <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
+        <button id="mNavSignOut" class="ghost hidden" type="button">Sign out</button>
+      `;
+    }
+
+    wireMobileMenuClose();
+  }
+
+  function renderProducerFooter(profile){
+    const customHost = isCustomStoreHost(getCurrentHostname());
+    if (!producerFooter) return;
+
+    if (!customHost){
+      producerFooter.style.display = "none";
+      return;
+    }
+
+    const store = profile?.storeSettings || {};
+    const display = safeText(profile?.displayName, "Store");
+    const year = new Date().getFullYear();
+    const socials = buildSocialList(profile);
+
+    producerFooter.style.display = "block";
+    producerFooterBrand.textContent = display;
+
+    producerFooterSocials.innerHTML = socials.length
+      ? socials.map(s => {
+          let href = s.value;
+          if (s.label === "WhatsApp") {
+            const digits = String(s.value || "").replace(/[^\d]/g, "");
+            href = digits ? `https://wa.me/${digits}` : safeUrl(s.value);
+          } else {
+            href = safeUrl(s.value);
+          }
+          return `<a href="${href}" target="_blank" rel="noopener noreferrer">${s.label}</a>`;
+        }).join("")
+      : `<span class="muted">No social links</span>`;
+
+    const privacy = String(store?.footerLinks?.privacyPolicy || "/privacy-policy/").trim();
+    const terms = String(store?.footerLinks?.termsOfUse || "/terms/").trim();
+    const cookies = String(store?.footerLinks?.cookies || "/cookies/").trim();
+
+    producerFooterLinks.innerHTML = `
+      <a href="${privacy}">Privacy Policy</a>
+      <a href="${terms}">Terms of Use</a>
+      <a href="${cookies}">Cookies</a>
+    `;
+
+    producerFooterCopy.textContent = `© ${year} ${display}. All rights reserved. Powered by Audiory.`;
   }
 
   function fillGenreFilter(beats){
@@ -1513,7 +1979,6 @@
 
         const audio = window.__storeAudio;
 
-        // if same beat is already playing -> pause
         if (audio.src === previewUrl && !audio.paused) {
           audio.pause();
           document.querySelectorAll(".beat-row .playIcon").forEach(el => {
@@ -1522,7 +1987,6 @@
           return;
         }
 
-        // load new preview if changed
         if (audio.src !== previewUrl) {
           audio.src = previewUrl;
         }
@@ -1572,25 +2036,22 @@
     return row;
   }
 
-  function renderBeatList(target, beats){
-    target.innerHTML = "";
-
-    if (!beats.length){
-      target.innerHTML = `<div class="empty-box" style="grid-column:1/-1;">No beats found.</div>`;
-      return;
-    }
-
-    beats.forEach((beat) => {
-      target.appendChild(buildBeatCard(beat));
-    });
-  }
-
   function renderBeatSections(){
+    const store = STORE_PRODUCER?.storeSettings || {};
+    const showFeatured = store.showFeatured !== false;
+    const showAllBeats = store.showAllBeats !== false;
+
+    const featuredSection = $("tracksSection");
+    const allSection = $("tracks");
+
     const featured = FILTERED_BEATS.filter(b => b.featured === true);
     const regular = FILTERED_BEATS;
 
     featuredCount.textContent = `${featured.length} featured`;
     allCount.textContent = `${regular.length} beat${regular.length === 1 ? "" : "s"}`;
+
+    if (featuredSection) featuredSection.style.display = showFeatured ? "" : "none";
+    if (allSection) allSection.style.display = showAllBeats ? "" : "none";
 
     featuredGrid.innerHTML = "";
     if (!featured.length){
@@ -1615,8 +2076,19 @@
     if (!STORE_PRODUCER?.id || !followBtn) return;
 
     const user = window.FB?.auth?.currentUser || null;
+    const customHost = isCustomStoreHost(getCurrentHostname());
+    const store = STORE_PRODUCER?.storeSettings || {};
+    const showFollow = store.showFollow !== false;
+
+    if (!showFollow){
+      followBtn.style.display = "none";
+      return;
+    }
+
+    followBtn.style.display = "";
+
     if (!user){
-      followBtn.textContent = "Sign in to Follow";
+      followBtn.textContent = customHost ? "Follow" : "Sign in to Follow";
       followBtn.disabled = false;
       return;
     }
@@ -1674,6 +2146,46 @@
     }
   }
 
+  function wireMobileMenuClose(){
+    const backdrop = $("menuBackdrop");
+    const menu = $("mobileMenu");
+    const openBtn = $("hamburgerBtn");
+    const closeBtn = $("menuCloseBtn");
+
+    function openMenu(){
+      if (backdrop) backdrop.classList.add("open");
+      if (menu) menu.classList.add("open");
+      if (backdrop) backdrop.style.display = "block";
+    }
+
+    function closeMenu(){
+      if (backdrop) backdrop.classList.remove("open");
+      if (menu) menu.classList.remove("open");
+      if (backdrop) backdrop.style.display = "";
+    }
+
+    openBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openMenu();
+    });
+
+    closeBtn?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMenu();
+    });
+
+    backdrop?.addEventListener("click", closeMenu);
+
+    menu?.querySelectorAll("a").forEach(a => {
+      a.addEventListener("click", closeMenu);
+    });
+
+    const mSignOut = $("mNavSignOut");
+    mSignOut?.addEventListener("click", closeMenu);
+  }
+
   async function loadStore(){
     if (__STORE_LOADED__) return;
     __STORE_LOADED__ = true;
@@ -1692,7 +2204,13 @@
       STORE_PRODUCER = producer;
       console.log("STORE PRODUCER DATA =", STORE_PRODUCER);
 
-      STORE_BEATS = await getProducerBeats(producer.id);
+      const [beats, kits] = await Promise.all([
+        getProducerBeats(producer.id),
+        getProducerSoundKits(producer.id)
+      ]);
+
+      STORE_BEATS = beats;
+      STORE_KITS = kits;
       FILTERED_BEATS = [...STORE_BEATS];
 
       window.__LATEST_BEATS__ = STORE_BEATS;
@@ -1700,6 +2218,12 @@
       setProducerHero(producer);
       fillGenreFilter(STORE_BEATS);
       renderBeatSections();
+
+      const store = producer?.storeSettings || {};
+      if (producerProfileBtn){
+        producerProfileBtn.style.display = store.showProfileBtn === false ? "none" : "";
+      }
+
       await refreshFollowButton();
 
       storeStatus.style.display = "none";
@@ -1716,6 +2240,8 @@
   followBtn?.addEventListener("click", handleFollowClick);
 
   window.addEventListener("firebase-auth-changed", refreshFollowButton);
+
+  document.addEventListener("DOMContentLoaded", wireMobileMenuClose);
 
   if (window.FB && window.FB.db) {
     loadStore();
