@@ -4206,20 +4206,6 @@ async function verifyCustomDomain(){
       };
 
       refreshProLocks();
-    }
-
-      if (current){
-        current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
-      }
-
-      window.currentProfile = {
-        ...(window.currentProfile || {}),
-        customDomain: d,
-        customDomainVerified: true,
-        customDomainStatus: "verified"
-      };
-
-      refreshProLocks();
     } else {
       const reason =
         j.reason === "TXT_NOT_FOUND"
