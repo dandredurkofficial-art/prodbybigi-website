@@ -4182,31 +4182,31 @@ async function verifyCustomDomain(){
       if (status){
         status.innerHTML = `
           <div class="okbox">
-        ✅ TXT verified for <b>${d}</b><br>
-        Cloudflare hostname status: <b>${cfStatus || "unknown"}</b><br>
-        SSL status: <b>${sslStatus || "unknown"}</b>
-      </div>
-      <div class="subtle" style="margin-top:10px;">
-        If SSL is still pending, wait a little and test the domain again.
-      </div>
-    `;
-  }
+            ✅ TXT verified for <b>${d}</b><br>
+            Cloudflare hostname status: <b>${cfStatus || "unknown"}</b><br>
+            SSL status: <b>${sslStatus || "unknown"}</b>
+          </div>
+          <div class="subtle" style="margin-top:10px;">
+            If SSL is still pending, wait a little and test the domain again.
+          </div>
+        `;
+      }
 
-  if (current){
-    current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
-  }
+      if (current){
+        current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
+      }
 
-  window.currentProfile = {
-    ...(window.currentProfile || {}),
-    customDomain: d,
-    customDomainVerified: true,
-    customDomainStatus: "verified",
-    cloudflareHostnameStatus: cfStatus,
-    cloudflareSslStatus: sslStatus
-  };
+      window.currentProfile = {
+        ...(window.currentProfile || {}),
+        customDomain: d,
+        customDomainVerified: true,
+        customDomainStatus: "verified",
+        cloudflareHostnameStatus: cfStatus,
+        cloudflareSslStatus: sslStatus
+      };
 
-  refreshProLocks();
-}
+      refreshProLocks();
+    }
 
       if (current){
         current.innerHTML = `Current domain: <b>${d}</b> ✅ Verified`;
