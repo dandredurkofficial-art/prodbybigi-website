@@ -1202,6 +1202,37 @@ exports.verifyDomainDns = onRequest(
   }
 );
 
+exports.resolveDomain = onRequest(
+  { region: "us-central1" },
+  async (req, res) => {
+    const host = normDomain(req.query.host || "");
+
+    if (!host) {
+      return res.status(400).json({ ok: false });
+    }
+
+    const snap = await db
+      .collection("domains")
+      .doc(safeIdFromDomain(host))
+      .get();
+
+    if (!snap.exists) {
+      return res.json({ ok: false });
+    }
+
+    const data = snap.data() || {};
+
+    if (!data.verified || !data.uid) {
+      return res.json({ ok: false });
+    }
+
+    return res.json({
+      ok: true,
+      uid: data.uid,
+    });
+  }
+);
+
 /* =========================================================
 ✅ CREATE PAYPAL ORDER (THIS IS THE ONE YOUR WEBSITE CALLS)
 POST /createOrder
