@@ -4091,10 +4091,8 @@ async function saveCustomDomain(){
       throw new Error(j?.error || "Could not create challenge");
     }
 
-    const txtHost = j?.dns?.txt?.host || `_audiory-verify.${d}`;
     const txtVal  = j?.dns?.txt?.value || "";
     const cnameW  = j?.dns?.cname_www?.value || "audiory.site";
-    const cnameA  = j?.dns?.cname_apex?.value || "audiory.site";
 
     window.currentProfile = {
       ...(window.currentProfile || {}),
@@ -4115,13 +4113,9 @@ async function saveCustomDomain(){
         <div class="subtle">Host/Name: <b>_audiory-verify</b></div>
         <div class="subtle">Value: <b>${txtVal}</b></div>
 
-        <div class="subtle" style="margin-top:10px;"><b>2) Add WWW CNAME</b></div>
-        <div class="subtle">Host/Name: <b>www</b></div>
-        <div class="subtle">Target: <b>${cnameW}</b></div>
-
-        <div class="subtle" style="margin-top:10px;"><b>3) Optional apex/root</b></div>
-        <div class="subtle">Host/Name: <b>@</b></div>
-        <div class="subtle">Target: <b>${cnameA}</b></div>
+        <div class="subtle" style="margin-top:10px;"><b>2) Point your custom host to Audiory</b></div>
+        <div class="subtle">Create a CNAME for <b>${d}</b> pointing to:</div>
+        <div class="subtle"><b>${cnameW}</b></div>
 
         <div class="subtle" style="margin-top:12px;">
           DNS changes can take a few minutes. After adding records, click <b>Verify DNS</b>.
@@ -4178,13 +4172,15 @@ async function verifyCustomDomain(){
     if (j.ok){
       const cfStatus = String(j?.cloudflare?.status || "").trim();
       const sslStatus = String(j?.cloudflare?.sslStatus || "").trim();
+      const ownershipStatus = String(j?.cloudflare?.ownershipStatus || "").trim();
 
       if (status){
         status.innerHTML = `
           <div class="okbox">
             ✅ TXT verified for <b>${d}</b><br>
             Cloudflare hostname status: <b>${cfStatus || "unknown"}</b><br>
-            SSL status: <b>${sslStatus || "unknown"}</b>
+            SSL status: <b>${sslStatus || "unknown"}</b><br>
+            Ownership status: <b>${ownershipStatus || "unknown"}</b>
           </div>
           <div class="subtle" style="margin-top:10px;">
             If SSL is still pending, wait a little and test the domain again.
@@ -4202,7 +4198,8 @@ async function verifyCustomDomain(){
         customDomainVerified: true,
         customDomainStatus: "verified",
         cloudflareHostnameStatus: cfStatus,
-        cloudflareSslStatus: sslStatus
+        cloudflareSslStatus: sslStatus,
+        cloudflareOwnershipStatus: ownershipStatus
       };
 
       refreshProLocks();
