@@ -72,9 +72,9 @@ const CLOUDFLARE_ZONE_ID = defineSecret("CLOUDFLARE_ZONE_ID");
 ✅ PERMANENT CORS FIX (FOREVER)
 ========================================================= */
 function applyCors(req, res) {
-  const origin = req.headers.origin || "";
+  const origin = String(req.headers.origin || "").trim();
 
-  // ✅ strict allowlist (recommended)
+  // ✅ strict allowlist for known frontend origins
   const allowed = new Set([
     "https://audiory.site",
     "https://www.audiory.site",
@@ -84,11 +84,36 @@ function applyCors(req, res) {
     "http://127.0.0.1:5500",
   ]);
 
+  let allowOrigin = "";
+
   if (origin && allowed.has(origin)) {
-    res.set("Access-Control-Allow-Origin", origin);
-  } else {
-    // If no origin or unknown origin → default to your main domain
-    res.set("Access-Control-Allow-Origin", "https://audiory.site");
+    allowOrigin = origin;
+  } else if (origin) {
+    // ✅ allow producer custom domains too
+    try {
+      const url = new URL(origin);
+      const host = (url.hostname || "").toLowerCase();
+
+      const isCustomProducerDomain =
+        host &&
+        host !== "localhost" &&
+        host !== "audiory.site" &&
+        host !== "www.audiory.site" &&
+        !host.endsWith(".web.app") &&
+        !host.endsWith(".firebaseapp.com") &&
+        url.protocol === "https:";
+
+      if (isCustomProducerDomain) {
+        allowOrigin = origin;
+      }
+    } catch (e) {
+      console.warn("Invalid Origin header:", origin);
+    }
+  }
+
+  // ✅ only set ACAO when we actually allow the origin
+  if (allowOrigin) {
+    res.set("Access-Control-Allow-Origin", allowOrigin);
   }
 
   res.set("Vary", "Origin");
