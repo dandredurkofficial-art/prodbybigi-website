@@ -1401,12 +1401,32 @@
       .filter(Boolean);
   }
 
+  function renderServices(profile){
+    const items = parseServices(profile);
+
+    if (!servicesList) return;
+
+    if (!items.length){
+      servicesList.innerHTML = `<div class="muted">No services added yet.</div>`;
+      return;
+    }
+
+    servicesList.innerHTML = "";
+
+    items.forEach(item => {
+      const el = document.createElement("div");
+      el.className = "service-item";
+      el.textContent = item;
+      servicesList.appendChild(el);
+    });
+  }
+
   function renderServicesPageContent(profile){
     const store = profile?.storeSettings || {};
     const servicesPage = store?.servicesPage || {};
     const servicesSection = $("services");
 
-    if (!servicesSection) return;
+    if (!servicesSection || !servicesList) return;
 
     const titleEl = servicesSection.querySelector("h3");
     if (titleEl){
@@ -1427,25 +1447,31 @@
 
     const items = Array.isArray(servicesPage.items) ? servicesPage.items : [];
 
-    if (!items.length){
+    const validItems = items.filter(item => {
+      return (
+        String(item?.title || "").trim() ||
+        String(item?.description || "").trim() ||
+        String(item?.price || "").trim()
+      );
+    });
+
+    if (!validItems.length){
       renderServices(profile);
       return;
     }
 
     servicesList.innerHTML = "";
 
-    items
-      .filter(item => String(item?.title || "").trim())
-      .forEach(item => {
-        const el = document.createElement("div");
-        el.className = "service-item";
-        el.innerHTML = `
-          <div style="font-weight:900;">${item.title}</div>
-          ${item.description ? `<div class="muted" style="margin-top:6px;">${item.description}</div>` : ``}
-          ${item.price ? `<div style="margin-top:8px;font-weight:900;">${item.price}</div>` : ``}
-        `;
-        servicesList.appendChild(el);
-      });
+    validItems.forEach(item => {
+      const el = document.createElement("div");
+      el.className = "service-item";
+      el.innerHTML = `
+        ${item.title ? `<div style="font-weight:900;">${item.title}</div>` : ``}
+        ${item.description ? `<div class="muted" style="margin-top:6px;">${item.description}</div>` : ``}
+        ${item.price ? `<div style="margin-top:8px;font-weight:900;">${item.price}</div>` : ``}
+      `;
+      servicesList.appendChild(el);
+    });
   }
 
   function buildSocialList(profile){
