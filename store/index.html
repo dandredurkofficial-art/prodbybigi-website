@@ -1401,21 +1401,51 @@
       .filter(Boolean);
   }
 
-  function renderServices(profile){
-    const items = parseServices(profile);
+  function renderServicesPageContent(profile){
+    const store = profile?.storeSettings || {};
+    const servicesPage = store?.servicesPage || {};
+    const servicesSection = $("services");
+
+    if (!servicesSection) return;
+
+    const titleEl = servicesSection.querySelector("h3");
+    if (titleEl){
+      titleEl.textContent = safeText(servicesPage.title, "Services");
+    }
+
+    const existingIntro = servicesSection.querySelector(".services-page-intro");
+    if (existingIntro) existingIntro.remove();
+
+    const intro = String(servicesPage.intro || "").trim();
+    if (intro){
+      const introEl = document.createElement("div");
+      introEl.className = "muted services-page-intro";
+      introEl.style.marginBottom = "12px";
+      introEl.textContent = intro;
+      servicesList.parentNode.insertBefore(introEl, servicesList);
+    }
+
+    const items = Array.isArray(servicesPage.items) ? servicesPage.items : [];
 
     if (!items.length){
-      servicesList.innerHTML = `<div class="muted">No services added yet.</div>`;
+      renderServices(profile);
       return;
     }
 
     servicesList.innerHTML = "";
-    items.forEach(item => {
-      const el = document.createElement("div");
-      el.className = "service-item";
-      el.textContent = item;
-      servicesList.appendChild(el);
-    });
+
+    items
+      .filter(item => String(item?.title || "").trim())
+      .forEach(item => {
+        const el = document.createElement("div");
+        el.className = "service-item";
+        el.innerHTML = `
+          <div style="font-weight:900;">${item.title}</div>
+          ${item.description ? `<div class="muted" style="margin-top:6px;">${item.description}</div>` : ``}
+          ${item.price ? `<div style="margin-top:8px;font-weight:900;">${item.price}</div>` : ``}
+        `;
+        servicesList.appendChild(el);
+      });
   }
 
   function buildSocialList(profile){
@@ -1495,12 +1525,12 @@
       }
     ];
 
-    return candidates
-      .map(item => ({
-        label: item.label,
-        value: String(item.value || "").trim()
-      }))
-      .filter(item => item.value);
+        return candidates
+        .map(item => ({
+          label: item.label,
+          value: String(item.value || "").trim()
+        }))
+        .filter(item => item.value);
   }
 
   function renderSocialLinks(profile){
@@ -1541,14 +1571,21 @@
 
   function parseLicensingCards(profile){
     const store = profile?.storeSettings || {};
-    const cards = store?.licensingCards;
+    const licensing = store?.licensing || {};
+    const cards = licensing?.cards;
 
     if (Array.isArray(cards) && cards.length){
       return cards.map((c, idx) => ({
         name: safeText(c?.name, `License ${idx + 1}`),
-        price: safeText(c?.price, ""),
-        features: Array.isArray(c?.features) ? c.features.map(x => String(x || "").trim()).filter(Boolean) : [],
+        price: String(c?.price || "").trim(),
+        features: Array.isArray(c?.features)
+          ? c.features.map(x => String(x || "").trim()).filter(Boolean)
+          : String(c?.features || "")
+              .split(/\n|,/g)
+              .map(x => String(x || "").trim())
+              .filter(Boolean),
         note: safeText(c?.note, ""),
+        buttonText: safeText(c?.buttonText, "Read Full License"),
         popular: c?.popular === true
       }));
     }
@@ -1557,30 +1594,50 @@
       {
         name: "Basic License",
         price: "29.99",
-        features: ["MP3", "Streaming rights", "Music video", "Live performances"],
+        features: ["MP3", "Up to 5,000 streams"],
         note: "",
+        buttonText: "Read Full License",
         popular: false
       },
       {
         name: "Premium License",
         price: "79.99",
-        features: ["MP3 + WAV", "More streams", "Commercial use", "Live performances"],
+        features: ["WAV + MP3", "Higher streaming limit"],
         note: "",
+        buttonText: "Read Full License",
         popular: true
       },
       {
         name: "Exclusive License",
         price: "299.99",
-        features: ["Full rights", "Stems if provided", "Unlimited streams", "Exclusive use"],
+        features: ["Exclusive rights", "Includes stems"],
         note: "",
+        buttonText: "Read Full License",
         popular: false
       }
     ];
   }
 
   function renderLicensing(profile){
+    const store = profile?.storeSettings || {};
+    const licensing = store?.licensing || {};
     const cards = parseLicensingCards(profile);
+    const licensingSection = $("licensing");
+
     if (!licensingGrid) return;
+
+    if (licensingSection){
+      const titleEl = licensingSection.querySelector(".section-title");
+      const mutedEl = licensingSection.querySelector(".muted");
+
+      if (titleEl){
+      titleEl.textContent = safeText(licensing?.title, "Licensing Info");
+      }
+
+      if (mutedEl){
+        mutedEl.textContent = safeText(licensing?.intro, "License options for this store");
+      }
+    }
 
     licensingGrid.innerHTML = "";
 
@@ -1597,6 +1654,7 @@
           ${(card.features || []).map(item => `<li>${item}</li>`).join("")}
         </ul>
         ${card.note && card.note !== "—" ? `<div class="license-note">${card.note}</div>` : ``}
+        <button class="btnx ghost" type="button">${card.buttonText || "Read Full License"}</button>
       `;
       licensingGrid.appendChild(el);
     });
@@ -1637,22 +1695,41 @@
 
   function renderContact(profile){
     const store = profile?.storeSettings || {};
-    const contactEmail = String(store.contactEmail || profile.email || "").trim();
-    const contactPhone = String(store.contactPhone || store.whatsapp || profile.whatsapp || "").trim();
-    const site = String(store.website || profile.website || "").trim();
+    const contact = store?.contact || {};
+
+    const contactEmail = String(contact.email || store.contactEmail || profile.email || "").trim();
+    const contactPhone = String(contact.phone || store.contactPhone || "").trim();
+    const contactWhatsapp = String(contact.whatsapp || store.whatsapp || profile.whatsapp || "").trim();
+    const contactInstagram = String(contact.instagram || store.instagram || "").trim();
+    const contactLocation = String(contact.location || profile.location || "").trim();
+    const bookingText = String(contact.bookingText || "").trim();
 
     const rows = [];
 
     if (contactEmail){
       rows.push(`<div><b>Email:</b> <a href="mailto:${contactEmail}" style="color:#dbeafe;">${contactEmail}</a></div>`);
     }
+
     if (contactPhone){
-      const digits = contactPhone.replace(/[^\d]/g, "");
-      const href = digits ? `https://wa.me/${digits}` : safeUrl(contactPhone);
-      rows.push(`<div><b>WhatsApp:</b> <a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${contactPhone}</a></div>`);
+      rows.push(`<div><b>Phone:</b> <a href="tel:${contactPhone}" style="color:#dbeafe;">${contactPhone}</a></div>`);
     }
-    if (site){
-      rows.push(`<div><b>Website:</b> <a href="${safeUrl(site)}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${site}</a></div>`);
+
+    if (contactWhatsapp){
+      const digits = contactWhatsapp.replace(/[^\d]/g, "");
+      const href = digits ? `https://wa.me/${digits}` : safeUrl(contactWhatsapp);
+      rows.push(`<div><b>WhatsApp:</b> <a href="${href}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${contactWhatsapp}</a></div>`);
+    }
+
+    if (contactInstagram){
+      rows.push(`<div><b>Instagram:</b> <a href="${safeUrl(contactInstagram)}" target="_blank" rel="noopener noreferrer" style="color:#dbeafe;">${contactInstagram}</a></div>`);
+    }
+
+    if (contactLocation){
+      rows.push(`<div><b>Location:</b> ${contactLocation}</div>`);
+    }
+
+    if (bookingText){
+      rows.push(`<div style="margin-top:10px;"><b>Booking:</b> ${bookingText}</div>`);
     }
 
     contactBox.innerHTML = rows.length ? rows.join("") : `No contact details added yet.`;
@@ -1704,7 +1781,7 @@
       <div style="margin-top:10px;">${bio}</div>
     `;
 
-    renderServices(profile);
+    renderServicesPageContent(profile);
     renderSocialLinks(profile);
     renderSoundKits(STORE_KITS);
     renderLicensing(profile);
@@ -1729,18 +1806,27 @@
     }
 
     const store = profile?.storeSettings || {};
-    const showTracks = store.showAllBeats !== false;
-    const showKits = true;
-    const showServices = true;
-    const showContact = true;
+    const navLinks = Array.isArray(store?.navLinks) ? store.navLinks : [];
 
-    producerDomainNav.innerHTML = `
-      ${showTracks ? `<a href="#tracks">Tracks</a>` : ``}
-      ${showKits ? `<a href="#soundkits">Sound Kits</a>` : ``}
-      ${showServices ? `<a href="#services">Services</a>` : ``}
-      <a href="#licensing">Licensing</a>
-      ${showContact ? `<a href="#contact">Contact</a>` : ``}
-    `;
+    if (!navLinks.length){
+      producerDomainNav.innerHTML = `
+        <a href="#tracks">Tracks</a>
+        <a href="#soundkits">Sound Kits</a>
+        <a href="#services">Services</a>
+        <a href="#licensing">Licensing</a>
+        <a href="#contact">Contact</a>
+      `;
+      return;
+    }
+
+    producerDomainNav.innerHTML = navLinks
+      .filter(item => item && item.enabled !== false && String(item.label || "").trim() && String(item.value || "").trim())
+      .map(item => {
+        const href = String(item.value || "").trim();
+        const label = String(item.label || "").trim();
+        return `<a href="${href}">${label}</a>`;
+      })
+      .join("");
   }
 
   function applyCustomDomainMode(profile){
@@ -1750,20 +1836,32 @@
     if (!customHost) return;
 
     const display = safeText(profile?.displayName, "Store");
+    const store = profile?.storeSettings || {};
+    const navLinks = Array.isArray(store?.navLinks) ? store.navLinks : [];
+
     if (mobileMenuTitle) mobileMenuTitle.textContent = display;
 
     if (mobileMenu){
+      const mobileNav = navLinks.length
+        ? navLinks
+            .filter(item => item && item.enabled !== false && String(item.label || "").trim() && String(item.value || "").trim())
+            .map(item => `<a href="${String(item.value || "").trim()}">${String(item.label || "").trim()}</a>`)
+            .join("")
+        : `
+            <a href="#tracks">Tracks</a>
+            <a href="#soundkits">Sound Kits</a>
+            <a href="#services">Services</a>
+            <a href="#licensing">Licensing</a>
+            <a href="#contact">Contact</a>
+          `;
+
       mobileMenu.innerHTML = `
         <div class="menu-head">
           <div class="menu-title" id="mobileMenuTitle">${display}</div>
           <button class="icon-btn" id="menuCloseBtn" aria-label="Close" type="button">✕</button>
         </div>
 
-        <a href="#tracks">Tracks</a>
-        <a href="#soundkits">Sound Kits</a>
-        <a href="#services">Services</a>
-        <a href="#licensing">Licensing</a>
-        <a href="#contact">Contact</a>
+        ${mobileNav}
 
         <a id="mNavSignIn" href="/login/">Sign in</a>
         <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
@@ -1784,37 +1882,46 @@
     }
 
     const store = profile?.storeSettings || {};
+    const footer = store?.footer || {};
     const display = safeText(profile?.displayName, "Store");
     const year = new Date().getFullYear();
     const socials = buildSocialList(profile);
+    const footerLinks = Array.isArray(footer?.links) ? footer.links : [];
 
     producerFooter.style.display = "block";
     producerFooterBrand.textContent = display;
 
-    producerFooterSocials.innerHTML = socials.length
-      ? socials.map(s => {
-          let href = s.value;
-          if (s.label === "WhatsApp") {
-            const digits = String(s.value || "").replace(/[^\d]/g, "");
-            href = digits ? `https://wa.me/${digits}` : safeUrl(s.value);
-          } else {
-            href = safeUrl(s.value);
-          }
-          return `<a href="${href}" target="_blank" rel="noopener noreferrer">${s.label}</a>`;
-        }).join("")
-      : `<span class="muted">No social links</span>`;
+    if (footer.showSocialIcons === false){
+      producerFooterSocials.innerHTML = "";
+    } else {
+      producerFooterSocials.innerHTML = socials.length
+        ? socials.map(s => {
+            let href = s.value;
+            if (s.label === "WhatsApp") {
+              const digits = String(s.value || "").replace(/[^\d]/g, "");
+              href = digits ? `https://wa.me/${digits}` : safeUrl(s.value);
+            } else {
+              href = safeUrl(s.value);
+            }
+            return `<a href="${href}" target="_blank" rel="noopener noreferrer">${s.label}</a>`;
+          }).join("")
+        : `<span class="muted">No social links</span>`;
+    }
 
-    const privacy = String(store?.footerLinks?.privacyPolicy || "/privacy-policy/").trim();
-    const terms = String(store?.footerLinks?.termsOfUse || "/terms/").trim();
-    const cookies = String(store?.footerLinks?.cookies || "/cookies/").trim();
+    producerFooterLinks.innerHTML = footerLinks.length
+      ? footerLinks
+          .filter(link => String(link?.label || "").trim() && String(link?.url || "").trim())
+          .map(link => `<a href="${safeUrl(link.url)}" target="_blank" rel="noopener noreferrer">${link.label}</a>`)
+          .join("")
+      : `
+        <a href="/privacy-policy/">Privacy Policy</a>
+        <a href="/terms/">Terms of Use</a>
+        <a href="/cookies/">Cookies</a>
+      `;
 
-    producerFooterLinks.innerHTML = `
-      <a href="${privacy}">Privacy Policy</a>
-      <a href="${terms}">Terms of Use</a>
-      <a href="${cookies}">Cookies</a>
-    `;
-
-    producerFooterCopy.textContent = `© ${year} ${display}. All rights reserved. Powered by Audiory.`;
+    producerFooterCopy.textContent =
+      String(footer?.copyrightText || "").trim() ||
+      `© ${year} ${display}. All rights reserved. Powered by Audiory.`;
   }
 
   function fillGenreFilter(beats){
