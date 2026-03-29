@@ -1,23 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Completing payment…</title>
+  <style>
+    body{
+      margin:0;
+      background:#070a12;
+      color:#fff;
+      font-family:Inter,system-ui,sans-serif;
+      display:grid;
+      place-items:center;
+      min-height:100vh;
+    }
+    .box{
+      width:min(92vw,520px);
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:20px;
+      padding:24px;
+      text-align:center;
+      box-shadow:0 18px 50px rgba(0,0,0,.35);
+    }
+    .title{
+      font-size:22px;
+      font-weight:1000;
+      margin:0 0 10px 0;
+    }
+    .sub{
+      color:rgba(255,255,255,.72);
+      line-height:1.6;
+      font-size:14px;
+    }
+    .status{
+      margin-top:16px;
+      font-size:14px;
+      color:#93c5fd;
+      word-break:break-word;
+    }
+  </style>
 </head>
 <body>
-  <p style="font-family:system-ui;padding:20px;">Completing payment…</p>
+  <div class="box">
+    <div class="title">Completing payment…</div>
+    <div class="sub">Please wait while we confirm your order.</div>
+    <div class="status" id="statusText">Preparing checkout confirmation…</div>
+  </div>
 
   <script>
-    // ✅ These should be the EXACT deployed URLs of your HTTPS functions
-    // If you’re using Cloud Run proxy URLs, put them here exactly.
-    window.PB_PAYPAL_CAPTURE_ORDER_URL =
-      "https://captureorder-f65rhsquva-uc.a.run.app"; // <-- your capture endpoint
+    window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
   </script>
 
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const statusText = document.getElementById("statusText");
 
     const firebaseConfig = {
       apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
@@ -28,68 +67,127 @@
     const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    function getOrderIdFromUrl() {
-      const qs = new URLSearchParams(location.search);
-      // PayPal returns order id in "token"
-      return (qs.get("token") || "").trim();
+    function setStatus(msg){
+      if (statusText) statusText.textContent = msg;
     }
 
-    async function doCapture(user) {
-      const orderId = getOrderIdFromUrl();
-      if (!orderId) {
-        window.location.href = "/marketplace/?error=missing_token";
-        return;
+    function qs(name){
+      return new URLSearchParams(window.location.search).get(name) || "";
     }
 
-    const token = await user.getIdToken();
+    function currentHost(){
+      return String(window.location.hostname || "").toLowerCase().trim();
+    }
 
-    // fetch order details first to extract cartId
-    const details = await fetch(`https://api-m.paypal.com/v2/checkout/orders/${orderId}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(r => r.json()).catch(()=>null);
+    function isAudioryMainHost(host){
+      return (
+        host === "audiory.site" ||
+        host === "www.audiory.site" ||
+        host.endsWith(".web.app") ||
+        host.endsWith(".firebaseapp.com")
+      );
+    }
 
-    let cartId = null;
+    function isCustomStoreHost(host){
+      return !!host && !isAudioryMainHost(host);
+    }
 
-    try {
-      const custom = details?.purchase_units?.[0]?.custom_id || "";
-      if (custom.startsWith("cartId=")) {
-        cartId = custom.replace("cartId=", "");
+    function getOrderIdFromUrl(){
+      return String(qs("token") || "").trim();
+    }
+
+    function getSavedCartId(){
+      return (
+        localStorage.getItem("pb_last_cart_id") ||
+        sessionStorage.getItem("pb_last_cart_id") ||
+        ""
+      ).trim();
+    }
+
+    function clearSavedCheckout(){
+      localStorage.removeItem("pb_last_cart_id");
+      sessionStorage.removeItem("pb_last_cart_id");
+      localStorage.removeItem("pb_last_order_id");
+      sessionStorage.removeItem("pb_last_order_id");
+    }
+
+    function getSuccessRedirect(){
+      const host = currentHost();
+
+      if (isCustomStoreHost(host)) {
+        return `${window.location.origin}/?paid=1`;
       }
-    } catch {}
 
-    const r = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        orderId,
-        cartId
-      }),
-    });
-
-    const data = await r.json().catch(() => ({}));
-
-    if (!r.ok) {
-      console.error("Capture failed:", data);
-      window.location.href = "/marketplace/?error=capture_failed";
-      return;
+      return "/buyer-dashboard/?paid=1";
     }
 
-    setTimeout(() => {
-      window.location.href = "/buyer-dashboard/?paid=1";
-    }, 1200);
-  }
+    function getErrorRedirect(code){
+      const host = currentHost();
 
-    // Require login so buyer dashboard can show their stuff
+      if (isCustomStoreHost(host)) {
+        return `${window.location.origin}/?error=${encodeURIComponent(code)}`;
+      }
+
+      return `/marketplace/?error=${encodeURIComponent(code)}`;
+    }
+
+    async function doCapture(user){
+      const orderId = getOrderIdFromUrl();
+      const cartId = getSavedCartId();
+
+      if (!orderId) {
+        window.location.href = getErrorRedirect("missing_token");
+        return;
+      }
+
+      if (!cartId) {
+        window.location.href = getErrorRedirect("missing_cart");
+        return;
+      }
+
+      setStatus("Confirming your PayPal payment…");
+
+      const idToken = await user.getIdToken();
+
+      const r = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          orderId,
+          cartId
+        })
+      });
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok) {
+        console.error("Capture failed:", data);
+        window.location.href = getErrorRedirect("capture_failed");
+        return;
+      }
+
+      clearSavedCheckout();
+      setStatus("Payment confirmed. Redirecting…");
+
+      setTimeout(() => {
+        window.location.href = getSuccessRedirect();
+      }, 1000);
+    }
+
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        const next = encodeURIComponent(location.pathname + location.search);
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
         window.location.href = `/login/?next=${next}`;
         return;
       }
-      doCapture(user);
+
+      doCapture(user).catch((err) => {
+        console.error(err);
+        window.location.href = getErrorRedirect("capture_exception");
+      });
     });
   </script>
 </body>
