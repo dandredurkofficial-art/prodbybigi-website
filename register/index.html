@@ -31,91 +31,101 @@
     }
     h2{text-align:center;margin-bottom:18px}
 
-    input{
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid #1d2230;
-      background:#0f1219;
-      color:#fff;
-      margin-bottom:14px;
-      box-sizing:border-box;
-      outline:none;
-    }
-
-    /* ✅ NEW auth field style */
     .field{
       margin-bottom:18px;
     }
+
     .field label{
       display:block;
-      font-size:15px;
-      font-weight:700;
+      font-size:16px;
+      font-weight:800;
       color:#fff;
-      margin-bottom:10px;
+      margin-bottom:12px;
     }
-    .input-shell{
-      display:flex;
-      align-items:center;
+
+    .auth-input{
       width:100%;
       min-height:88px;
-      border-radius:20px;
-      border:1px solid #2a3150;
-      background:#0a0f22;
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
-      overflow:hidden;
+      border-radius:22px;
+      border:1px solid #2b3152;
+      background:#05091b;
+      display:flex;
+      align-items:stretch;
       box-sizing:border-box;
+      overflow:hidden;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,.03),
+        0 0 0 1px rgba(104,119,255,.04);
     }
-    .input-main{
+
+    .auth-input-main{
       flex:1;
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:16px;
       padding:0 18px;
-      min-height:88px;
-      box-sizing:border-box;
+      min-width:0;
     }
-    .field-icon{
-      width:24px;
-      height:24px;
+
+    .auth-icon{
+      width:28px;
+      height:28px;
       display:flex;
       align-items:center;
       justify-content:center;
-      color:#8d92b8;
+      color:#9da3d9;
       flex:0 0 auto;
     }
-    .divider{
-      width:1px;
+
+    .auth-icon svg{
+      width:28px;
       height:28px;
-      background:rgba(255,255,255,.20);
+    }
+
+    .auth-divider{
+      width:1px;
+      height:34px;
+      background:rgba(255,255,255,.22);
       flex:0 0 auto;
     }
-    .input-shell input{
-      margin:0;
+
+    .auth-input input{
+      flex:1;
+      min-width:0;
       border:none;
+      outline:none;
       background:transparent;
       color:#fff;
-      font-size:17px;
-      font-weight:600;
+      font-size:16px;
+      font-weight:700;
+      margin:0;
       padding:0;
-      width:100%;
-      outline:none;
+      box-sizing:border-box;
     }
-    .input-shell input::placeholder{
-      color:#8d92b8;
+
+    .auth-input input::placeholder{
+      color:#8f95c8;
       opacity:1;
     }
-    .pw-action{
-      width:90px;
-      min-height:88px;
+
+    .auth-eye-btn{
+      width:92px;
+      min-width:92px;
       border:none;
-      border-left:1px solid rgba(255,255,255,.06);
-      background:#2b3050;
-      color:#b7bddf;
-      font-weight:700;
-      font-size:16px;
+      border-left:1px solid rgba(255,255,255,.05);
+      background:#31365a;
+      color:#b9bee8;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       cursor:pointer;
-      flex:0 0 90px;
+      padding:0;
+      flex:0 0 92px;
+    }
+
+    .auth-eye-btn svg{
+      width:30px;
+      height:30px;
     }
 
     .role{ display:flex; gap:14px; margin-bottom:18px; }
@@ -127,12 +137,10 @@
       border:1px solid #1d2230;
       cursor:pointer;
       text-align:center;
-
       display:flex;
       gap:10px;
       align-items:center;
       justify-content:center;
-
       user-select:none;
       -webkit-tap-highlight-color: transparent;
       box-sizing:border-box;
@@ -170,27 +178,48 @@
     .muted{color:#9ca3af;font-size:13px;margin-top:10px;text-align:center}
     #status{ margin-top:10px; text-align:center; color:#9ca3af; font-size:13px; min-height:18px; }
 
-    @media (max-width: 420px){
-      .role{flex-direction:column}
-      .input-shell{
-        min-height:74px;
-        border-radius:18px;
+    @media (max-width: 480px){
+      .auth-input{
+        min-height:84px;
+        border-radius:20px;
       }
-      .input-main{
-        min-height:74px;
-        gap:12px;
-        padding:0 14px;
+
+      .auth-input-main{
+        gap:14px;
+        padding:0 16px;
       }
-      .pw-action{
-        min-height:74px;
-        flex-basis:78px;
-        width:78px;
+
+      .auth-icon{
+        width:26px;
+        height:26px;
+      }
+
+      .auth-icon svg{
+        width:26px;
+        height:26px;
+      }
+
+      .auth-divider{
+        height:32px;
+      }
+
+      .auth-input input{
         font-size:15px;
       }
-      .input-shell input{
-        font-size:16px;
+
+      .auth-eye-btn{
+        width:84px;
+        min-width:84px;
+        flex:0 0 84px;
+      }
+
+      .auth-eye-btn svg{
+        width:28px;
+        height:28px;
       }
     }
+
+    @media (max-width: 420px){ .role{flex-direction:column} }
   </style>
 </head>
 
@@ -201,14 +230,15 @@
 
     <div class="field">
       <label for="email">Email</label>
-      <div class="input-shell">
-        <div class="input-main">
-          <div class="field-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M20 6H4c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 2v.01L12 13 4 8.01V8h16zM4 16V10.5l7.4 4.62a1 1 0 0 0 1.2 0L20 10.5V16H4z"/>
+      <div class="auth-input">
+        <div class="auth-input-main">
+          <span class="auth-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18v12H3z"></path>
+              <path d="M3 7l9 7 9-7"></path>
             </svg>
-          </div>
-          <div class="divider"></div>
+          </span>
+          <span class="auth-divider"></span>
           <input id="email" type="email" placeholder="Enter Email" autocomplete="email" />
         </div>
       </div>
@@ -216,19 +246,29 @@
 
     <div class="field">
       <label for="password">Password</label>
-      <div class="input-shell">
-        <div class="input-main">
-          <div class="field-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M7 14a5 5 0 1 1 9.9 1H21a1 1 0 0 1 1 1v2h-2v2h-2v2h-3v-3.1A5 5 0 0 1 7 14zm5-3a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+      <div class="auth-input auth-input-password">
+        <div class="auth-input-main">
+          <span class="auth-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="8.5" cy="10.5" r="3.25"></circle>
+              <path d="M11.5 10.5H21"></path>
+              <path d="M18 10.5v3"></path>
+              <path d="M15.5 10.5v2"></path>
             </svg>
-          </div>
-          <div class="divider"></div>
+          </span>
+          <span class="auth-divider"></span>
           <input id="password" type="password" placeholder="Enter password" autocomplete="new-password" />
         </div>
-        <button class="pw-action" id="pwToggle" type="button" aria-label="Show password">
-          <svg id="pwIcon" viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
-            <path d="M12 5c5.5 0 9.7 4.1 11 6.5C21.7 13.9 17.5 18 12 18S2.3 13.9 1 11.5C2.3 9.1 6.5 5 12 5zm0 2C8 7 4.8 9.7 3.2 11.5 4.8 13.3 8 16 12 16s7.2-2.7 8.8-4.5C19.2 9.7 16 7 12 7zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5z"/>
+        <button class="auth-eye-btn" id="pwToggle" type="button" aria-label="Show password">
+          <svg id="pwEyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <svg id="pwEyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+            <path d="M3 3l18 18"></path>
+            <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
+            <path d="M9.9 5.1A10.9 10.9 0 0 1 12 5c6.5 0 10 7 10 7a17.3 17.3 0 0 1-3.2 4.2"></path>
+            <path d="M6.2 6.3C3.7 8 2 12 2 12a17.8 17.8 0 0 0 5.4 5.1"></path>
           </svg>
         </button>
       </div>
@@ -273,16 +313,15 @@
     (function(){
       const pw = document.getElementById("password");
       const btn = document.getElementById("pwToggle");
-      const icon = document.getElementById("pwIcon");
-      if(!pw || !btn || !icon) return;
+      const eyeOpen = document.getElementById("pwEyeOpen");
+      const eyeOff = document.getElementById("pwEyeOff");
+      if(!pw || !btn) return;
 
       btn.addEventListener("click", ()=>{
         const showing = pw.type === "text";
         pw.type = showing ? "password" : "text";
-
-        icon.innerHTML = showing
-          ? `<path d="M12 5c5.5 0 9.7 4.1 11 6.5C21.7 13.9 17.5 18 12 18S2.3 13.9 1 11.5C2.3 9.1 6.5 5 12 5zm0 2C8 7 4.8 9.7 3.2 11.5 4.8 13.3 8 16 12 16s7.2-2.7 8.8-4.5C19.2 9.7 16 7 12 7zm0 2.5A2.5 2.5 0 1 1 9.5 12 2.5 2.5 0 0 1 12 9.5z"/>`
-          : `<path d="M2.3 1 1 2.3l3.1 3.1C2.8 6.5 1.7 7.8 1 9c1.3 2.4 5.5 6.5 11 6.5 2 0 3.8-.5 5.3-1.2l3.4 3.4 1.3-1.3L2.3 1zM12 13.5A2.5 2.5 0 0 1 9.5 11c0-.4.1-.8.3-1.2l3.4 3.4c-.4.2-.8.3-1.2.3zm0-8.5c5.5 0 9.7 4.1 11 6.5-.7 1.2-1.8 2.5-3.1 3.6l-2-2A5 5 0 0 0 10.9 6l-1.6-1.6c.9-.2 1.8-.4 2.7-.4z"/>`;
+        if (eyeOpen) eyeOpen.style.display = showing ? "" : "none";
+        if (eyeOff) eyeOff.style.display = showing ? "none" : "";
       });
     })();
   </script>
