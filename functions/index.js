@@ -1388,11 +1388,43 @@ exports.createOrder = onRequest(
         currency: "USD",
         mode: safeStr(PAYPAL_MODE.value() || "sandbox"),
         status: "created",
-        buyerId: buyerId || null, // ✅ NEW
+        buyerId: buyerId || null,
       });
 
       // ✅ Put only the cartId in PayPal custom_id
       const customId = `cartId=${cartId}`;
+
+      // ✅ Dynamic return / cancel URL
+      const requestOrigin = String(req.headers.origin || "").trim();
+
+      let checkoutBase = "https://audiory.site";
+
+      if (requestOrigin) {
+        try {
+          const u = new URL(requestOrigin);
+          const host = String(u.hostname || "").toLowerCase();
+
+          const isMainAudiory =
+            requestOrigin === "https://audiory.site" ||
+            requestOrigin === "https://www.audiory.site";
+
+          const isAllowedCustomDomain =
+            u.protocol === "https:" &&
+            host &&
+            host !== "audiory.site" &&
+            host !== "www.audiory.site" &&
+            host !== "localhost" &&
+            !host.endsWith(".web.app") &&
+            !host.endsWith(".firebaseapp.com") &&
+            !host.endsWith(".run.app");
+
+          if (isMainAudiory || isAllowedCustomDomain) {
+            checkoutBase = u.origin;
+          }
+        } catch (err) {
+          console.warn("Invalid origin for PayPal return URL:", requestOrigin);
+        }
+      }
 
       const payload = {
         intent: "CAPTURE",
@@ -1411,9 +1443,9 @@ exports.createOrder = onRequest(
           brand_name: "Audiory",
           shipping_preference: "NO_SHIPPING",
           user_action: "PAY_NOW",
-          landing_page: "BILLING", // you set BILLING; keep it
-          return_url: "https://audiory.site/success.html",
-          cancel_url: "https://audiory.site/cancel.html",
+          landing_page: "BILLING",
+          return_url: `${checkoutBase}/success.html`,
+          cancel_url: `${checkoutBase}/cancel.html`,
         },
       };
 
