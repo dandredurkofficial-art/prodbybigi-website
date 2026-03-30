@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Audiory Studio</title>
 
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0b0d12">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
 <!-- Cloudinary (kept, but NOT used anymore) -->
@@ -1448,6 +1452,12 @@ BOOST PAYMENT MODAL
 </div>
 
 <script>
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+    .then(() => console.log("SW registered"))
+    .catch(console.error);
+}
   
 async function generateTags(){
 
