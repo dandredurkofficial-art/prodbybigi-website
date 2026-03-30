@@ -85,7 +85,20 @@
       window.currentUser = user;
 
       try {
-        const uref = doc(db, "users", user.uid);
+        await user.reload();
+        user = auth.currentUser || user;
+        window.currentUser = user;
+      } catch (e) {
+        console.warn("user.reload failed:", e);
+      }
+
+      if (!user.emailVerified) {
+        location.replace("/verify-email/?next=/dashboard/");
+        return;
+      }
+
+      try {
+      const uref = doc(db, "users", user.uid);
         const usnap = await getDoc(uref);
         window.currentProfile = usnap.exists() ? usnap.data() : null;
       } catch (e) {
