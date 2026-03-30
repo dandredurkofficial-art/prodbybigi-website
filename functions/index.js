@@ -1068,6 +1068,10 @@ exports.sendVerificationEmail = onRequest(
         return res.status(400).json({ error: "Email does not match user record" });
       }
 
+      if (userData.emailVerified === true) {
+        return res.json({ ok: true, alreadyVerified: true });
+      }
+
       await createAndSendVerificationEmail({
         uid: cleanUid,
         email: cleanEmail,
