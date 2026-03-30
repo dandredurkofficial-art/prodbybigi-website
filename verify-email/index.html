@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verify Email</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body{
+      margin:0;
+      min-height:100vh;
+      background:#0b0d12;
+      color:#fff;
+      font-family:Inter,system-ui,sans-serif;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      box-sizing:border-box;
+    }
+    .card{
+      width:100%;
+      max-width:460px;
+      background:#121726;
+      border:1px solid #1d2230;
+      border-radius:20px;
+      padding:28px;
+      box-sizing:border-box;
+      text-align:center;
+    }
+    h1{
+      margin:0 0 12px;
+      font-size:34px;
+      font-weight:800;
+    }
+    p{
+      color:#b6bfd6;
+      line-height:1.65;
+      margin:0 0 10px;
+    }
+    .email{
+      margin:14px 0;
+      padding:12px 14px;
+      border-radius:12px;
+      background:#0f1219;
+      border:1px solid #1d2230;
+      font-weight:700;
+      color:#fff;
+    }
+    .state{
+      margin:12px 0 18px;
+      font-weight:800;
+    }
+    .actions{
+      display:grid;
+      gap:10px;
+      margin-top:14px;
+    }
+    button, a.btn{
+      width:100%;
+      padding:13px 14px;
+      border-radius:12px;
+      border:none;
+      font-weight:800;
+      cursor:pointer;
+      text-decoration:none;
+      box-sizing:border-box;
+      display:inline-flex;
+      justify-content:center;
+      align-items:center;
+    }
+    .primary{
+      background:#6cf;
+      color:#081018;
+    }
+    .secondary{
+      background:#111827;
+      color:#fff;
+      border:1px solid #1d2230;
+    }
+    .danger{
+      background:#2a3145;
+      color:#fff;
+      border:1px solid #364055;
+    }
+    #status{
+      margin-top:14px;
+      min-height:20px;
+      color:#9ca3af;
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Verify Email</h1>
+    <p>We sent a verification link to this email address.</p>
+    <div class="email" id="verifyEmailText">Loading...</div>
+    <div class="state" id="verifyState">Checking...</div>
+
+    <p>Please open your email, click the verification link, then come back here and tap refresh.</p>
+
+    <div class="actions">
+      <button class="primary" id="refreshBtn" type="button">I Verified, Refresh</button>
+      <button class="secondary" id="resendBtn" type="button">Resend Verification Email</button>
+      <a class="btn danger" href="/login/">Back to Login</a>
+    </div>
+
+    <div id="status"></div>
+  </div>
+
+  <script type="module" src="/auth-ui.js"></script>
+  <script>
+    document.getElementById("refreshBtn")?.addEventListener("click", () => window.refreshVerificationStatus?.());
+    document.getElementById("resendBtn")?.addEventListener("click", () => window.resendVerificationEmail?.());
+  </script>
+</body>
+</html>
