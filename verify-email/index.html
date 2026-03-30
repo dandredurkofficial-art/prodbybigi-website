@@ -46,6 +46,7 @@
       border:1px solid #1d2230;
       font-weight:700;
       color:#fff;
+      word-break:break-word;
     }
     .state{
       margin:12px 0 18px;
@@ -68,6 +69,8 @@
       display:inline-flex;
       justify-content:center;
       align-items:center;
+      font-family:inherit;
+      font-size:15px;
     }
     .primary{
       background:#6cf;
@@ -83,18 +86,28 @@
       color:#fff;
       border:1px solid #364055;
     }
+    button[disabled]{
+      opacity:.65;
+      cursor:not-allowed;
+    }
     #status{
       margin-top:14px;
       min-height:20px;
       color:#9ca3af;
       font-size:13px;
+      line-height:1.5;
+      white-space:pre-wrap;
     }
+    .ok{ color:#86efac !important; }
+    .bad{ color:#fca5a5 !important; }
+    .warn{ color:#fde68a !important; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Verify Email</h1>
     <p>We sent a verification link to this email address.</p>
+
     <div class="email" id="verifyEmailText">Loading...</div>
     <div class="state" id="verifyState">Checking...</div>
 
@@ -103,16 +116,133 @@
     <div class="actions">
       <button class="primary" id="refreshBtn" type="button">I Verified, Refresh</button>
       <button class="secondary" id="resendBtn" type="button">Resend Verification Email</button>
-      <a class="btn danger" href="/login/">Back to Login</a>
+      <button class="danger" id="logoutBtn" type="button">Back to Login</button>
     </div>
 
     <div id="status"></div>
   </div>
 
   <script type="module" src="/auth-ui.js"></script>
-  <script>
-    document.getElementById("refreshBtn")?.addEventListener("click", () => window.refreshVerificationStatus?.());
-    document.getElementById("resendBtn")?.addEventListener("click", () => window.resendVerificationEmail?.());
+
+  <script type="module">
+    import "/js/firebase.js";
+    import {
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const emailText = document.getElementById("verifyEmailText");
+    const verifyState = document.getElementById("verifyState");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const resendBtn = document.getElementById("resendBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const statusEl = document.getElementById("status");
+
+    function setStatus(msg, type=""){
+      if (!statusEl) return;
+      statusEl.className = "";
+      statusEl.id = "status";
+      if (type) statusEl.classList.add(type);
+      statusEl.textContent = msg || "";
+    }
+
+    function getNextUrl(){
+      try{
+        const u = new URL(location.href);
+        const next = (u.searchParams.get("next") || "").trim();
+        if (next.startsWith("/")) return next;
+      }catch{}
+      return "/buyer-dashboard/";
+    }
+
+    async function refreshUI(user){
+      if (!user) {
+        location.replace("/login/");
+        return;
+      }
+
+      try {
+        await user.reload();
+      } catch (e) {
+        console.warn("reload failed:", e);
+      }
+
+      const freshUser = window.FB?.auth?.currentUser || user;
+
+      if (emailText) {
+        emailText.textContent = freshUser.email || "No email found";
+      }
+
+      if (freshUser.emailVerified) {
+        if (verifyState) {
+          verifyState.textContent = "✅ Email verified";
+          verifyState.style.color = "#86efac";
+        }
+        setStatus("Email verified successfully. Redirecting...", "ok");
+
+        setTimeout(() => {
+          location.replace(getNextUrl());
+        }, 900);
+        return;
+      }
+
+      if (verifyState) {
+        verifyState.textContent = "⏳ Not verified yet";
+        verifyState.style.color = "#fde68a";
+      }
+
+      setStatus("");
+    }
+
+    onAuthStateChanged(window.FB.auth, async (user) => {
+      await refreshUI(user);
+    });
+
+    refreshBtn?.addEventListener("click", async () => {
+      const user = window.FB?.auth?.currentUser;
+      if (!user) {
+        location.replace("/login/");
+        return;
+      }
+
+      refreshBtn.disabled = true;
+      setStatus("Checking verification status...", "warn");
+
+      try{
+        await refreshUI(user);
+      } catch (err){
+        console.error(err);
+        setStatus(err?.message || "Could not refresh verification status.", "bad");
+      } finally {
+        refreshBtn.disabled = false;
+      }
+    });
+
+    resendBtn?.addEventListener("click", async () => {
+      if (typeof window.resendVerificationEmail === "function") {
+        resendBtn.disabled = true;
+        setStatus("Sending verification email...", "warn");
+
+        try{
+          await window.resendVerificationEmail();
+          setStatus("✅ Verification email sent again. Check your inbox.", "ok");
+        } catch (err){
+          console.error(err);
+          setStatus(err?.message || "Could not resend verification email.", "bad");
+        } finally {
+          resendBtn.disabled = false;
+        }
+      }
+    });
+
+    logoutBtn?.addEventListener("click", async () => {
+      try{
+        await signOut(window.FB.auth);
+      } catch (e) {
+        console.warn("signOut failed:", e);
+      }
+      location.replace("/login/");
+    });
   </script>
 </body>
 </html>
