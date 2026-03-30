@@ -105,13 +105,13 @@
 </head>
 <body>
   <div class="card">
-    <h1>Verify Email</h1>
-    <p>We sent a verification link to this email address.</p>
+    <h1 id="pageTitle">Verify Email</h1>
+    <p id="pageIntro">We sent a verification link to this email address.</p>
 
     <div class="email" id="verifyEmailText">Loading...</div>
     <div class="state" id="verifyState">Checking...</div>
 
-    <p>Please open your email, click the verification link, then come back here and tap refresh.</p>
+    <p id="pageHelp">Please open your email, click the verification link, then come back here and tap refresh.</p>
 
     <div class="actions">
       <button class="primary" id="refreshBtn" type="button">I Verified, Refresh</button>
@@ -128,7 +128,8 @@
     import "/js/firebase.js";
     import {
       onAuthStateChanged,
-      signOut
+      signOut,
+      applyActionCode
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
     const emailText = document.getElementById("verifyEmailText");
@@ -137,6 +138,9 @@
     const resendBtn = document.getElementById("resendBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const statusEl = document.getElementById("status");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageIntro = document.getElementById("pageIntro");
+    const pageHelp = document.getElementById("pageHelp");
 
     function setStatus(msg, type=""){
       if (!statusEl) return;
@@ -150,14 +154,97 @@
       try{
         const u = new URL(location.href);
         const next = (u.searchParams.get("next") || "").trim();
+        const continueUrl = (u.searchParams.get("continueUrl") || "").trim();
+
         if (next.startsWith("/")) return next;
+
+        if (continueUrl){
+          try{
+            const cu = new URL(decodeURIComponent(continueUrl), location.origin);
+            if (cu.origin === location.origin) {
+              return cu.pathname + cu.search + cu.hash;
+            }
+          }catch{}
+        }
       }catch{}
-      return "/buyer-dashboard/";
+      return "/login/?verified=1";
+    }
+
+    function getActionParams(){
+      const u = new URL(location.href);
+      return {
+        mode: (u.searchParams.get("mode") || "").trim(),
+        oobCode: (u.searchParams.get("oobCode") || "").trim(),
+        apiKey: (u.searchParams.get("apiKey") || "").trim(),
+        continueUrl: (u.searchParams.get("continueUrl") || "").trim()
+      };
+    }
+
+    function setLinkProcessingUI(){
+      if (pageTitle) pageTitle.textContent = "Verifying Email";
+      if (pageIntro) pageIntro.textContent = "Please wait while we confirm your email address.";
+      if (pageHelp) pageHelp.textContent = "This usually takes a few seconds.";
+      if (emailText) emailText.textContent = "Verification link detected...";
+      if (verifyState) {
+        verifyState.textContent = "⏳ Processing verification link";
+        verifyState.style.color = "#fde68a";
+      }
+      if (refreshBtn) refreshBtn.style.display = "none";
+      if (resendBtn) resendBtn.style.display = "none";
+      setStatus("Processing verification link...", "warn");
+    }
+
+    function setWaitingUI(user){
+      if (pageTitle) pageTitle.textContent = "Verify Email";
+      if (pageIntro) pageIntro.textContent = "We sent a verification link to this email address.";
+      if (pageHelp) pageHelp.textContent = "Please open your email, click the verification link, then come back here and tap refresh.";
+      if (refreshBtn) refreshBtn.style.display = "";
+      if (resendBtn) resendBtn.style.display = "";
+
+      if (emailText) {
+        emailText.textContent = user?.email || "No email found";
+      }
+
+      if (verifyState) {
+        verifyState.textContent = "⏳ Not verified yet";
+        verifyState.style.color = "#fde68a";
+      }
+
+      setStatus("");
+    }
+
+    function setVerifiedUI(message = "Email verified successfully. Redirecting..."){
+      if (pageTitle) pageTitle.textContent = "Email Verified";
+      if (pageIntro) pageIntro.textContent = "Your email has been verified successfully.";
+      if (pageHelp) pageHelp.textContent = "Redirecting you now...";
+      if (verifyState) {
+        verifyState.textContent = "✅ Email verified";
+        verifyState.style.color = "#86efac";
+      }
+      if (refreshBtn) refreshBtn.style.display = "none";
+      if (resendBtn) resendBtn.style.display = "none";
+      setStatus(message, "ok");
+    }
+
+    function setFailedUI(message){
+      if (pageTitle) pageTitle.textContent = "Verification Failed";
+      if (pageIntro) pageIntro.textContent = "This verification link could not be completed.";
+      if (pageHelp) pageHelp.textContent = "You can login and request a new verification email.";
+      if (verifyState) {
+        verifyState.textContent = "❌ Verification failed";
+        verifyState.style.color = "#fca5a5";
+      }
+      if (emailText) {
+        emailText.textContent = "Invalid or expired verification link";
+      }
+      if (refreshBtn) refreshBtn.style.display = "none";
+      if (resendBtn) resendBtn.style.display = "none";
+      setStatus(message || "Verification failed.", "bad");
     }
 
     async function refreshUI(user){
       if (!user) {
-        location.replace("/login/");
+        setFailedUI("Please login first, then verify your email again.");
         return;
       }
 
@@ -174,27 +261,67 @@
       }
 
       if (freshUser.emailVerified) {
-        if (verifyState) {
-          verifyState.textContent = "✅ Email verified";
-          verifyState.style.color = "#86efac";
-        }
-        setStatus("Email verified successfully. Redirecting...", "ok");
-
+        setVerifiedUI();
         setTimeout(() => {
           location.replace(getNextUrl());
         }, 900);
         return;
       }
 
-      if (verifyState) {
-        verifyState.textContent = "⏳ Not verified yet";
-        verifyState.style.color = "#fde68a";
+      setWaitingUI(freshUser);
+    }
+
+    async function handleVerificationLinkIfPresent(){
+      const { mode, oobCode } = getActionParams();
+
+      if (mode !== "verifyEmail" || !oobCode) {
+        return false;
       }
 
-      setStatus("");
+      setLinkProcessingUI();
+
+      try{
+        await applyActionCode(window.FB.auth, oobCode);
+
+        const currentUser = window.FB?.auth?.currentUser;
+        if (currentUser) {
+          try { await currentUser.reload(); } catch {}
+        }
+
+        const freshUser = window.FB?.auth?.currentUser || null;
+
+        if (emailText) {
+          emailText.textContent = freshUser?.email || "Email verified successfully";
+        }
+
+        setVerifiedUI("✅ Email verified successfully");
+
+        setTimeout(() => {
+          location.replace(getNextUrl());
+        }, 1200);
+
+      } catch (err){
+        console.error("applyActionCode failed:", err);
+        setFailedUI(err?.message || "This verification link is invalid or expired.");
+      }
+
+      return true;
     }
 
     onAuthStateChanged(window.FB.auth, async (user) => {
+      const handledByLink = await handleVerificationLinkIfPresent();
+      if (handledByLink) return;
+
+      if (!user) {
+        if (emailText) emailText.textContent = "Please login to continue";
+        if (verifyState) {
+          verifyState.textContent = "Waiting for login";
+          verifyState.style.color = "#fde68a";
+        }
+        setStatus("");
+        return;
+      }
+
       await refreshUI(user);
     });
 
@@ -243,6 +370,10 @@
       }
       location.replace("/login/");
     });
+
+    window.addEventListener("firebase-ready", async () => {
+      await handleVerificationLinkIfPresent();
+    }, { once: true });
   </script>
 </body>
 </html>
