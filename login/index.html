@@ -29,7 +29,7 @@
 
     .auth-input{
       width:100%;
-      height:74px;
+      height:72px;
       border-radius:20px;
       border:1px solid #2b3152;
       background:#05091b;
@@ -38,8 +38,8 @@
       box-sizing:border-box;
       overflow:hidden;
       box-shadow:
-      inset 0 0 0 1px rgba(255,255,255,.03),
-      0 0 0 1px rgba(104,119,255,.04);
+        inset 0 0 0 1px rgba(255,255,255,.03),
+        0 0 0 1px rgba(104,119,255,.04);
     }
 
     .auth-input-main{
@@ -50,6 +50,7 @@
       padding:0 18px;
       min-width:0;
       height:100%;
+      overflow:hidden;
     }
 
     .auth-icon{
@@ -77,6 +78,7 @@
     .auth-input input{
       flex:1;
       min-width:0;
+      width:100%;
       height:100%;
       border:none;
       outline:none;
@@ -95,9 +97,10 @@
     }
 
     .auth-eye-btn{
-      width:72px;
-      min-width:72px;
-      height:58px;
+      width:54px;
+      min-width:54px;
+      max-width:54px;
+      height:54px;
       margin-right:8px;
       border:none;
       border-radius:16px;
@@ -108,12 +111,13 @@
       justify-content:center;
       cursor:pointer;
       padding:0;
-      flex:0 0 72px;
+      flex:0 0 54px;
+      align-self:center;
     }
 
     .auth-eye-btn svg{
-      width:26px;
-      height:26px;
+      width:24px;
+      height:24px;
     }
 
     @media (max-width: 480px){
@@ -138,7 +142,7 @@
       }
 
       .auth-divider{
-         height:30px;
+        height:30px;
       }
 
       .auth-input input{
@@ -146,19 +150,20 @@
       }
 
       .auth-eye-btn{
-        width:64px;
-        min-width:64px;
-        height:52px;
-        flex:0 0 64px;
+        width:50px;
+        min-width:50px;
+        max-width:50px;
+        height:50px;
+        flex:0 0 50px;
         margin-right:8px;
         border-radius:14px;
       }
 
       .auth-eye-btn svg{
-        width:24px;
-        height:24px;
+        width:22px;
+        height:22px;
       }
-   }
+    }
   </style>
 </head>
 <body>
@@ -184,7 +189,7 @@
 
     <div class="field">
       <label for="password">Password</label>
-      <div class="auth-input auth-input-password">
+      <div class="auth-input">
         <div class="auth-input-main">
           <span class="auth-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
