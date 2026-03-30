@@ -27,9 +27,9 @@ import {
 ========================= */
 
 const APP_URL = "https://audiory.site";
-const SEND_VERIFICATION_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/sendVerificationEmail";
-const RESEND_VERIFICATION_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/resendVerificationEmail";
-const VERIFY_TOKEN_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/verifyEmailToken";
+const SEND_VERIFICATION_URL = "https://sendverificationemail-f65rhsquva-uc.a.run.app";
+const RESEND_VERIFICATION_URL = "https://resendverificationemail-f65rhsquva-uc.a.run.app";
+const VERIFY_TOKEN_URL = "https://verifyemailtoken-f65rhsquva-uc.a.run.app";
 
 /* =========================
    HELPERS
