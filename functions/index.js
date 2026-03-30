@@ -637,42 +637,45 @@ function verifyEmailLink(token, email) {
 
 function verifyEmailHtml({ name, verifyUrl, email }) {
   const displayName = safeStr(name || "there");
+  const safeEmail = safeStr(email || "");
+
   return `
     <div style="margin:0;padding:0;background:#0b0d12;font-family:Inter,Arial,sans-serif;color:#ffffff;">
-      <div style="max-width:560px;margin:0 auto;padding:32px 16px;">
+      <div style="max-width:560px;margin:0 auto;padding:40px 16px;">
         <div style="background:#121726;border:1px solid #1d2230;border-radius:20px;padding:32px;">
-          <div style="font-size:28px;font-weight:800;line-height:1.2;margin-bottom:14px;">
+          
+          <div style="font-size:30px;font-weight:800;line-height:1.2;margin-bottom:14px;color:#ffffff;">
             Verify your email
           </div>
 
-          <p style="margin:0 0 14px;color:#b6bfd6;line-height:1.7;">
+          <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;font-size:15px;">
             Hey ${displayName},
           </p>
 
-          <p style="margin:0 0 14px;color:#b6bfd6;line-height:1.7;">
-            Welcome to <b style="color:#ffffff;">Audiory</b>. Please confirm your email address to activate your account.
+          <p style="margin:0 0 14px;color:#b6bfd6;line-height:1.7;font-size:15px;">
+            Welcome to <span style="color:#ffffff;font-weight:700;">Audiory</span>. Please confirm your email address to activate your account.
           </p>
 
           <div style="margin:18px 0;padding:14px 16px;border-radius:14px;background:#0f1219;border:1px solid #1d2230;color:#ffffff;font-weight:700;word-break:break-word;">
-            ${safeStr(email || "")}
+            ${safeEmail}
           </div>
 
-          <div style="margin:24px 0;">
+          <div style="margin:26px 0 22px;">
             <a href="${verifyUrl}"
-               style="display:inline-block;padding:14px 22px;border-radius:12px;background:#6cf;color:#081018;text-decoration:none;font-weight:800;">
+               style="display:inline-block;padding:14px 24px;border-radius:12px;background:#6cf;color:#081018;text-decoration:none;font-weight:800;font-size:15px;">
               Verify Email
             </a>
           </div>
 
-          <p style="margin:0 0 12px;color:#9ca3af;line-height:1.7;">
-            This link will expire in 24 hours.
+          <p style="margin:0 0 12px;color:#9ca3af;line-height:1.7;font-size:14px;">
+            This verification link will expire in 24 hours.
           </p>
 
-          <p style="margin:0 0 12px;color:#9ca3af;line-height:1.7;">
+          <p style="margin:0 0 10px;color:#9ca3af;line-height:1.7;font-size:14px;">
             If the button does not work, copy and paste this link into your browser:
           </p>
 
-          <p style="margin:0;word-break:break-word;">
+          <p style="margin:0;word-break:break-word;font-size:13px;line-height:1.7;">
             <a href="${verifyUrl}" style="color:#6cf;text-decoration:none;">${verifyUrl}</a>
           </p>
 
@@ -680,6 +683,10 @@ function verifyEmailHtml({ name, verifyUrl, email }) {
 
           <p style="margin:0;color:#7f8aa3;font-size:13px;line-height:1.7;">
             If you did not create an Audiory account, you can safely ignore this email.
+          </p>
+
+          <p style="margin:14px 0 0;color:#9ca3af;font-size:13px;line-height:1.7;">
+            — Audiory Team
           </p>
         </div>
       </div>
@@ -692,14 +699,18 @@ function verifyEmailText({ name, verifyUrl, email }) {
     `Hey ${safeStr(name || "there")},`,
     ``,
     `Welcome to Audiory.`,
-    `Please verify your email address to activate your account:`,
+    `Please verify your email address to activate your account.`,
     ``,
-    `${safeStr(email || "")}`,
+    `Email: ${safeStr(email || "")}`,
     ``,
+    `Verification link:`,
     `${verifyUrl}`,
     ``,
     `This link expires in 24 hours.`,
-    `If you did not create this account, you can ignore this email.`,
+    ``,
+    `If you did not create an Audiory account, you can safely ignore this email.`,
+    ``,
+    `— Audiory Team`,
   ].join("\n");
 }
 
@@ -729,7 +740,7 @@ async function createAndSendVerificationEmail({ uid, email, name }) {
 
   await sendEmail({
     to: cleanEmail,
-    subject: "Verify your Audiory email",
+    subject: "Verify your Audiory account",
     text: verifyEmailText({ name, verifyUrl: url, email: cleanEmail }),
     html: verifyEmailHtml({ name, verifyUrl: url, email: cleanEmail }),
   });
