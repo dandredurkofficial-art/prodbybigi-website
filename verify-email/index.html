@@ -111,7 +111,9 @@
     <div class="email" id="verifyEmailText">Loading...</div>
     <div class="state" id="verifyState">Checking...</div>
 
-    <p id="pageHelp">Please open your email, click the verification link, then come back here and tap refresh.</p>
+    <p id="pageHelp">
+      Please check your inbox for the verification email and click the link inside. If it is not there, check your spam or junk folder, then return here and tap refresh.
+    </p>
 
     <div class="actions">
       <button class="primary" id="refreshBtn" type="button">I Verified, Refresh</button>
@@ -187,7 +189,7 @@
     function setWaitingUI(user){
       if (pageTitle) pageTitle.textContent = "Verify Email";
       if (pageIntro) pageIntro.textContent = "We sent a verification link to this email address.";
-      if (pageHelp) pageHelp.textContent = "Please open your email, click the verification link, then come back here and tap refresh.";
+      if (pageHelp) pageHelp.textContent = "Please check your inbox for the verification email and click the link inside. If it is not there, check your spam or junk folder, then return here and tap refresh.";
       if (refreshBtn) refreshBtn.style.display = "";
       if (resendBtn) resendBtn.style.display = "";
 
