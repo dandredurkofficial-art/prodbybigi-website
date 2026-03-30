@@ -1,4 +1,5 @@
-// /auth-ui.js (FULL UPDATED + USER HANDLES + EMAIL VERIFICATION) ✅
+// /auth-ui.js
+// FULL UPDATED + USER HANDLES + CUSTOM SENDGRID EMAIL VERIFICATION ✅
 
 import "/js/firebase.js";
 
@@ -8,11 +9,9 @@ import {
   onAuthStateChanged,
   signOut,
   sendPasswordResetEmail,
-  sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult,
   updateProfile
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -20,15 +19,17 @@ import {
   doc,
   setDoc,
   getDoc,
-  updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* =========================
-   APP DOMAIN
+   APP / BACKEND URLS
 ========================= */
 
 const APP_URL = "https://audiory.site";
+const SEND_VERIFICATION_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/sendVerificationEmail";
+const RESEND_VERIFICATION_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/resendVerificationEmail";
+const VERIFY_TOKEN_URL = "https://us-central1-audiory-beat-store.cloudfunctions.net/verifyEmailToken";
 
 /* =========================
    HELPERS
@@ -98,11 +99,11 @@ function getDbOrThrow(){
   return db;
 }
 
-async function syncEmailVerifiedToUserDoc(user){
+async function syncEmailVerifiedToUserDoc(user, verifiedOverride = null){
   try{
     const db = getDbOrThrow();
     await setDoc(doc(db, "users", user.uid), {
-      emailVerified: !!user.emailVerified,
+      emailVerified: verifiedOverride === null ? !!user.emailVerified : !!verifiedOverride,
       updatedAt: serverTimestamp()
     }, { merge: true });
   }catch(e){
@@ -110,12 +111,54 @@ async function syncEmailVerifiedToUserDoc(user){
   }
 }
 
+async function postJSON(url, body){
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body || {})
+  });
+
+  const text = await res.text().catch(() => "");
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    data = { raw: text };
+  }
+
+  if (!res.ok) {
+    throw new Error(data?.error || data?.message || "Request failed");
+  }
+
+  return data;
+}
+
+async function sendVerificationEmailViaBackend({ uid, email, name }){
+  return postJSON(SEND_VERIFICATION_URL, {
+    uid,
+    email,
+    name
+  });
+}
+
+async function resendVerificationEmailViaBackend({ uid }){
+  return postJSON(RESEND_VERIFICATION_URL, {
+    uid
+  });
+}
+
+async function verifyEmailTokenViaBackend({ token, email }){
+  return postJSON(VERIFY_TOKEN_URL, {
+    token,
+    email
+  });
+}
+
 /* =========================
    HANDLE GENERATOR
 ========================= */
 
 async function generateHandle(email){
-
   const db = getDbOrThrow();
 
   const base = email.split("@")[0]
@@ -126,7 +169,6 @@ async function generateHandle(email){
   let i = 0;
 
   while(true){
-
     const ref = doc(db,"handles",handle);
     const snap = await getDoc(ref);
 
@@ -140,7 +182,6 @@ async function generateHandle(email){
 }
 
 async function reserveHandle(uid,email){
-
   const db = getDbOrThrow();
   const handle = await generateHandle(email);
 
@@ -156,7 +197,6 @@ async function reserveHandle(uid,email){
 ========================= */
 
 window.registerUser = async function registerUser(){
-
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
@@ -193,7 +233,7 @@ window.registerUser = async function registerUser(){
       email: email.toLowerCase(),
       role,
       handle,
-      emailVerified: !!user.emailVerified,
+      emailVerified: false,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
       displayName: role === "producer" ? "Producer" : "Buyer"
@@ -216,14 +256,11 @@ window.registerUser = async function registerUser(){
       },{merge:true});
     }
 
-    try{
-      await sendEmailVerification(user, {
-        url: `${APP_URL}/login/`,
-        handleCodeInApp: false
-      });
-    }catch(e){
-      console.warn("sendEmailVerification failed:", e);
-    }
+    await sendVerificationEmailViaBackend({
+      uid,
+      email: email.toLowerCase(),
+      name: role === "producer" ? "Producer" : "Buyer"
+    });
 
     setStatus("Verification email sent.");
     goToVerifyEmail();
@@ -240,7 +277,6 @@ window.registerUser = async function registerUser(){
 ========================= */
 
 window.loginUser = async function loginUser(){
-
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
@@ -254,14 +290,13 @@ window.loginUser = async function loginUser(){
     const cred = await signInWithEmailAndPassword(auth,email,password);
     const user = cred.user;
 
-    await user.reload();
-
     const snap = await getDoc(doc(db,"users",user.uid));
     const role = snap.exists() ? (snap.data()?.role || "") : "";
+    const emailVerifiedInDb = snap.exists() ? (snap.data()?.emailVerified === true) : false;
 
-    await syncEmailVerifiedToUserDoc(auth.currentUser || user);
+    await syncEmailVerifiedToUserDoc(user, emailVerifiedInDb);
 
-    if(!(auth.currentUser || user).emailVerified){
+    if(!emailVerifiedInDb){
       setStatus("");
       goToVerifyEmail();
       return;
@@ -282,7 +317,6 @@ window.loginUser = async function loginUser(){
 ========================= */
 
 window.resetPassword = async function resetPassword(){
-
   const auth = getAuthOrThrow();
 
   const email = String($("email")?.value || "").trim();
@@ -316,7 +350,6 @@ async function googleSignInSmart(auth){
     const res = await signInWithPopup(auth,googleProvider);
     return res;
   }catch(e){
-
     const code = e?.code || "";
 
     const popupRelated =
@@ -340,7 +373,6 @@ async function googleSignInSmart(auth){
 ========================= */
 
 window.googleLogin = async function googleLogin(){
-
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
@@ -351,11 +383,10 @@ window.googleLogin = async function googleLogin(){
     if(!res?.user) return;
 
     await ensureUserProfile(res.user,{roleHint:""});
-    await res.user.reload();
-    await syncEmailVerifiedToUserDoc(auth.currentUser || res.user);
 
     const snap = await getDoc(doc(db,"users",res.user.uid));
     const role = snap.exists() ? (snap.data()?.role || "") : "";
+    const emailVerifiedInDb = snap.exists() ? (snap.data()?.emailVerified === true) : false;
 
     setStatus("");
 
@@ -364,15 +395,9 @@ window.googleLogin = async function googleLogin(){
       return;
     }
 
-    if(!(auth.currentUser || res.user).emailVerified){
-      try{
-        await sendEmailVerification(auth.currentUser || res.user,{
-          url:`${APP_URL}/login/`,
-          handleCodeInApp:false
-        });
-      }catch(e){
-        console.warn("sendEmailVerification google login:", e);
-      }
+    await syncEmailVerifiedToUserDoc(res.user, emailVerifiedInDb);
+
+    if(!emailVerifiedInDb){
       goToVerifyEmail();
       return;
     }
@@ -382,7 +407,7 @@ window.googleLogin = async function googleLogin(){
   }catch(err){
     console.error(err);
     setStatus("");
-    alert("Google login failed: "+(err?.message || String(err)));
+    alert("Google login failed: " + (err?.message || String(err)));
   }
 };
 
@@ -391,7 +416,6 @@ window.googleLogin = async function googleLogin(){
 ========================= */
 
 window.googleRegister = async function googleRegister(){
-
   const auth = getAuthOrThrow();
   const db = getDbOrThrow();
 
@@ -407,23 +431,16 @@ window.googleRegister = async function googleRegister(){
     if(!res?.user) return;
 
     await ensureUserProfile(res.user,{roleHint:role});
-    await res.user.reload();
-    await syncEmailVerifiedToUserDoc(auth.currentUser || res.user);
 
     const snap = await getDoc(doc(db,"users",res.user.uid));
     const finalRole = snap.exists() ? (snap.data()?.role || role) : role;
+    const emailVerifiedInDb = snap.exists() ? (snap.data()?.emailVerified === true) : false;
 
     setStatus("");
 
-    if(!(auth.currentUser || res.user).emailVerified){
-      try{
-        await sendEmailVerification(auth.currentUser || res.user,{
-          url:`${APP_URL}/login/`,
-          handleCodeInApp:false
-        });
-      }catch(e){
-        console.warn("sendEmailVerification google register:", e);
-      }
+    await syncEmailVerifiedToUserDoc(res.user, emailVerifiedInDb);
+
+    if(!emailVerifiedInDb){
       goToVerifyEmail();
       return;
     }
@@ -433,7 +450,7 @@ window.googleRegister = async function googleRegister(){
   }catch(err){
     console.error(err);
     setStatus("");
-    alert("Google signup failed: "+(err?.message || String(err)));
+    alert("Google signup failed: " + (err?.message || String(err)));
   }
 };
 
@@ -442,7 +459,6 @@ window.googleRegister = async function googleRegister(){
 ========================= */
 
 async function ensureUserProfile(user,{roleHint=""}={}){
-
   const db = getDbOrThrow();
   const uref = doc(db,"users",user.uid);
   const snap = await getDoc(uref);
@@ -471,7 +487,7 @@ async function ensureUserProfile(user,{roleHint=""}={}){
     email,
     role: pendingRole,
     handle,
-    emailVerified: !!user.emailVerified,
+    emailVerified: false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     displayName: user.displayName || (pendingRole === "producer" ? "Producer" : "Buyer")
@@ -484,6 +500,11 @@ async function ensureUserProfile(user,{roleHint=""}={}){
       followers: 0,
       createdAt: serverTimestamp()
     },{merge:true});
+    await sendVerificationEmailViaBackend({
+      uid: user.uid,
+      email,
+      name: user.displayName || "Producer"
+    });
   }
 
   if(pendingRole === "buyer"){
@@ -492,6 +513,11 @@ async function ensureUserProfile(user,{roleHint=""}={}){
       purchases: 0,
       createdAt: serverTimestamp()
     },{merge:true});
+    await sendVerificationEmailViaBackend({
+      uid: user.uid,
+      email,
+      name: user.displayName || "Buyer"
+    });
   }
 }
 
@@ -511,9 +537,8 @@ window.resendVerificationEmail = async function resendVerificationEmail(){
 
   try{
     setStatus("Sending verification email...");
-    await sendEmailVerification(user,{
-      url:`${APP_URL}/login/`,
-      handleCodeInApp:false
+    await resendVerificationEmailViaBackend({
+      uid: user.uid
     });
     setStatus("✅ Verification email sent");
   }catch(err){
@@ -536,23 +561,17 @@ window.refreshVerificationStatus = async function refreshVerificationStatus(){
 
   try{
     setStatus("Checking verification status...");
-    await user.reload();
 
-    const fresh = auth.currentUser;
-    if(!fresh){
-      location.href = "/login/";
-      return;
-    }
+    const snap = await getDoc(doc(db,"users",user.uid));
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+    const verified = snap.exists() ? (snap.data()?.emailVerified === true) : false;
 
-    await syncEmailVerifiedToUserDoc(fresh);
+    await syncEmailVerifiedToUserDoc(user, verified);
 
-    if(!fresh.emailVerified){
+    if(!verified){
       setStatus("Still not verified. Please check your inbox.");
       return;
     }
-
-    const snap = await getDoc(doc(db,"users",fresh.uid));
-    const role = snap.exists() ? (snap.data()?.role || "") : "";
 
     setStatus("✅ Email verified");
     setTimeout(()=>{
@@ -566,12 +585,27 @@ window.refreshVerificationStatus = async function refreshVerificationStatus(){
   }
 };
 
+window.verifyEmailByToken = async function verifyEmailByToken(token, email){
+  const auth = getAuthOrThrow();
+
+  try{
+    const data = await verifyEmailTokenViaBackend({ token, email });
+
+    if (auth.currentUser) {
+      await syncEmailVerifiedToUserDoc(auth.currentUser, true);
+    }
+
+    return data;
+  }catch(err){
+    throw err;
+  }
+};
+
 /* =========================
    AUTH STATE LISTENER
 ========================= */
 
 onAuthStateChanged(getAuthOrThrow(), async(user)=>{
-
   const db = window.FB?.db;
 
   if(localStorage.getItem("justLoggedOut")==="1"){
@@ -584,32 +618,29 @@ onAuthStateChanged(getAuthOrThrow(), async(user)=>{
 
   try{
     await ensureUserProfile(user,{roleHint:localStorage.getItem("pendingRole") || ""});
-    await user.reload();
 
-    const fresh = getAuthOrThrow().currentUser || user;
-    await syncEmailVerifiedToUserDoc(fresh);
+    const snap = await getDoc(doc(db,"users",user.uid));
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+    const verified = snap.exists() ? (snap.data()?.emailVerified === true) : false;
+
+    await syncEmailVerifiedToUserDoc(user, verified);
 
     if(isVerifyEmailPage()){
       const emailEl = $("verifyEmailText");
       const stateEl = $("verifyState");
 
-      if(emailEl) emailEl.textContent = fresh.email || "";
+      if(emailEl) emailEl.textContent = user.email || "";
       if(stateEl){
-        stateEl.textContent = fresh.emailVerified ? "Verified ✅" : "Not verified yet";
-        stateEl.style.color = fresh.emailVerified ? "#22c55e" : "#fbbf24";
+        stateEl.textContent = verified ? "Verified ✅" : "Not verified yet";
+        stateEl.style.color = verified ? "#22c55e" : "#fbbf24";
       }
 
-      if(fresh.emailVerified){
-        const snap = await getDoc(doc(db,"users",fresh.uid));
-        const role = snap.exists() ? (snap.data()?.role || "") : "";
+      if(verified){
         setTimeout(()=> goAfterAuth(role), 800);
       }
 
       return;
     }
-
-    const snap = await getDoc(doc(db,"users",fresh.uid));
-    const role = snap.exists() ? (snap.data()?.role || "") : "";
 
     if(!role){
       if(!location.pathname.startsWith("/register")){
@@ -618,7 +649,7 @@ onAuthStateChanged(getAuthOrThrow(), async(user)=>{
       return;
     }
 
-    if(!fresh.emailVerified){
+    if(!verified){
       goToVerifyEmail();
       return;
     }
@@ -635,7 +666,6 @@ onAuthStateChanged(getAuthOrThrow(), async(user)=>{
 ========================= */
 
 function redirectByRole(role){
-
   const r = String(role || "").toLowerCase();
 
   if(r==="admin"){
@@ -661,7 +691,6 @@ function redirectByRole(role){
 ========================= */
 
 window.logout = async function logout(){
-
   const auth = getAuthOrThrow();
 
   try{
