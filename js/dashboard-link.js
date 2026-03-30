@@ -1,16 +1,13 @@
 // /js/dashboard-link.js
 
 (function () {
-  async function goToMyDashboard() {
+  async function getDashboardUrl() {
     try {
       const auth = window.FB?.auth;
       const db = window.FB?.db;
 
       const user = auth?.currentUser;
-      if (!user) {
-        window.location.href = "/login/";
-        return;
-      }
+      if (!user) return "/login/";
 
       const snap = await window.FB.getDoc(
         window.FB.doc(db, "users", user.uid)
@@ -20,51 +17,53 @@
         snap.exists() ? (snap.data()?.role || "") : ""
       ).toLowerCase();
 
-      if (role === "producer") {
-        window.location.href = "/dashboard/";
-        return;
-      }
+      if (role === "producer") return "/dashboard/";
+      if (role === "buyer") return "/buyer-dashboard/";
+      if (role === "admin") return "/admin-dashboard/";
 
-      if (role === "buyer") {
-        window.location.href = "/buyer-dashboard/";
-        return;
-      }
-
-      if (role === "admin") {
-        window.location.href = "/admin-dashboard/";
-        return;
-      }
-
-      window.location.href = "/buyer-dashboard/";
+      return "/buyer-dashboard/";
     } catch (e) {
-      console.error("Dashboard redirect error:", e);
-      window.location.href = "/buyer-dashboard/";
+      console.error("getDashboardUrl error:", e);
+      return "/buyer-dashboard/";
     }
   }
 
-  function bindDashboardLinks() {
+  async function goToMyDashboard(e) {
+    if (e) e.preventDefault();
+
+    const url = await getDashboardUrl();
+    window.location.href = url;
+  }
+
+  async function fixDashboardLinks() {
     const desktop = document.getElementById("navDashboard");
     const mobile = document.getElementById("mNavDashboard");
 
-    if (desktop && !desktop.dataset.dashboardBound) {
-      desktop.dataset.dashboardBound = "1";
-      desktop.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await goToMyDashboard();
-      });
+    const url = await getDashboardUrl();
+
+    if (desktop) {
+      desktop.setAttribute("href", url);
+      desktop.onclick = goToMyDashboard;
     }
 
-    if (mobile && !mobile.dataset.dashboardBound) {
-      mobile.dataset.dashboardBound = "1";
-      mobile.addEventListener("click", async (e) => {
-        e.preventDefault();
-        await goToMyDashboard();
-      });
+    if (mobile) {
+      mobile.setAttribute("href", url);
+      mobile.onclick = goToMyDashboard;
     }
   }
 
   window.goToMyDashboard = goToMyDashboard;
 
-  window.addEventListener("firebase-ready", bindDashboardLinks);
-  document.addEventListener("DOMContentLoaded", bindDashboardLinks);
+  document.addEventListener("DOMContentLoaded", () => {
+    fixDashboardLinks();
+  });
+
+  window.addEventListener("firebase-ready", () => {
+    fixDashboardLinks();
+  });
+
+  // extra fallback after auth settles
+  setTimeout(() => {
+    fixDashboardLinks();
+  }, 1200);
 })();
