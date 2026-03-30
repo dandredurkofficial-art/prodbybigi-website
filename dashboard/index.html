@@ -105,6 +105,14 @@
         window.currentProfile = null;
       }
 
+      /* ✅ ADD THIS BLOCK */
+      const role = String(window.currentProfile?.role || "").toLowerCase().trim();
+
+      if (role !== "producer") {
+        location.replace("/login/?error=producer_only");
+        return;
+      }
+
       // only call after functions exist
       if (typeof window.loadBeats === "function") window.loadBeats();
       if (typeof window.loadDashboardStats === "function") window.loadDashboardStats();
