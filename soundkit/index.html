@@ -166,6 +166,7 @@
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
 <script src="/js/performance.js"></script>
+<script src="/js/dashboard-link.js"></script>
 
 <script>
   const $ = (id)=>document.getElementById(id);
@@ -312,59 +313,6 @@
 
   window.addEventListener("firebase-ready", () => {
     if (window.FB?.db) load();
-  });
-
-  async function goToMyDashboard() {
-    try {
-      const auth = window.FB?.auth;
-      const db = window.FB?.db;
-
-      const user = auth?.currentUser;
-      if (!user) {
-        window.location.href = "/login/";
-        return;
-      }
-
-      const snap = await window.FB.getDoc(
-        window.FB.doc(db, "users", user.uid)
-      );
-
-      const role = String(
-        snap.exists() ? (snap.data()?.role || "") : ""
-      ).toLowerCase();
-
-      if (role === "producer") {
-        window.location.href = "/dashboard/";
-        return;
-      }
-
-      if (role === "buyer") {
-        window.location.href = "/buyer-dashboard/";
-        return;
-      }
-
-      if (role === "admin") {
-        window.location.href = "/admin-dashboard/";
-        return;
-      }
-
-      window.location.href = "/buyer-dashboard/";
-    } catch (e) {
-      console.error("Dashboard redirect error:", e);
-      window.location.href = "/buyer-dashboard/";
-    }
-  }
-
-  window.addEventListener("firebase-ready", () => {
-    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
-    });
-
-    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
-    });
   });
 </script>
 
