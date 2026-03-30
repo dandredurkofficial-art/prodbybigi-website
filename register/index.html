@@ -45,12 +45,12 @@
 
     .auth-input{
       width:100%;
-      min-height:88px;
-      border-radius:22px;
+      height:72px;
+      border-radius:20px;
       border:1px solid #2b3152;
       background:#05091b;
       display:flex;
-      align-items:stretch;
+      align-items:center;
       box-sizing:border-box;
       overflow:hidden;
       box-shadow:
@@ -62,14 +62,16 @@
       flex:1;
       display:flex;
       align-items:center;
-      gap:16px;
+      gap:14px;
       padding:0 18px;
       min-width:0;
+      height:100%;
+      overflow:hidden;
     }
 
     .auth-icon{
-      width:28px;
-      height:28px;
+      width:24px;
+      height:24px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -78,13 +80,13 @@
     }
 
     .auth-icon svg{
-      width:28px;
-      height:28px;
+      width:24px;
+      height:24px;
     }
 
     .auth-divider{
       width:1px;
-      height:34px;
+      height:32px;
       background:rgba(255,255,255,.22);
       flex:0 0 auto;
     }
@@ -92,11 +94,13 @@
     .auth-input input{
       flex:1;
       min-width:0;
+      width:100%;
+      height:100%;
       border:none;
       outline:none;
       background:transparent;
       color:#fff;
-      font-size:16px;
+      font-size:15px;
       font-weight:700;
       margin:0;
       padding:0;
@@ -109,10 +113,13 @@
     }
 
     .auth-eye-btn{
-      width:92px;
-      min-width:92px;
+      width:54px;
+      min-width:54px;
+      max-width:54px;
+      height:54px;
+      margin-right:8px;
       border:none;
-      border-left:1px solid rgba(255,255,255,.05);
+      border-radius:16px;
       background:#31365a;
       color:#b9bee8;
       display:flex;
@@ -120,12 +127,13 @@
       justify-content:center;
       cursor:pointer;
       padding:0;
-      flex:0 0 92px;
+      flex:0 0 54px;
+      align-self:center;
     }
 
     .auth-eye-btn svg{
-      width:30px;
-      height:30px;
+      width:24px;
+      height:24px;
     }
 
     .role{ display:flex; gap:14px; margin-bottom:18px; }
@@ -180,42 +188,46 @@
 
     @media (max-width: 480px){
       .auth-input{
-        min-height:84px;
-        border-radius:20px;
+        height:70px;
+        border-radius:18px;
       }
 
       .auth-input-main{
-        gap:14px;
+        gap:12px;
         padding:0 16px;
       }
 
       .auth-icon{
-        width:26px;
-        height:26px;
+        width:22px;
+        height:22px;
       }
 
       .auth-icon svg{
-        width:26px;
-        height:26px;
+        width:22px;
+        height:22px;
       }
 
       .auth-divider{
-        height:32px;
+        height:30px;
       }
 
       .auth-input input{
-        font-size:15px;
+        font-size:14px;
       }
 
       .auth-eye-btn{
-        width:84px;
-        min-width:84px;
-        flex:0 0 84px;
+        width:50px;
+        min-width:50px;
+        max-width:50px;
+        height:50px;
+        flex:0 0 50px;
+        margin-right:8px;
+        border-radius:14px;
       }
 
       .auth-eye-btn svg{
-        width:28px;
-        height:28px;
+        width:22px;
+        height:22px;
       }
     }
 
@@ -246,7 +258,7 @@
 
     <div class="field">
       <label for="password">Password</label>
-      <div class="auth-input auth-input-password">
+      <div class="auth-input">
         <div class="auth-input-main">
           <span class="auth-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
