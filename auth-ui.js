@@ -1,4 +1,4 @@
-// /auth-ui.js (FULL UPDATED + USER HANDLES) ✅
+// /auth-ui.js (FULL UPDATED + USER HANDLES + EMAIL VERIFICATION) ✅
 
 import "/js/firebase.js";
 
@@ -8,6 +8,7 @@ import {
   onAuthStateChanged,
   signOut,
   sendPasswordResetEmail,
+  sendEmailVerification,
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
@@ -19,6 +20,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  updateDoc,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -41,8 +43,13 @@ function isAuthPage(){
   return (
     p.startsWith("/login") ||
     p.startsWith("/register") ||
-    p.startsWith("/reset")
+    p.startsWith("/reset") ||
+    p.startsWith("/verify-email")
   );
+}
+
+function isVerifyEmailPage(){
+  return (location.pathname || "").startsWith("/verify-email");
 }
 
 function getRoleSelected(){
@@ -53,7 +60,10 @@ function getRoleSelected(){
 function getReturnUrl(){
   try{
     const u = new URL(location.href);
-    const r = (u.searchParams.get("return") || "").trim();
+    const r =
+      (u.searchParams.get("return") ||
+       u.searchParams.get("next") ||
+       "").trim();
     if(r.startsWith("/")) return r;
   }catch{}
   return "";
@@ -68,6 +78,12 @@ function goAfterAuth(role){
   redirectByRole(role);
 }
 
+function goToVerifyEmail(){
+  const ret = getReturnUrl();
+  const next = ret || "";
+  location.href = `/verify-email/${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+}
+
 function getAuthOrThrow(){
   const auth = window.FB?.auth;
   if(!auth) throw new Error("Firebase auth not ready");
@@ -78,6 +94,18 @@ function getDbOrThrow(){
   const db = window.FB?.db;
   if(!db) throw new Error("Firestore not ready");
   return db;
+}
+
+async function syncEmailVerifiedToUserDoc(user){
+  try{
+    const db = getDbOrThrow();
+    await updateDoc(doc(db, "users", user.uid), {
+      emailVerified: !!user.emailVerified,
+      updatedAt: serverTimestamp()
+    });
+  }catch(e){
+    console.warn("syncEmailVerifiedToUserDoc:", e);
+  }
 }
 
 /* =========================
@@ -106,15 +134,12 @@ async function generateHandle(email){
 
     i++;
     handle = base + i;
-
   }
-
 }
 
 async function reserveHandle(uid,email){
 
   const db = getDbOrThrow();
-
   const handle = await generateHandle(email);
 
   await setDoc(doc(db,"handles",handle),{
@@ -122,7 +147,6 @@ async function reserveHandle(uid,email){
   });
 
   return handle;
-
 }
 
 /* =========================
@@ -139,10 +163,10 @@ window.registerUser = async function registerUser(){
   const role = getRoleSelected();
 
   if(!email || !password) return alert("Enter email and password");
+  if(password.length < 6) return alert("Password must be at least 6 characters");
   if(!role) return alert("Please select a role");
 
   try{
-
     setStatus("Creating account...");
 
     let user;
@@ -155,7 +179,6 @@ window.registerUser = async function registerUser(){
     }
 
     const uid = user.uid;
-
     const handle = await reserveHandle(uid,email);
 
     try{
@@ -168,7 +191,9 @@ window.registerUser = async function registerUser(){
       email: email.toLowerCase(),
       role,
       handle,
+      emailVerified: !!user.emailVerified,
       createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
       displayName: role === "producer" ? "Producer" : "Buyer"
     },{merge:true});
 
@@ -189,15 +214,23 @@ window.registerUser = async function registerUser(){
       },{merge:true});
     }
 
-    setStatus("");
-    goAfterAuth(role);
+    try{
+      await sendEmailVerification(user, {
+        url: `${APP_URL}/login/`,
+        handleCodeInApp: false
+      });
+    }catch(e){
+      console.warn("sendEmailVerification failed:", e);
+    }
+
+    setStatus("Verification email sent.");
+    goToVerifyEmail();
 
   }catch(err){
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
   }
-
 };
 
 /* =========================
@@ -207,6 +240,7 @@ window.registerUser = async function registerUser(){
 window.loginUser = async function loginUser(){
 
   const auth = getAuthOrThrow();
+  const db = getDbOrThrow();
 
   const email = String($("email")?.value || "").trim();
   const password = String($("password")?.value || "");
@@ -214,18 +248,31 @@ window.loginUser = async function loginUser(){
   if(!email || !password) return alert("Enter email and password");
 
   try{
-
     setStatus("Signing in...");
-    await signInWithEmailAndPassword(auth,email,password);
+    const cred = await signInWithEmailAndPassword(auth,email,password);
+    const user = cred.user;
+
+    await user.reload();
+
+    const snap = await getDoc(doc(db,"users",user.uid));
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+
+    await syncEmailVerifiedToUserDoc(auth.currentUser || user);
+
+    if(!(auth.currentUser || user).emailVerified){
+      setStatus("");
+      goToVerifyEmail();
+      return;
+    }
+
+    setStatus("");
+    goAfterAuth(role);
 
   }catch(err){
-
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
-
   }
-
 };
 
 /* =========================
@@ -240,7 +287,6 @@ window.resetPassword = async function resetPassword(){
   if(!email) return alert("Enter your email");
 
   try{
-
     setStatus("Sending reset email...");
 
     await sendPasswordResetEmail(auth,email,{
@@ -251,13 +297,10 @@ window.resetPassword = async function resetPassword(){
     setStatus("✅ Reset email sent");
 
   }catch(err){
-
     console.error(err);
     setStatus("");
     alert(err?.message || String(err));
-
   }
-
 };
 
 /* =========================
@@ -267,7 +310,6 @@ window.resetPassword = async function resetPassword(){
 const googleProvider = new GoogleAuthProvider();
 
 async function googleSignInSmart(auth){
-
   try{
     const res = await signInWithPopup(auth,googleProvider);
     return res;
@@ -288,9 +330,7 @@ async function googleSignInSmart(auth){
     }
 
     throw e;
-
   }
-
 }
 
 /* =========================
@@ -303,13 +343,14 @@ window.googleLogin = async function googleLogin(){
   const db = getDbOrThrow();
 
   try{
-
     setStatus("Opening Google...");
 
     const res = await googleSignInSmart(auth);
     if(!res?.user) return;
 
     await ensureUserProfile(res.user,{roleHint:""});
+    await res.user.reload();
+    await syncEmailVerifiedToUserDoc(auth.currentUser || res.user);
 
     const snap = await getDoc(doc(db,"users",res.user.uid));
     const role = snap.exists() ? (snap.data()?.role || "") : "";
@@ -321,16 +362,26 @@ window.googleLogin = async function googleLogin(){
       return;
     }
 
+    if(!(auth.currentUser || res.user).emailVerified){
+      try{
+        await sendEmailVerification(auth.currentUser || res.user,{
+          url:`${APP_URL}/login/`,
+          handleCodeInApp:false
+        });
+      }catch(e){
+        console.warn("sendEmailVerification google login:", e);
+      }
+      goToVerifyEmail();
+      return;
+    }
+
     goAfterAuth(role);
 
   }catch(err){
-
     console.error(err);
     setStatus("");
     alert("Google login failed: "+(err?.message || String(err)));
-
   }
-
 };
 
 /* =========================
@@ -348,28 +399,40 @@ window.googleRegister = async function googleRegister(){
   localStorage.setItem("pendingRole",role);
 
   try{
-
     setStatus("Opening Google...");
 
     const res = await googleSignInSmart(auth);
     if(!res?.user) return;
 
     await ensureUserProfile(res.user,{roleHint:role});
+    await res.user.reload();
+    await syncEmailVerifiedToUserDoc(auth.currentUser || res.user);
 
     const snap = await getDoc(doc(db,"users",res.user.uid));
     const finalRole = snap.exists() ? (snap.data()?.role || role) : role;
 
     setStatus("");
+
+    if(!(auth.currentUser || res.user).emailVerified){
+      try{
+        await sendEmailVerification(auth.currentUser || res.user,{
+          url:`${APP_URL}/login/`,
+          handleCodeInApp:false
+        });
+      }catch(e){
+        console.warn("sendEmailVerification google register:", e);
+      }
+      goToVerifyEmail();
+      return;
+    }
+
     goAfterAuth(finalRole);
 
   }catch(err){
-
     console.error(err);
     setStatus("");
     alert("Google signup failed: "+(err?.message || String(err)));
-
   }
-
 };
 
 /* =========================
@@ -382,19 +445,19 @@ async function ensureUserProfile(user,{roleHint=""}={}){
   const uref = doc(db,"users",user.uid);
   const snap = await getDoc(uref);
 
-  if(snap.exists()) return;
+  if(snap.exists()){
+    return;
+  }
 
   const pendingRole = (roleHint || localStorage.getItem("pendingRole") || "").trim();
 
   if(!pendingRole){
-
     if(location.pathname.startsWith("/register")){
       return;
     }
 
     location.href="/register/";
     return;
-
   }
 
   localStorage.removeItem("pendingRole");
@@ -406,17 +469,106 @@ async function ensureUserProfile(user,{roleHint=""}={}){
     email,
     role: pendingRole,
     handle,
+    emailVerified: !!user.emailVerified,
     createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     displayName: user.displayName || (pendingRole === "producer" ? "Producer" : "Buyer")
   },{merge:true});
 
+  if(pendingRole === "producer"){
+    await setDoc(doc(db,"producers",user.uid),{
+      email,
+      beatsCount: 0,
+      followers: 0,
+      createdAt: serverTimestamp()
+    },{merge:true});
+  }
+
+  if(pendingRole === "buyer"){
+    await setDoc(doc(db,"buyers",user.uid),{
+      email,
+      purchases: 0,
+      createdAt: serverTimestamp()
+    },{merge:true});
+  }
 }
+
+/* =========================
+   VERIFY EMAIL PAGE HELPERS
+========================= */
+
+window.resendVerificationEmail = async function resendVerificationEmail(){
+  const auth = getAuthOrThrow();
+  const user = auth.currentUser;
+
+  if(!user){
+    alert("Please login first");
+    location.href = "/login/";
+    return;
+  }
+
+  try{
+    setStatus("Sending verification email...");
+    await sendEmailVerification(user,{
+      url:`${APP_URL}/login/`,
+      handleCodeInApp:false
+    });
+    setStatus("✅ Verification email sent");
+  }catch(err){
+    console.error(err);
+    setStatus("");
+    alert(err?.message || String(err));
+  }
+};
+
+window.refreshVerificationStatus = async function refreshVerificationStatus(){
+  const auth = getAuthOrThrow();
+  const db = getDbOrThrow();
+  const user = auth.currentUser;
+
+  if(!user){
+    alert("Please login first");
+    location.href = "/login/";
+    return;
+  }
+
+  try{
+    setStatus("Checking verification status...");
+    await user.reload();
+
+    const fresh = auth.currentUser;
+    if(!fresh){
+      location.href = "/login/";
+      return;
+    }
+
+    await syncEmailVerifiedToUserDoc(fresh);
+
+    if(!fresh.emailVerified){
+      setStatus("Still not verified. Please check your inbox.");
+      return;
+    }
+
+    const snap = await getDoc(doc(db,"users",fresh.uid));
+    const role = snap.exists() ? (snap.data()?.role || "") : "";
+
+    setStatus("✅ Email verified");
+    setTimeout(()=>{
+      goAfterAuth(role);
+    }, 700);
+
+  }catch(err){
+    console.error(err);
+    setStatus("");
+    alert(err?.message || String(err));
+  }
+};
 
 /* =========================
    AUTH STATE LISTENER
 ========================= */
 
-onAuthStateChanged(getAuthOrThrow(),async(user)=>{
+onAuthStateChanged(getAuthOrThrow(), async(user)=>{
 
   const db = window.FB?.db;
 
@@ -429,10 +581,32 @@ onAuthStateChanged(getAuthOrThrow(),async(user)=>{
   if(!isAuthPage()) return;
 
   try{
-
     await ensureUserProfile(user,{roleHint:localStorage.getItem("pendingRole") || ""});
+    await user.reload();
 
-    const snap = await getDoc(doc(db,"users",user.uid));
+    const fresh = getAuthOrThrow().currentUser || user;
+    await syncEmailVerifiedToUserDoc(fresh);
+
+    if(isVerifyEmailPage()){
+      const emailEl = $("verifyEmailText");
+      const stateEl = $("verifyState");
+
+      if(emailEl) emailEl.textContent = fresh.email || "";
+      if(stateEl){
+        stateEl.textContent = fresh.emailVerified ? "Verified ✅" : "Not verified yet";
+        stateEl.style.color = fresh.emailVerified ? "#22c55e" : "#fbbf24";
+      }
+
+      if(fresh.emailVerified){
+        const snap = await getDoc(doc(db,"users",fresh.uid));
+        const role = snap.exists() ? (snap.data()?.role || "") : "";
+        setTimeout(()=> goAfterAuth(role), 800);
+      }
+
+      return;
+    }
+
+    const snap = await getDoc(doc(db,"users",fresh.uid));
     const role = snap.exists() ? (snap.data()?.role || "") : "";
 
     if(!role){
@@ -442,12 +616,16 @@ onAuthStateChanged(getAuthOrThrow(),async(user)=>{
       return;
     }
 
+    if(!fresh.emailVerified){
+      goToVerifyEmail();
+      return;
+    }
+
     goAfterAuth(role);
 
   }catch(e){
     console.error(e);
   }
-
 });
 
 /* =========================
@@ -474,7 +652,6 @@ function redirectByRole(role){
   }
 
   location.href="/buyer-dashboard/";
-
 }
 
 /* =========================
@@ -486,16 +663,11 @@ window.logout = async function logout(){
   const auth = getAuthOrThrow();
 
   try{
-
     localStorage.setItem("justLoggedOut","1");
     await signOut(auth);
     location.replace("/login/");
-
   }catch(err){
-
     console.error(err);
     alert(err?.message || String(err));
-
   }
-
 };
