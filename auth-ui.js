@@ -80,8 +80,10 @@ function goAfterAuth(role){
 
 function goToVerifyEmail(){
   const ret = getReturnUrl();
-  const next = ret || "";
-  location.href = `/verify-email/${next ? `?next=${encodeURIComponent(next)}` : ""}`;
+  const url = ret
+    ? `/verify-email/?next=${encodeURIComponent(ret)}`
+    : `/verify-email/`;
+  location.href = url;
 }
 
 function getAuthOrThrow(){
@@ -99,10 +101,10 @@ function getDbOrThrow(){
 async function syncEmailVerifiedToUserDoc(user){
   try{
     const db = getDbOrThrow();
-    await updateDoc(doc(db, "users", user.uid), {
+    await setDoc(doc(db, "users", user.uid), {
       emailVerified: !!user.emailVerified,
       updatedAt: serverTimestamp()
-    });
+    }, { merge: true });
   }catch(e){
     console.warn("syncEmailVerifiedToUserDoc:", e);
   }
