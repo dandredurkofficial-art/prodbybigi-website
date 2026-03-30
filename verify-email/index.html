@@ -271,8 +271,33 @@
 
         setVerifiedUI("✅ Email verified successfully");
 
-        setTimeout(() => {
-          location.replace(getNextUrl());
+        setTimeout(async () => {
+          try {
+            const currentUser = window.FB?.auth?.currentUser;
+
+            if (currentUser) {
+              const userSnap = await window.FB.getDoc(
+                window.FB.doc(window.FB.db, "users", currentUser.uid)
+              );
+
+              const role = userSnap.exists() ? String(userSnap.data()?.role || "").toLowerCase() : "";
+
+              if (role === "producer") {
+                location.replace("/dashboard/");
+                return;
+              }
+
+              if (role === "buyer") {
+                location.replace("/buyer-dashboard/");
+                return;
+              }
+            }
+
+            location.replace("/login/?verified=1");
+          } catch (e) {
+            console.error("Post verification redirect failed:", e);
+            location.replace("/login/?verified=1");
+          }
         }, 1200);
 
       } catch (err){
