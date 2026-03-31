@@ -219,7 +219,7 @@
 
     <div class="auth-actions">
       <button id="loginBtn" type="button">Login</button>
-      <button id="googleBtn" type="button">Continue with Google</button>
+      <button id="googleBtn" type="button" style="display:none;">Continue with Google</button>
     </div>
 
     <button class="link-btn" id="resetBtn" type="button">Forgot password?</button>
@@ -235,7 +235,6 @@
 
   <script>
     document.getElementById("loginBtn")?.addEventListener("click", () => window.loginUser?.());
-    document.getElementById("googleBtn")?.addEventListener("click", () => window.googleLogin?.());
     document.getElementById("resetBtn")?.addEventListener("click", () => window.resetPassword?.());
 
     (function(){
