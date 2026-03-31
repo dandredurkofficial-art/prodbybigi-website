@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audiory App Login</title>
+</head>
+<body style="background:#0b0d12;color:white;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+  <div id="status">Signing you in...</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getAuth,
+      signInWithCustomToken
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "audiory-beat-store.firebaseapp.com",
+      projectId: "audiory-beat-store",
+      storageBucket: "audiory-beat-store.firebasestorage.app",
+      messagingSenderId: "688272560511",
+      appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+      measurementId: "G-GLYGWQGS26"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const status = document.getElementById("status");
+    const params = new URLSearchParams(location.search);
+    const token = params.get("token");
+
+    async function run() {
+      try {
+        if (!token) {
+          status.textContent = "Missing login token.";
+          return;
+        }
+
+        // this line only works with Firebase CUSTOM token, not ID token
+        await signInWithCustomToken(auth, token);
+
+        status.textContent = "Login successful. Redirecting...";
+        location.replace("/dashboard/");
+      } catch (err) {
+        console.error(err);
+        status.textContent = "Login failed: " + (err?.message || err);
+      }
+    }
+
+    run();
+  </script>
+</body>
+</html>
