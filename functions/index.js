@@ -1335,6 +1335,22 @@ exports.verifySubscription = onRequest(
   }
 );
 
+exports.createAppCustomToken = onRequest(async (req, res) => {
+  try {
+    const uid = req.body.uid;
+    if (!uid) {
+      res.status(400).json({ error: "Missing uid" });
+      return;
+    }
+
+    const token = await admin.auth().createCustomToken(uid);
+    res.json({ token });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 /* =========================================================
 ✅ DOMAIN CONNECT (Elite) - HTTP FUNCTIONS
 ========================================================= */
