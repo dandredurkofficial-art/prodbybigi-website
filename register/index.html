@@ -283,7 +283,7 @@
     </div>
 
     <button id="createBtn" type="button">Create Account</button>
-    <button class="btn-secondary" id="googleBtn" type="button">Sign up with Google</button>
+    <button class="btn-secondary" id="googleBtn" type="button" style="display:none;">Sign up with Google</button>
 
     <div id="status"></div>
 
@@ -311,7 +311,6 @@
     })();
 
     document.getElementById("createBtn")?.addEventListener("click", ()=> window.registerUser?.());
-    document.getElementById("googleBtn")?.addEventListener("click", ()=> window.googleRegister?.());
 
     (function(){
       const pw = document.getElementById("password");
