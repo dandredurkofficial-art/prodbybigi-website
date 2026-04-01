@@ -1645,7 +1645,7 @@
 
       setTimeout(()=>{
 
-        (beats || []).slice(0,10).forEach(b=>{
+        (beats || []).slice(0,3).forEach(b=>{
 
           const link = document.createElement("link");
           link.rel = "prefetch";
@@ -1706,9 +1706,6 @@
           /* preload audio preview */
 
           if(audioUrl){
-            const a = new Audio();
-            a.preload = "auto";
-            a.src = audioUrl;
           }
 
           const beatUrl = beatPageUrl(b);
