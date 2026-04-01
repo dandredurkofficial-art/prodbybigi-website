@@ -5,20 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Beat | Audiory</title>
 
-  <!-- ✅ Basic SEO -->
   <meta name="description" content="Listen to beats on Audiory. View BPM, key, licenses, and explore more from the producer." />
   <meta name="robots" content="index, follow" />
-
-  <meta http-equiv="Cache-Control" content="public, max-age=31536000">
 
   <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/cart.css">
 
   <style>
-    /* Light, isolated styling so it won't fight your CSS */
     .beat-page{padding:18px 0}
     .beat-wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}
-    .cardx{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:16px;padding:14px}
+    .cardx{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:14px;
+    }
     .muted{color:rgba(255,255,255,.68)}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
     .title{font-weight:900;font-size:22px;margin:0}
@@ -35,75 +36,74 @@
       display:grid;
       place-items:center;
     }
-    .cover-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+    .cover-wrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
 
-    /* ✅ Use same play button style as Marketplace */
     .play-fab{
       position:absolute;
-      left:14px;
+      right:14px;
       bottom:14px;
-      width:48px;
-      height:48px;
-      border-radius:999px;
-      border:none;
-      cursor:pointer;
-      background:rgba(0,0,0,.55);
+      width:50px;
+      height:50px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.42);
       color:#fff;
       display:grid;
       place-items:center;
-      box-shadow:0 10px 24px rgba(0,0,0,.35);
-      backdrop-filter: blur(6px);
-    }
-    .play-fab:active{transform:scale(.98)}
-    .playIcon{font-weight:900;font-size:18px;line-height:1}
-
-    /* ✅ BeatStars-like price pills (same as Marketplace) */
-    .pb-pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      min-width:110px;
-      padding:10px 12px;
-      border-radius:12px;
-      font-weight:900;
-      font-size:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
       cursor:pointer;
-      user-select:none;
-      transition:transform .08s ease, background .15s ease;
-      white-space:nowrap;
+      backdrop-filter:blur(5px);
+      -webkit-backdrop-filter:blur(5px);
+      box-shadow:none;
     }
-    .pb-pill:hover{transform:translateY(-1px); background:rgba(255,255,255,.09)}
-    .pb-pill:active{transform:translateY(0px)}
-    .pb-pill .ic{font-size:16px; line-height:1}
-    .pb-pill.free{
-      background:rgba(59,130,246,.16);
-      border-color:rgba(59,130,246,.35);
-    }
+    .playIcon{font-weight:900;font-size:16px;line-height:1}
 
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-    .kv{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.03);border-radius:14px;padding:10px}
+    .grid2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .kv{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:10px;
+    }
     .kv .k{font-size:12px;color:rgba(255,255,255,.6);font-weight:800}
     .kv .v{margin-top:4px;font-size:14px;font-weight:900}
 
-    .lic-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+    .lic-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      margin-top:12px;
+    }
     .lic{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.03);
       border-radius:14px;
       padding:12px;
-      display:flex;justify-content:space-between;gap:10px;align-items:center;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
     }
     .lic strong{display:block}
     .lic .lsub{font-size:12px;color:rgba(255,255,255,.6);margin-top:4px}
 
     .btn{
-      border:none;border-radius:12px;padding:10px 12px;
-      font-weight:900;cursor:pointer;
-      background:#3b82f6;color:#fff;
+      border:none;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:900;
+      cursor:pointer;
+      background:#3b82f6;
+      color:#fff;
     }
     .btn.ghost{
       background:transparent;
@@ -111,8 +111,12 @@
       color:#fff;
     }
 
-    /* ✅ More from producer: 4 columns desktop, 2 columns mobile */
-    .more-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+    .more-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+      margin-top:12px;
+    }
     .mini{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.03);
@@ -120,144 +124,277 @@
       overflow:hidden;
       cursor:pointer;
     }
-    .mini .mcover{aspect-ratio:1/1;background:rgba(255,255,255,.06);display:grid;place-items:center}
-    .mini .mcover img{width:100%;height:100%;object-fit:cover;display:block}
-    .mini .mbody{padding:10px}
-    .mini .mt{font-weight:900;font-size:13px;line-height:1.25;max-height:32px;overflow:hidden}
-    .mini .ms{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px}
-
-    @media (max-width: 900px){
-      .beat-wrap{grid-template-columns:1fr}
-      .more-grid{grid-template-columns:repeat(2,1fr)}
+    .mini .mcover{
+      aspect-ratio:1/1;
+      background:rgba(255,255,255,.06);
+      display:grid;
+      place-items:center;
     }
-    @media (max-width: 520px){
-      .more-grid{grid-template-columns:repeat(2,1fr)}
+    .mini .mcover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .mini .mbody{padding:10px}
+    .mini .mt{
+      font-weight:900;
+      font-size:13px;
+      line-height:1.25;
+      max-height:32px;
+      overflow:hidden;
+    }
+    .mini .ms{
+      font-size:12px;
+      color:rgba(255,255,255,.6);
+      margin-top:6px;
     }
 
     /* =========================
-       ✅ NEW: Payment Method Modal
+       PRICE / LOCK BUTTONS
+    ========================= */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      min-height:52px;
+      padding:0 16px;
+      border-radius:16px;
+      font-weight:900;
+      font-size:16px;
+      border:1.5px solid #295dff;
+      background:#0a0d14;
+      color:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+      text-decoration:none;
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
+    }
+    .pb-pill:hover{
+      background:#101521;
+      transform:none;
+    }
+    .pb-pill.full{
+      width:100%;
+    }
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
+    }
+
+    .lock-icon{
+      width:20px;
+      height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:rgba(255,255,255,.92);
+      flex-shrink:0;
+    }
+    .lock-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .mpesa-icon{
+      width:20px;
+      height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+    .mpesa-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    /* =========================
+       PAYMENT MODAL
     ========================= */
     .pb-pay-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.62);
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.68);
       display:none;
       z-index:10050;
     }
     .pb-pay-modal{
       position:fixed;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(520px, calc(100vw - 24px));
-      background: rgba(15,22,34,.95);
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:16px;
-      box-shadow:0 24px 80px rgba(0,0,0,.55);
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      width:min(760px, calc(100vw - 22px));
+      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:26px;
+      padding:0;
+      box-shadow:0 28px 90px rgba(0,0,0,.52);
       display:none;
       z-index:10051;
+      overflow:hidden;
     }
     .pb-pay-head{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      padding-bottom:10px;
-      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:22px 24px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
     }
-    .pb-pay-title{font-weight:900; font-size:16px; margin:0}
-    .pb-pay-sub{color:rgba(255,255,255,.7); font-size:12px; margin-top:6px; line-height:1.4}
+    .pb-pay-title{
+      font-weight:950;
+      font-size:24px;
+      margin:0;
+      color:#fff;
+    }
+    .pb-pay-sub{
+      color:rgba(255,255,255,.72);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.5;
+      white-space:pre-line;
+    }
     .pb-pay-close{
-      border:none; background:transparent; color:#fff;
-      font-size:18px; cursor:pointer; padding:6px 8px; border-radius:10px;
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:24px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
     }
-    .pb-pay-close:hover{background:rgba(255,255,255,.08)}
-    .pb-pay-body{padding-top:12px; display:grid; gap:10px}
-    .pb-pay-methods{display:grid; gap:10px}
+    .pb-pay-close:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .pb-pay-body{
+      padding:22px 24px 24px;
+      display:grid;
+      gap:16px;
+    }
+
     .pb-pay-btn{
       width:100%;
-      padding:12px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
+      min-height:84px;
+      border-radius:22px;
+      border:none;
       cursor:pointer;
       font-weight:900;
       display:flex;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      gap:16px;
+      padding:0 24px;
+      color:#fff;
+      font-size:18px;
+      box-shadow:none;
     }
-    .pb-pay-btn:hover{background:rgba(255,255,255,.10)}
     .pb-pay-btn.primary{
-      border-color: rgba(59,130,246,.40);
-      background: rgba(59,130,246,.18);
+      background:#4b86ef;
     }
-    .pb-pay-btn.primary:hover{background: rgba(59,130,246,.24)}
     .pb-pay-btn.success{
-      border-color: rgba(34,197,94,.40);
-      background: rgba(34,197,94,.16);
+      background:#24c65a;
     }
-    .pb-pay-btn.success:hover{background: rgba(34,197,94,.22)}
-    .pb-pay-mini{
-      color:rgba(255,255,255,.75);
-      font-size:12px;
-      font-weight:700;
+    .pb-pay-btn:hover{filter:brightness(1.03)}
+    .pb-pay-btn-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
     }
+    .pb-pay-amount{
+      font-size:16px;
+      font-weight:900;
+      opacity:.96;
+    }
+
     .pb-pay-phone-wrap{
       display:none;
-      margin-top:6px;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
+      margin-top:4px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
     }
-    .pb-pay-label{font-size:12px; font-weight:900; color:rgba(255,255,255,.85); margin-bottom:6px}
+    .pb-pay-label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.86);
+      margin-bottom:8px;
+    }
     .pb-pay-input{
       width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
       color:#fff;
       outline:none;
+      font-size:15px;
     }
-    .pb-pay-input:focus{border-color: rgba(34,197,94,.55)}
+    .pb-pay-input:focus{
+      border-color:rgba(34,197,94,.55);
+    }
     .pb-pay-status{
       min-height:18px;
       margin-top:10px;
-      font-size:12px;
-      color: rgba(255,255,255,.75);
+      font-size:13px;
+      color:rgba(255,255,255,.78);
+      white-space:pre-line;
     }
 
-    /* ===================================
-         AUDIORY VERIFIED BADGES
-      =================================== */
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+    .verify-badge svg{
+      width:16px;
+      height:16px;
+      display:block;
+    }
+    .verify-pro svg{ color:#1d9bf0; }
+    .verify-elite svg{ color:#fbbf24; }
 
-      .verify-badge{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        margin-left:6px;
-        vertical-align:middle;
+    @media (max-width: 900px){
+      .beat-wrap{grid-template-columns:1fr}
+      .more-grid{grid-template-columns:repeat(2,1fr)}
+    }
+
+    @media (max-width: 640px){
+      .pb-pay-modal{
+        width:calc(100vw - 16px);
+        bottom:10px;
+        border-radius:24px;
       }
-
-      .verify-badge svg{
-        width:16px;
-        height:16px;
-        display:block;
+      .pb-pay-head{
+        padding:18px 18px 12px;
       }
-
-      /* PRO (blue) */
-
-      .verify-pro svg{
-        color:#1d9bf0;
+      .pb-pay-title{
+        font-size:20px;
       }
-
-      /* ELITE (gold) */
-
-      .verify-elite svg{
-        color:#fbbf24;
+      .pb-pay-body{
+        padding:16px 18px 18px;
       }
+      .pb-pay-btn{
+        min-height:74px;
+        border-radius:18px;
+        padding:0 18px;
+        font-size:16px;
+      }
+      .pb-pay-amount{
+        font-size:14px;
+      }
+    }
   </style>
 </head>
-
 <body>
 
 <header class="topbar">
@@ -274,11 +411,9 @@
       <a href="/producers/">Producers</a>
       <a href="/pricing/">Pricing</a>
 
-      <!-- Logged OUT -->
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-      <!-- Logged IN -->
       <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">Dashboard</a>
       <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
@@ -303,11 +438,9 @@
   <a href="/producers/">Producers</a>
   <a href="/pricing/">Pricing</a>
 
-  <!-- Logged OUT -->
   <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
   <a id="mNavSignIn" href="/login/">Sign in</a>
 
-  <!-- Logged IN -->
   <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
   <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
@@ -316,12 +449,10 @@
   <div id="beatStatus" class="cardx">Loading beat…</div>
 
   <section id="beatContent" class="beat-wrap" style="display:none;">
-    <!-- Left: cover + play + meta -->
     <div class="cardx">
       <div class="cover-wrap" id="coverWrap">
         <div id="beatCover"></div>
 
-        <!-- ✅ SAME play button system as marketplace -->
         <button class="play-fab"
           id="beatPlayBtn"
           type="button"
@@ -370,7 +501,6 @@
       </div>
     </div>
 
-    <!-- Right: licenses + more from producer -->
     <div>
       <div class="cardx">
         <div class="row" style="justify-content:space-between;">
@@ -393,7 +523,6 @@
   </section>
 </main>
 
-<!-- License / Checkout Modal (re-use your existing modal system) -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
   <div class="pb-modal-card">
@@ -427,7 +556,6 @@
   </div>
 </div>
 
-<!-- Cart Drawer (re-use) -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
   <div class="pb-cart-head">
@@ -453,7 +581,6 @@
   </div>
 </aside>
 
-<!-- ✅ NEW: PAYMENT METHOD MODAL -->
 <div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
 <div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
   <div class="pb-pay-head">
@@ -465,39 +592,41 @@
   </div>
 
   <div class="pb-pay-body">
-    <div class="pb-pay-methods">
-      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+    <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+      <span class="pb-pay-btn-left">
         <span>Pay with PayPal</span>
-        <span class="pb-pay-mini" id="pbPayAmountA">—</span>
-      </button>
+      </span>
+      <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+    </button>
 
-      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
-        <span>Pay with M-Pesa (STK Push)</span>
-        <span class="pb-pay-mini" id="pbPayAmountB">—</span>
-      </button>
+    <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+      <span class="pb-pay-btn-left">
+        <span class="mpesa-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+            <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Pay with M-Pesa</span>
+      </span>
+      <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+    </button>
 
-      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
-        <div class="pb-pay-label">M-Pesa Phone (format: 2547XXXXXXXX)</div>
-        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
-        <div class="pb-pay-status" id="pbPayStatus"></div>
-      </div>
+    <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+      <div class="pb-pay-label">M-Pesa phone number</div>
+      <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+      <div class="pb-pay-status" id="pbPayStatus"></div>
     </div>
   </div>
 </div>
 
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
-</script>
-
-<script>
-  // ✅ PayPal (no trailing slash)
   window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
   window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
-
-  // ✅ M-Pesa STK Push (no trailing slash)
   window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
-
-  // ✅ We'll track the selected beat/license here
   window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
 </script>
 
@@ -525,9 +654,38 @@
   }
 
   function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
-    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
     return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:26px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function miniCoverHTML(url, title){
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:18px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
   function prettyProducerName(b){
@@ -551,26 +709,28 @@
   }
 
   function pickBpm(beat){
-
-  const v = beat?.bpm
-
-  if(!v) return "—"
-
-  return String(v)
-
+    const v = beat?.bpm;
+    if(!v) return "—";
+    return String(v);
   }
-  
+
   function pickKey(beat){
-
-  const v = beat?.key
-
-  if(!v) return "—"
-
-  return String(v)
-
+    const v = beat?.key;
+    if(!v) return "—";
+    return String(v);
   }
-  
-  /* ✅ analytics event logger (uses window.FB exposures) */
+
+  function lockIconHTML(){
+    return `
+      <span class="lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="6" y="10" width="12" height="10" rx="2.4" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 10V7.8a3 3 0 1 1 6 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+    `;
+  }
+
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
       const FB = window.FB;
@@ -624,7 +784,7 @@
             <strong>Free Download</strong>
             <div class="lsub">This beat is free to download.</div>
           </div>
-          <button class="pb-pill free" type="button">⬇️ Free</button>
+          <button class="pb-pill full free" type="button">⬇️ Free</button>
         </div>
       `;
       return;
@@ -649,17 +809,15 @@
             </div>
 
             <div class="row" style="justify-content:flex-end;">
-              <!-- ✅ IMPORTANT: match marketplace behavior for license-modal.js -->
               <button class="pb-pill price-pill" type="button"
                 data-license="${t.key}"
                 data-producer-id="${producerId}"
                 data-beat-id="${beatId}"
                 aria-label="Choose license">
-                <span class="ic">🛍️</span>
+                ${lockIconHTML()}
                 <span>${money(usd)}</span>
               </button>
 
-              <!-- ✅ ADDED: M-Pesa button -->
               <button class="pb-pill" type="button"
                 data-mpesa="1"
                 data-license="${t.key}"
@@ -667,7 +825,14 @@
                 data-beat-id="${beatId}"
                 data-amount-usd="${usd}"
                 aria-label="Pay with M-Pesa">
-                <span class="ic">📲</span>
+                <span class="mpesa-icon" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" fill="none">
+                    <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+                    <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                </span>
                 <span>M-Pesa</span>
               </button>
             </div>
@@ -690,11 +855,10 @@
               data-producer-id="${producerId}"
               data-beat-id="${beatId}"
               aria-label="Choose license">
-              <span class="ic">🛍️</span>
+              ${lockIconHTML()}
               <span>${money(usd)}</span>
             </button>
 
-            <!-- ✅ ADDED: M-Pesa button -->
             <button class="pb-pill" type="button"
               data-mpesa="1"
               data-license="basic"
@@ -702,7 +866,14 @@
               data-beat-id="${beatId}"
               data-amount-usd="${usd}"
               aria-label="Pay with M-Pesa">
-              <span class="ic">📲</span>
+              <span class="mpesa-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+                  <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </span>
               <span>M-Pesa</span>
             </button>
           </div>
@@ -731,7 +902,7 @@
       const el = document.createElement("div");
       el.className = "mini";
       el.innerHTML = `
-        <div class="mcover">${coverHTML(b.artwork, b.title)}</div>
+        <div class="mcover">${miniCoverHTML(b.artwork, b.title)}</div>
         <div class="mbody">
           <div class="mt">${b.title || "Beat"}</div>
           <div class="ms">${b.genre ? b.genre : ""}</div>
@@ -755,16 +926,6 @@
 
     if (window.FB && typeof window.FB.fetchBeats === "function"){
       const beats = await window.FB.fetchBeats({ max: 160, force: false });
-
-      for (const b of beats){
-        try{
-          if (window.FB && typeof window.FB.getProducerProfile === "function"){
-            const prof = await window.FB.getProducerProfile(b.producerId);
-            b.producerPlan = prof?.plan || "";
-          }
-        }catch{}
-      }
-      
       window.__LATEST_BEATS__ = beats;
       return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
     }
@@ -773,14 +934,11 @@
   }
 
   function renderBeatInstant(beat){
-
     $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
     $("beatTitle").textContent = beat.title || "Beat";
-
     $("beatBpm").textContent = pickBpm(beat);
     $("beatKey").textContent = pickKey(beat);
     $("beatDate").textContent = formatDate(beat.createdAt);
-
   }
 
   async function loadBeatPage(){
@@ -794,119 +952,76 @@
     }
 
     status.textContent = "Loading beat…";
-    
-    /* =========================================
-       INSTANT BEAT CACHE (super fast load)
-    ========================================= */
 
     let cachedBeat = null;
-
     try{
       const cache = sessionStorage.getItem("audiory_beat_" + beatId);
-
       if(cache){
         cachedBeat = JSON.parse(cache);
-        console.log("⚡ beat loaded from cache");
       }
     }catch(e){}
 
-    /* render instantly if cached */
-
     if(cachedBeat){
-
       renderBeatInstant(cachedBeat);
-
       $("beatStatus").style.display = "none";
       $("beatContent").style.display = "grid";
-
     }
-    
+
     try{
       const beat = await fetchBeatById(beatId);
 
-      /* save beat cache */
-
       try{
-        sessionStorage.setItem(
-          "audiory_beat_" + beatId,
-          JSON.stringify(beat)
-        );
+        sessionStorage.setItem("audiory_beat_" + beatId, JSON.stringify(beat));
       }catch(e){}
-      console.log("Beat data:", beat);
-      
+
       if (!beat){
         status.textContent = "Beat not found.";
         return;
       }
 
-      // Cover + Title
+      if (!beat.producerPlan && window.FB?.getProducerProfile){
+        try{
+          const prof = await window.FB.getProducerProfile(beat.producerId);
+          beat.producerPlan = prof?.plan || "";
+        }catch{}
+      }
+
       $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
       $("beatTitle").textContent = beat.title || "Beat";
 
       const prodName = prettyProducerName(beat);
       const prodLink = $("beatProducerLink");
-      prodLink.innerHTML = `${prodName} ${AudioryVerify.badge(beat.producerPlan)}`;
+      prodLink.innerHTML = `${prodName} ${window.AudioryVerify ? AudioryVerify.badge(beat.producerPlan) : ""}`;
       prodLink.href = `/producer-profile/?producerId=${encodeURIComponent(String(beat.producerId||""))}`;
 
       $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
-
-      // BPM/Key/Date
       $("beatBpm").textContent = pickBpm(beat);
       $("beatKey").textContent = pickKey(beat);
       $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
       $("beatPlays").textContent = Number(beat.plays || 0);
-      
-      // ✅ Set play button attributes so your existing player.js controls it
+
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
-      
-      /* preload beat audio */
-
-      if(beat.audio){
-
-        const a = new Audio();
-        a.preload = "auto";
-        a.src = beat.audio;
-
-      }
-      
       playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
-      // ✅ Log "play" when user taps play (player.js will actually play/pause)
-      // We log on click; if you want "only when audio truly starts", we’ll hook inside player.js next.
       playBtn.addEventListener("click", async ()=>{
-
         const pid = String(beat.producerId||"");
         const bid = String(beat.id||beatId);
         const key = `${pid}:${bid}`;
 
         if (pid && bid && !window.__ANA_SENT__.play[key]){
-
           window.__ANA_SENT__.play[key] = 1;
-
           logAnalyticsEvent({ producerId: pid, type:"play", beatId: bid });
 
-          // ✅ increment beat play counter
           try{
-
             const {doc,updateDoc,increment} = window.FB;
-
             const ref = doc(window.FB.db,"beats",bid);
-
-            await updateDoc(ref,{
-              plays: increment(1)
-            });
-
-          }catch(e){
-            console.warn("play increment failed",e);
-          }
-
+            await updateDoc(ref,{ plays: increment(1) });
+          }catch(e){}
         }
-
       }, true);
 
-      // ✅ Top-right price pill (clickable)
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
@@ -919,7 +1034,7 @@
               data-producer-id="${pId}"
               data-beat-id="${bId}"
               aria-label="Choose license">
-              <span class="ic">🛍️</span>
+              ${lockIconHTML()}
               <span>${money(beat.price || 0)}</span>
             </button>
           `;
@@ -928,55 +1043,20 @@
 
       renderLicenses(beat);
 
-      // More from producer
       let list = [];
-
       try{
-
         if(window.FB && typeof window.FB.fetchProducerBeats === "function"){
-
-          list = await window.FB.fetchProducerBeats(beat.producerId, 6);
-
+          list = await window.FB.fetchProducerBeats(beat.producerId, 8);
         }
-
-      }catch(e){
-        console.warn("producer beats load failed",e);
-      }
+      }catch(e){}
 
       renderMoreFromProducer(list, beat);
 
-      /* ======================================
-         PREFETCH PRODUCER BEATS
-      ====================================== */
-
-      setTimeout(()=>{
-
-        if(!Array.isArray(list)) return;
-
-        const others = list
-          .filter(b => b.producerId === beat.producerId)
-          .slice(0,6);
-
-        others.forEach(b=>{
-
-          const link = document.createElement("link");
-          link.rel = "prefetch";
-          link.href = "/beat/?id=" + encodeURIComponent(b.id);
-
-          document.head.appendChild(link);
-
-        });
-
-      },1200);
-
-      // show content
       status.style.display = "none";
       content.style.display = "grid";
 
-      // back
       $("backToMarket")?.addEventListener("click", ()=>{ location.href = "/marketplace/"; });
 
-      // log VIEW (once)
       const producerId = String(beat.producerId||"");
       const viewKey = `${producerId}:${String(beat.id||beatId)}`;
       if (producerId && (beat.id || beatId) && !window.__ANA_SENT__.view[viewKey]){
@@ -994,26 +1074,21 @@
 </script>
 
 <script>
-  // =========================
-  // ✅ M-Pesa / Payment Modal Logic (MISSING)
-  // Place this near the end of the file before </body>
-  // =========================
-
   const pbPayBackdrop = document.getElementById("pbPayBackdrop");
-  const pbPayModal    = document.getElementById("pbPayModal");
-  const pbPayClose    = document.getElementById("pbPayClose");
+  const pbPayModal = document.getElementById("pbPayModal");
+  const pbPayClose = document.getElementById("pbPayClose");
 
-  const pbPayTitle    = document.getElementById("pbPayTitle");
-  const pbPaySub      = document.getElementById("pbPaySub");
-  const pbPayAmountA  = document.getElementById("pbPayAmountA");
-  const pbPayAmountB  = document.getElementById("pbPayAmountB");
+  const pbPayTitle = document.getElementById("pbPayTitle");
+  const pbPaySub = document.getElementById("pbPaySub");
+  const pbPayAmountA = document.getElementById("pbPayAmountA");
+  const pbPayAmountB = document.getElementById("pbPayAmountB");
 
   const pbPayWithPaypal = document.getElementById("pbPayWithPaypal");
-  const pbPayWithMpesa  = document.getElementById("pbPayWithMpesa");
+  const pbPayWithMpesa = document.getElementById("pbPayWithMpesa");
 
-  const pbMpesaBox    = document.getElementById("pbMpesaBox");
-  const pbMpesaPhone  = document.getElementById("pbMpesaPhone");
-  const pbPayStatus   = document.getElementById("pbPayStatus");
+  const pbMpesaBox = document.getElementById("pbMpesaBox");
+  const pbMpesaPhone = document.getElementById("pbMpesaPhone");
+  const pbPayStatus = document.getElementById("pbPayStatus");
 
   function openPayModal(selected){
     window.__PB_SELECTED__ = selected;
@@ -1021,9 +1096,8 @@
     const usd = Number(selected?.amountUsd || 0);
     pbPayTitle.textContent = "Choose payment method";
     pbPaySub.textContent =
-      `Beat: ${selected.beatId}\n` +
-      `License: ${selected.licenseKey}\n` +
-      `Amount (USD): $${usd.toFixed(2)}`;
+      `${selected.title || "Beat"}\n` +
+      `Boost for ${selected.days || 7} day(s)`;
 
     pbPayAmountA.textContent = `$${usd.toFixed(2)}`;
     pbPayAmountB.textContent = `$${usd.toFixed(2)}`;
@@ -1045,7 +1119,6 @@
   if (pbPayBackdrop) pbPayBackdrop.addEventListener("click", closePayModal);
   if (pbPayClose) pbPayClose.addEventListener("click", closePayModal);
 
-  // ✅ 1) When user clicks any M-Pesa button on licenses list
   document.addEventListener("click", (e)=>{
     const btn = e.target.closest("[data-mpesa='1']");
     if (!btn) return;
@@ -1055,54 +1128,67 @@
       producerId: btn.getAttribute("data-producer-id") || "",
       licenseKey: btn.getAttribute("data-license") || "basic",
       amountUsd: Number(btn.getAttribute("data-amount-usd") || 0),
+      title: document.getElementById("beatTitle")?.textContent || "Beat"
     };
 
     if (!selected.beatId){
-      alert("Missing beatId on button.");
+      alert("Missing beatId.");
       return;
     }
     if (!Number.isFinite(selected.amountUsd) || selected.amountUsd <= 0){
-      alert("Invalid amount on button.");
+      alert("Invalid amount.");
       return;
     }
 
     openPayModal(selected);
   });
 
-  // ✅ 2) PayPal button (optional: you can connect to your existing PayPal flow)
   if (pbPayWithPaypal){
-    pbPayWithPaypal.addEventListener("click", ()=>{
-      alert("PayPal flow not wired here. Use your existing license modal PayPal checkout.");
+    pbPayWithPaypal.addEventListener("click", async ()=>{
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return;
+
+      try{
+        pbPayStatus.textContent = "Opening PayPal…";
+
+        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({
+            beatId: sel.beatId,
+            licenseKey: sel.licenseKey || "basic"
+          })
+        });
+
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) throw new Error(data?.error || "PayPal create order failed");
+
+        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+        if (!url) throw new Error("PayPal approval link missing.");
+
+        location.href = url;
+      }catch(err){
+        console.error(err);
+        pbPayStatus.textContent = "❌ " + (err?.message || String(err));
+      }
     });
   }
 
-  // ✅ 3) Show phone box when user chooses M-Pesa
   if (pbPayWithMpesa){
     pbPayWithMpesa.addEventListener("click", ()=>{
       pbMpesaBox.style.display = "block";
-      pbPayStatus.textContent = "Enter phone then click M-Pesa again to send STK Push.";
+      pbPayStatus.textContent = "Enter phone number then tap M-Pesa again.";
       setTimeout(()=> pbMpesaPhone?.focus(), 50);
     });
-  }
 
-  // ✅ 4) Send STK Push when user clicks M-Pesa again AND phone is filled
-  if (pbPayWithMpesa){
     pbPayWithMpesa.addEventListener("click", async ()=>{
       try{
         const sel = window.__PB_SELECTED__;
         if (!sel) return;
 
         const phone = (pbMpesaPhone?.value || "").trim();
-        if (!phone){
-          // first click just opens input; second click sends
-          return;
-        }
+        if (!phone) return;
 
-        if (!window.PB_MPESA_STKPUSH_URL){
-          throw new Error("Missing window.PB_MPESA_STKPUSH_URL in your script config.");
-        }
-
-        // Require signed-in user so backend gets buyerId
         const u = window.FB?.auth?.currentUser || window.FB?.user || null;
         if (!u){
           alert("Please sign in first.");
@@ -1134,16 +1220,8 @@
         }
 
         pbPayStatus.textContent =
-          "✅ STK Push sent.\n" +
-          "1) Confirm on your phone.\n" +
-          "2) After payment, go to Buyer Dashboard.\n" +
-          (data?.orderId ? ("\nOrder ID: " + data.orderId) : "");
-
-        setTimeout(()=>{
-          closePayModal();
-          location.href = "/buyer-dashboard/";
-        }, 2500);
-
+          "✅ STK Push sent.\nApprove on your phone." +
+          (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
       }catch(err){
         console.error(err);
         pbPayStatus.textContent = "❌ " + (err?.message || String(err));
