@@ -1,519 +1,701 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pricing | Audiory</title>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Audiory pricing plans for producers. Choose Free, Starter, Pro, or Elite and grow your music business." />
+  <meta name="keywords" content="Audiory pricing, producer plans, beat selling plans, music marketplace pricing, pro producer plan, elite producer plan" />
+  <meta name="author" content="Audiory" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://audiory.site/pricing/" />
 
-<title>Pricing | Audiory</title>
+  <link rel="icon" href="/audioryfavicon.webp" />
+  <link rel="shortcut icon" href="/audioryfavicon.webp" />
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp" />
 
-<link rel="icon" href="/audioryfavicon.web">
-<link rel="stylesheet" href="/css/global.css">
+  <meta property="og:title" content="Pricing – Audiory" />
+  <meta property="og:description" content="Choose the right Audiory producer plan and grow your beat business." />
+  <meta property="og:url" content="https://audiory.site/pricing/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://audiory.site/og-image.jpg" />
+  <meta property="og:site_name" content="Audiory" />
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Pricing – Audiory" />
+  <meta name="twitter:description" content="Choose the right Audiory producer plan and grow your beat business." />
+  <meta name="twitter:image" content="https://audiory.site/og-image.jpg" />
 
-<style>
+  <link rel="stylesheet" href="/css/global.css" />
 
-:root{
---accent:#4f7cff;
---accent2:#7c3aed;
---bg:#0b1220;
---card:rgba(255,255,255,.05);
---border:rgba(255,255,255,.1);
---muted:rgba(255,255,255,.65);
-}
+  <style>
+    :root{
+      --page-max: 1180px;
+      --card-bg: #070b15;
+      --card-border: rgba(255,255,255,.10);
+      --card-border-blue: rgba(41,93,255,.65);
+      --card-border-gold: rgba(245,158,11,.65);
+      --card-border-green: rgba(34,197,94,.60);
+      --text-main: #ffffff;
+      --text-muted: rgba(255,255,255,.72);
+      --text-soft: rgba(255,255,255,.56);
+      --btn-bg: rgba(255,255,255,.05);
+      --btn-border: rgba(255,255,255,.10);
+      --shadow-soft: 0 18px 50px rgba(0,0,0,.35);
+    }
 
-/* HERO */
+    .pricing-shell{
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 18px 16px 50px;
+    }
 
-.hero{
-padding:120px 20px 80px;
-text-align:center;
-position:relative;
-overflow:hidden;
-}
+    .pricing-hero{
+      padding: 12px 0 8px;
+    }
 
-.hero::before{
-content:"";
-position:absolute;
-width:700px;
-height:700px;
-background:radial-gradient(circle,var(--accent),var(--accent2));
-filter:blur(200px);
-opacity:.35;
-top:-250px;
-left:-200px;
-animation:float 12s infinite alternate;
-}
+    .pricing-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      color:#c9d7ff;
+      border:1px solid rgba(85,120,255,.18);
+      background:rgba(24,37,78,.28);
+      margin-bottom:14px;
+    }
 
-@keyframes float{
-from{transform:translate(0,0)}
-to{transform:translate(140px,80px)}
-}
+    .pricing-title{
+      margin:0;
+      font-size:38px;
+      line-height:1.05;
+      font-weight:950;
+      letter-spacing:-0.02em;
+      color:var(--text-main);
+    }
 
-.hero h1{
-font-size:42px;
-margin-bottom:12px;
-}
+    .pricing-sub{
+      margin:14px 0 0;
+      max-width:760px;
+      color:var(--text-muted);
+      font-size:17px;
+      line-height:1.6;
+    }
 
-.hero p{
-max-width:600px;
-margin:auto;
-color:var(--muted);
-}
+    .pricing-note{
+      margin-top:14px;
+      color:var(--text-soft);
+      font-size:13px;
+    }
 
-/* TOGGLE */
+    .pricing-wrap{
+      margin-top:24px;
+      padding:14px;
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(7,14,28,.86), rgba(5,10,20,.98));
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: var(--shadow-soft);
+    }
 
-.toggle{
-display:flex;
-justify-content:center;
-gap:10px;
-margin-top:30px;
-}
+    .pricing-grid{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:18px;
+    }
 
-.toggle button{
-padding:10px 20px;
-border-radius:999px;
-border:1px solid var(--border);
-background:rgba(255,255,255,.05);
-color:white;
-cursor:pointer;
-}
+    .price-card{
+      position:relative;
+      border-radius:26px;
+      padding:28px 26px 24px;
+      background:#030811;
+      border:1px solid var(--card-border);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      overflow:hidden;
+    }
 
-.toggle button.active{
-background:var(--accent);
-}
+    .price-card::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        radial-gradient(circle at top right, rgba(255,255,255,.04), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,.015), transparent 45%);
+    }
 
-/* PRICING */
+    .price-card.free{
+      border-color: rgba(255,255,255,.12);
+    }
 
-.pricing{
-display:grid;
-grid-template-columns:1fr;
-gap:25px;
-margin-top:50px;
-}
+    .price-card.starter{
+      border-color: var(--card-border-gold);
+      box-shadow:
+        inset 0 0 0 1px rgba(245,158,11,.08),
+        0 0 0 1px rgba(245,158,11,.08);
+    }
 
-@media(min-width:900px){
-.pricing{
-grid-template-columns:repeat(3,1fr);
-}
-}
+    .price-card.pro{
+      border-color: var(--card-border-blue);
+      box-shadow:
+        inset 0 0 0 1px rgba(41,93,255,.07),
+        0 0 0 1px rgba(41,93,255,.07);
+    }
 
-.card{
-background:var(--card);
-border:1px solid var(--border);
-padding:35px;
-border-radius:16px;
-text-align:center;
-backdrop-filter:blur(10px);
-transition:.3s;
-}
+    .price-card.elite{
+      border-color: var(--card-border-green);
+      box-shadow:
+        inset 0 0 0 1px rgba(34,197,94,.07),
+        0 0 0 1px rgba(34,197,94,.07);
+    }
 
-.card:hover{
-transform:translateY(-6px);
-box-shadow:0 15px 40px rgba(0,0,0,.4);
-}
+    .badge-top{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:28px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.02em;
+      margin-bottom:18px;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+    }
 
-.price{
-font-size:40px;
-font-weight:900;
-margin:15px 0;
-}
+    .starter .badge-top{
+      background:rgba(245,158,11,.14);
+      border-color:rgba(245,158,11,.35);
+      color:#ffd890;
+    }
 
-.card ul{
-list-style:none;
-padding:0;
-}
+    .pro .badge-top{
+      background:rgba(59,130,246,.16);
+      border-color:rgba(59,130,246,.35);
+      color:#b9d6ff;
+    }
 
-.card li{
-margin:8px 0;
-color:var(--muted);
-}
+    .elite .badge-top{
+      background:rgba(34,197,94,.14);
+      border-color:rgba(34,197,94,.34);
+      color:#b8f3cb;
+    }
 
-.card button{
-margin-top:20px;
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-background:var(--accent);
-color:white;
-cursor:pointer;
-}
+    .free .badge-top{
+      background:rgba(255,255,255,.06);
+      border-color:rgba(255,255,255,.12);
+      color:#fff;
+    }
 
-/* SLIDER */
+    .plan-name{
+      margin:0;
+      font-size:26px;
+      line-height:1.1;
+      font-weight:950;
+      color:#fff;
+    }
 
-.slider{
-margin-top:90px;
-text-align:center;
-}
+    .plan-price{
+      margin:14px 0 0;
+      font-size:64px;
+      line-height:.95;
+      font-weight:950;
+      color:#fff;
+      letter-spacing:-0.04em;
+    }
 
-.slider input{
-width:100%;
-max-width:420px;
-margin-top:15px;
-}
+    .plan-price .currency{
+      font-size:.76em;
+      vertical-align:top;
+      margin-right:2px;
+    }
 
-.earnings{
-font-size:32px;
-margin-top:8px;
-color:var(--accent);
-font-weight:900;
-}
+    .plan-price .term{
+      font-size:.42em;
+      font-weight:900;
+      color:#fff;
+      letter-spacing:-0.01em;
+    }
 
-/* CHART */
+    .plan-sub{
+      margin:14px 0 0;
+      color:var(--text-muted);
+      font-size:15px;
+      line-height:1.55;
+      min-height:46px;
+    }
 
-.chart{
-margin-top:90px;
-}
+    .plan-features{
+      list-style:none;
+      margin:22px 0 0;
+      padding:0;
+      display:grid;
+      gap:12px;
+    }
 
-/* LEADERBOARD */
+    .plan-features li{
+      position:relative;
+      padding-left:34px;
+      color:#dfe7f9;
+      font-size:16px;
+      line-height:1.45;
+    }
 
-.leaderboard{
-margin-top:90px;
-}
+    .plan-features li::before{
+      content:"•";
+      position:absolute;
+      left:0;
+      top:-1px;
+      font-size:34px;
+      line-height:18px;
+      color:#d7dbe6;
+    }
 
-.leaders{
-display:grid;
-grid-template-columns:1fr;
-gap:15px;
-}
+    .plan-actions{
+      margin-top:24px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
 
-@media(min-width:900px){
-.leaders{
-grid-template-columns:repeat(3,1fr);
-}
-}
+    .plan-btn{
+      appearance:none;
+      border:none;
+      outline:none;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:52px;
+      padding:0 18px;
+      border-radius:18px;
+      font-size:15px;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(180deg, rgba(18,27,50,.95), rgba(9,15,31,.98));
+      border:1px solid var(--btn-border);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+    }
 
-.leader{
-background:var(--card);
-padding:20px;
-border-radius:12px;
-border:1px solid var(--border);
-}
+    .plan-btn:hover{
+      filter:brightness(1.05);
+    }
 
-/* MARKETPLACE */
+    .plan-btn.full{
+      width:100%;
+      justify-content:center;
+    }
 
-.market{
-margin-top:90px;
-}
+    .plan-btn.disabled{
+      cursor:default;
+      opacity:.72;
+      color:rgba(255,255,255,.78);
+    }
 
-.beats{
-display:grid;
-grid-template-columns:repeat(2,1fr);
-gap:10px;
-}
+    .plan-btn.starter-btn{
+      border-color:rgba(245,158,11,.24);
+    }
 
-@media(min-width:900px){
-.beats{
-grid-template-columns:repeat(4,1fr);
-}
-}
+    .plan-btn.pro-btn{
+      border-color:rgba(59,130,246,.28);
+    }
 
-.beat{
-background:var(--card);
-padding:20px;
-border-radius:10px;
-border:1px solid var(--border);
-}
+    .plan-btn.elite-btn{
+      border-color:rgba(34,197,94,.24);
+    }
 
-/* TESTIMONIALS */
+    .compare-box{
+      margin-top:26px;
+      padding:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+    }
 
-.testimonials{
-margin-top:90px;
-}
+    .compare-title{
+      margin:0 0 10px;
+      font-size:18px;
+      font-weight:900;
+      color:#fff;
+    }
 
-.test-grid{
-display:grid;
-grid-template-columns:1fr;
-gap:15px;
-}
+    .compare-text{
+      margin:0;
+      color:var(--text-muted);
+      font-size:14px;
+      line-height:1.65;
+    }
 
-@media(min-width:900px){
-.test-grid{
-grid-template-columns:repeat(3,1fr);
-}
-}
+    .faq-mini{
+      margin-top:26px;
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:16px;
+    }
 
-.test{
-background:var(--card);
-padding:20px;
-border-radius:10px;
-border:1px solid var(--border);
-}
+    .faq-mini .mini-card{
+      border-radius:20px;
+      padding:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.08);
+    }
 
-/* COMPARE */
+    .mini-card h3{
+      margin:0 0 8px;
+      font-size:16px;
+      font-weight:900;
+      color:#fff;
+    }
 
-.compare{
-margin-top:90px;
-overflow-x:auto;
-}
+    .mini-card p{
+      margin:0;
+      color:var(--text-muted);
+      font-size:14px;
+      line-height:1.6;
+    }
 
-.compare table{
-width:100%;
-border-collapse:collapse;
-}
+    @media (max-width: 920px){
+      .pricing-grid{
+        grid-template-columns:1fr;
+      }
 
-.compare td,.compare th{
-padding:12px;
-border-bottom:1px solid var(--border);
-}
+      .faq-mini{
+        grid-template-columns:1fr;
+      }
 
-/* FAQ */
+      .plan-price{
+        font-size:56px;
+      }
+    }
 
-.faq{
-margin-top:90px;
-}
+    @media (max-width: 640px){
+      .pricing-shell{
+        padding:16px 14px 42px;
+      }
 
-.faq-item{
-border-bottom:1px solid var(--border);
-padding:15px 0;
-cursor:pointer;
-}
+      .pricing-wrap{
+        padding:12px;
+        border-radius:24px;
+      }
 
-.faq-answer{
-max-height:0;
-overflow:hidden;
-transition:.3s;
-color:var(--muted);
-}
+      .price-card{
+        padding:24px 18px 20px;
+        border-radius:22px;
+      }
 
-.faq-item.open .faq-answer{
-max-height:200px;
-margin-top:10px;
-}
+      .pricing-title{
+        font-size:30px;
+      }
 
-</style>
+      .pricing-sub{
+        font-size:15px;
+      }
+
+      .plan-name{
+        font-size:22px;
+      }
+
+      .plan-price{
+        font-size:50px;
+      }
+
+      .plan-features li{
+        font-size:15px;
+      }
+    }
+  </style>
 </head>
-
 <body>
 
 <header class="topbar">
-<div class="container topbar-inner">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
 
-<div class="brand">
-<button id="menuBtn">☰</button>
-<div class="logo">Audiory</div>
-</div>
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
 
-<nav class="desktop-nav">
-<a href="/">Feed</a>
-<a href="/marketplace/">Tracks</a>
-<a href="/soundkits/">Sound Kits</a>
-<a href="/producers/">Producers</a>
-<a href="/pricing/">Pricing</a>
-</nav>
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-</div>
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
 </header>
 
-<main class="container">
+<div class="menu-backdrop" id="menuBackdrop"></div>
 
-<section class="hero">
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
 
-<h1>Choose your path to success</h1>
-<p>Sell beats, grow your brand and build your music business on Audiory.</p>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
 
-<div class="toggle">
-<button class="active" id="monthlyBtn">Monthly</button>
-<button id="yearlyBtn">Yearly</button>
-</div>
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
 
-<div class="pricing">
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden" type="button">Sign out</button>
+</nav>
 
-<div class="card">
-<h3>Starter</h3>
-<div class="price" data-month="$19.99" data-year="$199">$19.99</div>
-<ul>
-<li>Upload beats</li>
-<li>Basic analytics</li>
-<li>Custom licenses</li>
-</ul>
-<button>Start</button>
-</div>
+<main class="pricing-shell">
 
-<div class="card">
-<h3>Pro</h3>
-<div class="price" data-month="$79.99" data-year="$799">$79.99</div>
-<ul>
-<li>Unlimited beats</li>
-<li>Marketing tools</li>
-<li>Sound kits</li>
-</ul>
-<button>Subscribe</button>
-</div>
+  <section class="pricing-hero">
+    <div class="pricing-kicker">Producer Plans</div>
+    <h1 class="pricing-title">Choose the plan that fits your music business</h1>
+    <p class="pricing-sub">
+      Start free, grow faster with Starter, unlock advanced tools with Pro, and go all-in with Elite.
+      Audiory plans are built for producers who want to sell more beats and build a real brand.
+    </p>
+    <div class="pricing-note">
+      Monthly pricing shown below. You can update or upgrade later from your dashboard.
+    </div>
+  </section>
 
-<div class="card">
-<h3>Elite</h3>
-<div class="price" data-month="$179.88" data-year="$1799">$179.88</div>
-<ul>
-<li>Everything in Pro</li>
-<li>Custom domain</li>
-<li>Priority support</li>
-</ul>
-<button>Subscribe</button>
-</div>
+  <section class="pricing-wrap">
+    <div class="pricing-grid">
 
-</div>
+      <div class="price-card free">
+        <div class="badge-top">For beginners</div>
+        <h2 class="plan-name">Free</h2>
+        <div class="plan-price"><span class="currency">$</span>0<span class="term">/mo</span></div>
+        <p class="plan-sub">
+          Start uploading, build your producer profile, and begin selling on Audiory.
+        </p>
 
-</section>
+        <ul class="plan-features">
+          <li>Basic beat uploads</li>
+          <li>Producer profile page</li>
+          <li>Standard store access</li>
+          <li>Sell beats on Audiory</li>
+        </ul>
 
-<section class="slider">
+        <div class="plan-actions">
+          <a class="plan-btn full" href="/register/">Get Started Free</a>
+        </div>
+      </div>
 
-<h2>Sell beats → See earnings</h2>
+      <div class="price-card starter">
+        <div class="badge-top">Starter</div>
+        <h2 class="plan-name">Starter</h2>
+        <div class="plan-price"><span class="currency">$</span>15<span class="term">/mo</span></div>
+        <p class="plan-sub">
+          Great for producers who want more room to upload and faster store growth.
+        </p>
 
-<input type="range" min="0" max="200" value="50" id="range">
+        <ul class="plan-features">
+          <li>Higher upload limit</li>
+          <li>Auto-tagging access</li>
+          <li>Better workflow for growing catalogs</li>
+        </ul>
 
-<div class="earnings" id="earn">$1000</div>
+        <div class="plan-actions">
+          <button class="plan-btn starter-btn disabled" type="button">Already higher plan</button>
+        </div>
+      </div>
 
-</section>
+      <div class="price-card pro">
+        <div class="badge-top">Most popular</div>
+        <h2 class="plan-name">Pro</h2>
+        <div class="plan-price"><span class="currency">$</span>39<span class="term">/mo</span></div>
+        <p class="plan-sub">
+          Built for serious producers who want analytics, marketing power, and visibility.
+        </p>
 
-<section class="chart">
+        <ul class="plan-features">
+          <li>Bulk Upload</li>
+          <li>Advanced Analytics</li>
+          <li>Marketing Tools</li>
+          <li>Unlimited Private Messages</li>
+          <li>Verified Badge</li>
+        </ul>
 
-<h2>Producer revenue growth</h2>
+        <div class="plan-actions">
+          <button class="plan-btn pro-btn disabled" type="button">Already Elite</button>
+        </div>
+      </div>
 
-<canvas id="chart"></canvas>
+      <div class="price-card elite">
+        <div class="badge-top">Best value</div>
+        <h2 class="plan-name">Elite</h2>
+        <div class="plan-price"><span class="currency">$</span>65<span class="term">/mo</span></div>
+        <p class="plan-sub">
+          Everything in Pro, plus tools for scaling your brand and business at a higher level.
+        </p>
 
-</section>
+        <ul class="plan-features">
+          <li>Everything in Pro</li>
+          <li>Custom Domain Connect</li>
+          <li>Content ID Ready</li>
+          <li>Priority growth features</li>
+        </ul>
 
-<section class="leaderboard">
+        <div class="plan-actions">
+          <button class="plan-btn elite-btn disabled" type="button">Current Elite</button>
+        </div>
+      </div>
 
-<h2>Top producers this week</h2>
+    </div>
 
-<div class="leaders">
+    <div class="compare-box">
+      <h3 class="compare-title">Why upgrade?</h3>
+      <p class="compare-text">
+        Higher plans give producers more visibility, faster workflow tools, stronger analytics,
+        better communication tools, and more trust through premium account features like verification.
+      </p>
+    </div>
 
-<div class="leader">HanselBeatz<br>$1420</div>
-<div class="leader">TrapNova<br>$1100</div>
-<div class="leader">DJ Flame<br>$980</div>
+    <div class="faq-mini">
+      <div class="mini-card">
+        <h3>Can I upgrade later?</h3>
+        <p>Yes. You can move to a higher plan when you are ready.</p>
+      </div>
 
-</div>
-
-</section>
-
-<section class="market">
-
-<h2>Marketplace preview</h2>
-
-<div class="beats">
-
-<div class="beat">Drill Beat</div>
-<div class="beat">Trap Beat</div>
-<div class="beat">Afrobeats</div>
-<div class="beat">Amapiano</div>
-
-</div>
-
-</section>
-
-<section class="testimonials">
-
-<h2>What producers say</h2>
-
-<div class="test-grid">
-
-<div class="test">Audiory helped me sell my first beats</div>
-<div class="test">Best analytics for producers</div>
-<div class="test">Marketing tools boosted my sales</div>
-
-</div>
-
-</section>
-
-<section class="compare">
-
-<h2>Compare plans</h2>
-
-<table>
-
-<tr>
-<th>Feature</th>
-<th>Starter</th>
-<th>Pro</th>
-<th>Elite</th>
-</tr>
-
-<tr>
-<td>Upload beats</td>
-<td>✔</td>
-<td>✔</td>
-<td>✔</td>
-</tr>
-
-<tr>
-<td>Sound kits</td>
-<td>✖</td>
-<td>✔</td>
-<td>✔</td>
-</tr>
-
-<tr>
-<td>Custom domain</td>
-<td>✖</td>
-<td>✖</td>
-<td>✔</td>
-</tr>
-
-</table>
-
-</section>
-
-<section class="faq">
-
-<h2>FAQ</h2>
-
-<div class="faq-item">
-<b>Do I keep my rights?</b>
-<div class="faq-answer">Yes you keep full ownership.</div>
-</div>
-
-<div class="faq-item">
-<b>How do I get paid?</b>
-<div class="faq-answer">Payments through PayPal and M-Pesa.</div>
-</div>
-
-</section>
+      <div class="mini-card">
+        <h3>Can I start free first?</h3>
+        <p>Yes. The free plan is the best place to start before moving into Starter, Pro, or Elite.</p>
+      </div>
+    </div>
+  </section>
 
 </main>
 
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
+        </svg>
+      </a>
+
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+
 <script>
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
 
-/* toggle */
+      const user = auth?.currentUser;
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
 
-const prices=document.querySelectorAll(".price")
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
 
-monthlyBtn.onclick=()=>{
-prices.forEach(p=>p.innerText=p.dataset.month)
-}
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
 
-yearlyBtn.onclick=()=>{
-prices.forEach(p=>p.innerText=p.dataset.year)
-}
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
 
-/* slider */
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
 
-range.oninput=()=>{
-earn.innerText="$"+range.value*20
-}
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
 
-/* chart */
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
 
-new Chart(document.getElementById("chart"),{
-type:"line",
-data:{
-labels:["M1","M2","M3","M4","M5"],
-datasets:[{
-data:[100,400,900,1500,2300],
-borderColor:"#4f7cff",
-fill:true
-}]
-}
-})
+  window.addEventListener("firebase-ready", () => {
+    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
 
-/* faq */
-
-document.querySelectorAll(".faq-item").forEach(i=>{
-i.onclick=()=>i.classList.toggle("open")
-})
-
+    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+  });
 </script>
 
 </body>
