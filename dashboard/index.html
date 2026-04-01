@@ -1855,21 +1855,29 @@ async function uploadToStorage({ file, path, onProgress }){
   }
 
   const storageRef = window.ref(window.storage, path);
-  const task = window.uploadBytesResumable(storageRef, file, { contentType: file.type || undefined });
+  const task = window.uploadBytesResumable(
+    storageRef,
+    file,
+    { contentType: file.type || undefined }
+  );
 
   return await new Promise((resolve, reject)=>{
-    task.on("state_changed",
+    task.on(
+      "state_changed",
       (snap)=>{
-        const pct = snap.totalBytes ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100) : 0;
+        const pct = snap.totalBytes
+          ? Math.round((snap.bytesTransferred / snap.totalBytes) * 100)
+          : 0;
+
         if (onProgress) onProgress(pct);
       },
       reject,
       async ()=>{
         const downloadURL = await window.getDownloadURL(task.snapshot.ref);
-        
+
         resolve({
           downloadURL,
-          storagePath: task.snapshot.ref.fullpath
+          storagePath: task.snapshot.ref.fullPath
         });
       }
     );
@@ -2277,27 +2285,136 @@ function blockIfUploadLimitReached(){
 /* ===========================
    UPLOADS
 =========================== */
-async function uploadArtwork(){
-  try{
+async function compressImageFile(file, options = {}) {
+  const {
+    maxWidth = 1200,
+    maxHeight = 1200,
+    quality = 0.78,
+    outputType = "image/webp"
+  } = options;
+
+  return new Promise((resolve, reject) => {
+    try {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const img = new Image();
+
+        img.onload = () => {
+          try {
+            let { width, height } = img;
+
+            // keep aspect ratio
+            if (width > maxWidth || height > maxHeight) {
+              const ratio = Math.min(maxWidth / width, maxHeight / height);
+              width = Math.round(width * ratio);
+              height = Math.round(height * ratio);
+            }
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+              reject(new Error("Canvas not supported"));
+              return;
+            }
+
+            // better rendering
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+            ctx.drawImage(img, 0, 0, width, height);
+
+            canvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  reject(new Error("Image compression failed"));
+                  return;
+                }
+
+                const compressedFile = new File(
+                  [blob],
+                  (file.name || "artwork").replace(/\.[^.]+$/, "") + ".webp",
+                  {
+                    type: outputType,
+                    lastModified: Date.now()
+                  }
+                );
+
+                resolve(compressedFile);
+              },
+              outputType,
+              quality
+            );
+          } catch (err) {
+            reject(err);
+          }
+        };
+
+        img.onerror = () => reject(new Error("Could not read image"));
+        img.src = reader.result;
+      };
+
+      reader.onerror = () => reject(new Error("Failed to load file"));
+      reader.readAsDataURL(file);
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+async function uploadArtwork() {
+  try {
     if (blockIfUploadLimitReached()) return;
 
     const file = await pickFile("image/*");
-    if(!file) return;
+    if (!file) return;
 
-    $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork…</div>`;
+    $("artworkStatus").innerHTML = `<div class="upload-status">Compressing artwork…</div>`;
+
+    const compressedFile = await compressImageFile(file, {
+      maxWidth: 1200,
+      maxHeight: 1200,
+      quality: 0.78,
+      outputType: "image/webp"
+    });
+
+    const originalKB = Math.round(file.size / 1024);
+    const compressedKB = Math.round(compressedFile.size / 1024);
+
+    $("artworkStatus").innerHTML = `
+      <div class="upload-status">
+        Uploading artwork… ${originalKB}KB → ${compressedKB}KB
+      </div>
+    `;
+
     const uid = window.auth?.currentUser?.uid || "anon";
-    const ext = extFromName(file.name) || ".jpg";
+    const fileName = `${Date.now()}.webp`;
 
     const url = await uploadToStorage({
-      file,
-      path: `audiory/artwork/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> $("artworkStatus").innerHTML = `<div class="upload-status">Uploading artwork… ${p}%</div>`
+      file: compressedFile,
+      path: `audiory/artwork/${uid}/${fileName}`,
+      metadata: {
+        contentType: "image/webp"
+      },
+      onProgress: (p) => {
+        $("artworkStatus").innerHTML = `
+          <div class="upload-status">
+            Uploading artwork… ${p}% (${originalKB}KB → ${compressedKB}KB)
+          </div>
+        `;
+      }
     });
 
     uploadedArtwork = url.downloadURL;
-    $("artworkBox").innerHTML = `<img src="${uploadedArtwork}">`;
-    $("artworkStatus").innerHTML = `<div class="upload-status">✔ Artwork uploaded</div>`;
-  }catch(err){
+    $("artworkBox").innerHTML = `<img src="${uploadedArtwork}" alt="Artwork">`;
+    $("artworkStatus").innerHTML = `
+      <div class="upload-status">
+        ✔ Artwork uploaded (${originalKB}KB → ${compressedKB}KB)
+      </div>
+    `;
+  } catch (err) {
     console.error(err);
     $("artworkStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
     alert("Artwork upload failed: " + (err?.message || err));
