@@ -77,22 +77,162 @@
     }
     .btn.message-blue:hover{filter:brightness(0.98)}
 
-    .grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:14px 0 28px}
-    @media (max-width: 900px){ .grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
-    @media (max-width: 520px){ .grid{grid-template-columns:1fr;} }
-
-    .beat-card{padding:12px;border-radius:20px}
-    .cover{aspect-ratio:1/1;border-radius:18px;overflow:hidden;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);position:relative}
-    .cover img{width:100%;height:100%;object-fit:cover;display:block}
-    .play-fab{
-      position:absolute;right:10px;bottom:10px;
-      width:42px;height:42px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.35);
-      display:grid;place-items:center;color:#fff;cursor:pointer
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:14px;
+     margin:14px 0 28px;
     }
-    .title{font-weight:950;margin:10px 0 0;font-size:13px}
-    .row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
-    .price-pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);font-weight:950}
+
+    @media (max-width: 900px){
+      .grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    /* ✅ keep 2 columns on mobile */
+    @media (max-width: 520px){
+      .grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:12px;
+      }
+    }
+
+    .beat-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      padding:9px;
+      border-radius:18px;
+    }
+
+    .cover{
+      aspect-ratio:1/1;
+      border-radius:15px;
+      overflow:hidden;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      position:relative;
+    }
+
+    .cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .play-fab{
+      position:absolute;
+      right:10px;
+      bottom:10px;
+      width:42px;
+      height:42px;
+      border-radius:13px;
+      border:1px solid rgba(255,255,255,.18);
+      background:rgba(0,0,0,.35);
+      display:grid;
+      place-items:center;
+      color:#fff;
+      cursor:pointer;
+    }
+
+    .beat-meta-row{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-width:0;
+    }
+
+    .beat-text{
+      min-width:0;
+    }
+
+    .beat-title-link{
+      color:inherit;
+      text-decoration:none;
+    }
+
+    .beat-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-weight:800;
+      font-size:12.5px;
+      line-height:1.2;
+      margin:0;
+    }
+
+    .beat-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:11.5px;
+      line-height:1.2;
+      margin-top:4px;
+      color:var(--muted);
+      text-decoration:none;
+    }
+
+    .beat-genre{
+      font-size:11px;
+      line-height:1.2;
+      margin-top:4px;
+      color:var(--muted);
+    }
+
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      min-height:36px;
+      width:100%;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #295dff;
+      background:#0a0d14;
+      color:#ffffff;
+      white-space:nowrap;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
+      cursor:pointer;
+    }
+
+    .pb-pill:hover{
+      background:#101521;
+      transform:none;
+    }
+
+    .pb-pill .ic{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      flex-shrink:0;
+      color:rgba(255,255,255,.82);
+    }
+
+    .pb-pill .ic svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
+    }
+    
     .muted{color:var(--muted)}
     .hidden{display:none !important}
 
@@ -219,7 +359,7 @@
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</span></div>
+      <div class="logo">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -486,6 +626,63 @@
     return `<div style="height:100%;width:100%;display:grid;place-items:center;font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
+  function beatPageUrl(b){
+    const id = String(b?.id || "");
+    return "/beat/?id=" + encodeURIComponent(id);
+  }
+
+  function producerPageUrl(b){
+    const pid = String(b?.producerId || "");
+    return "/producer-profile/?producerId=" + encodeURIComponent(pid);
+  }
+
+  function isFreeBeat(b){
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true) return true;
+
+    if (Number.isFinite(Number(b.price))) {
+      return Number(b.price) <= 0;
+    }
+
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    if (hasPaidLicense) return false;
+    return true;
+  }
+
+  function pillHTML(b){
+    if (isFreeBeat(b)){
+      return `
+        <button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M12 4v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Free</span>
+        </button>
+      `;
+    }
+
+    return `
+      <button class="pb-pill price-pill" type="button" aria-label="Choose license">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </span>
+        <span>${money(b.price)}</span>
+      </button>
+    `;
+  }
+  
   function getProducerIdFromURL(){
     const u = new URL(location.href);
     return (u.searchParams.get("producerId") || "").trim();
@@ -929,34 +1126,75 @@
         card.className = "card beat-card";
         card.setAttribute("data-beat-id", b.id);
 
+        const audioUrl = b.audio || "";
+        const beatUrl = beatPageUrl(b);
+        const prodUrl = producerPageUrl(b);
+
         card.innerHTML = `
           <div class="cover">
-            ${coverHTML(b.artwork, b.title)}
+            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
+              ${coverHTML(b.artwork, b.title)}
+            </a>
+
             <button
               class="play-fab"
               type="button"
               data-play-btn
+              data-ignore-license="1"
               data-beat-id="${b.id}"
               data-producer-id="${b.producerId}"
-              data-audio-url="${b.audio||""}"
+              data-audio-url="${audioUrl}"
               aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
-          <div class="title">${b.title}</div>
-          <div class="row">
-            <div class="muted" style="font-size:12px;">${(b.genre||"").trim() || "Genre"}</div>
-            <div class="price-pill">${money(b.price)}</div>
-          </div>
-        `;
 
-        // analytics: play click (we track click; your player.js will do actual play)
-        card.querySelector("[data-play-btn]")?.addEventListener("click", ()=>{
-          track("beat_play", { beatId: b.id, title: b.title });
-        });
+          <div class="beat-meta-row">
+            <div class="beat-text">
+              <a class="beat-title-link" href="${beatUrl}" data-open-beat="1">
+              <div class="beat-title-clamp">${b.title}</div>
+            </a>
 
-        grid.appendChild(card);
-      });
+            <a class="beat-producer-clamp" href="${prodUrl}">
+              ${prettyProducerNameFromBeat(b)} ${AudioryVerify.badge(b.producerPlan)}
+            </a>
+
+           <div class="beat-genre">${(b.genre || "").trim() || "Genre"}</div>
+         </div>
+
+         ${pillHTML(b)}
+       </div>
+     `;
+
+     /* free beats */
+     card.addEventListener("click", (e)=>{
+       const freeBtn = e.target.closest("[data-free-download='1']");
+       if (!freeBtn) return;
+       e.preventDefault();
+       e.stopPropagation();
+       if (typeof FreeDL !== "undefined" && FreeDL.open) {
+         FreeDL.open(b);
+       }
+     });
+
+     /* open beat page when tapping card */
+     card.addEventListener("click", (e)=>{
+       if (e.target.closest("[data-play-btn]")) return;
+       if (e.target.closest("[data-free-download='1']")) return;
+       if (e.target.closest(".price-pill")) return;
+       if (e.target.closest(".beat-producer-clamp")) return;
+       if (e.target.closest("[data-open-beat='1']")) return;
+
+       window.location.href = beatUrl;
+     });
+
+     /* analytics */
+     card.querySelector("[data-play-btn]")?.addEventListener("click", ()=>{
+       track("beat_play", { beatId: b.id, title: b.title });
+     });
+
+     grid.appendChild(card);
+   });
 
     }catch(err){
       console.error(err);
