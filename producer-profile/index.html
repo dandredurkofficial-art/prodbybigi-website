@@ -636,40 +636,7 @@
     return "/producer-profile/?producerId=" + encodeURIComponent(pid);
   }
 
-  function isFreeBeat(b){
-    if (!b) return true;
-    if (b.freeDownload === true || b.isFree === true) return true;
-
-    if (Number.isFinite(Number(b.price))) {
-      return Number(b.price) <= 0;
-    }
-
-    const lic = b.licenses || {};
-    const hasPaidLicense =
-      lic?.basic?.enabled === true ||
-      lic?.premium?.enabled === true ||
-      lic?.exclusive?.enabled === true;
-
-    if (hasPaidLicense) return false;
-    return true;
-  }
-
   function pillHTML(b){
-    if (isFreeBeat(b)){
-      return `
-        <button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
-          <span class="ic">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 4v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M8 11l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M5 19h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span>Free</span>
-        </button>
-      `;
-    }
-
     return `
       <button class="pb-pill price-pill" type="button" aria-label="Choose license">
         <span class="ic">
@@ -682,7 +649,7 @@
       </button>
     `;
   }
-  
+
   function getProducerIdFromURL(){
     const u = new URL(location.href);
     return (u.searchParams.get("producerId") || "").trim();
@@ -1165,17 +1132,6 @@
          ${pillHTML(b)}
        </div>
      `;
-
-     /* free beats */
-     card.addEventListener("click", (e)=>{
-       const freeBtn = e.target.closest("[data-free-download='1']");
-       if (!freeBtn) return;
-       e.preventDefault();
-       e.stopPropagation();
-       if (typeof FreeDL !== "undefined" && FreeDL.open) {
-         FreeDL.open(b);
-       }
-     });
 
      /* open beat page when tapping card */
      card.addEventListener("click", (e)=>{
