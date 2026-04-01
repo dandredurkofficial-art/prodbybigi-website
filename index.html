@@ -166,7 +166,7 @@
       font-size:11.5px !important;
       line-height:1.2 !important;
       margin-top:4px !important;
-      pacity:.82;
+      opacity:.82;
     }
 
     .producer-link{
@@ -396,88 +396,233 @@
         color:#fbbf24;
       }
 
-      /* =========================
-         ✅ MOBILE FIX
-      ========================= */
-      @media (max-width: 768px){
+      /* =========================================
+         AUDIORY CLEAN CARD SYSTEM
+         BeatStars-inspired mobile polish
+      ========================================= */
+
+      .trending-strip{
+        display:flex;
+        gap:16px;
+        overflow-x:auto;
+        padding:4px 2px 8px;
+        scroll-snap-type:x proximity;
+        scrollbar-width:none;
+      }
+      .trending-strip::-webkit-scrollbar{ display:none; }
+
+      .trending-strip .trend-card{
+        min-width:176px;
+        width:176px;
+        flex:0 0 176px;
+        scroll-snap-align:start;
+      }
 
       .chart-grid{
         display:grid;
         grid-template-columns:repeat(2, minmax(0,1fr));
-        gap:14px;
+        gap:16px 14px;
       }
 
-      .trending-strip{
-        display:flex;
-        gap:14px;
-        overflow-x:auto;
-        padding-bottom:6px;
-        scroll-snap-type:x proximity;
-      }
-
-      .trending-strip .trend-card{
-        min-width:168px;
-        width:168px;
-        flex:0 0 168px;
-        scroll-snap-align:start;
-      }
-
-      .chart-card,
-      .trend-card{
-        padding:9px !important;
+      .trend-card,
+      .chart-card{
+        background:#141414 !important;
+        border:1px solid rgba(255,255,255,.08) !important;
         border-radius:18px !important;
-        gap:9px;
+        box-shadow:none !important;
+        overflow:hidden;
+        gap:0 !important;
+        padding:0 !important;
       }
 
-      .chart-card .beat-cover,
-      .trend-card .beat-cover{
-        border-radius:15px;
+      .beat-cover{
+        position:relative;
+        aspect-ratio:1 / 1;
+        overflow:hidden;
+        background:#0b0b0b;
+        border-radius:0 !important;
       }
 
-      .chart-card .beat-cover img,
-      .trend-card .beat-cover img{
-        border-radius:15px;
+      .beat-cover .beat-open{
+        display:block;
+        width:100%;
+        height:100%;
       }
 
-      .chart-card .t,
-      .trend-card .t,
-      .home-title-clamp{
-        font-size:11.5px !important;
-        line-height:1.18 !important;
-      }
-
-      .chart-card .p,
-      .trend-card .p,
-      .home-producer-clamp{
-        font-size:10.8px !important;
-      }
-
-      .pb-pill{
-        min-height:34px;
-        padding:0 13px;
-        font-size:11.5px;
-        border-radius:11px;
-      }
-
-      .pb-pill .ic{
-        width:13px;
-        height:13px;
-        font-size:12px;
+      .beat-cover img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
       }
 
       .play-fab{
-        width:42px;
-        height:42px;
-        border-radius:13px;
+        position:absolute;
+        right:14px;
+        bottom:14px;
+        width:50px;
+        height:50px;
+        border-radius:50% !important;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(0,0,0,.42);
+        backdrop-filter:blur(5px);
+        -webkit-backdrop-filter:blur(5px);
+        box-shadow:none !important;
+      }
+
+      .play-fab .playIcon{
+        font-size:15px;
+      }
+
+      .trend-meta,
+      .chart-meta-row{
+        padding:14px 14px 0 14px;
+      }
+
+      .chart-meta-row{
+        display:block !important;
+      }
+
+      .chart-text{
+        display:block;
+        min-width:0;
+      }
+
+      .trend-meta .t,
+      .home-title-clamp{
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        color:#fff !important;
+        text-decoration:none;
+        font-size:17px !important;
+        line-height:1.2 !important;
+        font-weight:800 !important;
+        margin:0 !important;
+        min-height:40px;
+      }
+
+      .trend-meta .p,
+      .home-producer-clamp{
+        display:block;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        color:rgba(255,255,255,.62) !important;
+        font-size:14px !important;
+        line-height:1.2 !important;
+        margin-top:7px !important;
+        margin-bottom:0 !important;
+        opacity:1 !important;
+      }
+
+      .trend-actions,
+      .chart-pill{
+        padding:14px;
+        padding-top:14px;
+      }
+
+      .chart-pill{
+        display:block !important;
+      }
+
+      .trend-actions .pb-pill,
+      .chart-pill .pb-pill{
+        width:100%;
+        min-height:50px;
+        border-radius:14px;
+        font-size:17px;
+        font-weight:800;
+        justify-content:center;
+        padding:0 14px;
+        background:transparent;
+        border:1.5px solid #295dff;
+      }
+
+      .trend-actions .pb-pill .ic,
+      .chart-pill .pb-pill .ic{
+        width:16px;
+        height:16px;
+        font-size:15px;
+      }
+
+      .producer-link{
+        color:rgba(255,255,255,.62) !important;
+        text-decoration:none;
+      }
+      .producer-link:hover{
+        text-decoration:none;
+        color:#fff !important;
+      }
+
+      /* support bubble should not cover cards */
+      .audiory-support-fab{
+        right:12px !important;
+        bottom:12px !important;
+        transform:scale(.88);
+      }
+
+      @media (max-width:768px){
+        .chart-grid{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:14px 12px;
+        }
+
+        .trending-strip{
+          gap:14px;
+        }
+
+        .trending-strip .trend-card{
+          min-width:168px;
+          width:168px;
+          flex:0 0 168px;
+        }
+
+        .trend-meta,
+        .chart-meta-row{
+          padding:12px 12px 0 12px;
+        }
+
+        .trend-actions,
+        .chart-pill{
+          padding:12px;
+          padding-top:12px;
+        }
+
+        .trend-meta .t,
+        .home-title-clamp{
+          font-size:16px !important;
+          min-height:38px;
+        }
+
+        .trend-meta .p,
+        .home-producer-clamp{
+          font-size:13px !important;
+          margin-top:6px !important;
+        }
+
+        .trend-actions .pb-pill,
+        .chart-pill .pb-pill{
+          min-height:46px;
+          font-size:16px;
+        }
+
+        .play-fab{
+          width:46px;
+          height:46px;
+        }
       }
   </style>
 
-  <div class="audiory-support-fab" onclick="location.href='/help/'">
-    <div class="audiory-support-dot"></div>
-    <div><b>Support</b><br><span>Get help</span></div>
-  </div>
 </head>
 <body>
+
+<div class="audiory-support-fab" onclick="location.href='/help/'">
+  <div class="audiory-support-dot"></div>
+  <div><b>Support</b><br><span>Get help</span></div>
+</div>
 
 <header class="topbar">
   <div class="container topbar-inner">
@@ -1516,20 +1661,23 @@
 
           el.innerHTML = `
             <div class="beat-cover">
-              <a class="beat-open" href="${beatUrl}" data-open-beat="1">
+              <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
                 ${coverHTML(b.artwork, b.title)}
               </a>
 
-              <button class="play-fab"
+              <button
+                class="play-fab"
                 data-play-btn
                 data-ignore-license="1"
-                data-audio-url="${audioUrl}">
+                data-audio-url="${audioUrl}"
+                aria-label="Play preview"
+                type="button">
                 <span class="playIcon">▶</span>
               </button>
             </div>
 
             <div class="trend-meta">
-              <a class="t" href="${beatUrl}" style="color:inherit;text-decoration:none;">
+              <a class="t" href="${beatUrl}" data-open-beat="1">
                 ${b.title}
               </a>
 
@@ -1539,9 +1687,9 @@
             </div>
 
             <div class="trend-actions">
-              ${pillHTML(b)}
+                ${pillHTML(b)}
             </div>
-         `;
+          `;
 
          featuredStrip.appendChild(el);
 
@@ -1625,32 +1773,38 @@
         const prodUrl = producerPageUrl(b);
 
         el.innerHTML = `
-          <div class="beat-cover" style="aspect-ratio:1/1;">
+          <div class="beat-cover">
             <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
               ${coverHTML(b.artwork, b.title)}
             </a>
 
-            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play">
+            <button
+              class="play-fab"
+              data-play-btn
+              data-ignore-license="1"
+              data-audio-url="${audioUrl}"
+              aria-label="Play preview"
+              type="button">
               <span class="playIcon">▶</span>
             </button>
           </div>
 
-          <div class="chart-meta-row">
-            <div class="chart-text">
-              <a class="home-title-clamp" href="${beatUrl}" data-open-beat="1"
-                 style="color:inherit;text-decoration:none;">
-                 ${b.title}
-              </a>
+         <div class="chart-meta-row">
+           <div class="chart-text">
+             <a class="home-title-clamp" href="${beatUrl}" data-open-beat="1">
+               ${b.title}
+             </a>
 
-              <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1">
-                 ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
-              </a>
-            </div>
-            <div class="chart-pill">
-              ${pillHTML(b)}
-            </div>
-          </div>
-        `;
+             <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1">
+               ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
+             </a>
+           </div>
+         </div>
+
+         <div class="chart-pill">
+             ${pillHTML(b)}
+         </div>
+       `;
 
         el.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
