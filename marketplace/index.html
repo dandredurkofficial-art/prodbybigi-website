@@ -678,9 +678,26 @@
   }
 
   function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
-    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
-    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+
+    return `
+      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">
+        ${initials}
+      </div>
+    `;
   }
 
   function getParams(){
