@@ -127,9 +127,7 @@
         linear-gradient(180deg, rgba(255,255,255,.015), transparent 45%);
     }
 
-    .price-card.free{
-      border-color: rgba(255,255,255,.12);
-    }
+    .price-card.free{ border-color: rgba(255,255,255,.12); }
 
     .price-card.starter{
       border-color: var(--card-border-gold);
@@ -283,32 +281,12 @@
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
     }
 
-    .plan-btn:hover{
-      filter:brightness(1.05);
-    }
-
-    .plan-btn.full{
-      width:100%;
-      justify-content:center;
-    }
-
-    .plan-btn.disabled{
-      cursor:default;
-      opacity:.72;
-      color:rgba(255,255,255,.78);
-    }
-
-    .plan-btn.starter-btn{
-      border-color:rgba(245,158,11,.24);
-    }
-
-    .plan-btn.pro-btn{
-      border-color:rgba(59,130,246,.28);
-    }
-
-    .plan-btn.elite-btn{
-      border-color:rgba(34,197,94,.24);
-    }
+    .plan-btn:hover{ filter:brightness(1.05); }
+    .plan-btn.full{ width:100%; justify-content:center; }
+    .plan-btn.disabled{ cursor:default; opacity:.72; color:rgba(255,255,255,.78); }
+    .plan-btn.starter-btn{ border-color:rgba(245,158,11,.24); }
+    .plan-btn.pro-btn{ border-color:rgba(59,130,246,.28); }
+    .plan-btn.elite-btn{ border-color:rgba(34,197,94,.24); }
 
     .compare-box{
       margin-top:26px;
@@ -360,54 +338,149 @@
       line-height:1.6;
     }
 
+    /* payment modal */
+    .pb-pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      display:none;
+      z-index:10050;
+    }
+
+    .pb-pay-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 24px));
+      background:rgba(15,22,34,.97);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:0 24px 80px rgba(0,0,0,.55);
+      display:none;
+      z-index:10051;
+    }
+
+    .pb-pay-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+
+    .pb-pay-title{
+      font-weight:900;
+      font-size:16px;
+      margin:0;
+    }
+
+    .pb-pay-sub{
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      margin-top:6px;
+      line-height:1.4;
+    }
+
+    .pb-pay-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+    }
+
+    .pb-pay-close:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .pb-pay-body{
+      padding-top:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .pb-pay-btn{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      cursor:pointer;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .pb-pay-btn:hover{
+      background:rgba(255,255,255,.10);
+    }
+
+    .pb-pay-btn.primary{
+      border-color:rgba(59,130,246,.40);
+      background:rgba(59,130,246,.18);
+    }
+
+    .pb-pay-btn.success{
+      border-color:rgba(34,197,94,.40);
+      background:rgba(34,197,94,.16);
+    }
+
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:6px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.04);
+    }
+
+    .pb-pay-label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.85);
+      margin-bottom:6px;
+    }
+
+    .pb-pay-input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+    }
+
+    .pb-pay-status{
+      min-height:18px;
+      margin-top:10px;
+      font-size:12px;
+      color:rgba(255,255,255,.75);
+    }
+
     @media (max-width: 920px){
-      .pricing-grid{
-        grid-template-columns:1fr;
-      }
-
-      .faq-mini{
-        grid-template-columns:1fr;
-      }
-
-      .plan-price{
-        font-size:56px;
-      }
+      .pricing-grid{ grid-template-columns:1fr; }
+      .faq-mini{ grid-template-columns:1fr; }
+      .plan-price{ font-size:56px; }
     }
 
     @media (max-width: 640px){
-      .pricing-shell{
-        padding:16px 14px 42px;
-      }
-
-      .pricing-wrap{
-        padding:12px;
-        border-radius:24px;
-      }
-
-      .price-card{
-        padding:24px 18px 20px;
-        border-radius:22px;
-      }
-
-      .pricing-title{
-        font-size:30px;
-      }
-
-      .pricing-sub{
-        font-size:15px;
-      }
-
-      .plan-name{
-        font-size:22px;
-      }
-
-      .plan-price{
-        font-size:50px;
-      }
-
-      .plan-features li{
-        font-size:15px;
-      }
+      .pricing-shell{ padding:16px 14px 42px; }
+      .pricing-wrap{ padding:12px; border-radius:24px; }
+      .price-card{ padding:24px 18px 20px; border-radius:22px; }
+      .pricing-title{ font-size:30px; }
+      .pricing-sub{ font-size:15px; }
+      .plan-name{ font-size:22px; }
+      .plan-price{ font-size:50px; }
+      .plan-features li{ font-size:15px; }
     }
   </style>
 </head>
@@ -497,7 +570,7 @@
         </ul>
 
         <div class="plan-actions">
-          <a class="plan-btn full" href="/register/">Get Started Free</a>
+          <button class="plan-btn full" id="freePlanBtn" type="button">Start Free Now</button>
         </div>
       </div>
 
@@ -516,7 +589,7 @@
         </ul>
 
         <div class="plan-actions">
-          <button class="plan-btn starter-btn disabled" type="button">Already higher plan</button>
+          <button class="plan-btn starter-btn full subscribe-btn" type="button" data-plan="starter" data-amount="15">Subscribe Now</button>
         </div>
       </div>
 
@@ -537,7 +610,7 @@
         </ul>
 
         <div class="plan-actions">
-          <button class="plan-btn pro-btn disabled" type="button">Already Elite</button>
+          <button class="plan-btn pro-btn full subscribe-btn" type="button" data-plan="pro" data-amount="39">Subscribe Now</button>
         </div>
       </div>
 
@@ -557,7 +630,7 @@
         </ul>
 
         <div class="plan-actions">
-          <button class="plan-btn elite-btn disabled" type="button">Current Elite</button>
+          <button class="plan-btn elite-btn full subscribe-btn" type="button" data-plan="elite" data-amount="65">Subscribe Now</button>
         </div>
       </div>
 
@@ -638,45 +711,75 @@
   </div>
 </footer>
 
+<!-- Payment Modal -->
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+    <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+      <span>Pay with PayPal</span>
+      <span id="pbPayAmountA">—</span>
+    </button>
+
+    <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+      <span>Pay with M-Pesa</span>
+      <span id="pbPayAmountB">—</span>
+    </button>
+
+    <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+      <div class="pb-pay-label">M-Pesa Phone (2547XXXXXXXX)</div>
+      <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+      <div class="pb-pay-status" id="pbPayStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+
+  /* use your own endpoints here */
+  window.PB_PLAN_PAYPAL_CREATE_URL = "https://YOUR_PLAN_PAYPAL_CREATE_FUNCTION_URL";
+  window.PB_PLAN_MPESA_URL = "https://YOUR_PLAN_MPESA_FUNCTION_URL";
+
+  window.__PB_SELECTED_PLAN__ = null;
+</script>
+
 <script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
 
 <script>
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
   async function goToMyDashboard() {
     try {
       const auth = window.FB?.auth;
       const db = window.FB?.db;
-
       const user = auth?.currentUser;
+
       if (!user) {
         window.location.href = "/login/";
         return;
       }
 
-      const snap = await window.FB.getDoc(
-        window.FB.doc(db, "users", user.uid)
-      );
+      const snap = await window.FB.getDoc(window.FB.doc(db, "users", user.uid));
+      const role = String(snap.exists() ? (snap.data()?.role || "") : "").toLowerCase();
 
-      const role = String(
-        snap.exists() ? (snap.data()?.role || "") : ""
-      ).toLowerCase();
-
-      if (role === "producer") {
-        window.location.href = "/dashboard/";
-        return;
-      }
-
-      if (role === "buyer") {
-        window.location.href = "/buyer-dashboard/";
-        return;
-      }
-
-      if (role === "admin") {
-        window.location.href = "/admin-dashboard/";
-        return;
-      }
+      if (role === "producer") return window.location.href = "/dashboard/";
+      if (role === "buyer") return window.location.href = "/buyer-dashboard/";
+      if (role === "admin") return window.location.href = "/admin-dashboard/";
 
       window.location.href = "/buyer-dashboard/";
     } catch (e) {
@@ -685,17 +788,217 @@
     }
   }
 
-  window.addEventListener("firebase-ready", () => {
-    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
+  async function setFreePlanForCurrentUser(){
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      location.href = "/register/?plan=free";
+      return;
+    }
+
+    try{
+      const db = window.FB?.db;
+      const ref = window.FB.doc(db, "users", user.uid);
+
+      await window.FB.setDoc(ref, {
+        plan: "free",
+        role: "producer",
+        updatedAt: Date.now()
+      }, { merge: true });
+
+      alert("Free plan activated.");
+      location.href = "/dashboard/";
+    }catch(err){
+      console.error(err);
+      alert("Failed to activate free plan: " + (err?.message || err));
+    }
+  }
+
+  (function(){
+    const $ = (id)=>document.getElementById(id);
+
+    const freeBtn = $("freePlanBtn");
+    const payBackdrop = $("pbPayBackdrop");
+    const payModal = $("pbPayModal");
+    const payClose = $("pbPayClose");
+    const payTitle = $("pbPayTitle");
+    const paySub = $("pbPaySub");
+    const payAmountA = $("pbPayAmountA");
+    const payAmountB = $("pbPayAmountB");
+    const btnPaypal = $("pbPayWithPaypal");
+    const btnMpesa = $("pbPayWithMpesa");
+    const mpesaBox = $("pbMpesaBox");
+    const mpesaPhone = $("pbMpesaPhone");
+    const payStatus = $("pbPayStatus");
+
+    function openPayModal(plan, amount){
+      window.__PB_SELECTED_PLAN__ = { plan, amount };
+
+      payTitle.textContent = "Choose payment method";
+      paySub.textContent = `Plan: ${String(plan).toUpperCase()} • ${money(amount)}/mo`;
+      payAmountA.textContent = money(amount);
+      payAmountB.textContent = money(amount);
+      payStatus.textContent = "";
+      mpesaPhone.value = "";
+      mpesaBox.style.display = "none";
+
+      payBackdrop.style.display = "block";
+      payModal.style.display = "block";
+    }
+
+    function closePayModal(){
+      payBackdrop.style.display = "none";
+      payModal.style.display = "none";
+      mpesaBox.style.display = "none";
+      payStatus.textContent = "";
+    }
+
+    async function ensureSignedInForPaid(plan){
+      const user = window.FB?.auth?.currentUser || null;
+      if (user) return true;
+
+      location.href = "/login/?next=" + encodeURIComponent("/pricing/?plan=" + plan);
+      return false;
+    }
+
+    async function payWithPaypal(){
+      const selected = window.__PB_SELECTED_PLAN__;
+      if (!selected?.plan) return;
+
+      const user = window.FB?.auth?.currentUser || null;
+      if (!user){
+        location.href = "/login/?next=" + encodeURIComponent("/pricing/?plan=" + selected.plan);
+        return;
+      }
+
+      payStatus.textContent = "Opening PayPal...";
+      btnPaypal.disabled = true;
+      btnMpesa.disabled = true;
+
+      try{
+        const body = {
+          uid: user.uid,
+          email: user.email || "",
+          plan: selected.plan,
+          amount: Number(selected.amount || 0)
+        };
+
+        const r = await fetch(window.PB_PLAN_PAYPAL_CREATE_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const data = await r.json().catch(()=> ({}));
+
+        if (!r.ok){
+          throw new Error(data?.error || "Failed to create PayPal subscription.");
+        }
+
+        if (!data?.approveUrl){
+          throw new Error("Missing PayPal approval URL.");
+        }
+
+        location.href = data.approveUrl;
+      } catch(err){
+        console.error(err);
+        payStatus.textContent = err?.message || "PayPal failed.";
+      } finally {
+        btnPaypal.disabled = false;
+        btnMpesa.disabled = false;
+      }
+    }
+
+    async function payWithMpesa(){
+      const selected = window.__PB_SELECTED_PLAN__;
+      if (!selected?.plan) return;
+
+      const user = window.FB?.auth?.currentUser || null;
+      if (!user){
+        location.href = "/login/?next=" + encodeURIComponent("/pricing/?plan=" + selected.plan);
+        return;
+      }
+
+      mpesaBox.style.display = "block";
+
+      const phone = (mpesaPhone.value || "").trim();
+      if (!phone){
+        payStatus.textContent = "Enter your M-Pesa number, then tap M-Pesa again.";
+        mpesaPhone.focus();
+        return;
+      }
+
+      const digits = phone.replace(/\D/g, "");
+      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12){
+        payStatus.textContent = "Use format: 2547XXXXXXXX";
+        return;
+      }
+
+      payStatus.textContent = "Sending STK Push...";
+      btnPaypal.disabled = true;
+      btnMpesa.disabled = true;
+
+      try{
+        const body = {
+          uid: user.uid,
+          email: user.email || "",
+          phone: digits,
+          plan: selected.plan,
+          amount: Number(selected.amount || 0)
+        };
+
+        const r = await fetch(window.PB_PLAN_MPESA_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify(body)
+        });
+
+        const data = await r.json().catch(()=> ({}));
+
+        if (!r.ok){
+          throw new Error(data?.error || "M-Pesa request failed.");
+        }
+
+        payStatus.textContent = "STK sent. Approve on your phone.";
+      } catch(err){
+        console.error(err);
+        payStatus.textContent = err?.message || "M-Pesa failed.";
+      } finally {
+        btnPaypal.disabled = false;
+        btnMpesa.disabled = false;
+      }
+    }
+
+    freeBtn?.addEventListener("click", setFreePlanForCurrentUser);
+
+    document.querySelectorAll(".subscribe-btn").forEach((btn)=>{
+      btn.addEventListener("click", async ()=>{
+        const plan = btn.dataset.plan;
+        const amount = Number(btn.dataset.amount || 0);
+
+        const ok = await ensureSignedInForPaid(plan);
+        if (!ok) return;
+
+        openPayModal(plan, amount);
+      });
     });
 
-    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
+    payBackdrop?.addEventListener("click", closePayModal);
+    payClose?.addEventListener("click", closePayModal);
+    btnPaypal?.addEventListener("click", payWithPaypal);
+    btnMpesa?.addEventListener("click", payWithMpesa);
+
+    window.addEventListener("firebase-ready", () => {
+      document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await goToMyDashboard();
+      });
+
+      document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await goToMyDashboard();
+      });
     });
-  });
+  })();
 </script>
 
 </body>
