@@ -1233,6 +1233,15 @@
     </button>`;
   }
 
+  function getChartScore(b){
+    const plays = Number(b.plays || 0);
+    const cartAdds = Number(b.cartAdds || 0);
+    const downloads = Number(b.downloads || 0);
+    const sales = Number(b.sales || 0);
+
+    return (plays * 1) + (cartAdds * 3) + (downloads * 4) + (sales * 8);
+  }
+
   /* =========================================================
      ✅ NEW: Selection tracker + Payment Modal logic
      Works without editing license-modal.js
@@ -1664,6 +1673,10 @@
       const featuredBeats = beats.filter(b => b.featured === true);
       console.log("ALL FEATURED TEST:", featuredBeats);
 
+      const chartBeats = [...beats]
+        .sort((a, b) => getChartScore(b) - getChartScore(a))
+        .slice(0, 10);
+
       /* RANDOMIZE FEATURED ORDER */
       featuredBeats.sort(() => Math.random() - 0.5);
 
@@ -1815,7 +1828,7 @@
         strip.appendChild(el);
       });
 
-      beats.slice(0,10).forEach((b)=>{
+      chartBeats.forEach((b)=>{
         const el = document.createElement("div");
         el.className = "card chart-card";
         el.setAttribute("data-beat-id", b.id);
@@ -1825,6 +1838,13 @@
         const audioUrl = b.audio || "";
         const beatUrl = beatPageUrl(b);
         const prodUrl = producerPageUrl(b);
+
+        console.log("Chart beat:", b.title, "score:", getChartScore(b), {
+          plays: b.plays || 0,
+          cartAdds: b.cartAdds || 0,
+          downloads: b.downloads || 0,
+          sales: b.sales || 0
+        });
 
         el.innerHTML = `
           <div class="beat-cover">
