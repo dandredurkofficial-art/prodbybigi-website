@@ -184,16 +184,18 @@
       white-space:nowrap;
     }
 
-    @media (max-width: 520px){}
+    @media (max-width: 520px){
       .beat-meta{
         flex-direction:column;
         align-items:stretch;
         gap:10px;
       }
-      .pb-pill{
-        width:100%;
-        min-width:0;
-      }
+
+  .pb-pill{
+    width:100%;
+    min-width:0;
+  }
+}
 
       /* ===================================
          AUDIORY VERIFIED BADGES
@@ -223,6 +225,178 @@
 
       .verify-elite svg{
         color:#fbbf24;
+      }
+
+      /* =========================================
+         AUDIORY MARKETPLACE CLEAN CARD SYSTEM
+      ========================================= */
+
+      .beats-grid{
+        display:grid;
+        grid-template-columns:repeat(2, minmax(0,1fr));
+        gap:16px 14px;
+        margin-top:16px;
+      }
+
+      .beat-card{
+        background:#141414 !important;
+        border:1px solid rgba(255,255,255,.08) !important;
+        border-radius:18px !important;
+        overflow:hidden;
+        box-shadow:none !important;
+        padding:0 !important;
+      }
+
+      .beat-cover{
+        position:relative;
+        aspect-ratio:1 / 1;
+        overflow:hidden;
+        background:#0b0b0b;
+        border-radius:0 !important;
+      }
+
+      .beat-cover .beat-open{
+        display:block;
+        width:100%;
+        height:100%;
+      }
+
+      .beat-cover img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      }
+
+      .play-fab{
+        position:absolute;
+        right:14px;
+        bottom:14px;
+        width:50px;
+        height:50px;
+        border-radius:50% !important;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(0,0,0,.42);
+        backdrop-filter:blur(5px);
+        -webkit-backdrop-filter:blur(5px);
+        box-shadow:none !important;
+      }
+
+      .play-fab .playIcon{
+        font-size:15px;
+      }
+
+      .beat-meta{
+        display:flex;
+        flex-direction:column;
+        gap:0;
+        padding:14px;
+      }
+
+      .beat-meta > div{
+        min-width:0;
+      }
+
+      .beat-title-link{
+        color:#fff !important;
+        text-decoration:none !important;
+        display:block;
+      }
+
+      .beat-title-link h3{
+        margin:0 !important;
+        color:#fff !important;
+        font-size:17px !important;
+        line-height:1.2 !important;
+        font-weight:800 !important;
+        display:-webkit-box;
+        -webkit-box-orient:vertical;
+        -webkit-line-clamp:2;
+        overflow:hidden;
+        min-height:40px;
+      }
+
+      .beat-meta .producer{
+        display:block;
+        margin-top:7px;
+        color:rgba(255,255,255,.62) !important;
+        font-size:14px !important;
+        line-height:1.2 !important;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        text-decoration:none;
+      }
+
+      .beat-meta .producer:hover{
+        color:#fff !important;
+        text-decoration:none;
+      }
+
+      .beat-meta > div > div:last-child{
+        margin-top:6px !important;
+        color:rgba(255,255,255,.52) !important;
+        font-size:12px !important;
+      }
+
+      .beat-meta .pb-pill{
+        width:100%;
+        margin-top:14px;
+        min-height:50px;
+        border-radius:14px;
+        border:1.5px solid #295dff;
+        background:transparent;
+        color:#fff;
+        font-size:17px;
+        font-weight:800;
+        justify-content:center;
+        padding:0 14px;
+        box-shadow:none;
+        transform:none;
+      }
+
+      .beat-meta .pb-pill:hover{
+        background:rgba(255,255,255,.04);
+        transform:none;
+      }
+
+      .beat-meta .pb-pill .ic{
+        width:16px;
+        height:16px;
+        font-size:15px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+      }
+
+      @media (max-width: 768px){
+        .beats-grid{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:14px 12px;
+        }
+
+        .beat-meta{
+          padding:12px;
+        }
+
+        .beat-title-link h3{
+          font-size:16px !important;
+          min-height:38px;
+        }
+
+        .beat-meta .producer{
+          font-size:13px !important;
+        }
+
+        .beat-meta .pb-pill{
+          min-height:46px;
+          font-size:16px;
+        }
+
+        .play-fab{
+          width:46px;
+          height:46px;
+        }
       }
   </style>
 </head>
@@ -736,19 +910,21 @@
           <a class="beat-open"
              href="${pageUrl}"
              data-open-beat="1"
-             data-producer-id="${String(b.producerId||"")}"
-             data-beat-id="${String(b.id||"")}"
+             data-producer-id="${String(b.producerId || "")}"
+             data-beat-id="${String(b.id || "")}"
              aria-label="Open beat page">
             ${coverHTML(b.artwork, b.title)}
           </a>
 
-          <button class="play-fab"
+          <button
+            class="play-fab"
             data-play-btn
             data-ignore-license="1"
             data-audio-url="${audioUrl}"
-            data-producer-id="${String(b.producerId||"")}"
-            data-beat-id="${String(b.id||"")}"
-            aria-label="Play">
+            data-producer-id="${String(b.producerId || "")}"
+            data-beat-id="${String(b.id || "")}"
+            aria-label="Play preview"
+            type="button">
             <span class="playIcon">▶</span>
           </button>
         </div>
@@ -758,35 +934,34 @@
             <a class="beat-title-link"
                href="${pageUrl}"
                data-open-beat="1"
-               data-producer-id="${String(b.producerId||"")}"
-               data-beat-id="${String(b.id||"")}"
-               style="text-decoration:none;color:inherit;">
-              <h3 style="margin:0 0 4px 0;">${b.title}</h3>
+               data-producer-id="${String(b.producerId || "")}"
+               data-beat-id="${String(b.id || "")}">
+              <h3>${b.title}</h3>
             </a>
 
             <a class="producer"
-               href="/producer-profile/?producerId=${encodeURIComponent(b.producerId||"")}"
-               data-producer-id="${String(b.producerId||"")}"
-               data-beat-id="${String(b.id||"")}">
+               href="/producer-profile/?producerId=${encodeURIComponent(b.producerId || "")}"
+               data-producer-id="${String(b.producerId || "")}"
+               data-beat-id="${String(b.id || "")}">
               ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
             </a>
 
-            ${b.genre ? `<div style="margin-top:6px;color:var(--muted);font-size:12px;">${b.genre}</div>` : ``}
-          </div>
+      ${b.genre ? `<div>${b.genre}</div>` : ``}
+    </div>
 
-          ${
-            (isFreeBeat(b))
-              ? pillHTML(b)
-              : `<button class="pb-pill price-pill" type="button"
-                   data-producer-id="${String(b.producerId||"")}"
-                   data-beat-id="${String(b.id||"")}"
-                   aria-label="Choose license">
-                  <span class="ic">🛍️</span>
-                  <span>${money(b.price)}</span>
-                 </button>`
-          }
-        </div>
-      `;
+    ${
+      isFreeBeat(b)
+        ? pillHTML(b)
+        : `<button class="pb-pill price-pill" type="button"
+             data-producer-id="${String(b.producerId || "")}"
+             data-beat-id="${String(b.id || "")}"
+             aria-label="Choose license">
+             <span class="ic">🔒</span>
+             <span>${money(b.price)}</span>
+           </button>`
+    }
+  </div>
+`;
 
       /* FREE DOWNLOAD */
       card.addEventListener("click", (e)=>{
