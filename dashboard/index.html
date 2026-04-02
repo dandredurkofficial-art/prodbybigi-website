@@ -2165,29 +2165,29 @@ async function uploadToStorage({ file, path, onProgress }){
 async function loadAdvancedAnalyticsReal(){
   if (!window.currentUser) return;
 
-  // only show real numbers when unlocked
   if (!isPro()){
     if ($("statViews")) $("statViews").textContent = "0";
     if ($("statPlays")) $("statPlays").textContent = "0";
+    if ($("statSales")) $("statSales").textContent = "0";
     if ($("statConv")) $("statConv").textContent = "0%";
+    if ($("engagementRate")) $("engagementRate").textContent = "0%";
     return;
   }
 
   const uid = window.currentUser.uid;
 
   try{
-    /* ✅ PROFILE VIEWS: use same field as producer store */
     let profileViews = 0;
+
     try{
       const userRef = window.doc(window.db, "users", uid);
       const userSnap = await window.getDoc(userRef);
       const userData = userSnap.exists() ? userSnap.data() : {};
       profileViews = Number(userData?.profileViews || 0);
     }catch(e){
-      console.warn("profileViews load failed:", e);
+      console.warn("profile views read failed:", e);
     }
 
-    /* ✅ PREVIEW PLAYS: keep analyticsEvents count */
     const playsQ = window.query(
       window.collection(window.db,"analyticsEvents"),
       window.where("producerId","==",uid),
@@ -2197,10 +2197,6 @@ async function loadAdvancedAnalyticsReal(){
     const playsAgg = await window.getCountFromServer(playsQ);
     const plays = playsAgg.data().count || 0;
 
-    if ($("statViews")) $("statViews").textContent = String(profileViews);
-    if ($("statPlays")) $("statPlays").textContent = String(plays);
-
-    /* ✅ Conversion: orders / plays */
     let orders = 0;
     try{
       const oQ = window.query(
@@ -2215,13 +2211,25 @@ async function loadAdvancedAnalyticsReal(){
         if (!s || s.includes("paid") || s.includes("completed")) orders++;
       });
     }catch(e){
-      console.warn("orders load failed:", e);
+      console.warn("orders read failed:", e);
     }
 
-    const denom = plays > 0 ? plays : 0;
-    const conv = denom > 0 ? Math.round((orders / denom) * 100) : 0;
+    const conv = plays > 0 ? Math.round((orders / plays) * 100) : 0;
+    const engage = profileViews > 0 ? Math.round((plays / profileViews) * 100) : 0;
 
+    if ($("statViews")) $("statViews").textContent = String(profileViews);
+    if ($("statPlays")) $("statPlays").textContent = String(plays);
+    if ($("statSales")) $("statSales").textContent = String(orders);
     if ($("statConv")) $("statConv").textContent = `${conv}%`;
+    if ($("engagementRate")) $("engagementRate").textContent = `${engage}%`;
+
+    /* optional: update ring color dynamically */
+    const ring = document.querySelector(".analytics-ring");
+    if (ring){
+      const pct = Math.max(0, Math.min(100, engage));
+      ring.style.background = `conic-gradient(#ef4444 0 ${pct}%, #e5e7eb ${pct}% 100%)`;
+    }
+
   }catch(err){
     console.error("loadAdvancedAnalyticsReal:", err);
   }
