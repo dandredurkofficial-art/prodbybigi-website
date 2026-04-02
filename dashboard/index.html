@@ -933,8 +933,19 @@
 
 <header>
   <div class="menu-btn" id="hamburgerBtn">☰</div>
+
   <strong>Audiory Studio</strong>
-  <button class="logout" id="logoutBtn" type="button">Logout</button>
+
+  <div class="header-actions">
+    <button class="notif-btn" id="notifBtn" type="button" aria-label="Notifications">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6.5-1.2-1.2V10a5.8 5.8 0 0 0-4.3-5.6V3.8a1.5 1.5 0 1 0-3 0v.6A5.8 5.8 0 0 0 6.2 10v4.3L5 15.5a1 1 0 0 0 .7 1.7h12.6a1 1 0 0 0 .7-1.7Z"/>
+      </svg>
+      <span class="notif-dot" id="notifDot" style="display:none;"></span>
+    </button>
+
+    <button class="logout" id="logoutBtn" type="button">Logout</button>
+  </div>
 </header>
 
 <div class="layout">
