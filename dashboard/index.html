@@ -1301,15 +1301,15 @@
           </div>
         </div>
 
-        <div class="analytics-bars">
-          <span style="height:48%"></span>
-          <span style="height:66%"></span>
-          <span style="height:58%"></span>
-          <span style="height:80%"></span>
-          <span style="height:62%"></span>
-          <span style="height:88%"></span>
-          <span style="height:74%"></span>
-          <span style="height:92%"></span>
+        <div class="analytics-bars" id="analyticsBars">
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
+          <span style="height:18%"></span>
         </div>
       </div>
 
@@ -2567,6 +2567,27 @@ async function loadAdvancedAnalyticsReal(){
 
     const conv = plays > 0 ? Math.round((orders / plays) * 100) : 0;
     const engage = profileViews > 0 ? Math.round((plays / profileViews) * 100) : 0;
+        const barsWrap = $("analyticsBars");
+    if (barsWrap){
+      const bars = Array.from(barsWrap.querySelectorAll("span"));
+      const values = [
+        Math.max(profileViews * 0.35, 1),
+        Math.max(profileViews * 0.55, 1),
+        Math.max(plays * 0.65, 1),
+        Math.max(profileViews * 0.75, 1),
+        Math.max(plays * 0.85, 1),
+        Math.max(orders * 1.2, 1),
+        Math.max(plays * 0.95, 1),
+        Math.max(profileViews, plays, orders, 1)
+      ];
+
+      const maxVal = Math.max(...values, 1);
+
+      bars.forEach((bar, i) => {
+        const pct = Math.max(18, Math.min(100, Math.round((values[i] / maxVal) * 100)));
+        bar.style.height = pct + "%";
+      });
+    }
 
     if ($("statViews")) $("statViews").textContent = String(profileViews);
     if ($("statPlays")) $("statPlays").textContent = String(plays);
