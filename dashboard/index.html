@@ -1898,35 +1898,33 @@ async function loadAdvancedAnalyticsReal(){
   const uid = window.currentUser.uid;
 
   try{
-    // FAST counts (no downloading all docs)
-    const viewsQ = window.query(
-      window.collection(window.db,"analyticsEvents"),
-      window.where("producerId","==",uid),
-      window.where("type","==","view")
-    );
+    /* ✅ PROFILE VIEWS: use same field as producer store */
+    let profileViews = 0;
+    try{
+      const userRef = window.doc(window.db, "users", uid);
+      const userSnap = await window.getDoc(userRef);
+      const userData = userSnap.exists() ? userSnap.data() : {};
+      profileViews = Number(userData?.profileViews || 0);
+    }catch(e){
+      console.warn("profileViews load failed:", e);
+    }
 
+    /* ✅ PREVIEW PLAYS: keep analyticsEvents count */
     const playsQ = window.query(
       window.collection(window.db,"analyticsEvents"),
       window.where("producerId","==",uid),
       window.where("type","==","play")
     );
 
-    const [viewsAgg, playsAgg] = await Promise.all([
-      window.getCountFromServer(viewsQ),
-      window.getCountFromServer(playsQ),
-    ]);
-
-    const views = viewsAgg.data().count || 0;
+    const playsAgg = await window.getCountFromServer(playsQ);
     const plays = playsAgg.data().count || 0;
 
-    if ($("statViews")) $("statViews").textContent = String(views);
+    if ($("statViews")) $("statViews").textContent = String(profileViews);
     if ($("statPlays")) $("statPlays").textContent = String(plays);
 
-    // Conversion: completed orders / plays (fallback to views if plays=0)
+    /* ✅ Conversion: orders / plays */
     let orders = 0;
     try{
-      // If your orders store status = "paid" or "completed", keep this.
-      // If not, we fallback to scanning orders below.
       const oQ = window.query(
         window.collection(window.db,"orders"),
         window.where("producerId","==",uid)
@@ -1936,18 +1934,18 @@ async function loadAdvancedAnalyticsReal(){
       oSnap.forEach(d=>{
         const o = d.data() || {};
         const s = String(o.status || o.state || "").toLowerCase();
-        // counts only paid/completed, but if you don’t store status we count all
         if (!s || s.includes("paid") || s.includes("completed")) orders++;
       });
-    }catch(e){}
+    }catch(e){
+      console.warn("orders load failed:", e);
+    }
 
-    const denom = plays > 0 ? plays : (views > 0 ? views : 0);
+    const denom = plays > 0 ? plays : 0;
     const conv = denom > 0 ? Math.round((orders / denom) * 100) : 0;
 
     if ($("statConv")) $("statConv").textContent = `${conv}%`;
   }catch(err){
     console.error("loadAdvancedAnalyticsReal:", err);
-    // don’t crash UI
   }
 }
 window.loadAdvancedAnalyticsReal = loadAdvancedAnalyticsReal;
