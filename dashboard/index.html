@@ -564,6 +564,218 @@
     font-weight:800;
     color:#60a5fa;
   }
+
+  .analytics-hero{
+  margin-top:14px;
+}
+
+.analytics-hero-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+.analytics-kicker{
+  color:#9ca3af;
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:6px;
+}
+
+.analytics-main-title{
+  margin:0;
+  font-size:26px;
+  line-height:1.1;
+  font-weight:900;
+  color:#fff;
+}
+
+.analytics-range{
+  padding:10px 14px;
+  border-radius:12px;
+  background:#111827;
+  border:1px solid #1f2937;
+  color:#e5e7eb;
+  font-size:13px;
+  font-weight:800;
+}
+
+.analytics-stat-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+  margin-bottom:18px;
+}
+
+.analytics-stat-card{
+  background:#f8fafc;
+  color:#0f172a;
+  border-radius:18px;
+  padding:18px;
+  min-height:132px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+.analytics-stat-icon{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  margin-bottom:16px;
+}
+
+.analytics-stat-icon.blue{ background:#dbeafe; }
+.analytics-stat-icon.purple{ background:#ede9fe; }
+.analytics-stat-icon.gold{ background:#fef3c7; }
+.analytics-stat-icon.green{ background:#dcfce7; }
+
+.analytics-stat-value{
+  font-size:34px;
+  line-height:1;
+  font-weight:900;
+  color:#111827;
+}
+
+.analytics-stat-label{
+  margin-top:10px;
+  color:#475569;
+  font-size:13px;
+  font-weight:700;
+}
+
+.analytics-stat-change{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.analytics-stat-change.up{ color:#16a34a; }
+.analytics-stat-change.neutral{ color:#64748b; }
+
+.analytics-bottom-grid{
+  display:grid;
+  grid-template-columns:1.35fr .85fr;
+  gap:14px;
+}
+
+.analytics-panel{
+  background:#f8fafc;
+  color:#0f172a;
+  border-radius:18px;
+  padding:18px;
+  min-height:250px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+.analytics-panel.big{
+  min-height:250px;
+}
+
+.analytics-panel-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:16px;
+}
+
+.analytics-panel-title{
+  font-size:16px;
+  font-weight:900;
+  color:#111827;
+}
+
+.analytics-panel-sub{
+  margin-top:4px;
+  font-size:12px;
+  color:#64748b;
+}
+
+.analytics-bars{
+  height:170px;
+  display:grid;
+  grid-template-columns:repeat(8,1fr);
+  gap:10px;
+  align-items:end;
+  margin-top:18px;
+}
+
+.analytics-bars span{
+  display:block;
+  width:100%;
+  border-radius:14px 14px 4px 4px;
+  background:linear-gradient(180deg,#60a5fa 0%, #2563eb 100%);
+}
+
+.analytics-ring-wrap{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:180px;
+}
+
+.analytics-ring{
+  width:150px;
+  height:150px;
+  border-radius:50%;
+  background:conic-gradient(#ef4444 0 68%, #e5e7eb 68% 100%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.analytics-ring-inner{
+  width:108px;
+  height:108px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.analytics-ring-inner strong{
+  font-size:26px;
+  font-weight:900;
+  color:#111827;
+}
+
+.analytics-ring-inner span{
+  margin-top:4px;
+  font-size:12px;
+  color:#64748b;
+}
+
+@media(max-width:1100px){
+  .analytics-stat-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .analytics-bottom-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(max-width:640px){
+  .analytics-stat-grid{
+    grid-template-columns:1fr;
+  }
+
+  .analytics-main-title{
+    font-size:22px;
+  }
+
+  .analytics-stat-value{
+    font-size:28px;
+  }
+}
   
 </style>
 </head>
@@ -688,24 +900,90 @@
     </div>
 
     <div id="advUnlocked" style="display:none; margin-top:14px;">
-      <div class="okbox">Unlocked ✅</div>
 
-      <div class="row" style="margin-top:12px;">
-        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
-          <div class="subtle">Profile Views</div>
-          <div id="statViews" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+  <div class="analytics-hero">
+    <div class="analytics-hero-top">
+      <div>
+        <div class="analytics-kicker">Analytics Overview</div>
+        <h3 class="analytics-main-title">Your producer performance</h3>
+      </div>
+
+      <div class="analytics-range">Last 30 days</div>
+    </div>
+
+    <div class="analytics-stat-grid">
+      <div class="analytics-stat-card">
+        <div class="analytics-stat-icon blue">👀</div>
+        <div id="statViews" class="analytics-stat-value">0</div>
+        <div class="analytics-stat-label">Profile Views</div>
+        <div class="analytics-stat-change up">Live data</div>
+      </div>
+
+      <div class="analytics-stat-card">
+        <div class="analytics-stat-icon purple">▶</div>
+        <div id="statPlays" class="analytics-stat-value">0</div>
+        <div class="analytics-stat-label">Preview Plays</div>
+        <div class="analytics-stat-change up">Updated</div>
+      </div>
+
+      <div class="analytics-stat-card">
+        <div class="analytics-stat-icon gold">💿</div>
+        <div id="statSales" class="analytics-stat-value">0</div>
+        <div class="analytics-stat-label">Sales</div>
+        <div class="analytics-stat-change neutral">All orders</div>
+      </div>
+
+      <div class="analytics-stat-card">
+        <div class="analytics-stat-icon green">📈</div>
+        <div id="statConv" class="analytics-stat-value">0%</div>
+        <div class="analytics-stat-label">Conversion Rate</div>
+        <div class="analytics-stat-change up">Estimated</div>
+      </div>
+    </div>
+
+    <div class="analytics-bottom-grid">
+      <div class="analytics-panel big">
+        <div class="analytics-panel-head">
+          <div>
+            <div class="analytics-panel-title">Audience Activity</div>
+            <div class="analytics-panel-sub">Recent traffic and engagement</div>
+          </div>
         </div>
-        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
-          <div class="subtle">Preview Plays</div>
-          <div id="statPlays" style="font-size:22px;font-weight:900;margin-top:6px;">0</div>
+
+        <div class="analytics-bars">
+          <span style="height:48%"></span>
+          <span style="height:66%"></span>
+          <span style="height:58%"></span>
+          <span style="height:80%"></span>
+          <span style="height:62%"></span>
+          <span style="height:88%"></span>
+          <span style="height:74%"></span>
+          <span style="height:92%"></span>
         </div>
-        <div class="col" style="background:#05070c;border:1px solid #1f2937;border-radius:12px;padding:12px;">
-          <div class="subtle">Conversion</div>
-          <div id="statConv" style="font-size:22px;font-weight:900;margin-top:6px;">0%</div>
+      </div>
+
+      <div class="analytics-panel">
+        <div class="analytics-panel-head">
+          <div>
+            <div class="analytics-panel-title">Engagement</div>
+            <div class="analytics-panel-sub">Visitors who preview your beats</div>
+          </div>
+        </div>
+
+        <div class="analytics-ring-wrap">
+          <div class="analytics-ring">
+            <div class="analytics-ring-inner">
+              <strong id="engagementRate">0%</strong>
+              <span>Engagement</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
   </div>
+
+</div>
 </section>
 
 <!-- ✅ MARKETING -->
