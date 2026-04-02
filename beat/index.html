@@ -227,9 +227,11 @@
     .pb-pay-modal{
       position:fixed;
       left:50%;
-      bottom:18px;
-      transform:translateX(-50%);
-      width:min(760px, calc(100vw - 22px));
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(720px, calc(100vw - 18px));
+      max-height:calc(100vh - 28px);
+      overflow:auto;
       background:linear-gradient(180deg,#08142a 0%, #071122 100%);
       border:1px solid rgba(255,255,255,.10);
       border-radius:26px;
@@ -237,7 +239,6 @@
       box-shadow:0 28px 90px rgba(0,0,0,.52);
       display:none;
       z-index:10051;
-      overflow:hidden;
     }
     .pb-pay-head{
       display:flex;
@@ -281,8 +282,8 @@
 
     .pb-pay-btn{
       width:100%;
-      min-height:84px;
-      border-radius:22px;
+      min-height:76px;
+      border-radius:18px;
       border:none;
       cursor:pointer;
       font-weight:900;
@@ -290,9 +291,9 @@
       align-items:center;
       justify-content:space-between;
       gap:16px;
-      padding:0 24px;
+      padding:0 22px;
       color:#fff;
-      font-size:18px;
+      font-size:17px;
       box-shadow:none;
     }
     .pb-pay-btn.primary{
@@ -340,6 +341,25 @@
     .pb-pay-input:focus{
       border-color:rgba(34,197,94,.55);
     }
+    .pb-pay-send{
+      margin-top:14px;
+      min-height:50px;
+      padding:0 20px;
+      border:none;
+      border-radius:14px;
+      background:#24c65a;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .pb-pay-send:hover{
+      filter:brightness(1.03);
+    }
+    .pb-pay-send:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
     .pb-pay-status{
       min-height:18px;
       margin-top:10px;
@@ -371,7 +391,7 @@
     @media (max-width: 640px){
       .pb-pay-modal{
         width:calc(100vw - 16px);
-        bottom:10px;
+        max-height:calc(100vh - 20px);
         border-radius:24px;
       }
       .pb-pay-head{
@@ -384,7 +404,7 @@
         padding:16px 18px 18px;
       }
       .pb-pay-btn{
-        min-height:74px;
+        min-height:72px;
         border-radius:18px;
         padding:0 18px;
         font-size:16px;
@@ -615,8 +635,9 @@
     </button>
 
     <div class="pb-pay-phone-wrap" id="pbMpesaBox">
-      <div class="pb-pay-label">M-Pesa phone number</div>
+      <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
       <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+      <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
       <div class="pb-pay-status" id="pbPayStatus"></div>
     </div>
   </div>
@@ -1089,20 +1110,20 @@
   const pbMpesaBox = document.getElementById("pbMpesaBox");
   const pbMpesaPhone = document.getElementById("pbMpesaPhone");
   const pbPayStatus = document.getElementById("pbPayStatus");
+  const pbSendStkPush = document.getElementById("pbSendStkPush");
 
   function openPayModal(selected){
     window.__PB_SELECTED__ = selected;
 
     const usd = Number(selected?.amountUsd || 0);
     pbPayTitle.textContent = "Choose payment method";
-    pbPaySub.textContent =
-      `${selected.title || "Beat"}\n` +
-      `Boost for ${selected.days || 7} day(s)`;
+    pbPaySub.textContent = `${selected.title || "Beat"}`;
 
     pbPayAmountA.textContent = `$${usd.toFixed(2)}`;
     pbPayAmountB.textContent = `$${usd.toFixed(2)}`;
 
     pbPayStatus.textContent = "";
+    pbMpesaPhone.value = "";
     pbMpesaBox.style.display = "none";
 
     pbPayBackdrop.style.display = "block";
@@ -1113,6 +1134,7 @@
     pbPayBackdrop.style.display = "none";
     pbPayModal.style.display = "none";
     pbPayStatus.textContent = "";
+    pbMpesaPhone.value = "";
     pbMpesaBox.style.display = "none";
   }
 
@@ -1177,17 +1199,22 @@
   if (pbPayWithMpesa){
     pbPayWithMpesa.addEventListener("click", ()=>{
       pbMpesaBox.style.display = "block";
-      pbPayStatus.textContent = "Enter phone number then tap M-Pesa again.";
+      pbPayStatus.textContent = "";
       setTimeout(()=> pbMpesaPhone?.focus(), 50);
     });
+  }
 
-    pbPayWithMpesa.addEventListener("click", async ()=>{
+  if (pbSendStkPush){
+    pbSendStkPush.addEventListener("click", async ()=>{
       try{
         const sel = window.__PB_SELECTED__;
         if (!sel) return;
 
         const phone = (pbMpesaPhone?.value || "").trim();
-        if (!phone) return;
+        if (!phone){
+          pbPayStatus.textContent = "Enter your phone number first.";
+          return;
+        }
 
         const u = window.FB?.auth?.currentUser || window.FB?.user || null;
         if (!u){
@@ -1196,7 +1223,7 @@
           return;
         }
 
-        pbPayWithMpesa.disabled = true;
+        pbSendStkPush.disabled = true;
         pbPayStatus.textContent = "Sending STK Push… check your phone.";
 
         const payload = {
@@ -1226,7 +1253,7 @@
         console.error(err);
         pbPayStatus.textContent = "❌ " + (err?.message || String(err));
       }finally{
-        pbPayWithMpesa.disabled = false;
+        pbSendStkPush.disabled = false;
       }
     });
   }
