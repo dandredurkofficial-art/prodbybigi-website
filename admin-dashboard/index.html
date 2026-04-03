@@ -1696,42 +1696,49 @@ async function sendAdminNotification(){
     }
   });
 
-  window.addEventListener("firebase-ready", async ()=>{
-  console.log("firebase-ready fired");
-  console.log("window.FB:", window.FB);
+  let __adminBooted = false;
 
-  const tick = ()=>{
-    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-    $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
-    updateNavAuthUI(u);
+window.addEventListener("firebase-ready", async (ev) => {
+  if (__adminBooted) return;
+  __adminBooted = true;
+
+  const tick = () => {
+    const liveUser = window.FB?.auth?.currentUser || window.FB?.user || null;
+    $("authChip").textContent = liveUser
+      ? ("Signed in: " + (liveUser.email || liveUser.uid))
+      : "Auth: not signed in";
+    updateNavAuthUI(liveUser);
   };
+
   tick();
   setInterval(tick, 1000);
 
-  const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-  console.log("CURRENT AUTH USER:", u);
-  console.log("CURRENT UID:", u?.uid);
-  console.log("CURRENT EMAIL:", u?.email);
+  const u = ev?.detail?.user || window.FB?.auth?.currentUser || window.FB?.user || null;
+
+  console.log("firebase-ready fired");
+  console.log("AUTH USER UID:", u?.uid);
+  console.log("AUTH USER EMAIL:", u?.email);
 
   updateNavAuthUI(u);
 
-  if (!u){
+  if (!u) {
     setStatus("You must sign in to use Admin Dashboard.\n\nRedirecting to login…");
-    setTimeout(()=>location.href="/login/", 800);
+    setTimeout(() => location.href = "/login/", 800);
     return;
   }
 
-  if (!isAdminUser(u)){
+  if (!isAdminUser(u)) {
     setStatus("Access denied.\n\nThis account is not in ADMIN_EMAILS list in admin-dashboard");
     return;
   }
 
   setStatus("Checking admin permissions…");
+
   IS_ADMIN = await checkIsAdmin(u);
 
   console.log("IS_ADMIN RESULT:", IS_ADMIN);
 
-  if (!IS_ADMIN){
+  if (!IS_ADMIN) {
     setStatus(
       "Access denied.\n\n" +
       "Your Firestore profile is not admin.\n\n" +
@@ -1744,12 +1751,12 @@ async function sendAdminNotification(){
   hideStatus();
   await loadAll();
 
-    const mode = String($("notifMode")?.value || "broadcast").trim();
-    const emailWrap = $("notifEmailWrap");
-    if (emailWrap) {
-      emailWrap.style.display = mode === "single" ? "flex" : "none";
-    }
-  });
+  const mode = String($("notifMode")?.value || "broadcast").trim();
+  const emailWrap = $("notifEmailWrap");
+  if (emailWrap) {
+    emailWrap.style.display = mode === "single" ? "flex" : "none";
+  }
+});
 </script>
 
 </body>
