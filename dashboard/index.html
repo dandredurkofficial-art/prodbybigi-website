@@ -4272,6 +4272,139 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ===========================
+   NOTIFICATIONS
+=========================== */
+function formatNotifTime(v){
+  if (!v) return "";
+  const d = typeof v === "number" ? new Date(v) : (v?.toDate ? v.toDate() : null);
+  if (!d) return "";
+  return d.toLocaleString();
+}
+
+function notifIcon(type){
+  const t = String(type || "").toLowerCase();
+  if (t.includes("payment")) return "💰";
+  if (t.includes("feature")) return "✨";
+  if (t.includes("follower")) return "👥";
+  if (t.includes("account")) return "⚙️";
+  if (t.includes("beat")) return "🎵";
+  return "🔔";
+}
+
+function openNotificationsPanel(){
+  const panel = $("notifPanel");
+  if (panel) panel.classList.add("open");
+}
+
+function closeNotificationsPanel(){
+  const panel = $("notifPanel");
+  if (panel) panel.classList.remove("open");
+}
+window.closeNotificationsPanel = closeNotificationsPanel;
+
+async function loadNotifications(){
+  const list = $("notifList");
+  const dot = $("notifDot");
+
+  if (!list) return;
+
+  if (!window.currentUser){
+    list.innerHTML = `<div class="notif-empty">You don't have any notifications.</div>`;
+    if (dot) dot.style.display = "none";
+    return;
+  }
+
+  try{
+    const qn = window.query(
+      window.collection(window.db, "producerNotifications"),
+      window.where("producerId", "==", window.currentUser.uid),
+      window.orderBy("createdAt", "desc"),
+      window.limit(30)
+    );
+
+    const snap = await window.getDocs(qn);
+    const items = [];
+    snap.forEach(d => items.push({ id:d.id, ...d.data() }));
+
+    if (!items.length){
+      list.innerHTML = `<div class="notif-empty">You don't have any notifications.</div>`;
+      if (dot) dot.style.display = "none";
+      return;
+    }
+
+    const unreadCount = items.filter(n => n.read !== true).length;
+    if (dot) dot.style.display = unreadCount > 0 ? "block" : "none";
+
+    list.innerHTML = items.map(n => `
+      <div class="notif-item ${n.read === true ? "" : "unread"}">
+        <div class="notif-icon">${notifIcon(n.type)}</div>
+        <div class="notif-content">
+          <div class="notif-title">${n.title || "Notification"}</div>
+          <div class="notif-text">${n.message || ""}</div>
+          <div class="notif-time">${formatNotifTime(n.createdAt)}</div>
+        </div>
+      </div>
+    `).join("");
+  }catch(err){
+    console.error("loadNotifications:", err);
+    list.innerHTML = `<div class="notif-empty">Could not load notifications.</div>`;
+    if (dot) dot.style.display = "none";
+  }
+}
+
+async function markAllNotificationsRead(){
+  if (!window.currentUser) return;
+
+  try{
+    const qn = window.query(
+      window.collection(window.db, "producerNotifications"),
+      window.where("producerId", "==", window.currentUser.uid),
+      window.where("read", "==", false)
+    );
+
+    const snap = await window.getDocs(qn);
+    const jobs = [];
+    snap.forEach(d => {
+      jobs.push(
+        window.updateDoc(window.doc(window.db, "producerNotifications", d.id), {
+          read: true,
+          readAt: Date.now()
+        })
+      );
+    });
+
+    await Promise.all(jobs);
+    await loadNotifications();
+  }catch(err){
+    console.error("markAllNotificationsRead:", err);
+  }
+}
+window.loadNotifications = loadNotifications;
+window.markAllNotificationsRead = markAllNotificationsRead;
+
+document.addEventListener("DOMContentLoaded", () => {
+  $("notifBtn")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const panel = $("notifPanel");
+    if (!panel) return;
+    panel.classList.toggle("open");
+  });
+
+  $("markNotifReadBtn")?.addEventListener("click", async () => {
+    await markAllNotificationsRead();
+  });
+
+  $("notifPanel")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+  });
+
+  document.addEventListener("click", () => {
+    closeNotificationsPanel();
+  });
+});
+
+/* ===========================
    PRIVATE MESSAGES (PRO)
 =========================== */
 function threadIdFor(producerId, buyerId){
@@ -5491,6 +5624,10 @@ window.startBulkUpload = startBulkUpload;
 window.uploadStoreBanner = uploadStoreBanner;
 window.fillStoreSettingsForm = fillStoreSettingsForm;
 window.saveStoreSettings = saveStoreSettings;
+window.openNotificationsPanel = openNotificationsPanel;
+window.closeNotificationsPanel = closeNotificationsPanel;
+window.loadNotifications = loadNotifications;
+window.markAllNotificationsRead = markAllNotificationsRead;
 </script>
 
 </body>
