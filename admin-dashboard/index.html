@@ -782,6 +782,7 @@
   import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const $ = (id)=>document.getElementById(id);
+  console.log("Admin dashboard script loaded");
 
   let ALL_BEATS = [];
   let ALL_KITS  = [];
@@ -850,43 +851,44 @@
   }
 
   async function checkIsAdmin(u){
-    try{
-      if (!u) return false;
+  try{
+    console.log("checkIsAdmin called");
+    console.log("user object:", u);
 
-      console.log("AUTH USER UID:", u?.uid);
-      console.log("AUTH USER EMAIL:", u?.email);
-
-      const adminRef = doc(window.FB.db, "users", u.uid);
-      const adminSnap = await getDoc(adminRef);
-
-      console.log("DOC EXISTS:", adminSnap.exists());
-      console.log("DOC PATH:", "users/" + u.uid);
-      console.log("DOC DATA:", adminSnap.exists() ? adminSnap.data() : null);
-
-      await u.getIdToken(true);
-
-      const tokenResult = await u.getIdTokenResult(true);
-      console.log("token claims:", tokenResult.claims);
-
-      if (tokenResult?.claims?.admin === true) return true;
-
-      const ref = doc(window.FB.db, "users", u.uid);
-      const snap = await getDoc(ref);
-
-      if (!snap.exists()) {
-        console.log("No user doc found for uid:", u.uid);
-        return false;
-      }
-
-      const data = snap.data() || {};
-      console.log("Admin doc data:", data);
-
-      return data.isAdmin === true || String(data.role || "").toLowerCase() === "admin";
-     }catch(e){
-      console.error("checkIsAdmin failed:", e);
+    if (!u){
+      console.log("No auth user");
       return false;
-     }
+    }
+
+    console.log("AUTH USER UID:", u.uid);
+    console.log("AUTH USER EMAIL:", u.email);
+
+    const ref = doc(window.FB.db, "users", u.uid);
+    console.log("Reading doc:", "users/" + u.uid);
+
+    const snap = await getDoc(ref);
+
+    console.log("DOC EXISTS:", snap.exists());
+
+    if (!snap.exists()){
+      console.log("No Firestore user doc found for this UID");
+      return false;
+    }
+
+    const data = snap.data() || {};
+    console.log("DOC DATA:", data);
+    console.log("isAdmin field:", data.isAdmin);
+    console.log("role field:", data.role);
+
+    const ok = data.isAdmin === true || String(data.role || "").toLowerCase() === "admin";
+    console.log("FINAL ADMIN RESULT:", ok);
+
+    return ok;
+  }catch(e){
+    console.error("checkIsAdmin failed:", e);
+    return false;
   }
+}
 
   async function findProducerByEmail(email){
   const clean = String(email || "").trim().toLowerCase();
@@ -1695,43 +1697,52 @@ async function sendAdminNotification(){
   });
 
   window.addEventListener("firebase-ready", async ()=>{
-    const tick = ()=>{
-      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
-      updateNavAuthUI(u);
-    };
-    tick();
-    setInterval(tick, 1000);
+  console.log("firebase-ready fired");
+  console.log("window.FB:", window.FB);
 
+  const tick = ()=>{
     const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
     updateNavAuthUI(u);
+  };
+  tick();
+  setInterval(tick, 1000);
 
-    if (!u){
-      setStatus("You must sign in to use Admin Dashboard.\n\nRedirecting to login…");
-      setTimeout(()=>location.href="/login/", 800);
-      return;
-    }
+  const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+  console.log("CURRENT AUTH USER:", u);
+  console.log("CURRENT UID:", u?.uid);
+  console.log("CURRENT EMAIL:", u?.email);
 
-    if (!isAdminUser(u)){
-      setStatus("Access denied.\n\nThis account is not in ADMIN_EMAILS list in admin-dashboard");
-      return;
-    }
+  updateNavAuthUI(u);
 
-    setStatus("Checking admin permissions…");
-    IS_ADMIN = await checkIsAdmin(u);
+  if (!u){
+    setStatus("You must sign in to use Admin Dashboard.\n\nRedirecting to login…");
+    setTimeout(()=>location.href="/login/", 800);
+    return;
+  }
 
-    if (!IS_ADMIN){
-      setStatus(
-        "Access denied.\n\n" +
-        "Your Firestore profile is not admin.\n\n" +
-        "Fix:\n" +
-        "- In Firestore: /users/" + u.uid + " add: isAdmin: true\n"
-      );
-      return;
-    }
+  if (!isAdminUser(u)){
+    setStatus("Access denied.\n\nThis account is not in ADMIN_EMAILS list in admin-dashboard");
+    return;
+  }
 
-    hideStatus();
-    await loadAll();
+  setStatus("Checking admin permissions…");
+  IS_ADMIN = await checkIsAdmin(u);
+
+  console.log("IS_ADMIN RESULT:", IS_ADMIN);
+
+  if (!IS_ADMIN){
+    setStatus(
+      "Access denied.\n\n" +
+      "Your Firestore profile is not admin.\n\n" +
+      "Fix:\n" +
+      "- In Firestore: /users/" + u.uid + " add: isAdmin: true\n"
+    );
+    return;
+  }
+
+  hideStatus();
+  await loadAll();
 
     const mode = String($("notifMode")?.value || "broadcast").trim();
     const emailWrap = $("notifEmailWrap");
