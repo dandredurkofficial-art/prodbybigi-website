@@ -857,7 +857,8 @@
       const ref = doc(window.FB.db, "users", u.uid);
       const snap = await getDoc(ref);
       const data = snap.exists() ? snap.data() : {};
-      return data?.isAdmin === true;
+
+      return data?.isAdmin === true || String(data?.role || "").toLowerCase() === "admin";
      }catch(e){
       console.error("checkIsAdmin failed:", e);
       return false;
