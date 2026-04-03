@@ -2685,19 +2685,46 @@ async function loadAdvancedAnalyticsReal(){
 
     let orders = 0;
     try{
-      const oQ = window.query(
-        window.collection(window.db,"orders"),
-        window.where("producerId","==",uid)
-      );
-      const oSnap = await window.getDocs(oQ);
+      let producerBeatIds = [];
 
-      oSnap.forEach(d=>{
-        const o = d.data() || {};
-        const s = String(o.status || o.state || "").toLowerCase();
-        if (!s || s.includes("paid") || s.includes("completed")) orders++;
-      });
+      if (Array.isArray(beatsData) && beatsData.length) {
+        producerBeatIds = beatsData
+          .filter(b => String(b?.producerId || "") === String(uid))
+          .map(b => b.id)
+          .filter(Boolean);
+      }
+
+      if (!producerBeatIds.length) {
+        const bQ = window.query(
+          window.collection(window.db, "beats"),
+          window.where("producerId", "==", uid)
+        );
+        const bSnap = await window.getDocs(bQ);
+        producerBeatIds = bSnap.docs.map(d => d.id).filter(Boolean);
+      }
+
+      if (producerBeatIds.length) {
+        const chunks = [];
+        for (let i = 0; i < producerBeatIds.length; i += 10) {
+          chunks.push(producerBeatIds.slice(i, i + 10));
+        }
+
+        let unlockCount = 0;
+
+        for (const ids of chunks) {
+          const uQ = window.query(
+            window.collection(window.db, "unlocks"),
+            window.where("beatId", "in", ids)
+          );
+
+          const uSnap = await window.getDocs(uQ);
+          unlockCount += uSnap.size || 0;
+        }
+
+        orders = unlockCount;
+      }
     }catch(e){
-      console.warn("orders load failed:", e);
+      console.warn("unlocks sales load failed:", e);
     }
 
     const conv = plays > 0 ? Math.round((orders / plays) * 100) : 0;
@@ -2728,7 +2755,6 @@ async function loadAdvancedAnalyticsReal(){
     if ($("statViews")) $("statViews").textContent = String(profileViews);
     if ($("statPlays")) $("statPlays").textContent = String(plays);
     if ($("statSales")) $("statSales").textContent = String(orders);
-    if ($("statSalesCount")) $("statSalesCount").textContent = String(orders);
     if ($("statConv")) $("statConv").textContent = `${conv}%`;
     if ($("engagementRate")) $("engagementRate").textContent = `${engage}%`;
 
