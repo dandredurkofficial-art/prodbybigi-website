@@ -9,157 +9,437 @@
   <link rel="stylesheet" href="/css/cart.css">
 
   <style>
-    .page{ padding:18px 0 40px; }
-    .head{
-      display:flex; justify-content:space-between; align-items:flex-start;
-      gap:14px; flex-wrap:wrap; margin: 18px 0 14px;
-    }
-    .title{ font-size:28px; font-weight:950; letter-spacing:-.02em; margin:0; }
-    .sub{ color:var(--muted); margin-top:6px; font-size:13px; }
-    .right-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--text); font-weight:900; font-size:12px;
-    }
-    .btn{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color:inherit; font-weight:900; font-size:13px;
-      cursor:pointer; text-decoration:none;
-    }
-    .btn.primary{ background: rgba(59,130,246,.22); border-color: rgba(59,130,246,.35); }
-    .btn.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.28); }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
+    .page{
+  padding:18px 0 40px;
+}
 
-    .tabs{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin: 10px 0 14px;
-    }
-    .tab{
-      padding:10px 12px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      font-weight:900; font-size:13px; cursor:pointer;
-    }
-    .tab.active{
-      background: rgba(255,255,255,.14);
-      border-color: rgba(255,255,255,.22);
-    }
+.head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:14px;
+  flex-wrap:wrap;
+  margin:18px 0 14px;
+}
 
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:12px;
-      margin: 10px 0 18px;
-    }
-    @media (max-width: 1000px){ .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; } }
+.title{
+  font-size:28px;
+  font-weight:950;
+  letter-spacing:-.02em;
+  margin:0;
+}
 
-    .stat{ padding:14px; border-radius:18px; }
-    .k{ color:var(--muted); font-size:12px; }
-    .v{ margin-top:6px; font-size:22px; font-weight:950; }
-    .mini{ margin-top:6px; color:var(--muted); font-size:12px; }
+.sub{
+  color:var(--muted);
+  margin-top:6px;
+  font-size:13px;
+}
 
-    .panel{
-      padding:14px;
-      border-radius: 18px;
-      margin-top: 12px;
-    }
+.right-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
 
-    .tools{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin: 10px 0 12px;
-    }
-    .tools input, .tools select{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
-      padding: 12px 12px;
-      border-radius: 14px;
-      outline: none;
-      width: min(360px, 100%);
-    }
-    .tools select{ width: 220px; }
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:var(--text);
+  font-weight:900;
+  font-size:12px;
+}
 
-    .loading-box{
-      margin: 12px 0;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.85);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:inherit;
+  font-weight:900;
+  font-size:13px;
+  cursor:pointer;
+  text-decoration:none;
+}
 
-    .table{
-      width:100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
-    }
-    .table th{
-      text-align:left;
-      color: var(--muted);
-      font-size:12px;
-      font-weight:900;
-      padding: 0 10px;
-    }
-    .rowcard{
-      background: rgba(17,24,39,.42);
-      border: 1px solid rgba(31,41,55,.75);
-      border-radius: 16px;
-    }
-    .table td{
-      padding: 12px 10px;
-      vertical-align: top;
-      font-size: 13px;
-    }
-    .table td:first-child{ border-top-left-radius:16px; border-bottom-left-radius:16px; }
-    .table td:last-child{ border-top-right-radius:16px; border-bottom-right-radius:16px; }
+.btn.primary{
+  background:rgba(59,130,246,.22);
+  border-color:rgba(59,130,246,.35);
+}
 
-    .pill{
-      display:inline-flex;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      font-weight:900;
-      font-size:12px;
-      white-space:nowrap;
-    }
-    .pill.ok{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
-    .pill.no{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
-    .pill.warn{ border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.14); }
+.btn.success{
+  background:rgba(16,185,129,.18);
+  border-color:rgba(16,185,129,.35);
+}
 
-    .actions{
-      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
-    }
+.btn.warn{
+  background:rgba(245,158,11,.14);
+  border-color:rgba(245,158,11,.28);
+}
 
-    .field{
-      display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-      margin-top:8px;
-    }
-    .mini-input{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
-      padding: 10px 10px;
-      border-radius: 12px;
-      outline: none;
-      width: 160px;
-      font-weight: 800;
-      font-size: 12px;
-    }
-    .mini-input.wide{ width: min(520px, 100%); }
+.btn.danger{
+  background:rgba(239,68,68,.14);
+  border-color:rgba(239,68,68,.28);
+}
 
-    .hint{ color:var(--muted); font-size:12px; margin-top:6px; }
+.btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
 
-    .hidden{ display:none !important; }
+.tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0 14px;
+}
+
+.tab{
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  font-weight:900;
+  font-size:13px;
+  cursor:pointer;
+}
+
+.tab.active{
+  background:rgba(255,255,255,.14);
+  border-color:rgba(255,255,255,.22);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:12px;
+  margin:10px 0 18px;
+}
+
+@media (max-width:1000px){
+  .grid{
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width:520px){
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+.stat{
+  padding:14px;
+  border-radius:18px;
+}
+
+.k{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.v{
+  margin-top:6px;
+  font-size:22px;
+  font-weight:950;
+}
+
+.mini{
+  margin-top:6px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.panel{
+  padding:14px;
+  border-radius:18px;
+  margin-top:12px;
+}
+
+.tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0 12px;
+}
+
+.tools input,
+.tools select,
+.tools textarea{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  padding:12px 12px;
+  border-radius:14px;
+  outline:none;
+  width:min(360px, 100%);
+}
+
+.tools textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.tools select{
+  width:220px;
+}
+
+.loading-box{
+  margin:12px 0;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.85);
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 10px;
+}
+
+.table th{
+  text-align:left;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  padding:0 10px;
+}
+
+.rowcard{
+  background:rgba(17,24,39,.42);
+  border:1px solid rgba(31,41,55,.75);
+  border-radius:16px;
+}
+
+.table td{
+  padding:12px 10px;
+  vertical-align:top;
+  font-size:13px;
+}
+
+.table td:first-child{
+  border-top-left-radius:16px;
+  border-bottom-left-radius:16px;
+}
+
+.table td:last-child{
+  border-top-right-radius:16px;
+  border-bottom-right-radius:16px;
+}
+
+.pill{
+  display:inline-flex;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  font-weight:900;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.pill.ok{
+  border-color:rgba(16,185,129,.35);
+  background:rgba(16,185,129,.12);
+}
+
+.pill.no{
+  border-color:rgba(239,68,68,.30);
+  background:rgba(239,68,68,.12);
+}
+
+.pill.warn{
+  border-color:rgba(245,158,11,.35);
+  background:rgba(245,158,11,.14);
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.field{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+
+.mini-input{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  padding:10px 10px;
+  border-radius:12px;
+  outline:none;
+  width:160px;
+  font-weight:800;
+  font-size:12px;
+}
+
+.mini-input.wide{
+  width:min(520px, 100%);
+}
+
+.hint{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:6px;
+}
+
+.hidden{
+  display:none !important;
+}
+
+.notice-grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:14px;
+  margin-top:16px;
+}
+
+@media (max-width:900px){
+  .notice-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+.notice-card{
+  padding:16px;
+  border-radius:18px;
+  background:rgba(17,24,39,.42);
+  border:1px solid rgba(31,41,55,.75);
+}
+
+.notice-title{
+  font-size:18px;
+  font-weight:950;
+  margin-bottom:6px;
+}
+
+.notice-sub{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:14px;
+}
+
+.notice-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+
+.notice-row input,
+.notice-row select,
+.notice-row textarea{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  padding:12px 12px;
+  border-radius:14px;
+  outline:none;
+  box-sizing:border-box;
+}
+
+.notice-row textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.notice-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+
+.notice-help{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.5;
+  margin-top:10px;
+}
+
+.notice-status{
+  margin-top:12px;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.9);
+  white-space:pre-wrap;
+}
+
+.user-pick{
+  max-height:280px;
+  overflow:auto;
+  margin-top:10px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+}
+
+.user-pick-item{
+  padding:12px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  cursor:pointer;
+}
+
+.user-pick-item:last-child{
+  border-bottom:none;
+}
+
+.user-pick-item:hover{
+  background:rgba(255,255,255,.05);
+}
+
+.user-pick-item.active{
+  background:rgba(59,130,246,.16);
+  border-left:3px solid rgba(59,130,246,.85);
+}
+
+.user-pick-name{
+  font-weight:900;
+  font-size:13px;
+}
+
+.user-pick-meta{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:4px;
+}
+
+.count-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:28px;
+  height:28px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(59,130,246,.16);
+  border:1px solid rgba(59,130,246,.30);
+  font-weight:900;
+  font-size:12px;
+}
   </style>
 </head>
 
@@ -223,6 +503,7 @@
     <button class="tab" data-tab="payouts">Payouts</button>
     <button class="tab" data-tab="users">Users</button>
     <button class="tab" data-tab="orders">Orders</button>
+    <button class="tab" data-tab="notifications">Notifications</button>
   </section>
 
   <div id="status" class="loading-box">Loading…</div>
@@ -374,6 +655,67 @@
     </table>
   </section>
 
+  <!-- NOTIFICATIONS -->
+<section id="view-notifications" class="hidden">
+  <div class="card panel">
+    <div style="font-weight:950; font-size:16px;">Send Producer Notifications</div>
+    <div class="sub" style="margin-top:6px;">
+      Use broadcast for new features and announcements. Use single-producer for account issues or copyright warnings.
+    </div>
+
+    <div class="tools" style="margin-top:14px;">
+      <select id="notifMode">
+        <option value="broadcast">Broadcast to all producers</option>
+        <option value="single">Send to one producer</option>
+      </select>
+
+      <select id="notifType">
+        <option value="feature">New Feature</option>
+        <option value="account">Account Issue</option>
+        <option value="warning">Warning</option>
+        <option value="beat">Beat Update</option>
+        <option value="payment">Payment</option>
+      </select>
+    </div>
+
+    <div class="field" id="notifEmailWrap" style="display:none;">
+      <input
+        id="notifTargetEmail"
+        class="mini-input wide"
+        type="email"
+        placeholder="Producer email (for single notification only)"
+      />
+      <span class="pill">Producer Email</span>
+    </div>
+
+    <div class="field">
+      <input
+        id="notifTitle"
+        class="mini-input wide"
+        type="text"
+        placeholder="Notification title"
+      />
+    </div>
+
+    <div class="field">
+      <textarea
+        id="notifMessage"
+        class="mini-input wide"
+        placeholder="Write your notification message..."
+        style="width:min(700px,100%); min-height:120px; resize:vertical;"
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <button class="btn primary" id="sendNotifBtn" type="button">Send Notification</button>
+    </div>
+
+    <div class="hint">
+      Broadcast is only for platform-wide updates. Single notification is for account-specific issues.
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer class="footer">
@@ -477,7 +819,7 @@
     document.querySelectorAll(".tab").forEach(b=>{
       b.classList.toggle("active", b.dataset.tab === tab);
     });
-    ["overview","beats","kits","payouts","users","orders"].forEach(name=>{
+    ["overview","beats","kits","payouts","users","orders","notifications"].forEach(name=>{
       const v = $("view-" + name);
       if (!v) return;
       v.classList.toggle("hidden", name !== tab);
@@ -517,6 +859,150 @@
       return false;
     }
   }
+
+  async function findProducerByEmail(email){
+  const clean = String(email || "").trim().toLowerCase();
+  if (!clean) return null;
+
+  const hit = ALL_USERS.find(u =>
+    String(u.email || "").trim().toLowerCase() === clean &&
+    String(u.role || "").toLowerCase() === "producer"
+  );
+
+  if (hit) return hit;
+
+  const usersRef = collection(window.FB.db, "users");
+  const snap = await getDocs(query(usersRef, limit(500)));
+  let found = null;
+
+  snap.forEach(d => {
+    const data = d.data() || {};
+    const em = String(data.email || "").trim().toLowerCase();
+    const role = String(data.role || "").toLowerCase();
+    if (!found && em === clean && role === "producer") {
+      found = { id: d.id, ...data };
+    }
+  });
+
+  return found;
+}
+
+async function sendNotificationToProducer({
+  producerId,
+  targetEmail = "",
+  type,
+  title,
+  message,
+  audience,
+  createdBy
+}){
+  const ref = collection(window.FB.db, "producerNotifications");
+  await window.FB.addDoc(ref, {
+    producerId,
+    targetEmail: targetEmail || "",
+    type: String(type || "feature").trim(),
+    title: String(title || "").trim(),
+    message: String(message || "").trim(),
+    read: false,
+    createdAt: Date.now(),
+    createdBy: String(createdBy || "").trim(),
+    audience: String(audience || "single").trim()
+  });
+}
+
+async function sendAdminNotification(){
+  if (!IS_ADMIN) {
+    setStatus("Access denied. Admin only.");
+    return;
+  }
+
+  const mode = String($("notifMode")?.value || "broadcast").trim();
+  const type = String($("notifType")?.value || "feature").trim();
+  const email = String($("notifTargetEmail")?.value || "").trim();
+  const title = String($("notifTitle")?.value || "").trim();
+  const message = String($("notifMessage")?.value || "").trim();
+  const adminUid = window.FB?.auth?.currentUser?.uid || "";
+
+  if (!title) {
+    alert("Enter notification title");
+    return;
+  }
+
+  if (!message) {
+    alert("Enter notification message");
+    return;
+  }
+
+  const btn = $("sendNotifBtn");
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+  }
+
+  try{
+    if (mode === "broadcast") {
+      if (type !== "feature") {
+        throw new Error("Broadcast is only allowed for New Feature notifications.");
+      }
+
+      const producers = ALL_USERS.filter(u =>
+        String(u.role || "").toLowerCase() === "producer"
+      );
+
+      if (!producers.length) {
+        throw new Error("No producers found.");
+      }
+
+      for (const producer of producers) {
+        await sendNotificationToProducer({
+          producerId: producer.id,
+          targetEmail: producer.email || "",
+          type,
+          title,
+          message,
+          audience: "broadcast",
+          createdBy: adminUid
+        });
+      }
+
+      alert(`Notification sent to ${producers.length} producers.`);
+    } else {
+      if (!email) {
+        throw new Error("Enter producer email for single notification.");
+      }
+
+      const producer = await findProducerByEmail(email);
+
+      if (!producer) {
+        throw new Error("Producer with that email was not found.");
+      }
+
+      await sendNotificationToProducer({
+        producerId: producer.id,
+        targetEmail: producer.email || email,
+        type,
+        title,
+        message,
+        audience: "single",
+        createdBy: adminUid
+      });
+
+      alert(`Notification sent to ${producer.email || producer.id}`);
+    }
+
+    $("notifTitle").value = "";
+    $("notifMessage").value = "";
+    $("notifTargetEmail").value = "";
+  }catch(err){
+    console.error(err);
+    alert("Notification send failed: " + (err?.message || err));
+  }finally{
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Send Notification";
+    }
+  }
+}
 
   async function fetchCollectionSafe(names, max=200){
     let lastErr = null;
