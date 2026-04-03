@@ -849,16 +849,39 @@
     return ADMIN_EMAILS.includes(String(user.email||"").toLowerCase());
   }
 
+  console.log("AUTH USER UID:", u?.uid);
+  console.log("AUTH USER EMAIL:", u?.email);
+
+  const adminRef = doc(window.FB.db, "users", u.uid);
+  const adminSnap = await getDoc(adminRef);
+
+  console.log("DOC EXISTS:", adminSnap.exists());
+  console.log("DOC PATH:", "users/" + u.uid);
+  console.log("DOC DATA:", adminSnap.exists() ? adminSnap.data() : null);
+
   async function checkIsAdmin(u){
     try{
+      if (!u) return false;
+
+      await u.getIdToken(true);
+
       const tokenResult = await u.getIdTokenResult(true);
+      console.log("token claims:", tokenResult.claims);
+
       if (tokenResult?.claims?.admin === true) return true;
 
       const ref = doc(window.FB.db, "users", u.uid);
       const snap = await getDoc(ref);
-      const data = snap.exists() ? snap.data() : {};
 
-      return data?.isAdmin === true || String(data?.role || "").toLowerCase() === "admin";
+      if (!snap.exists()) {
+        console.log("No user doc found for uid:", u.uid);
+        return false;
+      }
+
+      const data = snap.data() || {};
+      console.log("Admin doc data:", data);
+
+      return data.isAdmin === true || String(data.role || "").toLowerCase() === "admin";
      }catch(e){
       console.error("checkIsAdmin failed:", e);
       return false;
