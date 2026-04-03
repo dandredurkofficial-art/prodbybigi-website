@@ -1703,7 +1703,13 @@ async function sendAdminNotification(){
     }
 
     hideStatus();
-    loadAll();
+    await loadAll();
+
+    const mode = String($("notifMode")?.value || "broadcast").trim();
+    const emailWrap = $("notifEmailWrap");
+    if (emailWrap) {
+      emailWrap.style.display = mode === "single" ? "flex" : "none";
+    }
   });
 </script>
 
