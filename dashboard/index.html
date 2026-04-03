@@ -784,19 +784,30 @@
   color:#0f172a;
   border-radius:18px;
   padding:18px;
-  min-height:132px;
+  min-height:220px;
   box-shadow:0 10px 30px rgba(0,0,0,.18);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
 }
 
 .analytics-stat-icon{
-  width:38px;
-  height:38px;
-  border-radius:12px;
+  width:96px;
+  height:96px;
+  border-radius:24px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
-  margin-bottom:16px;
+  margin-bottom:18px;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.analytics-stat-icon img{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  display:block;
 }
 
 .analytics-stat-icon.blue{ background:#dbeafe; }
@@ -831,6 +842,7 @@
   display:grid;
   grid-template-columns:1.35fr .85fr;
   gap:14px;
+  align-items:start;
 }
 
 .analytics-panel{
@@ -929,6 +941,34 @@
 
   .analytics-bottom-grid{
     grid-template-columns:1fr;
+  }
+}
+
+@media(min-width:1101px){
+  .analytics-stat-grid{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    align-items:stretch;
+  }
+
+  .analytics-stat-card{
+    min-height:190px;
+    padding:20px;
+  }
+
+  .analytics-stat-icon{
+    width:72px;
+    height:72px;
+    border-radius:20px;
+    margin-bottom:14px;
+  }
+
+  .analytics-stat-icon img{
+    width:40px;
+    height:40px;
+  }
+
+  .analytics-stat-value{
+    font-size:30px;
   }
 }
 
@@ -2576,12 +2616,13 @@ async function loadAdvancedAnalyticsReal(){
         if (!s || s.includes("paid") || s.includes("completed")) orders++;
       });
     }catch(e){
-      console.warn("orders read failed:", e);
+      console.warn("orders load failed:", e);
     }
 
     const conv = plays > 0 ? Math.round((orders / plays) * 100) : 0;
     const engage = profileViews > 0 ? Math.round((plays / profileViews) * 100) : 0;
-        const barsWrap = $("analyticsBars");
+
+    const barsWrap = $("analyticsBars");
     if (barsWrap){
       const bars = Array.from(barsWrap.querySelectorAll("span"));
       const values = [
@@ -2606,10 +2647,10 @@ async function loadAdvancedAnalyticsReal(){
     if ($("statViews")) $("statViews").textContent = String(profileViews);
     if ($("statPlays")) $("statPlays").textContent = String(plays);
     if ($("statSales")) $("statSales").textContent = String(orders);
+    if ($("statSalesCount")) $("statSalesCount").textContent = String(orders);
     if ($("statConv")) $("statConv").textContent = `${conv}%`;
     if ($("engagementRate")) $("engagementRate").textContent = `${engage}%`;
 
-    /* optional: update ring color dynamically */
     const ring = document.querySelector(".analytics-ring");
     if (ring){
       const pct = Math.max(0, Math.min(100, engage));
