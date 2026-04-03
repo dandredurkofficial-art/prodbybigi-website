@@ -36,6 +36,7 @@ const sgMail = require("@sendgrid/mail");
 
 admin.initializeApp({
   storageBucket: "audiory-beat-store.firebasestorage.app",
+  credential: admin.credential.cert(require("./serviceAccountKey.json"))
 });
 
 const db = admin.firestore();
@@ -254,6 +255,18 @@ function defaultLicensePaths() {
     exclusive: "licenses/exclusive.pdf",
   };
 }
+
+async function makeAdmin() {
+  const email = "hanselbeatzllc@gmail.com";
+
+  const user = await admin.auth().getUserByEmail(email);
+
+  await admin.auth().setCustomUserClaims(user.uid, { admin: true });
+
+  console.log("Admin claim set for:", user.email, user.uid);
+}
+
+makeAdmin().catch(console.error);
 
 async function ensureBeatFields(beatRef, beatData) {
   if (!beatData) return;
