@@ -851,13 +851,17 @@
 
   async function checkIsAdmin(u){
     try{
+      const tokenResult = await u.getIdTokenResult(true);
+      if (tokenResult?.claims?.admin === true) return true;
+
       const ref = doc(window.FB.db, "users", u.uid);
       const snap = await getDoc(ref);
       const data = snap.exists() ? snap.data() : {};
       return data?.isAdmin === true;
-    }catch(e){
+     }catch(e){
+      console.error("checkIsAdmin failed:", e);
       return false;
-    }
+     }
   }
 
   async function findProducerByEmail(email){
