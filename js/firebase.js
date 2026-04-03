@@ -136,20 +136,34 @@ function setNavLoggedOut() {
 }
 
 window.FB.user = null;
-
-// ✅ Optional: keep these for older scripts
 window.currentUser = null;
+window.FB.currentUser = null;
+window.FB.authReady = false;
 
 onAuthStateChanged(auth, (u) => {
   window.FB.user = u || null;
-
-  // ✅ keep dashboard-style globals in sync
   window.currentUser = u || null;
   window.FB.currentUser = u || null;
+  window.FB.authReady = true;
 
-  try { window.FB.user ? setNavLoggedIn() : setNavLoggedOut(); } catch {}
   try {
-    window.dispatchEvent(new CustomEvent("firebase-auth-changed", { detail: { user: window.FB.user } }));
+    window.FB.user ? setNavLoggedIn() : setNavLoggedOut();
+  } catch {}
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("firebase-auth-changed", {
+        detail: { user: window.FB.user }
+      })
+    );
+  } catch {}
+
+  try {
+    window.dispatchEvent(
+      new CustomEvent("firebase-ready", {
+        detail: { user: window.FB.user }
+      })
+    );
   } catch {}
 });
 
