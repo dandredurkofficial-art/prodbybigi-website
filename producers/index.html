@@ -578,7 +578,7 @@
       try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
       await track("send_message", { targetUid: __dmOtherUid });
     }catch(e){
-      alert("Failed to send: " + (e?.message || e));
+      console.warn("analytics failed", e);
     }finally{
       btn.disabled = false;
       input?.focus();
