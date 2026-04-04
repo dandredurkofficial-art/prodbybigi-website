@@ -409,7 +409,11 @@ window.FB.isFollowingProducer = async function (producerId) {
 window.FB.followProducer = async function (producerId) {
   const user = _requireUser();
   const refDoc = doc(db, "producerFollows", String(producerId), "followers", user.uid);
-  await setDoc(refDoc, { uid: user.uid, createdAt: serverTimestamp() }, { merge: true });
+  await setDoc(refDoc, { uid: 
+    user.uid, 
+    createdAt: serverTimestamp()
+  });
+  
   return true;
 };
 
