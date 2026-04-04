@@ -724,29 +724,40 @@
           }
 
           try{
-            fb.disabled = true;
+  fb.disabled = true;
 
-            const cur = await window.FB.isFollowingProducer(p.id);
-            if (cur){
-              await window.FB.unfollowProducer(p.id);
-              fb.textContent = "Follow";
-              await track("follow", { action:"unfollow", targetUid: p.id });
-            } else {
-              await window.FB.followProducer(p.id);
-              fb.textContent = "Following";
-              await track("follow", { action:"follow", targetUid: p.id });
-            }
+  const cur = await window.FB.isFollowingProducer(p.id);
 
-            // refresh followers count
-            try{
-              p.followers = await window.FB.getProducerFollowerCount(p.id, { fast:true });
-              if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
-            }catch{}
-          }catch(e){
-            alert("Follow failed: " + (e?.message || e));
-          }finally{
-            fb.disabled = false;
-          }
+  if (cur){
+    await window.FB.unfollowProducer(p.id);
+    fb.textContent = "Follow";
+    try{
+      await track("follow", { action:"unfollow", targetUid: p.id });
+    }catch(err){
+      console.warn("follow analytics failed", err);
+    }
+  } else {
+    await window.FB.followProducer(p.id);
+    fb.textContent = "Following";
+    try{
+      await track("follow", { action:"follow", targetUid: p.id });
+    }catch(err){
+      console.warn("follow analytics failed", err);
+    }
+  }
+
+  try{
+    p.followers = await window.FB.getProducerFollowerCount(p.id, { fast:true });
+    if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
+  }catch(err){
+    console.warn("followers refresh failed", err);
+  }
+
+}catch(e){
+  alert("Follow failed: " + (e?.message || e));
+}finally{
+  fb.disabled = false;
+}
         });
       }
 
