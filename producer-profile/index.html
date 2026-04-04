@@ -837,22 +837,22 @@
       setFollowUI({ isFollowing: currently, disabled:true, note:"Updating…" });
 
       if (currently){
-  await window.FB.unfollowProducer(pid);
-  setFollowUI({ isFollowing:false, disabled:false, note:"Unfollowed." });
-  try{
-    await track("follow", { action: "unfollow", targetUid: pid });
-  }catch(err){
-    console.warn("follow analytics failed", err);
-  }
-} else {
-  await window.FB.followProducer(pid);
-  setFollowUI({ isFollowing:true, disabled:false, note:"Followed ✅" });
-  try{
-    await track("follow", { action: "follow", targetUid: pid });
-  }catch(err){
-    console.warn("follow analytics failed", err);
-  }
-}
+        await window.FB.unfollowProducer(pid);
+        setFollowUI({ isFollowing:false, disabled:false, note:"Unfollowed." });
+        try{
+          await track("follow", { action: "unfollow", targetUid: pid });
+        }catch(err){
+          console.warn("follow analytics failed", err);
+        }
+      } else {
+        await window.FB.followProducer(pid);
+        setFollowUI({ isFollowing:true, disabled:false, note:"Followed ✅" });
+        try{
+          await track("follow", { action: "follow", targetUid: pid });
+        }catch(err){
+          console.warn("follow analytics failed", err);
+        }
+      }
 
       await refreshFollowers(pid);
     }catch(err){
