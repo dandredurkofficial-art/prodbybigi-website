@@ -4700,31 +4700,22 @@ async function sendPrivateMessage(){
 
   const buyerId = ($("msgBuyerId")?.value || "").trim();
   const text = ($("msgText")?.value || "").trim();
+
   if (!buyerId) return alert("Enter Buyer UID");
   if (!text) return alert("Type a message");
 
-  const pid = window.currentUser.uid;
-  const tid = threadIdFor(pid, buyerId);
-
   try{
-    await window.setDoc(window.doc(window.db,"messagesThreads",tid), {
-      participants: [pid, buyerId],
-      producerId: pid,
-      lastMessage: text.slice(0,200),
-      updatedAt: Date.now()
-    }, { merge: true });
-
-    await window.addDoc(window.collection(window.db,"messagesThreads",tid,"messages"), {
-      from: pid,
-      to: buyerId,
-      text,
-      createdAt: Date.now()
+    await window.FB.sendMessage({
+      otherUid: buyerId,
+      text
     });
 
     if ($("msgSendStatus")) $("msgSendStatus").textContent = "✅ Message sent";
     if ($("msgText")) $("msgText").value = "";
-    loadMessagesThreadList();
+
+    await loadMessagesThreadList();
   }catch(err){
+    console.error("sendPrivateMessage:", err);
     alert("Message failed: " + (err?.message || err));
   }
 }
