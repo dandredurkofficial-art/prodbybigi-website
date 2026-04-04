@@ -1214,6 +1214,133 @@
     padding:42px 12px;
     font-size:14px;
   }
+
+  .pm-box{
+   margin-top:14px;
+}
+
+.pm-input,
+.pm-textarea{
+  width:100%;
+  background:#05070c;
+  border:1px solid #1f2937;
+  border-radius:14px;
+  padding:14px 16px;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+.pm-textarea{
+  min-height:120px;
+  resize:vertical;
+}
+
+.pm-send-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+
+.pm-send-btn{
+  background:linear-gradient(180deg,#4e86ff,#3d6fe0);
+  border:none;
+  color:#fff;
+  padding:14px 20px;
+  border-radius:14px;
+  font-weight:900;
+  cursor:pointer;
+}
+
+.pm-status{
+  color:#86efac;
+  font-size:14px;
+  font-weight:700;
+}
+
+.pm-thread-list{
+  margin-top:16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.pm-thread-card{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#05070c;
+  border:1px solid #1f2937;
+  border-radius:16px;
+  padding:14px;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.pm-thread-card:hover{
+  border-color:#334155;
+  transform:translateY(-1px);
+}
+
+.pm-thread-avatar{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  background:linear-gradient(180deg,#0f172a,#172554);
+  border:1px solid #22304a;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  color:#bfdbfe;
+  flex-shrink:0;
+}
+
+.pm-thread-main{
+  flex:1;
+  min-width:0;
+}
+
+.pm-thread-top{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.pm-thread-top strong{
+  font-size:15px;
+  color:#fff;
+}
+
+.pm-thread-preview{
+  margin-top:4px;
+  color:#94a3b8;
+  font-size:13px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.pm-thread-badge{
+  display:inline-flex;
+  min-width:22px;
+  height:22px;
+  padding:0 7px;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  background:#2563eb;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+
+.pm-thread-arrow{
+  color:#94a3b8;
+  font-size:22px;
+  line-height:1;
+}
 }
   
 </style>
@@ -1595,25 +1722,23 @@
     <div id="msgUnlocked" style="display:none; margin-top:14px;">
       <div class="okbox">Unlocked ✅</div>
 
-      <div class="row" style="margin-top:12px;">
-        <div class="col">
-          <input id="msgBuyerId" placeholder="Buyer UID (temporary)" />
-          <small class="subtle">You can replace this later with a real buyer list UI.</small>
-        </div>
-        <div class="col">
-          <textarea id="msgText" placeholder="Type a message..."></textarea>
-        </div>
-      </div>
+      <div class="pm-box">
+        <input id="msgBuyerId" class="pm-input" placeholder="Buyer UID" />
+        <div class="subtle" style="margin-top:8px;">You can replace this later with a real buyer list UI.</div>
 
-      <button class="btn2" type="button" onclick="sendPrivateMessage()">Send Message</button>
-      <div id="msgSendStatus" class="subtle" style="margin-top:10px;"></div>
+        <textarea id="msgText" class="pm-textarea" placeholder="Type a message..." style="margin-top:14px;"></textarea>
 
-      <div style="margin-top:14px;">
-        <div class="subtle" style="margin-bottom:8px;">Recent Threads</div>
-        <div id="threadsList"></div>
+        <div class="pm-send-row">
+          <button class="pm-send-btn" type="button" onclick="sendPrivateMessage()">Send Message</button>
+          <div id="msgSendStatus" class="pm-status"></div>
+        </div>
+
+        <div style="margin-top:18px;">
+          <div class="subtle" style="margin-bottom:8px;">Recent Threads</div>
+          <div id="threadsList" class="pm-thread-list"></div>
+        </div>
       </div>
     </div>
-  </div>
 </section>
 
 <!-- ✅ UPGRADE -->
