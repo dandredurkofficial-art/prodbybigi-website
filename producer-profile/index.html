@@ -983,7 +983,11 @@
       }
     });
 
-    await track("open_inbox", { targetUid: otherUid });
+    try{
+      await track("open_inbox", { targetUid: otherUid });
+    }catch(e){
+      console.warn("open_inbox analytics failed", e);
+    }
   }
 
   async function sendDM(){
@@ -1230,8 +1234,14 @@
     }
   }
 
+  let __producerProfileLoaded = false;
+
   window.addEventListener("firebase-ready", () => {
-    if (window.FB && typeof window.FB.fetchBeats === "function") loadProducerProfile();
+    if (__producerProfileLoaded) return;
+    if (window.FB && typeof window.FB.fetchBeats === "function") {
+      __producerProfileLoaded = true;
+      loadProducerProfile();
+    }
   });
 
   async function goToMyDashboard() {
