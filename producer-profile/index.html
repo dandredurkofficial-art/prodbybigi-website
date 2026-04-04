@@ -931,7 +931,7 @@
   }
 
   async function startDM({ otherUid, otherName }){
-    const user = window.FB?.auth?.currentUser || null;
+    const user = await window.FB.waitForAuthReady();
     if (!user){
       const ret = encodeURIComponent(location.pathname + location.search);
       location.href = "/login/?return=" + ret;
