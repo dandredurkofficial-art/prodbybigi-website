@@ -1650,7 +1650,17 @@ async function sendAdminNotification(){
     }
   });
 
-  $("refreshBtn").addEventListener("click", loadAll);
+  $("refreshBtn").addEventListener("click", async ()=>{
+    $("refreshBtn").disabled = true;
+    $("refreshBtn").textContent = "Refreshing...";
+    try{
+      await loadAll();
+    }finally{
+      $("refreshBtn").disabled = false;
+      $("refreshBtn").textContent = "↻ Refresh";
+    }
+  });
+  
   $("btnReloadAll").addEventListener("click", loadAll);
   $("btnShowUnpublished").addEventListener("click", ()=>{
     setTab("beats");
@@ -1711,7 +1721,9 @@ window.addEventListener("firebase-ready", async (ev) => {
   };
 
   tick();
-  setInterval(tick, 1000);
+  window.addEventListener("firebase-auth-changed", () => {
+    tick();
+  });
 
   const u = ev?.detail?.user || window.FB?.auth?.currentUser || window.FB?.user || null;
 
