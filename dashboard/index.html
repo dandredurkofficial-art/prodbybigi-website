@@ -1609,7 +1609,7 @@
     </div>
 
     <div id="mktUnlocked" style="display:none; margin-top:14px;">
-      <div class="okbox">Unlocked ✅</div>
+      <div class="okbox">Unlocked</div>
 
       <!-- ✅ Create Campaign -->
       <div style="margin-top:12px;">
@@ -1720,7 +1720,7 @@
     </div>
 
     <div id="msgUnlocked" style="display:none; margin-top:14px;">
-      <div class="okbox">Unlocked ✅</div>
+      <div class="okbox">Unlocked</div>
 
       <div class="pm-box">
         <input id="msgBuyerId" class="pm-input" placeholder="Buyer UID" />
@@ -2019,7 +2019,7 @@
     </div>
 
     <div id="storeUnlocked" style="display:none; margin-top:14px;">
-      <div class="okbox">Unlocked ✅</div>
+      <div class="okbox">Unlocked</div>
 
       <div class="card" style="margin-top:14px;">
         <h3 style="margin-top:0;">Store Content</h3>
@@ -2490,32 +2490,32 @@ function refreshProLocks(){
 
   const advNote = $("advAnalyticsNote");
   if (advNote) advNote.textContent = pro
-    ? "Unlocked ✅"
+    ? "Unlocked"
     : "Upgrade to Pro to unlock advanced analytics.";
 
   const mkNote = $("marketingNote");
   if (mkNote) mkNote.textContent = pro
-    ? "Unlocked ✅"
+    ? "Unlocked"
     : "Upgrade to Pro to unlock marketing tools.";
 
   const msgNote = $("messagesNote");
   if (msgNote) msgNote.textContent = pro
-    ? "Unlocked ✅"
+    ? "Unlocked"
     : "Upgrade to Pro to unlock private messages.";
 
   const upNote = $("upgradeNote");
-  if (upNote) upNote.textContent = (elite ? "You are Elite ✅" : pro ? "You are Pro ✅" : starterPlus ? "You are Starter ✅" : "Upgrade to Starter/Pro/Elite to unlock more tools.");
+  if (upNote) upNote.textContent = (elite ? "You are Elite" : pro ? "You are Pro" : starterPlus ? "You are Starter" : "Upgrade to Starter/Pro/Elite to unlock more tools.");
 
   const buUI = $("bulkUploadUI");
   const buNote = $("bulkUploadNote");
   if (buUI) buUI.style.display = pro ? "block" : "none";
   if (buNote) buNote.textContent = pro
-    ? "Unlocked ✅"
+    ? "Unlocked"
     : "Upgrade to Pro to upload many beats at once.";
 
   const aiNote = $("aiTagNote");
   if (aiNote) aiNote.textContent = starterPlus
-    ? "Unlocked ✅"
+    ? "Unlocked"
     : "Upgrade to Starter to unlock auto tagging.";
 
   const advLocked = $("advLocked");
@@ -4115,7 +4115,7 @@ async function createMarketingCampaign() {
       createdAt: Date.now()
     });
 
-    if ($("mkStatus")) $("mkStatus").textContent = "✅ Campaign created.";
+    if ($("mkStatus")) $("mkStatus").textContent = "Campaign created.";
     if ($("mkCampaignName")) $("mkCampaignName").value = "";
 
     window.__BONUS_BEAT_IDS__ = [];
@@ -4829,9 +4829,9 @@ function loadUpgradeUI(){
   if (!box) return;
   const tier = getPlanTier();
   box.textContent =
-    tier === "elite" ? "You are Elite ✅" :
-    tier === "pro" ? "You are Pro ✅" :
-    tier === "starter" ? "You are Starter ✅" :
+    tier === "elite" ? "You are Elite" :
+    tier === "pro" ? "You are Pro" :
+    tier === "starter" ? "You are Starter" :
     "You are on Free plan. Upload limit is 10 beats. Upgrade to grow.";
   refreshProLocks();
 }
@@ -5269,7 +5269,7 @@ async function saveProfile(){
     await window.updateDoc(window.doc(window.db,"users",window.currentUser.uid), data);
 
     window.currentProfile = { ...(window.currentProfile||{}), ...data };
-    $("saveProfileStatus").textContent = "✅ Profile updated";
+    $("saveProfileStatus").textContent = "Profile updated";
     loadPayoutUI();
     loadDashboardStats();
     try{ await loadBeats(); }catch(e){}
@@ -5568,7 +5568,7 @@ async function saveStoreSettings(){
       storeSettings
     };
 
-    $("saveStoreStatus").textContent = "✅ Store settings updated";
+    $("saveStoreStatus").textContent = "Store settings updated";
   }catch(err){
     console.error(err);
     alert("Save failed: " + (err?.message || err));
