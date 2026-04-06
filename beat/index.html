@@ -77,6 +77,59 @@
     .kv .k{font-size:12px;color:rgba(255,255,255,.6);font-weight:800}
     .kv .v{margin-top:4px;font-size:14px;font-weight:900}
 
+    .beat-extra-meta{
+   display:grid;
+  gap:12px;
+  margin-top:14px;
+}
+
+.beat-extra-card{
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.03);
+  border-radius:14px;
+  padding:12px;
+}
+
+.beat-extra-label{
+  font-size:12px;
+  color:rgba(255,255,255,.6);
+  font-weight:800;
+  margin-bottom:8px;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+.beat-extra-value{
+  font-size:15px;
+  font-weight:900;
+  color:#fff;
+}
+
+.beat-extra-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+
+.beat-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:7px 11px;
+  border-radius:999px;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.10);
+  color:#fff;
+  font-size:12px;
+  font-weight:800;
+}
+
+.beat-extra-desc{
+  color:rgba(255,255,255,.88);
+  line-height:1.6;
+  font-size:14px;
+  white-space:pre-line;
+}
+
     .lic-grid{
       display:grid;
       grid-template-columns:1fr;
@@ -513,6 +566,28 @@
         <div class="kv">
           <div class="k">Plays</div>
           <div class="v" id="beatPlays">—</div>
+        </div>
+
+        <div class="beat-extra-meta" id="beatExtraMeta" style="display:none;">
+          <div class="beat-extra-card">
+            <div class="beat-extra-label">Type Beat</div>
+            <div class="beat-extra-value" id="beatTypeBeatView">—</div>
+          </div>
+
+          <div class="beat-extra-card">
+            <div class="beat-extra-label">Mood</div>
+            <div class="beat-extra-tags" id="beatMoodView"></div>
+          </div>
+
+          <div class="beat-extra-card">
+            <div class="beat-extra-label">Tags</div>
+            <div class="beat-extra-tags" id="beatTagsView"></div>
+          </div>
+
+          <div class="beat-extra-card">
+            <div class="beat-extra-label">Description</div>
+            <div class="beat-extra-desc" id="beatDescriptionView">—</div>
+          </div>
         </div>
       </div>
 
