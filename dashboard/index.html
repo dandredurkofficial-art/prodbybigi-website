@@ -3304,6 +3304,17 @@ function normalizeCustomDomainInput(v){
   return s;
 }
 
+function applyStoreThemePreset(primary, accent, bodyBg, headerBg, footerBg, surface, cardBg, textColor){
+  $("storePrimaryColor").value = primary;
+  $("storeAccentColor").value = accent;
+  $("storeBodyBgColor").value = bodyBg;
+  $("storeHeaderBgColor").value = headerBg;
+  $("storeFooterBgColor").value = footerBg;
+  $("storeSurfaceColor").value = surface;
+  $("storeCardBgColor").value = cardBg;
+  $("storeTextColor").value = textColor;
+}
+
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
