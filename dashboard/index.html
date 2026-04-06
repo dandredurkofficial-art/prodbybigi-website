@@ -5693,6 +5693,12 @@ function fillStoreSettingsForm(){
 
   $("storePrimaryColor").value = store.primaryColor || "#2563eb";
   $("storeAccentColor").value = store.accentColor || "#22c55e";
+  $("storeBodyBgColor").value = store.bodyBackgroundColor || "#070a12";
+  $("storeHeaderBgColor").value = store.headerBackgroundColor || "#0b1220";
+  $("storeFooterBgColor").value = store.footerBackgroundColor || "#08101d";
+  $("storeSurfaceColor").value = store.surfaceColor || "#0b1220";
+  $("storeCardBgColor").value = store.cardBackgroundColor || "#0a101b";
+  $("storeTextColor").value = store.textColor || "#ffffff";
 
   storeBannerUrl = store.bannerUrl || "";
   storeBannerPath = store.bannerPath || "";
@@ -5886,6 +5892,12 @@ async function saveStoreSettings(){
 
       primaryColor: ($("storePrimaryColor").value || "#2563eb").trim(),
       accentColor: ($("storeAccentColor").value || "#22c55e").trim(),
+      bodyBackgroundColor: ($("storeBodyBgColor").value || "#070a12").trim(),
+      headerBackgroundColor: ($("storeHeaderBgColor").value || "#0b1220").trim(),
+      footerBackgroundColor: ($("storeFooterBgColor").value || "#08101d").trim(),
+      surfaceColor: ($("storeSurfaceColor").value || "#0b1220").trim(),
+      cardBackgroundColor: ($("storeCardBgColor").value || "#0a101b").trim(),
+      textColor: ($("storeTextColor").value || "#ffffff").trim(),
 
       navLinks,
 
