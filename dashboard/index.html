@@ -2503,7 +2503,7 @@
       </div>
 
       <div class="store-bottom-save">
-        <button class="primary" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
+        <button class="primary" id="saveStoreBtn" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
         <div id="saveStoreStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
       </div>
     </div>
@@ -5756,8 +5756,12 @@ async function saveStoreSettings(){
   }
 
   const btn = $("saveStoreBtn");
-  btn.disabled = true;
-  btn.textContent = "Saving...";
+  const statusEl = $("saveStoreStatus");
+
+  if (btn){
+    btn.disabled = true;
+    btn.textContent = "Saving...";
+  }
 
   try{
     const servicesRaw = ($("storeServices").value || "").trim();
@@ -5892,14 +5896,18 @@ async function saveStoreSettings(){
       storeSettings
     };
 
-    $("saveStoreStatus").textContent = "Store settings updated";
+    if (statusEl){
+      statusEl.textContent = "Store settings updated";
+    }
   }catch(err){
     console.error(err);
     alert("Save failed: " + (err?.message || err));
+  }finally{
+    if (btn){
+      btn.disabled = false;
+      btn.textContent = "Save Store Settings";
+    }
   }
-
-  btn.disabled = false;
-  btn.textContent = "Save Store Settings";
 }
 
 /* Domain connect (unchanged) */
