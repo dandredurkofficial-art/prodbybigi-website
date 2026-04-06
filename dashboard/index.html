@@ -3345,6 +3345,25 @@ function applyStoreThemePreset(primary, accent, bodyBg, headerBg, footerBg, surf
   $("storeTextColor").value = textColor;
 }
 
+function buildSearchableText(data){
+  return [
+    data.title,
+    data.genre,
+    ...(Array.isArray(data.tags) ? data.tags : []),
+    ...(Array.isArray(data.mood) ? data.mood : []),
+    data.typeBeat,
+    data.description,
+    data.producerName,
+    data.bpm ? `${data.bpm} bpm` : "",
+    data.key
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
