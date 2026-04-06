@@ -1343,126 +1343,126 @@
   }
 
   /* ===== CUSTOMIZE STORE IMPROVED UI ===== */
-.store-topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  flex-wrap:wrap;
+  .store-topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:14px;
+    margin-bottom:14px;
+  }
+
+  .store-bottom-save{
   margin-top:14px;
-  margin-bottom:14px;
-}
+  }
 
-.store-bottom-save{
-  margin-top:14px;
-}
+  .store-accordion{
+    border:1px solid #1f2937;
+    border-radius:18px;
+    background:#091122;
+    margin-top:14px;
+    overflow:hidden;
+  }
 
-.store-accordion{
-  border:1px solid #1f2937;
-  border-radius:18px;
-  background:#091122;
-  margin-top:14px;
-  overflow:hidden;
-}
+  .store-accordion.active{
+    border-color:#334155;
+  }
 
-.store-accordion.active{
-  border-color:#334155;
-}
+  .store-acc-head{
+    width:100%;
+    background:transparent;
+    border:none;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:18px 18px;
+    font-size:18px;
+    font-weight:900;
+    cursor:pointer;
+    text-align:left;
+  }
 
-.store-acc-head{
-  width:100%;
-  background:transparent;
-  border:none;
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:18px 18px;
-  font-size:18px;
-  font-weight:900;
-  cursor:pointer;
-  text-align:left;
-}
+  .store-acc-head:hover{
+    background:rgba(255,255,255,.03);
+  }
 
-.store-acc-head:hover{
-  background:rgba(255,255,255,.03);
-}
+  .store-acc-icon{
+    font-size:24px;
+    line-height:1;
+    color:#93c5fd;
+    flex-shrink:0;
+  }
 
-.store-acc-icon{
-  font-size:24px;
-  line-height:1;
-  color:#93c5fd;
-  flex-shrink:0;
-}
+  .store-acc-body{
+    display:none;
+    padding:0 14px 14px;
+  }
 
-.store-acc-body{
-  display:none;
-  padding:0 14px 14px;
-}
+  .store-accordion.active .store-acc-body{
+    display:block;
+  }
 
-.store-accordion.active .store-acc-body{
-  display:block;
-}
+  .store-inner-card{
+    margin:0;
+    background:#07101f;
+  }
 
-.store-inner-card{
-  margin:0;
-  background:#07101f;
-}
+  .store-mini-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:14px;
+  }
 
-.store-mini-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:14px;
-}
+  .store-mini-card{
+    background:#05070c;
+    border:1px solid #1f2937;
+    border-radius:16px;
+    padding:14px;
+  }
 
-.store-mini-card{
-  background:#05070c;
-  border:1px solid #1f2937;
-  border-radius:16px;
-  padding:14px;
-}
-
-.theme-preset-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:12px;
-}
-
-.theme-preset{
-  border:1px solid #1f2937;
-  background:#05070c;
-  color:#fff;
-  border-radius:14px;
-  padding:14px;
-  cursor:pointer;
-  font-weight:800;
-  text-align:left;
-}
-
-.theme-preset:hover{
-  border-color:#3b82f6;
-  background:#0b1320;
-}
-
-.theme-swatch-row{
-  display:flex;
-  gap:8px;
-  margin-bottom:10px;
-}
-
-.theme-swatch{
-  width:24px;
-  height:24px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.15);
-  display:inline-block;
-}
-
-@media(max-width:900px){
-  .store-mini-grid,
   .theme-preset-grid{
-    grid-template-columns:1fr;
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+  }
+
+  .theme-preset{
+    border:1px solid #1f2937;
+    background:#05070c;
+    color:#fff;
+    border-radius:14px;
+    padding:14px;
+    cursor:pointer;
+    font-weight:800;
+    text-align:left;
+  }
+
+  .theme-preset:hover{
+    border-color:#3b82f6;
+    background:#0b1320;
+  }
+
+  .theme-swatch-row{
+    display:flex;
+    gap:8px;
+    margin-bottom:10px;
+  }
+
+  .theme-swatch{
+    width:24px;
+    height:24px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.15);
+    display:inline-block;
+  }
+
+  @media(max-width:900px){
+    .store-mini-grid,
+    .theme-preset-grid{
+      grid-template-columns:1fr;
   }
 </style>
 </head>
