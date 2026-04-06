@@ -1341,6 +1341,129 @@
     font-size:22px;
     line-height:1;
   }
+
+  /* ===== CUSTOMIZE STORE IMPROVED UI ===== */
+.store-topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  margin-bottom:14px;
+}
+
+.store-bottom-save{
+  margin-top:14px;
+}
+
+.store-accordion{
+  border:1px solid #1f2937;
+  border-radius:18px;
+  background:#091122;
+  margin-top:14px;
+  overflow:hidden;
+}
+
+.store-accordion.active{
+  border-color:#334155;
+}
+
+.store-acc-head{
+  width:100%;
+  background:transparent;
+  border:none;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:18px 18px;
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+  text-align:left;
+}
+
+.store-acc-head:hover{
+  background:rgba(255,255,255,.03);
+}
+
+.store-acc-icon{
+  font-size:24px;
+  line-height:1;
+  color:#93c5fd;
+  flex-shrink:0;
+}
+
+.store-acc-body{
+  display:none;
+  padding:0 14px 14px;
+}
+
+.store-accordion.active .store-acc-body{
+  display:block;
+}
+
+.store-inner-card{
+  margin:0;
+  background:#07101f;
+}
+
+.store-mini-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+
+.store-mini-card{
+  background:#05070c;
+  border:1px solid #1f2937;
+  border-radius:16px;
+  padding:14px;
+}
+
+.theme-preset-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+}
+
+.theme-preset{
+  border:1px solid #1f2937;
+  background:#05070c;
+  color:#fff;
+  border-radius:14px;
+  padding:14px;
+  cursor:pointer;
+  font-weight:800;
+  text-align:left;
+}
+
+.theme-preset:hover{
+  border-color:#3b82f6;
+  background:#0b1320;
+}
+
+.theme-swatch-row{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
+}
+
+.theme-swatch{
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+  display:inline-block;
+}
+
+@media(max-width:900px){
+  .store-mini-grid,
+  .theme-preset-grid{
+    grid-template-columns:1fr;
+  }
 </style>
 </head>
 
@@ -2002,7 +2125,7 @@
     <div class="row" style="align-items:center;">
       <div class="col">
         <h2 style="margin:0;">Customize Store</h2>
-        <div class="subtle">Customize your storefront appearance and content.</div>
+        <div class="subtle">Manage how your storefront looks to fans.</div>
       </div>
       <div class="col" style="display:flex;justify-content:flex-end;">
         <span class="chip" id="planChipStore">Plan: Free</span>
@@ -2019,167 +2142,371 @@
     <div id="storeUnlocked" style="display:none; margin-top:14px;">
       <div class="okbox">Unlocked</div>
 
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Store Content</h3>
-
-        <input id="storeHeadline" placeholder="Store headline (e.g. Premium Trap Beats by Bigi Beats)" />
-        <input id="storeSubtitle" placeholder="Store subtitle (e.g. Beats, services, custom production)" />
-        <textarea id="storeBio" placeholder="Short store intro for your storefront"></textarea>
-
-        <input id="storeServices" placeholder="Services offered (comma separated, e.g. Mixing, Mastering, Custom Beats)" />
-
-        <input id="storeInstagram" placeholder="Instagram link" />
-        <input id="storeTiktok" placeholder="TikTok link" />
-        <input id="storeYoutube" placeholder="YouTube link" />
-        <input id="storeWhatsapp" placeholder="WhatsApp link or number" />
+      <!-- Top save bar -->
+      <div class="store-topbar">
+        <div class="subtle">Make your store look clean, professional, and easy to browse.</div>
+        <button class="primary" id="saveStoreBtn" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
       </div>
 
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Store Banner</h3>
+      <!-- STORE BASICS -->
+      <div class="store-accordion active">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Store Basics</span>
+          <span class="store-acc-icon">−</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Store Basics</h3>
 
-        <div class="artwork-preview" id="storeBannerBox">
-          <span>Store Banner Preview</span>
-        </div>
-        <div id="storeBannerStatus"></div>
-        <button class="primary" type="button" onclick="uploadStoreBanner()">Upload Store Banner</button>
-      </div>
+            <input id="storeHeadline" placeholder="Store headline (e.g. Premium Trap Beats by Bigi Beats)" />
+            <input id="storeSubtitle" placeholder="Store subtitle (e.g. Beats, services, custom production)" />
+            <textarea id="storeBio" placeholder="Short store intro for your storefront"></textarea>
 
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Store Display</h3>
+            <input id="storeServices" placeholder="Services offered (comma separated, e.g. Mixing, Mastering, Custom Beats)" />
 
-        <div class="toggle">
-          <label>Show Featured Beats</label>
-          <input type="checkbox" id="storeShowFeatured" checked />
-        </div>
+            <div class="row">
+              <div class="col">
+                <input id="storeInstagram" placeholder="Instagram link" />
+              </div>
+              <div class="col">
+                <input id="storeTiktok" placeholder="TikTok link" />
+              </div>
+            </div>
 
-        <div class="toggle">
-          <label>Show All Beats</label>
-          <input type="checkbox" id="storeShowAllBeats" checked />
-        </div>
-
-        <div class="toggle">
-          <label>Show Follow Button</label>
-          <input type="checkbox" id="storeShowFollow" checked />
-        </div>
-
-        <div class="toggle">
-          <label>Show View Profile Button</label>
-          <input type="checkbox" id="storeShowProfileBtn" checked />
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Store Theme</h3>
-
-        <input id="storePrimaryColor" placeholder="Primary color (e.g. #2563eb)" />
-        <input id="storeAccentColor" placeholder="Accent color (e.g. #22c55e)" />
-      </div>
-
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Custom Navigation</h3>
-
-        <input id="navLabel1" placeholder="Nav item 1 label (e.g. Tracks)" />
-        <input id="navValue1" placeholder="Nav item 1 link/anchor (e.g. #tracks)" />
-
-        <input id="navLabel2" placeholder="Nav item 2 label (e.g. Sound Kits)" />
-        <input id="navValue2" placeholder="Nav item 2 link/anchor (e.g. #soundkits)" />
-
-        <input id="navLabel3" placeholder="Nav item 3 label (e.g. Services)" />
-        <input id="navValue3" placeholder="Nav item 3 link/anchor (e.g. #services)" />
-
-        <input id="navLabel4" placeholder="Nav item 4 label (e.g. Licensing)" />
-        <input id="navValue4" placeholder="Nav item 4 link/anchor (e.g. #licensing)" />
-
-        <input id="navLabel5" placeholder="Nav item 5 label (e.g. Contact)" />
-        <input id="navValue5" placeholder="Nav item 5 link/anchor (e.g. #contact)" />
-      </div>
-
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Contact Info</h3>
-
-        <input id="storeContactEmail" placeholder="Contact email" />
-        <input id="storeContactPhone" placeholder="Phone number" />
-        <input id="storeContactWhatsapp" placeholder="WhatsApp number or link" />
-        <input id="storeContactInstagram" placeholder="Instagram username or link" />
-        <input id="storeContactLocation" placeholder="Business location" />
-        <textarea id="storeContactBookingText" placeholder="Booking / enquiry text"></textarea>
-      </div>
-
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Licensing Section</h3>
-
-        <input id="licensingTitle" placeholder="Licensing section title" />
-        <textarea id="licensingIntro" placeholder="Licensing intro"></textarea>
-
-        <div class="row">
-          <div class="col">
-            <input id="license1Name" placeholder="Card 1 name" />
-            <input id="license1Price" placeholder="Card 1 price" />
-            <textarea id="license1Features" placeholder="Card 1 features, one per line"></textarea>
-            <input id="license1Btn" placeholder="Card 1 button text" />
-          </div>
-          <div class="col">
-            <input id="license2Name" placeholder="Card 2 name" />
-            <input id="license2Price" placeholder="Card 2 price" />
-            <textarea id="license2Features" placeholder="Card 2 features, one per line"></textarea>
-            <input id="license2Btn" placeholder="Card 2 button text" />
-          </div>
-          <div class="col">
-            <input id="license3Name" placeholder="Card 3 name" />
-            <input id="license3Price" placeholder="Card 3 price" />
-            <textarea id="license3Features" placeholder="Card 3 features, one per line"></textarea>
-            <input id="license3Btn" placeholder="Card 3 button text" />
+            <div class="row">
+              <div class="col">
+                <input id="storeYoutube" placeholder="YouTube link" />
+              </div>
+              <div class="col">
+                <input id="storeWhatsapp" placeholder="WhatsApp link or number" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Services Page Content</h3>
+      <!-- BANNER + DISPLAY -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Banner & Homepage Display</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Store Banner</h3>
 
-        <input id="servicesPageTitle" placeholder="Services page title" />
-        <textarea id="servicesPageIntro" placeholder="Services page intro"></textarea>
+            <div class="artwork-preview" id="storeBannerBox">
+              <span>Store Banner Preview</span>
+            </div>
+            <div id="storeBannerStatus"></div>
+            <button class="primary" type="button" onclick="uploadStoreBanner()">Upload Store Banner</button>
+          </div>
 
-        <div class="row">
-          <div class="col">
-            <input id="service1Title" placeholder="Service 1 title" />
-            <textarea id="service1Desc" placeholder="Service 1 description"></textarea>
-            <input id="service1Price" placeholder="Service 1 price" />
-          </div>
-          <div class="col">
-            <input id="service2Title" placeholder="Service 2 title" />
-            <textarea id="service2Desc" placeholder="Service 2 description"></textarea>
-            <input id="service2Price" placeholder="Service 2 price" />
-          </div>
-          <div class="col">
-            <input id="service3Title" placeholder="Service 3 title" />
-            <textarea id="service3Desc" placeholder="Service 3 description"></textarea>
-            <input id="service3Price" placeholder="Service 3 price" />
+          <div class="card store-inner-card" style="margin-top:14px;">
+            <h3 style="margin-top:0;">Homepage Display</h3>
+
+            <div class="toggle">
+              <label>Show Featured Beats</label>
+              <input type="checkbox" id="storeShowFeatured" checked />
+            </div>
+
+            <div class="toggle">
+              <label>Show All Beats</label>
+              <input type="checkbox" id="storeShowAllBeats" checked />
+            </div>
+
+            <div class="toggle">
+              <label>Show Follow Button</label>
+              <input type="checkbox" id="storeShowFollow" checked />
+            </div>
+
+            <div class="toggle">
+              <label>Show View Profile Button</label>
+              <input type="checkbox" id="storeShowProfileBtn" checked />
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:14px;">
-        <h3 style="margin-top:0;">Footer</h3>
+      <!-- THEME -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Theme</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Choose a Theme</h3>
+            <div class="subtle" style="margin-bottom:12px;">Tap a preset to auto-fill your store colors.</div>
 
-        <input id="footerCopyrightText" placeholder="Copyright text (e.g. © 2026 Bigi Beats. All rights reserved.)" />
+            <div class="theme-preset-grid">
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#2563eb','#22c55e')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#2563eb;"></span>
+                  <span class="theme-swatch" style="background:#22c55e;"></span>
+                </span>
+                <span>Classic Blue</span>
+              </button>
 
-        <div class="toggle">
-          <label>Show Social Icons in Footer</label>
-          <input type="checkbox" id="footerShowSocialIcons" checked />
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#0f172a','#38bdf8')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#0f172a;"></span>
+                  <span class="theme-swatch" style="background:#38bdf8;"></span>
+                </span>
+                <span>Midnight</span>
+              </button>
+
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#7c3aed','#f59e0b')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#7c3aed;"></span>
+                  <span class="theme-swatch" style="background:#f59e0b;"></span>
+                </span>
+                <span>Purple Gold</span>
+              </button>
+
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#dc2626','#f97316')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#dc2626;"></span>
+                  <span class="theme-swatch" style="background:#f97316;"></span>
+                </span>
+                <span>Red Energy</span>
+              </button>
+
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#059669','#84cc16')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#059669;"></span>
+                  <span class="theme-swatch" style="background:#84cc16;"></span>
+                </span>
+                <span>Emerald</span>
+              </button>
+
+              <button type="button" class="theme-preset" onclick="applyStoreTheme('#111827','#e5e7eb')">
+                <span class="theme-swatch-row">
+                  <span class="theme-swatch" style="background:#111827;"></span>
+                  <span class="theme-swatch" style="background:#e5e7eb;"></span>
+                </span>
+                <span>Dark Mono</span>
+              </button>
+            </div>
+
+            <div class="row" style="margin-top:14px;">
+              <div class="col">
+                <label class="subtle" style="display:block;margin-bottom:6px;">Primary Color</label>
+                <input id="storePrimaryColor" placeholder="Primary color (e.g. #2563eb)" />
+              </div>
+              <div class="col">
+                <label class="subtle" style="display:block;margin-bottom:6px;">Accent Color</label>
+                <input id="storeAccentColor" placeholder="Accent color (e.g. #22c55e)" />
+              </div>
+            </div>
+          </div>
         </div>
-
-        <input id="footerLink1Label" placeholder="Footer link 1 label (e.g. Privacy Policy)" />
-        <input id="footerLink1Url" placeholder="Footer link 1 URL" />
-
-        <input id="footerLink2Label" placeholder="Footer link 2 label (e.g. Terms of Use)" />
-        <input id="footerLink2Url" placeholder="Footer link 2 URL" />
-
-        <input id="footerLink3Label" placeholder="Footer link 3 label (e.g. Cookies)" />
-        <input id="footerLink3Url" placeholder="Footer link 3 URL" />
       </div>
 
-      <button class="primary" id="saveStoreBtn" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
-      <div id="saveStoreStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+      <!-- STORE SECTIONS -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Store Sections</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Store Navigation</h3>
+            <div class="subtle" style="margin-bottom:12px;">Edit the labels and anchors for sections on your storefront.</div>
+
+            <div class="row">
+              <div class="col">
+                <input id="navLabel1" placeholder="Section 1 label (e.g. Tracks)" />
+              </div>
+              <div class="col">
+                <input id="navValue1" placeholder="Section 1 anchor (e.g. #tracks)" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <input id="navLabel2" placeholder="Section 2 label (e.g. Sound Kits)" />
+              </div>
+              <div class="col">
+                <input id="navValue2" placeholder="Section 2 anchor (e.g. #soundkits)" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <input id="navLabel3" placeholder="Section 3 label (e.g. Services)" />
+              </div>
+              <div class="col">
+                <input id="navValue3" placeholder="Section 3 anchor (e.g. #services)" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <input id="navLabel4" placeholder="Section 4 label (e.g. Licensing)" />
+              </div>
+              <div class="col">
+                <input id="navValue4" placeholder="Section 4 anchor (e.g. #licensing)" />
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col">
+                <input id="navLabel5" placeholder="Section 5 label (e.g. Contact)" />
+              </div>
+              <div class="col">
+                <input id="navValue5" placeholder="Section 5 anchor (e.g. #contact)" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Contact & Booking</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Contact & Booking</h3>
+
+            <input id="storeContactEmail" placeholder="Contact email" />
+            <input id="storeContactPhone" placeholder="Phone number" />
+            <input id="storeContactWhatsapp" placeholder="WhatsApp number or link" />
+            <input id="storeContactInstagram" placeholder="Instagram username or link" />
+            <input id="storeContactLocation" placeholder="Business location" />
+            <textarea id="storeContactBookingText" placeholder="Booking / enquiry text"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- LICENSING -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Licenses</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Licensing Section</h3>
+
+            <input id="licensingTitle" placeholder="Licensing section title" />
+            <textarea id="licensingIntro" placeholder="Licensing intro"></textarea>
+
+            <div class="store-mini-grid">
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Basic License</h4>
+                <input id="license1Name" placeholder="Card 1 name" />
+                <input id="license1Price" placeholder="Card 1 price" />
+                <textarea id="license1Features" placeholder="Card 1 features, one per line"></textarea>
+                <input id="license1Btn" placeholder="Card 1 button text" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Premium License</h4>
+                <input id="license2Name" placeholder="Card 2 name" />
+                <input id="license2Price" placeholder="Card 2 price" />
+                <textarea id="license2Features" placeholder="Card 2 features, one per line"></textarea>
+                <input id="license2Btn" placeholder="Card 2 button text" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Exclusive License</h4>
+                <input id="license3Name" placeholder="Card 3 name" />
+                <input id="license3Price" placeholder="Card 3 price" />
+                <textarea id="license3Features" placeholder="Card 3 features, one per line"></textarea>
+                <input id="license3Btn" placeholder="Card 3 button text" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICES -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Services</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Services Page</h3>
+
+            <input id="servicesPageTitle" placeholder="Services page title" />
+            <textarea id="servicesPageIntro" placeholder="Services page intro"></textarea>
+
+            <div class="store-mini-grid">
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Service 1</h4>
+                <input id="service1Title" placeholder="Service 1 title" />
+                <textarea id="service1Desc" placeholder="Service 1 description"></textarea>
+                <input id="service1Price" placeholder="Service 1 price" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Service 2</h4>
+                <input id="service2Title" placeholder="Service 2 title" />
+                <textarea id="service2Desc" placeholder="Service 2 description"></textarea>
+                <input id="service2Price" placeholder="Service 2 price" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Service 3</h4>
+                <input id="service3Title" placeholder="Service 3 title" />
+                <textarea id="service3Desc" placeholder="Service 3 description"></textarea>
+                <input id="service3Price" placeholder="Service 3 price" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="store-accordion">
+        <button class="store-acc-head" type="button" onclick="toggleStoreAccordion(this)">
+          <span>Footer & Policies</span>
+          <span class="store-acc-icon">+</span>
+        </button>
+        <div class="store-acc-body">
+          <div class="card store-inner-card">
+            <h3 style="margin-top:0;">Footer</h3>
+
+            <input id="footerCopyrightText" placeholder="Copyright text (e.g. © 2026 Bigi Beats. All rights reserved.)" />
+
+            <div class="toggle">
+              <label>Show Social Icons in Footer</label>
+              <input type="checkbox" id="footerShowSocialIcons" checked />
+            </div>
+
+            <div class="store-mini-grid">
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Privacy Policy</h4>
+                <input id="footerLink1Label" placeholder="Privacy Policy title" />
+                <input id="footerLink1Url" placeholder="Privacy Policy URL" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Terms of Use</h4>
+                <input id="footerLink2Label" placeholder="Terms of Use title" />
+                <input id="footerLink2Url" placeholder="Terms of Use URL" />
+              </div>
+
+              <div class="store-mini-card">
+                <h4 style="margin-top:0;">Cookie Policy</h4>
+                <input id="footerLink3Label" placeholder="Cookie Policy title" />
+                <input id="footerLink3Url" placeholder="Cookie Policy URL" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="store-bottom-save">
+        <button class="primary" type="button" onclick="saveStoreSettings()">Save Store Settings</button>
+        <div id="saveStoreStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
+      </div>
     </div>
   </div>
 </section>
@@ -5763,6 +6090,28 @@ async function verifyCustomDomain(){
 
 window.saveCustomDomain = saveCustomDomain;
 window.verifyCustomDomain = verifyCustomDomain;
+
+function toggleStoreAccordion(btn){
+  const wrap = btn.closest(".store-accordion");
+  if (!wrap) return;
+
+  wrap.classList.toggle("active");
+
+  const icon = btn.querySelector(".store-acc-icon");
+  if (icon){
+    icon.textContent = wrap.classList.contains("active") ? "−" : "+";
+  }
+}
+window.toggleStoreAccordion = toggleStoreAccordion;
+
+function applyStoreTheme(primary, accent){
+  const p = document.getElementById("storePrimaryColor");
+  const a = document.getElementById("storeAccentColor");
+
+  if (p) p.value = primary;
+  if (a) a.value = accent;
+}
+window.applyStoreTheme = applyStoreTheme;
 
 /* ===========================
    PRODUCER SALES (UNLOCKS)
