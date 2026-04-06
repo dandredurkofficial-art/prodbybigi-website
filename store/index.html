@@ -1855,37 +1855,37 @@
   }
 
   function applyStoreTheme(profile){
-  const store = profile?.storeSettings || {};
+    const store = profile?.storeSettings || {};
 
-  const primary = String(store.primaryColor || "#2563eb").trim();
-  const accent = String(store.accentColor || "#22c55e").trim();
+    const primary = String(store.primaryColor || "#2563eb").trim();
+    const accent = String(store.accentColor || "#22c55e").trim();
 
-  const bg = String(store.bodyBackgroundColor || "#070a12").trim();
-  const headerBg = String(store.headerBackgroundColor || "#0b1220").trim();
-  const footerBg = String(store.footerBackgroundColor || "#08101d").trim();
-  const surface = String(store.surfaceColor || "#0b1220").trim();
-  const surface2 = String(store.surface2Color || "#09111d").trim();
-  const cardBg = String(store.cardBackgroundColor || "#0a101b").trim();
-  const text = String(store.textColor || "#ffffff").trim();
-  const textSoft = String(store.textSoftColor || "rgba(255,255,255,.68)").trim();
+    const bg = String(store.bodyBackgroundColor || "#070a12").trim();
+    const headerBg = String(store.headerBackgroundColor || "#0b1220").trim();
+    const footerBg = String(store.footerBackgroundColor || "#08101d").trim();
+    const surface = String(store.surfaceColor || "#0b1220").trim();
+    const surface2 = String(store.surface2Color || "#09111d").trim();
+    const cardBg = String(store.cardBackgroundColor || "#0a101b").trim();
+    const text = String(store.textColor || "#ffffff").trim();
+    const textSoft = String(store.textSoftColor || "rgba(255,255,255,.68)").trim();
 
-  const primaryRgb = hexToRgbParts(primary) || "37,99,235";
-  const accentRgb = hexToRgbParts(accent) || "34,197,94";
+    const primaryRgb = hexToRgbParts(primary) || "37,99,235";
+    const accentRgb = hexToRgbParts(accent) || "34,197,94";
 
-  document.documentElement.style.setProperty("--store-primary", primary);
-  document.documentElement.style.setProperty("--store-accent", accent);
-  document.documentElement.style.setProperty("--store-primary-rgb", primaryRgb);
-  document.documentElement.style.setProperty("--store-accent-rgb", accentRgb);
+    document.documentElement.style.setProperty("--store-primary", primary);
+    document.documentElement.style.setProperty("--store-accent", accent);
+    document.documentElement.style.setProperty("--store-primary-rgb", primaryRgb);
+    document.documentElement.style.setProperty("--store-accent-rgb", accentRgb);
 
-  document.documentElement.style.setProperty("--store-bg", bg);
-  document.documentElement.style.setProperty("--store-header-bg", headerBg);
-  document.documentElement.style.setProperty("--store-footer-bg", footerBg);
-  document.documentElement.style.setProperty("--store-surface", surface);
-  document.documentElement.style.setProperty("--store-surface-2", surface2);
-  document.documentElement.style.setProperty("--store-card-bg", cardBg);
-  document.documentElement.style.setProperty("--store-text", text);
-  document.documentElement.style.setProperty("--store-text-soft", textSoft);
-}
+    document.documentElement.style.setProperty("--store-bg", bg);
+    document.documentElement.style.setProperty("--store-header-bg", headerBg);
+    document.documentElement.style.setProperty("--store-footer-bg", footerBg);
+    document.documentElement.style.setProperty("--store-surface", surface);
+    document.documentElement.style.setProperty("--store-surface-2", surface2);
+    document.documentElement.style.setProperty("--store-card-bg", cardBg);
+    document.documentElement.style.setProperty("--store-text", text);
+    document.documentElement.style.setProperty("--store-text-soft", textSoft);
+  }
 
   function setProducerHero(profile){
     const display = safeText(
