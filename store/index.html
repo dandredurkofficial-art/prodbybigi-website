@@ -52,8 +52,8 @@
       border-radius:22px;
       overflow:hidden;
       background:
-        radial-gradient(circle at top left, rgba(59,130,246,.22), transparent 35%),
-        radial-gradient(circle at top right, rgba(34,197,94,.16), transparent 28%),
+        radial-gradient(circle at top left, rgba(var(--store-primary-rgb), .22), transparent 35%),
+        radial-gradient(circle at top right, rgba(var(--store-accent-rgb), .16), transparent 28%),
         linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       border:1px solid rgba(255,255,255,.08);
     }
@@ -167,8 +167,8 @@
     }
 
     .btnx.primary{
-      background:#2563eb;
-      border-color:#2563eb;
+      background:var(--store-primary);
+      border-color:var(--store-primary);
     }
 
     .btnx.ghost{
@@ -285,7 +285,7 @@
 
     .beat-card:hover{
       transform:translateY(-2px);
-      border-color:rgba(59,130,246,.40);
+      border-color:rgba(var(--store-primary-rgb), .40);
     }
 
     .beat-cover{
@@ -421,8 +421,8 @@
     }
 
     .beat-row-badge.featured{
-      background:rgba(59,130,246,.18);
-      border-color:rgba(59,130,246,.35);
+      background:rgba(var(--store-primary-rgb), .18);
+      border-color:rgba(var(--store-primary-rgb), .35);
     }
 
     .beat-row-badge.free{
@@ -512,8 +512,8 @@
     }
 
     .badge.featured{
-      background:rgba(59,130,246,.18);
-      border-color:rgba(59,130,246,.35);
+      background:rgba(var(--store-primary-rgb), .18);
+      border-color:rgba(var(--store-primary-rgb), .35);
     }
 
     .badge.free{
@@ -739,8 +739,8 @@
     }
 
     .license-card.popular{
-      border-color:rgba(59,130,246,.45);
-      box-shadow:0 0 0 1px rgba(59,130,246,.18) inset;
+      border-color:rgba(var(--store-primary-rgb), .45);
+      box-shadow:0 0 0 1px rgba(var(--store-primary-rgb), .18) inset;
     }
 
     .license-top{
@@ -1761,6 +1761,32 @@
     contactBox.innerHTML = rows.length ? rows.join("") : `No contact details added yet.`;
   }
 
+  function hexToRgbParts(hex){
+    const value = String(hex || "").trim().replace("#", "");
+    if (!/^[0-9a-fA-F]{6}$/.test(value)) return null;
+
+    const r = parseInt(value.slice(0, 2), 16);
+    const g = parseInt(value.slice(2, 4), 16);
+    const b = parseInt(value.slice(4, 6), 16);
+
+    return `${r},${g},${b}`;
+  }
+
+  function applyStoreTheme(profile){
+    const store = profile?.storeSettings || {};
+
+    const primary = String(store.primaryColor || "#2563eb").trim();
+    const accent = String(store.accentColor || "#22c55e").trim();
+
+    const primaryRgb = hexToRgbParts(primary) || "37,99,235";
+    const accentRgb = hexToRgbParts(accent) || "34,197,94";
+
+    document.documentElement.style.setProperty("--store-primary", primary);
+    document.documentElement.style.setProperty("--store-accent", accent);
+    document.documentElement.style.setProperty("--store-primary-rgb", primaryRgb);
+    document.documentElement.style.setProperty("--store-accent-rgb", accentRgb);
+  }
+
   function setProducerHero(profile){
     const display = safeText(
       profile?.displayName || `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim(),
@@ -2336,6 +2362,7 @@
 
       STORE_PRODUCER = producer;
       console.log("STORE PRODUCER DATA =", STORE_PRODUCER);
+      applyStoreTheme(producer);
 
       const [beats, kits] = await Promise.all([
         getProducerBeats(producer.id),
