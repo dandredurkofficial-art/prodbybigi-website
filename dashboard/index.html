@@ -4011,12 +4011,28 @@ async function publishBeat(){
   try{
     const producerName = getProducerDisplayName();
 
+    const tags = ($("tags")?.value || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+
+    const mood = ($("mood")?.value || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
+
     const payload = {
       title: $("title").value || "Untitled Beat",
       desc: $("desc").value || "",
+      beatDescription: $("beatDescription")?.value || "",
       bpm: $("bpm").value || "",
       key: $("key").value || "",
       genre: ($("genre").value || "").trim(),
+
+      typeBeat: ($("typeBeat")?.value || "").trim(),
+      tags,
+      mood,
+
       plays: 0,
       producerName: producerName,
       artwork: uploadedArtwork || "",
@@ -4033,14 +4049,14 @@ async function publishBeat(){
       stemsZipUrl: ($("exclusiveEnabled").checked ? (stemsZipUrl || null) : null),
       stemsZipPath: ($("exclusiveEnabled").checked ? (stemsZipPath || null) : null),
 
-      // ✅ license pdf paths (your storage already has these)
+      // ✅ license pdf paths
       licensePaths: {
         basic: "licenses/basic.pdf",
         premium: "licenses/premium.pdf",
         exclusive: "licenses/exclusive.pdf"
       },
 
-      // ✅ backward compatible field for backend that expects singular:
+      // ✅ backward compatible field
       licensePath: "licenses/basic.pdf",
 
       published: true,
@@ -4055,6 +4071,8 @@ async function publishBeat(){
       ...(editingBeatId ? {} : { createdAt: Date.now() }),
       updatedAt: Date.now()
     };
+
+    payload.searchableText = buildSearchableText(payload);
 
     if (editingBeatId){
       await window.updateDoc(window.doc(window.db,"beats",editingBeatId), payload);
@@ -4077,9 +4095,13 @@ async function publishBeat(){
 function resetUploadForm(){
   $("title").value = "";
   $("desc").value = "";
+  $("beatDescription").value = "";
   $("bpm").value = "";
   $("key").value = "";
   $("genre").value = "";
+  $("typeBeat").value = "";
+  $("tags").value = "";
+  $("mood").value = "";
 
   uploadedArtwork = null;
   fullAudio = null;
@@ -4189,9 +4211,13 @@ function editBeat(i){
 
   $("title").value = b.title || "";
   $("desc").value = b.desc || "";
+  $("beatDescription").value = b.beatDescription || "";
   $("bpm").value = b.bpm || "";
   $("key").value = b.key || "";
   $("genre").value = b.genre || "";
+  $("typeBeat").value = b.typeBeat || "";
+  $("tags").value = Array.isArray(b.tags) ? b.tags.join(", ") : "";
+  $("mood").value = Array.isArray(b.mood) ? b.mood.join(", ") : "";
 
   uploadedArtwork = b.artwork || null;
   fullAudio = b.fullAudio || null;
