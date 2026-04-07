@@ -381,7 +381,40 @@
       .collab-title{
         font-size:28px;
       }
-    }
+
+      .collab-hero-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:16px;
+      }
+
+      .collab-hero-actions .btnx,
+      .collab-hero-actions a.btnx{
+        flex:1 1 220px;
+        min-width:0;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        text-decoration:none;
+        box-sizing:border-box;
+      }
+
+      @media (max-width: 640px){
+        .collab-hero-actions{
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+        }
+
+        .collab-hero-actions .btnx,
+        .collab-hero-actions a.btnx{
+          width:100%;
+          min-height:52px;
+          padding:0 14px;
+        }
+      }
   </style>
 </head>
 <body>
