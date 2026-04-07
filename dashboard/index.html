@@ -4217,26 +4217,63 @@ function dedupeBeats(list){
   (list || []).forEach((b) => {
     const id = String(b?.id || "").trim();
     if (!id) return;
-    if (!map.has(id)) map.set(id, b);
+
+    if (!map.has(id)) {
+      map.set(id, b);
+      return;
+    }
+
+    const existing = map.get(id);
+    const existingUpdated = Number(existing?.updatedAt || existing?.createdAt || 0);
+    const incomingUpdated = Number(b?.updatedAt || b?.createdAt || 0);
+
+    if (incomingUpdated >= existingUpdated){
+      map.set(id, b);
+    }
   });
 
   return Array.from(map.values());
 }
 
 function renderTracks(){
-  $("beats").innerHTML = "";
+  const beatsEl = $("beats");
+  if (!beatsEl) return;
 
-  beatsData = dedupeBeats(beatsData);
+  beatsEl.innerHTML = "";
 
-  beatsData.forEach((b,i)=>{
-    $("beats").innerHTML += `
+  beatsData.forEach((b, i) => {
+    const typeBeat = String(b?.typeBeat || "").trim();
+    const moodText = Array.isArray(b?.mood) ? b.mood.join(", ") : "";
+    const tagsText = Array.isArray(b?.tags) ? b.tags.join(", ") : "";
+    const beatDesc = String(b?.beatDescription || "").trim();
+
+    beatsEl.innerHTML += `
       <div class="track">
-        <img src="${b.artwork||''}">
-        <div style="flex:1"><strong>${b.title||"Untitled"}</strong><br>BPM ${b.bpm||"—"} • ${b.key||"—"}</div>
-        <button onclick="playPreview(${i})">▶</button>
-        <button onclick="editBeat(${i})">Edit</button>
-        <button onclick="deleteBeat(${i})">Delete</button>
-      </div>`;
+        <img src="${b.artwork || ''}" alt="${b.title || 'Beat'}">
+
+        <div style="flex:1;min-width:0;">
+          <strong>${b.title || "Untitled"}</strong><br>
+          BPM ${b.bpm || "—"} • ${b.key || "—"}
+
+          ${
+            typeBeat || moodText || tagsText || beatDesc
+              ? `
+                <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;">
+                  ${typeBeat ? `<div><b>Type Beat:</b> ${typeBeat}</div>` : ``}
+                  ${moodText ? `<div><b>Mood:</b> ${moodText}</div>` : ``}
+                  ${tagsText ? `<div><b>Tags:</b> ${tagsText}</div>` : ``}
+                  ${beatDesc ? `<div><b>Description:</b> ${beatDesc}</div>` : ``}
+                </div>
+              `
+              : ``
+          }
+        </div>
+
+        <button type="button" onclick="playPreview(${i})">▶</button>
+        <button type="button" onclick="editBeat(${i})">Edit</button>
+        <button type="button" onclick="deleteBeat(${i})">Delete</button>
+      </div>
+    `;
   });
 }
 function editBeat(i){
