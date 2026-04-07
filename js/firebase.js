@@ -375,35 +375,38 @@ async function fetchBeats({ max = 60, force = false } = {}) {
 
 window.FB.fetchBeats = fetchBeats;
 
+window.FB.fetchBeatById = async function fetchBeatById(beatId){
+  const id = String(beatId || "").trim();
+  if (!id) return null;
+
+  const snap = await getDoc(doc(db, "beats", id));
+  if (!snap.exists()) return null;
+
+  return normalizeBeat(snap.id, snap.data());
+};
+
 /* =========================================================
    ✅ FETCH PRODUCER BEATS (FAST RELATED BEATS)
 ========================================================= */
 
-async function fetchProducerBeats(producerId, limit = 6){
-
+async function fetchProducerBeats(producerId, maxItems = 6){
   if(!producerId) return [];
 
-  const { collection, query, where, limit: qLimit, getDocs } = window.FB;
-
-  const q = query(
-    collection(window.FB.db, "beats"),
-    where("producerId","==",producerId),
-    qLimit(limit)
+  const qy = query(
+    collection(db, "beats"),
+    where("producerId", "==", producerId),
+    limit(maxItems)
   );
 
-  const snap = await getDocs(q);
+  const snap = await getDocs(qy);
 
   const arr = [];
-
-  snap.forEach(doc=>{
-    arr.push({
-      id: doc.id,
-      ...doc.data()
-    });
+  snap.forEach((d) => {
+    const beat = normalizeBeat(d.id, d.data());
+    if (beat.published) arr.push(beat);
   });
 
   return arr;
-
 }
 
 window.FB.fetchProducerBeats = fetchProducerBeats;
