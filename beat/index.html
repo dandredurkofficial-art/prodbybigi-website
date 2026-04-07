@@ -1139,6 +1139,7 @@
       $("beatKey").textContent = pickKey(beat);
       $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
       $("beatPlays").textContent = Number(beat.plays || 0);
+      renderBeatExtraMeta(beat);
 
       const playBtn = $("beatPlayBtn");
       playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
