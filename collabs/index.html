@@ -1,1 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Collab Marketplace | Audiory</title>
 
+  <meta name="description" content="Artists post what they need. Producers submit beats and pitch directly on Audiory Collab Marketplace." />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="icon" href="/audioryfavicon.webp" />
+  <link rel="shortcut icon" href="/audioryfavicon.webp" />
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp" />
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+
+  <style>
+    .collab-page{
+      padding:18px 0 28px;
+    }
+
+    .collab-hero{
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(14,20,32,.96) 0%, rgba(10,16,27,.96) 100%);
+      border-radius:20px;
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .collab-kicker{
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.08em;
+      color:rgba(255,255,255,.65);
+      text-transform:uppercase;
+      margin-bottom:8px;
+    }
+
+    .collab-title{
+      margin:0;
+      font-size:32px;
+      line-height:1.05;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .collab-sub{
+      margin-top:10px;
+      color:rgba(255,255,255,.75);
+      font-size:14px;
+      line-height:1.5;
+      max-width:760px;
+    }
+
+    .collab-hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .btnx{
+      min-height:46px;
+      padding:0 16px;
+      border:none;
+      border-radius:14px;
+      font-weight:900;
+      cursor:pointer;
+      color:#fff;
+      background:#295dff;
+    }
+
+    .btnx.ghost{
+      background:transparent;
+      border:1px solid rgba(255,255,255,.14);
+      color:#fff;
+    }
+
+    .btnx.danger{
+      background:#dc2626;
+    }
+
+    .collab-toolbar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr .8fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .collab-toolbar input,
+    .collab-toolbar select,
+    .modal-card input,
+    .modal-card select,
+    .modal-card textarea{
+      width:100%;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      border-radius:14px;
+      padding:13px 14px;
+      outline:none;
+      font-size:14px;
+      box-sizing:border-box;
+    }
+
+    .modal-card textarea{
+      min-height:110px;
+      resize:vertical;
+      font-family:inherit;
+    }
+
+    .collab-toolbar input::placeholder,
+    .modal-card input::placeholder,
+    .modal-card textarea::placeholder{
+      color:rgba(255,255,255,.42);
+    }
+
+    .collab-toolbar input:focus,
+    .collab-toolbar select:focus,
+    .modal-card input:focus,
+    .modal-card select:focus,
+    .modal-card textarea:focus{
+      border-color:rgba(41,93,255,.7);
+      box-shadow:0 0 0 3px rgba(41,93,255,.12);
+    }
+
+    .collab-status{
+      margin-bottom:12px;
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+    }
+
+    .collab-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+
+    .collab-card{
+      border:1px solid rgba(255,255,255,.08);
+      background:#141414;
+      border-radius:18px;
+      overflow:hidden;
+    }
+
+    .collab-card-top{
+      padding:16px 16px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .collab-card-title{
+      font-size:20px;
+      font-weight:900;
+      color:#fff;
+      margin:0;
+      line-height:1.2;
+    }
+
+    .collab-card-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .mini-chip{
+      display:inline-flex;
+      align-items:center;
+      min-height:32px;
+      padding:0 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.09);
+      color:#fff;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .collab-card-body{
+      padding:14px 16px 16px;
+    }
+
+    .collab-desc{
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+
+    .collab-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .collab-tag{
+      display:inline-flex;
+      align-items:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      color:#fff;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.09);
+    }
+
+    .collab-bottom{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      margin-top:16px;
+    }
+
+    .collab-small{
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+    }
+
+    .collab-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.62);
+      display:none;
+      z-index:10040;
+    }
+
+    .modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(760px, calc(100vw - 20px));
+      max-height:calc(100vh - 24px);
+      overflow:auto;
+      display:none;
+      z-index:10041;
+    }
+
+    .modal-card{
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg,#0c1220 0%, #0a101b 100%);
+      border-radius:22px;
+      padding:0;
+      overflow:hidden;
+      box-shadow:0 30px 100px rgba(0,0,0,.55);
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:20px 20px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .modal-title{
+      margin:0;
+      font-size:22px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .modal-sub{
+      margin-top:8px;
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .modal-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:22px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
+    }
+
+    .modal-close:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .modal-body{
+      padding:18px 20px 20px;
+      display:grid;
+      gap:14px;
+    }
+
+    .row2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .field-label{
+      display:block;
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
+
+    .modal-foot{
+      padding:0 20px 20px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .hint{
+      color:rgba(255,255,255,.58);
+      font-size:12px;
+      line-height:1.45;
+      margin-top:4px;
+    }
+
+    .my-beat-list{
+      display:grid;
+      gap:10px;
+      max-height:260px;
+      overflow:auto;
+      padding-right:2px;
+    }
+
+    .my-beat-item{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      border-radius:14px;
+      padding:12px;
+      cursor:pointer;
+    }
+
+    .my-beat-item.active{
+      border-color:rgba(41,93,255,.7);
+      box-shadow:0 0 0 2px rgba(41,93,255,.14);
+    }
+
+    .my-beat-title{
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .my-beat-meta{
+      margin-top:6px;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+    }
+
+    .empty-box{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:22px;
+      color:rgba(255,255,255,.62);
+      font-size:14px;
+      text-align:center;
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width: 860px){
+      .collab-toolbar,
+      .row2{
+        grid-template-columns:1fr;
+      }
+      .collab-grid{
+        grid-template-columns:1fr;
+      }
+      .collab-title{
+        font-size:28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container collab-page">
+
+  <section class="collab-hero">
+    <div class="collab-kicker">Audiory Opportunity Hub</div>
+    <h1 class="collab-title">Collab Marketplace</h1>
+    <div class="collab-sub">
+      Artists can post exactly what they need. Producers can pitch directly with a message and an existing Audiory beat.
+    </div>
+
+    <div class="collab-hero-actions">
+      <button class="btnx" type="button" id="openCreateRequestBtn">+ Post Request</button>
+      <a href="/marketplace/" class="btnx ghost">Browse Beats</a>
+    </div>
+  </section>
+
+  <section>
+    <div class="collab-toolbar">
+      <input id="collabSearchInput" placeholder="Search requests, genres, moods..." />
+      <select id="collabGenreFilter">
+        <option value="">All Genres</option>
+        <option>Trap</option>
+        <option>Afrobeats</option>
+        <option>Drill</option>
+        <option>Amapiano</option>
+        <option>R&B</option>
+        <option>Hip Hop</option>
+        <option>Dancehall</option>
+      </select>
+      <select id="collabStatusFilter">
+        <option value="open">Open Requests</option>
+        <option value="">All Status</option>
+        <option value="closed">Closed</option>
+      </select>
+    </div>
+
+    <div class="collab-status" id="collabStatus">Loading requests…</div>
+    <div class="collab-grid" id="collabGrid"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CREATE REQUEST MODAL -->
+<div class="modal-backdrop" id="createReqBackdrop"></div>
+<div class="modal" id="createReqModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Post Collab Request</h3>
+        <div class="modal-sub">Artists can describe what they need and producers will submit beats or pitches.</div>
+      </div>
+      <button class="modal-close" type="button" id="closeCreateReqBtn">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div>
+        <label class="field-label">Title</label>
+        <input id="reqTitle" placeholder="e.g. Need dark trap beats for an EP" />
+      </div>
+
+      <div>
+        <label class="field-label">Description</label>
+        <textarea id="reqDescription" placeholder="Explain the sound, references, usage, and what you want producers to send."></textarea>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label class="field-label">Genre</label>
+          <input id="reqGenre" placeholder="e.g. Trap" />
+        </div>
+        <div>
+          <label class="field-label">Budget (USD)</label>
+          <input id="reqBudget" type="number" min="0" placeholder="e.g. 100" />
+        </div>
+      </div>
+
+      <div class="row2">
+        <div>
+          <label class="field-label">Mood Tags</label>
+          <input id="reqMood" placeholder="e.g. dark, emotional, aggressive" />
+        </div>
+        <div>
+          <label class="field-label">Deadline</label>
+          <input id="reqDeadline" type="date" />
+        </div>
+      </div>
+
+      <div class="hint">
+        Tip: clearer requests get better submissions.
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btnx" type="button" id="submitCreateReqBtn">Post Request</button>
+      <button class="btnx ghost" type="button" id="cancelCreateReqBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-backdrop" id="submitBackdrop"></div>
+<div class="modal" id="submitModal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div>
+        <h3 class="modal-title">Submit to Request</h3>
+        <div class="modal-sub" id="submitModalSub">Choose one of your beats and add a pitch.</div>
+      </div>
+      <button class="modal-close" type="button" id="closeSubmitBtn">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div>
+        <label class="field-label">Your pitch message</label>
+        <textarea id="submissionMessage" placeholder="e.g. I have a dark emotional beat that fits this perfectly. I can also make revisions if needed."></textarea>
+      </div>
+
+      <div>
+        <label class="field-label">Select existing Audiory beat</label>
+        <div class="my-beat-list" id="myBeatsList"></div>
+        <div class="hint">You can submit with message only, or message + selected beat.</div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="btnx" type="button" id="submitSubmissionBtn">Send Submission</button>
+      <button class="btnx ghost" type="button" id="cancelSubmitBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  let collabRequestsData = [];
+  let currentSubmitRequestId = "";
+  let currentSelectedBeatId = "";
+  let myProducerBeats = [];
+
+  function escapeHtml(v){
+    return String(v || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
+
+  function formatDate(v){
+    try{
+      if (!v) return "No deadline";
+      if (typeof v === "number") return new Date(v).toLocaleDateString();
+      if (v?.toDate) return v.toDate().toLocaleDateString();
+      return new Date(v).toLocaleDateString();
+    }catch(e){
+      return "No deadline";
+    }
+  }
+
+  function timeAgo(v){
+    try{
+      let ms = 0;
+      if (typeof v === "number") ms = v;
+      else if (v?.toDate) ms = v.toDate().getTime();
+      else ms = new Date(v).getTime();
+
+      if (!ms) return "";
+      const diff = Date.now() - ms;
+      const mins = Math.floor(diff / 60000);
+      const hrs = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (mins < 1) return "just now";
+      if (mins < 60) return `${mins}m ago`;
+      if (hrs < 24) return `${hrs}h ago`;
+      return `${days}d ago`;
+    }catch(e){
+      return "";
+    }
+  }
+
+  function csvToArray(v){
+    return String(v || "")
+      .split(",")
+      .
