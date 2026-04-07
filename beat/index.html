@@ -1095,10 +1095,7 @@
 
     let cachedBeat = null;
     try{
-      const cache = sessionStorage.getItem("audiory_beat_" + beatId);
-      if(cache){
-        cachedBeat = JSON.parse(cache);
-      }
+      sessionStorage.removeItem("audiory_beat_" + beatId);
     }catch(e){}
 
     if(cachedBeat){
@@ -1109,6 +1106,7 @@
 
     try{
       const beat = await fetchBeatById(beatId);
+      console.log("BEAT PAGE DATA =", beat);
 
       try{
         sessionStorage.setItem("audiory_beat_" + beatId, JSON.stringify(beat));
