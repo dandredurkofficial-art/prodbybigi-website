@@ -414,6 +414,143 @@
           min-height:52px;
           padding:0 14px;
         }
+
+        .artist-inbox-grid{
+  display:grid;
+  gap:14px;
+}
+
+.artist-request-card{
+  border:1px solid rgba(255,255,255,.08);
+  background:#141414;
+  border-radius:18px;
+  overflow:hidden;
+}
+
+.artist-request-top{
+  padding:16px;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.artist-request-title{
+  margin:0;
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+  line-height:1.2;
+}
+
+.artist-request-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:12px;
+}
+
+.artist-request-body{
+  padding:14px 16px 16px;
+}
+
+.artist-request-desc{
+  color:rgba(255,255,255,.76);
+  font-size:14px;
+  line-height:1.6;
+  white-space:pre-line;
+}
+
+.submission-count{
+  margin-top:14px;
+  color:#fff;
+  font-size:13px;
+  font-weight:800;
+}
+
+.submission-list{
+  display:grid;
+  gap:12px;
+  margin-top:14px;
+}
+
+.submission-card{
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.04);
+  border-radius:16px;
+  padding:14px;
+}
+
+.submission-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.submission-producer{
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+}
+
+.submission-time{
+  color:rgba(255,255,255,.58);
+  font-size:12px;
+}
+
+.submission-message{
+  margin-top:10px;
+  color:rgba(255,255,255,.82);
+  font-size:14px;
+  line-height:1.6;
+  white-space:pre-line;
+}
+
+.submission-beat-box{
+  margin-top:12px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+  border-radius:14px;
+  padding:12px;
+}
+
+.submission-beat-title{
+  color:#fff;
+  font-size:14px;
+  font-weight:900;
+}
+
+.submission-beat-meta{
+  margin-top:6px;
+  color:rgba(255,255,255,.62);
+  font-size:12px;
+}
+
+.submission-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:12px;
+}
+
+.btnx.small{
+  min-height:38px;
+  padding:0 12px;
+  font-size:13px;
+  border-radius:12px;
+}
+
+.artist-request-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+}
+
+@media (max-width: 640px){
+  .submission-head{
+    flex-direction:column;
+    align-items:flex-start;
+  }
       }
   </style>
 </head>
@@ -504,6 +641,19 @@
 
     <div class="collab-status" id="collabStatus">Loading requests…</div>
     <div class="collab-grid" id="collabGrid"></div>
+  </section>
+
+  <section id="artistInboxSection" style="display:none; margin-top:18px;">
+    <div class="collab-hero" style="margin-bottom:14px;">
+      <div class="collab-kicker">Artist Inbox</div>
+      <h2 class="collab-title" style="font-size:28px;">Your Request Submissions</h2>
+      <div class="collab-sub">
+        See all producer pitches and beat submissions sent to your collab requests.
+      </div>
+    </div>
+
+    <div class="collab-status" id="artistInboxStatus">Loading your inbox…</div>
+    <div class="artist-inbox-grid" id="artistInboxGrid"></div>
   </section>
 
 </main>
@@ -814,6 +964,241 @@
       wrap.appendChild(card);
     });
   }
+  
+  function normalizeTimeValue(v){
+    try{
+      if (!v) return 0;
+      if (typeof v === "number") return v;
+      if (v?.toDate) return v.toDate().getTime();
+      return new Date(v).getTime() || 0;
+    }catch(e){
+      return 0;
+    }
+  }
+
+  function getMyOwnedRequests(){
+    const uid = window.FB?.auth?.currentUser?.uid || "";
+    if (!uid) return [];
+    return (collabRequestsData || []).filter(item => String(item.createdBy || "") === String(uid));
+  }
+
+  function renderArtistInbox(myRequests, submissions){
+    const section = $("artistInboxSection");
+    const statusEl = $("artistInboxStatus");
+    const wrap = $("artistInboxGrid");
+
+    if (!section || !statusEl || !wrap) return;
+
+    const uid = window.FB?.auth?.currentUser?.uid || "";
+    if (!uid){
+      section.style.display = "none";
+      return;
+    }
+
+    section.style.display = "block";
+    wrap.innerHTML = "";
+
+    if (!myRequests.length){
+      statusEl.textContent = "You have not posted any collab requests yet.";
+      wrap.innerHTML = `
+        <div class="empty-box">
+          Post your first request and producer submissions will appear here.
+        </div>
+      `;
+      return;
+    }
+
+    const submissionsByRequest = {};
+    (submissions || []).forEach((item) => {
+      const reqId = String(item.requestId || "");
+      if (!reqId) return;
+      if (!submissionsByRequest[reqId]) submissionsByRequest[reqId] = [];
+      submissionsByRequest[reqId].push(item);
+    });
+
+    Object.keys(submissionsByRequest).forEach((reqId) => {
+      submissionsByRequest[reqId].sort((a, b) => normalizeTimeValue(b.createdAt) - normalizeTimeValue(a.createdAt));
+    });
+
+    statusEl.textContent = `${myRequests.length} request${myRequests.length === 1 ? "" : "s"} in your inbox`;
+
+    myRequests.forEach((req) => {
+      const reqSubs = submissionsByRequest[String(req.id)] || [];
+      const moodTags = normalizeArray(req.mood);
+
+      const card = document.createElement("div");
+      card.className = "artist-request-card";
+
+      card.innerHTML = `
+        <div class="artist-request-top">
+          <h3 class="artist-request-title">${escapeHtml(req.title || "Untitled Request")}</h3>
+
+          <div class="artist-request-meta">
+            ${req.genre ? `<span class="mini-chip">${escapeHtml(req.genre)}</span>` : ``}
+            <span class="mini-chip">Budget: $${Number(req.budget || 0)}</span>
+            <span class="mini-chip">${escapeHtml(String(req.status || "open").toUpperCase())}</span>
+            <span class="mini-chip">Deadline: ${escapeHtml(formatDate(req.deadline || null))}</span>
+          </div>
+        </div>
+
+        <div class="artist-request-body">
+          <div class="artist-request-desc">${escapeHtml(req.description || "")}</div>
+
+          ${
+            moodTags.length
+              ? `<div class="collab-tags">
+                  ${moodTags.map(tag => `<span class="collab-tag">${escapeHtml(tag)}</span>`).join("")}
+                </div>`
+              : ``
+          }
+
+          <div class="artist-request-actions">
+            ${
+              String(req.status || "open").toLowerCase() === "open"
+                ? `<button class="btnx small danger" type="button" onclick="closeCollabRequest('${req.id}')">Close Request</button>`
+                : `<button class="btnx small ghost" type="button" disabled>Request Closed</button>`
+            }
+          </div>
+
+          <div class="submission-count">
+            ${reqSubs.length} submission${reqSubs.length === 1 ? "" : "s"}
+          </div>
+
+          ${
+            reqSubs.length
+              ? `<div class="submission-list">
+                  ${reqSubs.map(sub => `
+                    <div class="submission-card">
+                      <div class="submission-head">
+                        <div>
+                          <div class="submission-producer">${escapeHtml(sub.producerName || "Producer")}</div>
+                          <div class="submission-time">${escapeHtml(timeAgo(sub.createdAt) || "recently")}</div>
+                        </div>
+                      </div>
+
+                      <div class="submission-message">${escapeHtml(sub.message || "")}</div>
+
+                      ${
+                        sub.beatId
+                          ? `<div class="submission-beat-box">
+                              <div class="submission-beat-title">${escapeHtml(sub.beatTitle || "Submitted Beat")}</div>
+                              <div class="submission-beat-meta">${escapeHtml(sub.beatGenre || "No genre")}</div>
+                            </div>`
+                          : ``
+                      }
+
+                      <div class="submission-actions">
+                        ${
+                          sub.beatId
+                            ? `<a class="btnx small ghost" href="/beat/?id=${encodeURIComponent(sub.beatId)}">Open Beat</a>`
+                            : ``
+                        }
+                        <a class="btnx small ghost" href="/producer-profile/?producerId=${encodeURIComponent(sub.producerId || "")}">Producer Profile</a>
+                      </div>
+                    </div>
+                  `).join("")}
+                </div>`
+              : `<div class="empty-box" style="margin-top:12px;">No submissions yet for this request.</div>`
+          }
+        </div>
+      `;
+
+      wrap.appendChild(card);
+    });
+  }
+
+  async function loadArtistInbox(){
+    const section = $("artistInboxSection");
+    const statusEl = $("artistInboxStatus");
+    const wrap = $("artistInboxGrid");
+    const user = window.FB?.auth?.currentUser;
+
+    if (!section || !statusEl || !wrap) return;
+
+    if (!user){
+      section.style.display = "none";
+      return;
+    }
+
+    section.style.display = "block";
+    statusEl.textContent = "Loading your inbox…";
+    wrap.innerHTML = "";
+
+    try{
+      const myRequests = getMyOwnedRequests();
+
+      if (!myRequests.length){
+        renderArtistInbox([], []);
+        return;
+      }
+
+      const snap = await window.FB.getDocs(
+        window.FB.collection(window.FB.db, "collabSubmissions")
+      );
+
+      const arr = [];
+      snap.forEach((docSnap) => {
+        const d = docSnap.data() || {};
+        if (String(d.requestOwnerId || "") === String(user.uid)) {
+          arr.push({
+            id: docSnap.id,
+            ...d
+          });
+        }
+      });
+
+      renderArtistInbox(myRequests, arr);
+    }catch(err){
+      console.error(err);
+      statusEl.textContent = "Failed to load your inbox.";
+      wrap.innerHTML = `
+        <div class="empty-box">
+          Could not load your artist inbox right now.
+        </div>
+      `;
+    }
+  }
+
+  async function closeCollabRequest(requestId){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    const req = collabRequestsData.find(x => String(x.id) === String(requestId));
+    if (!req){
+      alert("Request not found.");
+      return;
+    }
+
+    if (String(req.createdBy || "") !== String(user.uid)){
+      alert("You can only close your own request.");
+      return;
+    }
+
+    const ok = confirm("Close this request? Producers will no longer be able to submit.");
+    if (!ok) return;
+
+    try{
+      await window.FB.updateDoc(
+        window.FB.doc(window.FB.db, "collabRequests", String(requestId)),
+        {
+          status: "closed",
+          updatedAt: Date.now()
+        }
+      );
+
+      await loadCollabRequests();
+      await loadArtistInbox();
+    }catch(err){
+      console.error(err);
+      alert("Failed to close request: " + (err?.message || err));
+    }
+  }
+
+  window.closeCollabRequest = closeCollabRequest;
 
   async function loadCollabRequests(){
     const statusEl = $("collabStatus");
@@ -905,6 +1290,7 @@
       resetCreateRequestForm();
       closeCreateRequestModal();
       await loadCollabRequests();
+      await loadArtistInbox();
       alert("Collab request posted.");
     }catch(err){
       console.error(err);
@@ -982,78 +1368,105 @@
   }
 
   async function openSubmissionFlow(requestId){
-    const user = window.FB?.auth?.currentUser;
-    if (!user){
-      alert("Please sign in first.");
-      location.href = "/login/";
-      return;
-    }
-
-    currentSubmitRequestId = String(requestId || "");
-    currentSelectedBeatId = "";
-    $("submissionMessage").value = "";
-
-    const req = collabRequestsData.find(x => String(x.id) === String(requestId));
-    if (req){
-      $("submitModalSub").textContent = `Submit to: ${req.title}`;
-    } else {
-      $("submitModalSub").textContent = "Choose one of your beats and add a pitch.";
-    }
-
-    openSubmitModal();
-    await loadMyProducerBeats();
+  const user = window.FB?.auth?.currentUser;
+  if (!user){
+    alert("Please sign in first.");
+    location.href = "/login/";
+    return;
   }
+
+  const req = collabRequestsData.find(x => String(x.id) === String(requestId));
+  if (!req){
+    alert("Request not found.");
+    return;
+  }
+
+  if (String(req.createdBy || "") === String(user.uid)){
+    alert("You cannot submit to your own request.");
+    return;
+  }
+
+  if (String(req.status || "open").toLowerCase() !== "open"){
+    alert("This request is closed.");
+    return;
+  }
+
+  currentSubmitRequestId = String(requestId || "");
+  currentSelectedBeatId = "";
+  $("submissionMessage").value = "";
+  $("submitModalSub").textContent = `Submit to: ${req.title || "Request"}`;
+
+  openSubmitModal();
+  await loadMyProducerBeats();
+}
 
   async function submitSubmission(){
-    const user = window.FB?.auth?.currentUser;
-    if (!user){
-      alert("Please sign in first.");
-      location.href = "/login/";
-      return;
-    }
-
-    if (!currentSubmitRequestId){
-      alert("Missing request.");
-      return;
-    }
-
-    const message = String($("submissionMessage").value || "").trim();
-    if (!message){
-      alert("Please enter your pitch message.");
-      return;
-    }
-
-    const btn = $("submitSubmissionBtn");
-    btn.disabled = true;
-    btn.textContent = "Sending...";
-
-    try{
-      const selectedBeat = myProducerBeats.find(x => String(x.id) === String(currentSelectedBeatId));
-
-      await window.FB.addDoc(
-        window.FB.collection(window.FB.db, "collabSubmissions"),
-        {
-          requestId: currentSubmitRequestId,
-          producerId: user.uid,
-          producerName: user.displayName || "",
-          beatId: currentSelectedBeatId || "",
-          beatTitle: selectedBeat?.title || "",
-          beatGenre: selectedBeat?.genre || "",
-          message,
-          createdAt: Date.now()
-        }
-      );
-
-      closeSubmitModal();
-      alert("Submission sent.");
-    }catch(err){
-      console.error(err);
-      alert("Failed to send submission: " + (err?.message || err));
-    }finally{
-      btn.disabled = false;
-      btn.textContent = "Send Submission";
-    }
+  const user = window.FB?.auth?.currentUser;
+  if (!user){
+    alert("Please sign in first.");
+    location.href = "/login/";
+    return;
   }
+
+  if (!currentSubmitRequestId){
+    alert("Missing request.");
+    return;
+  }
+
+  const req = collabRequestsData.find(x => String(x.id) === String(currentSubmitRequestId));
+  if (!req){
+    alert("Request not found.");
+    return;
+  }
+
+  if (String(req.status || "open").toLowerCase() !== "open"){
+    alert("This request is closed.");
+    return;
+  }
+
+  const message = String($("submissionMessage").value || "").trim();
+  if (!message){
+    alert("Please enter your pitch message.");
+    return;
+  }
+
+  const btn = $("submitSubmissionBtn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try{
+    const selectedBeat = myProducerBeats.find(x => String(x.id) === String(currentSelectedBeatId));
+
+    await window.FB.addDoc(
+      window.FB.collection(window.FB.db, "collabSubmissions"),
+      {
+        requestId: currentSubmitRequestId,
+        requestTitle: req.title || "",
+        requestOwnerId: req.createdBy || "",
+
+        producerId: user.uid,
+        producerName: user.displayName || "",
+
+        beatId: currentSelectedBeatId || "",
+        beatTitle: selectedBeat?.title || "",
+        beatGenre: selectedBeat?.genre || "",
+
+        message,
+        createdAt: Date.now()
+      }
+    );
+
+    closeSubmitModal();
+    await loadArtistInbox();
+    alert("Submission sent.");
+  }catch(err){
+    console.error(err);
+    alert("Failed to send submission: " + (err?.message || err));
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Send Submission";
+  }
+}
 
   async function goToMyDashboard() {
     try {
@@ -1128,6 +1541,7 @@
   window.addEventListener("firebase-ready", async () => {
     bindCollabEvents();
     await loadCollabRequests();
+    await loadArtistInbox();
   });
 </script>
 
