@@ -271,9 +271,11 @@ function pickDisplayPrice(data) {
 
 function normalizeBeat(docId, data) {
   const artwork = data.artwork || data.beatArtwork || data.coverurl || data.coverUrl || data.coverURL || "";
-  const audio =
+  const previewAudio =
     data.previewAudio || data.previewAudioUrl || data.audiourl ||
-    data.audioUrl || data.audioURL || data.fullAudio || "";
+    data.audioUrl || data.audioURL || data.audio || "";
+
+  const fullAudio = data.fullAudio || data.audio || previewAudio || "";
 
   const producerId = data.producerId || data.producerid || data.producerID || "";
   const producerName = data.producerName || data.producer || data.producerDisplayName || "";
@@ -285,14 +287,25 @@ function normalizeBeat(docId, data) {
 
   return {
     id: docId,
+
     title: data.title || data.beatTitle || data.Title || "Untitled Beat",
     artwork,
-    audio,
+
+    // audio
+    audio: previewAudio,
+    previewAudio,
+    fullAudio,
+
     genre,
     producerId,
     producerName,
+    producerPlan: data.producerPlan || "",
+
     published: data.published === true,
     createdAt,
+    updatedAt: data.updatedAt || null,
+
+    // old/basic fields
     desc: data.desc || data.description || "",
     bpm: data.bpm || null,
     key: data.key || null,
@@ -305,7 +318,14 @@ function normalizeBeat(docId, data) {
     freeDownload: data.freeDownload === true,
     downloadUrl: data.downloadUrl || data.freeDownloadUrl || "",
     featured: data.featured === true,
-    featuredUntil: data.featuredUntil || null
+    featuredUntil: data.featuredUntil || null,
+
+    // ✅ NEW METADATA FIELDS
+    typeBeat: String(data.typeBeat || "").trim(),
+    tags: Array.isArray(data.tags) ? data.tags : [],
+    mood: Array.isArray(data.mood) ? data.mood : [],
+    beatDescription: String(data.beatDescription || "").trim(),
+    searchableText: String(data.searchableText || "").trim()
   };
 }
 
