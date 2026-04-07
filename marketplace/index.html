@@ -826,78 +826,78 @@
   }
 
   function normalizeList(value){
-  if (Array.isArray(value)) return value.map(x => norm(x)).filter(Boolean);
-  return [];
-}
+    if (Array.isArray(value)) return value.map(x => norm(x)).filter(Boolean);
+    return [];
+  }
 
-function splitWords(text){
-  return String(text || "")
-    .toLowerCase()
-    .split(/[\s,]+/g)
-    .map(x => x.trim())
-    .filter(Boolean);
-}
+  function splitWords(text){
+    return String(text || "")
+      .toLowerCase()
+      .split(/[\s,]+/g)
+      .map(x => x.trim())
+      .filter(Boolean);
+  }
 
-function filterBeats(beats, { q, genre, mood, tags, typeBeat }){
-  const qn = norm(q);
-  const genresWanted = normalizeList(genre);
-  const moodsWanted = normalizeList(mood);
-  const tagsWanted = normalizeList(tags);
-  const typeBeatWanted = norm(typeBeat);
+  function filterBeats(beats, { q, genre, mood, tags, typeBeat }){
+    const qn = norm(q);
+    const genresWanted = normalizeList(genre);
+    const moodsWanted = normalizeList(mood);
+    const tagsWanted = normalizeList(tags);
+    const typeBeatWanted = norm(typeBeat);
 
-  return (beats || []).filter((b)=>{
-    const title = norm(b.title);
-    const prod = norm(b.producerName);
-    const gen = norm(b.genre);
-    const beatType = norm(b.typeBeat);
+    return (beats || []).filter((b)=>{
+      const title = norm(b.title);
+      const prod = norm(b.producerName);
+      const gen = norm(b.genre);
+      const beatType = norm(b.typeBeat);
 
-    const beatMood = normalizeList(b.mood);
-    const beatTags = normalizeList(b.tags);
+      const beatMood = normalizeList(b.mood);
+      const beatTags = normalizeList(b.tags);
 
-    const searchableText = norm(
-      b.searchableText ||
-      [
-        b.title,
-        b.producerName,
-        b.genre,
-        b.typeBeat,
-        Array.isArray(b.mood) ? b.mood.join(" ") : "",
-        Array.isArray(b.tags) ? b.tags.join(" ") : "",
-        b.beatDescription,
-        b.desc
-      ].join(" ")
-    );
+      const searchableText = norm(
+        b.searchableText ||
+        [
+          b.title,
+          b.producerName,
+          b.genre,
+          b.typeBeat,
+          Array.isArray(b.mood) ? b.mood.join(" ") : "",
+          Array.isArray(b.tags) ? b.tags.join(" ") : "",
+          b.beatDescription,
+          b.desc
+        ].join(" ")
+      );
 
-    const okGenre = !genresWanted.length || genresWanted.some(g =>
-      gen === g || (g === "r&b" && (gen === "r&b" || gen === "rb"))
-    );
-    if (!okGenre) return false;
+      const okGenre = !genresWanted.length || genresWanted.some(g =>
+        gen === g || (g === "r&b" && (gen === "r&b" || gen === "rb"))
+      );
+      if (!okGenre) return false;
 
-    const okMood = !moodsWanted.length || moodsWanted.every(m =>
-      beatMood.includes(m) || searchableText.includes(m)
-    );
-    if (!okMood) return false;
+      const okMood = !moodsWanted.length || moodsWanted.every(m =>
+        beatMood.includes(m) || searchableText.includes(m)
+      );
+      if (!okMood) return false;
 
-    const okTags = !tagsWanted.length || tagsWanted.every(tag =>
-      beatTags.includes(tag) || searchableText.includes(tag)
-    );
-    if (!okTags) return false;
+      const okTags = !tagsWanted.length || tagsWanted.every(tag =>
+        beatTags.includes(tag) || searchableText.includes(tag)
+      );
+      if (!okTags) return false;
 
-    const okTypeBeat = !typeBeatWanted || beatType.includes(typeBeatWanted) || searchableText.includes(typeBeatWanted);
-    if (!okTypeBeat) return false;
+      const okTypeBeat = !typeBeatWanted || beatType.includes(typeBeatWanted) || searchableText.includes(typeBeatWanted);
+      if (!okTypeBeat) return false;
 
-    if (!qn) return true;
+      if (!qn) return true;
 
-    const qWords = splitWords(qn);
-    return qWords.every(word =>
-      title.includes(word) ||
-      prod.includes(word) ||
-      gen.includes(word) ||
-      beatType.includes(word) ||
-      searchableText.includes(word)
-    );
-  });
-}
+      const qWords = splitWords(qn);
+      return qWords.every(word =>
+        title.includes(word) ||
+        prod.includes(word) ||
+        gen.includes(word) ||
+        beatType.includes(word) ||
+        searchableText.includes(word)
+      );
+    });
+  }
 
   /* ===========================
      ✅ FREE DOWNLOAD (BeatStars style)
