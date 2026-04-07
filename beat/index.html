@@ -551,45 +551,45 @@
       </div>
 
       <div class="grid2">
-        <div class="kv">
-          <div class="k">BPM</div>
-          <div class="v" id="beatBpm">—</div>
-        </div>
-        <div class="kv">
-          <div class="k">Key</div>
-          <div class="v" id="beatKey">—</div>
-        </div>
-        <div class="kv">
-          <div class="k">Uploaded</div>
-          <div class="v" id="beatDate">—</div>
-        </div>
-        <div class="kv">
-          <div class="k">Plays</div>
-          <div class="v" id="beatPlays">—</div>
-        </div>
+  <div class="kv">
+    <div class="k">BPM</div>
+    <div class="v" id="beatBpm">—</div>
+  </div>
+  <div class="kv">
+    <div class="k">Key</div>
+    <div class="v" id="beatKey">—</div>
+  </div>
+  <div class="kv">
+    <div class="k">Uploaded</div>
+    <div class="v" id="beatDate">—</div>
+  </div>
+  <div class="kv">
+    <div class="k">Plays</div>
+    <div class="v" id="beatPlays">—</div>
+  </div>
+</div>
 
-        <div class="beat-extra-meta" id="beatExtraMeta" style="display:none;">
-          <div class="beat-extra-card">
-            <div class="beat-extra-label">Type Beat</div>
-            <div class="beat-extra-value" id="beatTypeBeatView">—</div>
-          </div>
+<div class="beat-extra-meta" id="beatExtraMeta" style="display:none;">
+  <div class="beat-extra-card">
+    <div class="beat-extra-label">Type Beat</div>
+    <div class="beat-extra-value" id="beatTypeBeatView">—</div>
+  </div>
 
-          <div class="beat-extra-card">
-            <div class="beat-extra-label">Mood</div>
-            <div class="beat-extra-tags" id="beatMoodView"></div>
-          </div>
+  <div class="beat-extra-card">
+    <div class="beat-extra-label">Mood</div>
+    <div class="beat-extra-tags" id="beatMoodView"></div>
+  </div>
 
-          <div class="beat-extra-card">
-            <div class="beat-extra-label">Tags</div>
-            <div class="beat-extra-tags" id="beatTagsView"></div>
-          </div>
+  <div class="beat-extra-card">
+    <div class="beat-extra-label">Tags</div>
+    <div class="beat-extra-tags" id="beatTagsView"></div>
+  </div>
 
-          <div class="beat-extra-card">
-            <div class="beat-extra-label">Description</div>
-            <div class="beat-extra-desc" id="beatDescriptionView">—</div>
-          </div>
-        </div>
-      </div>
+  <div class="beat-extra-card">
+    <div class="beat-extra-label">Description</div>
+    <div class="beat-extra-desc" id="beatDescriptionView">—</div>
+  </div>
+</div>
 
       <div class="row" style="margin-top:12px;">
         <button class="btn ghost" id="backToMarket" type="button">← Back to Marketplace</button>
@@ -1147,22 +1147,70 @@
       playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
-      playBtn.addEventListener("click", async ()=>{
-        const pid = String(beat.producerId||"");
-        const bid = String(beat.id||beatId);
-        const key = `${pid}:${bid}`;
+      playBtn.addEventListener("click", async () => {
+  const pid = String(beat.producerId || "");
+  const bid = String(beat.id || beatId);
+  const anaKey = `${pid}:${bid}`;
 
-        if (pid && bid && !window.__ANA_SENT__.play[key]){
-          window.__ANA_SENT__.play[key] = 1;
-          logAnalyticsEvent({ producerId: pid, type:"play", beatId: bid });
+  try {
+    const audioUrl = String(beat.previewAudio || beat.audio || "").trim();
+    if (!audioUrl) {
+      alert("No preview available for this beat.");
+      return;
+    }
 
-          try{
-            const {doc,updateDoc,increment} = window.FB;
-            const ref = doc(window.FB.db,"beats",bid);
-            await updateDoc(ref,{ plays: increment(1) });
-          }catch(e){}
-        }
-      }, true);
+    if (!window.__beatPageAudio) {
+      window.__beatPageAudio = new Audio();
+    }
+
+    const audio = window.__beatPageAudio;
+    const icon = playBtn.querySelector(".playIcon");
+
+    if (audio.src === audioUrl && !audio.paused) {
+      audio.pause();
+      if (icon) icon.textContent = "▶";
+      return;
+    }
+
+    if (audio.src !== audioUrl) {
+      audio.src = audioUrl;
+    }
+
+    await audio.play();
+    if (icon) icon.textContent = "❚❚";
+
+    audio.onpause = () => {
+      if (icon) icon.textContent = "▶";
+    };
+
+    audio.onended = () => {
+      if (icon) icon.textContent = "▶";
+    };
+
+    if (pid && bid && !window.__ANA_SENT__.play[anaKey]) {
+      window.__ANA_SENT__.play[anaKey] = 1;
+
+      try {
+        logAnalyticsEvent({ producerId: pid, type: "play", beatId: bid });
+      } catch (e) {
+        console.warn("analytics event failed", e);
+      }
+
+      try {
+        const { doc, updateDoc, increment } = window.FB;
+        const ref = doc(window.FB.db, "beats", bid);
+        await updateDoc(ref, { plays: increment(1) });
+
+        const currentPlays = Number($("beatPlays").textContent || 0);
+        $("beatPlays").textContent = currentPlays + 1;
+      } catch (e) {
+        console.error("plays increment failed:", e);
+      }
+    }
+  } catch (e) {
+    console.error("audio play failed:", e);
+  }
+}, true);
 
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
