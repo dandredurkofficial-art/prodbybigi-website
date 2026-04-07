@@ -1030,50 +1030,50 @@
   }
 
   function renderBeatExtraMeta(beat){
-  const wrap = $("beatExtraMeta");
-  const typeBeatEl = $("beatTypeBeatView");
-  const moodEl = $("beatMoodView");
-  const tagsEl = $("beatTagsView");
-  const descEl = $("beatDescriptionView");
+    const wrap = $("beatExtraMeta");
+    const typeBeatEl = $("beatTypeBeatView");
+    const moodEl = $("beatMoodView");
+    const tagsEl = $("beatTagsView");
+    const descEl = $("beatDescriptionView");
 
-  if (!wrap) return;
+    if (!wrap) return;
 
-  const typeBeat = String(beat?.typeBeat || "").trim();
-  const mood = Array.isArray(beat?.mood) ? beat.mood.filter(Boolean) : [];
-  const tags = Array.isArray(beat?.tags) ? beat.tags.filter(Boolean) : [];
-  const description = String(beat?.beatDescription || "").trim();
+    const typeBeat = String(beat?.typeBeat || "").trim();
+    const mood = Array.isArray(beat?.mood) ? beat.mood.filter(Boolean) : [];
+    const tags = Array.isArray(beat?.tags) ? beat.tags.filter(Boolean) : [];
+    const description = String(beat?.beatDescription || "").trim();
 
-  console.log("EXTRA META =", { typeBeat, mood, tags, description });
+    console.log("EXTRA META =", { typeBeat, mood, tags, description });
 
-  const hasAnything = !!(typeBeat || mood.length || tags.length || description);
+    const hasAnything = !!(typeBeat || mood.length || tags.length || description);
 
-  if (!hasAnything){
-    wrap.style.display = "none";
-    return;
+    if (!hasAnything){
+      wrap.style.display = "none";
+      return;
+    }
+
+    wrap.style.display = "grid";
+
+    if (typeBeatEl){
+      typeBeatEl.textContent = typeBeat || "—";
+    }
+
+    if (moodEl){
+      moodEl.innerHTML = mood.length
+        ? mood.map(x => `<span class="beat-chip">${x}</span>`).join("")
+        : `<span class="muted">No mood added</span>`;
+    }
+
+    if (tagsEl){
+      tagsEl.innerHTML = tags.length
+        ? tags.map(x => `<span class="beat-chip">${x}</span>`).join("")
+        : `<span class="muted">No tags added</span>`;
+    }
+
+    if (descEl){
+      descEl.textContent = description || "No description added.";
+    }
   }
-
-  wrap.style.display = "grid";
-
-  if (typeBeatEl){
-    typeBeatEl.textContent = typeBeat || "—";
-  }
-
-  if (moodEl){
-    moodEl.innerHTML = mood.length
-      ? mood.map(x => `<span class="beat-chip">${x}</span>`).join("")
-      : `<span class="muted">No mood added</span>`;
-  }
-
-  if (tagsEl){
-    tagsEl.innerHTML = tags.length
-      ? tags.map(x => `<span class="beat-chip">${x}</span>`).join("")
-      : `<span class="muted">No tags added</span>`;
-  }
-
-  if (descEl){
-    descEl.textContent = description || "No description added.";
-  }
-}
 
   async function loadBeatPage(){
     const beatId = qs("id");
