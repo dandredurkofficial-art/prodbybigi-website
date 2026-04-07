@@ -1095,7 +1095,10 @@
 
     let cachedBeat = null;
     try{
-      sessionStorage.removeItem("audiory_beat_" + beatId);
+      const cache = sessionStorage.getItem("audiory_beat_" + beatId);
+      if(cache){
+        cachedBeat = JSON.parse(cache);
+      }
     }catch(e){}
 
     if(cachedBeat){
