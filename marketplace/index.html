@@ -1215,18 +1215,29 @@
     const btn = document.getElementById("marketSearchBtn");
  
     const params = getParams();
-    applyHeader(params);
-    buildChips(params.genre);
+applyHeader(params);
+buildChips(params.genre);
 
-    if (inp) inp.value = params.q || "";
+if (inp) inp.value = params.q || "";
 
-    function goSearch(){
-      const newQ = (inp?.value || "").trim();
-      setParams({ q: newQ, genre: getParams().genre });
-    }
+function goSearch(){
+  const current = getParams();
+  const newQ = (inp?.value || "").trim();
 
-    btn?.addEventListener("click", goSearch);
-    inp?.addEventListener("keydown", (e)=>{ if(e.key==="Enter") goSearch(); });
+  setParams({
+    q: newQ,
+    genre: current.genre,
+    mood: current.mood,
+    tags: current.tags,
+    typeBeat: current.typeBeat,
+    smart: current.smart
+  });
+}
+
+btn?.addEventListener("click", goSearch);
+inp?.addEventListener("keydown", (e)=>{
+  if(e.key==="Enter") goSearch();
+});
 
     status.textContent = "Loading marketplace…";
     status.classList.remove("hidden");
