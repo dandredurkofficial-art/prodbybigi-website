@@ -702,51 +702,120 @@
     `;
   }
 
-  function getParams(){
-    const u = new URL(location.href);
-    const q = (u.searchParams.get("q") || "").trim();
-    const genre = (u.searchParams.get("genre") || "").trim();
-    return { q, genre };
+  function splitParamList(value){
+    return String(value || "")
+      .split(",")
+      .map(x => x.trim())
+      .filter(Boolean);
   }
 
-  function setParams({ q, genre }){
+  function getParams(){
     const u = new URL(location.href);
-    if (q) u.searchParams.set("q", q); else u.searchParams.delete("q");
-    if (genre) u.searchParams.set("genre", genre); else u.searchParams.delete("genre");
+
+    const q = (u.searchParams.get("q") || "").trim();
+    const genre = splitParamList(u.searchParams.get("genre"));
+    const mood = splitParamList(u.searchParams.get("mood"));
+    const tags = splitParamList(u.searchParams.get("tags"));
+    const typeBeat = (u.searchParams.get("typeBeat") || "").trim();
+    const smart = (u.searchParams.get("smart") || "").trim();
+
+    return { q, genre, mood, tags, typeBeat, smart };
+  }
+
+  function setParams({ q, genre, mood, tags, typeBeat, smart }){
+    const u = new URL(location.href);
+
+    if (q) u.searchParams.set("q", q);
+    else u.searchParams.delete("q");
+
+    if (genre && genre.length) u.searchParams.set("genre", genre.join(","));
+    else u.searchParams.delete("genre");
+
+    if (mood && mood.length) u.searchParams.set("mood", mood.join(","));
+    else u.searchParams.delete("mood");
+
+    if (tags && tags.length) u.searchParams.set("tags", tags.join(","));
+    else u.searchParams.delete("tags");
+
+    if (typeBeat) u.searchParams.set("typeBeat", typeBeat);
+    else u.searchParams.delete("typeBeat");
+
+    if (smart) u.searchParams.set("smart", smart);
+    else u.searchParams.delete("smart");
+
     if (!u.searchParams.toString()) u.search = "";
     location.href = u.toString();
   }
 
   function norm(s){ return String(s||"").toLowerCase().trim(); }
 
-  function buildChips(activeGenre){
+    function buildChips(activeGenres){
     const genres = ["All","Afrobeats","Trap","Drill","Amapiano","R&B","Hip Hop"];
     const wrap = document.getElementById("genreChips");
     if(!wrap) return;
+
+    const activeList = Array.isArray(activeGenres) ? activeGenres : [];
     wrap.innerHTML = "";
+
     genres.forEach((g)=>{
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.className = "chip" + ((g !== "All" && norm(g) === norm(activeGenre)) || (g==="All" && !activeGenre) ? " active" : "");
+
+      const isActive =
+        (g === "All" && !activeList.length) ||
+        (g !== "All" && activeList.some(x => norm(x) === norm(g)));
+
+      btn.className = "chip" + (isActive ? " active" : "");
       btn.textContent = g;
+
       btn.addEventListener("click", ()=>{
-        setParams({ q: getParams().q, genre: g === "All" ? "" : g });
+        const current = getParams();
+
+        setParams({
+          q: current.q,
+          genre: g === "All" ? [] : [g],
+          mood: current.mood,
+          tags: current.tags,
+          typeBeat: current.typeBeat,
+          smart: current.smart
+        });
       });
+
       wrap.appendChild(btn);
     });
   }
 
-  function applyHeader({ q, genre }){
+  function applyHeader({ q, genre, mood, tags, typeBeat, smart }){
     const t = document.getElementById("marketTitle");
     const s = document.getElementById("marketSub");
     if(!t || !s) return;
 
-    if (genre && q){
-      t.textContent = `${genre} — Search`;
-      s.textContent = `Results for “${q}” in ${genre}.`;
-    } else if (genre){
-      t.textContent = `${genre} Beats`;
-      s.textContent = `Only ${genre} beats. Tap play to preview.`;
+    const genreText = genre.length ? genre.join(", ") : "";
+    const moodText = mood.length ? mood.join(", ") : "";
+    const tagsText = tags.length ? tags.join(", ") : "";
+
+    if (smart === "1"){
+      t.textContent = "Smart Finder Results";
+
+      const bits = [];
+      if (q) bits.push(`query “${q}”`);
+      if (genreText) bits.push(`genre: ${genreText}`);
+      if (moodText) bits.push(`mood: ${moodText}`);
+      if (typeBeat) bits.push(`type beat: ${typeBeat}`);
+      if (tagsText) bits.push(`tags: ${tagsText}`);
+
+      s.textContent = bits.length
+        ? `Showing results for ${bits.join(" • ")}.`
+        : "Smart Finder results.";
+      return;
+    }
+
+    if (genre.length && q){
+      t.textContent = `${genreText} — Search`;
+      s.textContent = `Results for “${q}” in ${genreText}.`;
+    } else if (genre.length){
+      t.textContent = `${genreText} Beats`;
+      s.textContent = `Only ${genreText} beats. Tap play to preview.`;
     } else if (q){
       t.textContent = `Search Results`;
       s.textContent = `Results for “${q}”.`;
@@ -756,22 +825,79 @@
     }
   }
 
-  function filterBeats(beats, { q, genre }){
-    const qn = norm(q);
-    const gn = norm(genre);
+  function normalizeList(value){
+  if (Array.isArray(value)) return value.map(x => norm(x)).filter(Boolean);
+  return [];
+}
 
-    return (beats || []).filter((b)=>{
-      const title = norm(b.title);
-      const prod  = norm(b.producerName);
-      const gen   = norm(b.genre);
+function splitWords(text){
+  return String(text || "")
+    .toLowerCase()
+    .split(/[\s,]+/g)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
 
-      const okGenre = !gn || gen === gn || (gn === "r&b" && (gen === "r&b" || gen === "rb"));
-      if (!okGenre) return false;
+function filterBeats(beats, { q, genre, mood, tags, typeBeat }){
+  const qn = norm(q);
+  const genresWanted = normalizeList(genre);
+  const moodsWanted = normalizeList(mood);
+  const tagsWanted = normalizeList(tags);
+  const typeBeatWanted = norm(typeBeat);
 
-      if (!qn) return true;
-      return title.includes(qn) || prod.includes(qn) || gen.includes(qn);
-    });
-  }
+  return (beats || []).filter((b)=>{
+    const title = norm(b.title);
+    const prod = norm(b.producerName);
+    const gen = norm(b.genre);
+    const beatType = norm(b.typeBeat);
+
+    const beatMood = normalizeList(b.mood);
+    const beatTags = normalizeList(b.tags);
+
+    const searchableText = norm(
+      b.searchableText ||
+      [
+        b.title,
+        b.producerName,
+        b.genre,
+        b.typeBeat,
+        Array.isArray(b.mood) ? b.mood.join(" ") : "",
+        Array.isArray(b.tags) ? b.tags.join(" ") : "",
+        b.beatDescription,
+        b.desc
+      ].join(" ")
+    );
+
+    const okGenre = !genresWanted.length || genresWanted.some(g =>
+      gen === g || (g === "r&b" && (gen === "r&b" || gen === "rb"))
+    );
+    if (!okGenre) return false;
+
+    const okMood = !moodsWanted.length || moodsWanted.every(m =>
+      beatMood.includes(m) || searchableText.includes(m)
+    );
+    if (!okMood) return false;
+
+    const okTags = !tagsWanted.length || tagsWanted.every(tag =>
+      beatTags.includes(tag) || searchableText.includes(tag)
+    );
+    if (!okTags) return false;
+
+    const okTypeBeat = !typeBeatWanted || beatType.includes(typeBeatWanted) || searchableText.includes(typeBeatWanted);
+    if (!okTypeBeat) return false;
+
+    if (!qn) return true;
+
+    const qWords = splitWords(qn);
+    return qWords.every(word =>
+      title.includes(word) ||
+      prod.includes(word) ||
+      gen.includes(word) ||
+      beatType.includes(word) ||
+      searchableText.includes(word)
+    );
+  });
+}
 
   /* ===========================
      ✅ FREE DOWNLOAD (BeatStars style)
