@@ -305,8 +305,7 @@ function normalizeBeat(docId, data) {
     createdAt,
     updatedAt: data.updatedAt || null,
 
-    // old/basic fields
-    desc: data.desc || data.description || "",
+    // old/basic field
     bpm: data.bpm || null,
     key: data.key || null,
     plays: Number(data.plays ?? 0),
