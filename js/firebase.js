@@ -814,6 +814,163 @@ window.FB.getAnalyticsSummary = async function ({
 };
 
 /* =========================================================
+   ✅ COLLAB MARKETPLACE HELPERS
+========================================================= */
+
+// Create collab request
+window.FB.createCollabRequest = async function ({
+  title = "",
+  description = "",
+  genre = "",
+  budget = 0,
+  mood = [],
+  deadline = null
+} = {}) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const cleanTitle = String(title || "").trim();
+  const cleanDescription = String(description || "").trim();
+  const cleanGenre = String(genre || "").trim();
+  const cleanMood = Array.isArray(mood)
+    ? mood.map(x => String(x || "").trim()).filter(Boolean)
+    : [];
+
+  if (!cleanTitle) throw new Error("Missing title");
+  if (!cleanDescription) throw new Error("Missing description");
+
+  return await addDoc(collection(db, "collabRequests"), {
+    title: cleanTitle,
+    description: cleanDescription,
+    genre: cleanGenre,
+    budget: Number(budget || 0),
+    mood: cleanMood,
+    deadline: deadline ? Number(deadline) : null,
+    createdBy: user.uid,
+    createdAt: Date.now(),
+    status: "open"
+  });
+};
+
+// Read collab requests
+window.FB.fetchCollabRequests = async function () {
+  const snap = await getDocs(collection(db, "collabRequests"));
+  const arr = [];
+  snap.forEach(d => {
+    arr.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
+
+  arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  return arr;
+};
+
+// Fetch current producer beats
+window.FB.fetchMyProducerBeats = async function () {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const qy = query(
+    collection(db, "beats"),
+    where("producerId", "==", user.uid)
+  );
+
+  const snap = await getDocs(qy);
+  const arr = [];
+  snap.forEach(d => {
+    arr.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
+
+  arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  return arr;
+};
+
+// Submit to request
+window.FB.createCollabSubmission = async function ({
+  requestId = "",
+  beatId = "",
+  beatTitle = "",
+  beatGenre = "",
+  message = ""
+} = {}) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const cleanRequestId = String(requestId || "").trim();
+  const cleanBeatId = String(beatId || "").trim();
+  const cleanBeatTitle = String(beatTitle || "").trim();
+  const cleanBeatGenre = String(beatGenre || "").trim();
+  const cleanMessage = String(message || "").trim();
+
+  if (!cleanRequestId) throw new Error("Missing requestId");
+  if (!cleanMessage) throw new Error("Missing message");
+
+  return await addDoc(collection(db, "collabSubmissions"), {
+    requestId: cleanRequestId,
+    producerId: user.uid,
+    producerName: user.displayName || user.email || "Producer",
+    beatId: cleanBeatId,
+    beatTitle: cleanBeatTitle,
+    beatGenre: cleanBeatGenre,
+    message: cleanMessage,
+    createdAt: Date.now(),
+    status: "new"
+  });
+};
+
+// Requests created by current user
+window.FB.fetchMyCollabRequests = async function () {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+
+  const qy = query(
+    collection(db, "collabRequests"),
+    where("createdBy", "==", user.uid)
+  );
+
+  const snap = await getDocs(qy);
+  const arr = [];
+  snap.forEach(d => {
+    arr.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
+
+  arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  return arr;
+};
+
+// Submissions for one request
+window.FB.fetchSubmissionsForRequest = async function (requestId) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("NOT_AUTHENTICATED");
+  if (!requestId) throw new Error("Missing requestId");
+
+  const qy = query(
+    collection(db, "collabSubmissions"),
+    where("requestId", "==", String(requestId))
+  );
+
+  const snap = await getDocs(qy);
+  const arr = [];
+  snap.forEach(d => {
+    arr.push({
+      id: d.id,
+      ...d.data()
+    });
+  });
+
+  arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+  return arr;
+};
+
+/* =========================================================
    ✅ FIREBASE READY EVENT
 ========================================================= */
 window.dispatchEvent(new Event("firebase-ready"));
