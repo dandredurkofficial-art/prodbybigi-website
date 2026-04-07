@@ -1041,7 +1041,7 @@
     const typeBeat = String(beat?.typeBeat || "").trim();
     const mood = Array.isArray(beat?.mood) ? beat.mood.filter(Boolean) : [];
     const tags = Array.isArray(beat?.tags) ? beat.tags.filter(Boolean) : [];
-    const description = String(beat?.beatDescription || "").trim();
+    const description = String(beat?.beatDescription || beat?.desc || "").trim();
 
     console.log("EXTRA META =", { typeBeat, mood, tags, description });
 
@@ -1075,6 +1075,16 @@
     }
   }
 
+  function renderBeatInstant(beat){
+    if (!beat) return;
+
+    if ($("beatCover")) $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
+    if ($("beatTitle")) $("beatTitle").textContent = beat.title || "Beat";
+    if ($("beatBpm")) $("beatBpm").textContent = pickBpm(beat);
+    if ($("beatKey")) $("beatKey").textContent = pickKey(beat);
+    if ($("beatDate")) $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
+  }
+
   async function loadBeatPage(){
     const beatId = qs("id");
     const status = $("beatStatus");
@@ -1096,7 +1106,12 @@
     }catch(e){}
 
     if(cachedBeat){
-      renderBeatInstant(cachedBeat);
+      if ($("beatCover")) $("beatCover").innerHTML = coverHTML(cachedBeat.artwork, cachedBeat.title);
+      if ($("beatTitle")) $("beatTitle").textContent = cachedBeat.title || "Beat";
+      if ($("beatBpm")) $("beatBpm").textContent = pickBpm(cachedBeat);
+      if ($("beatKey")) $("beatKey").textContent = pickKey(cachedBeat);
+      if ($("beatDate")) $("beatDate").textContent = formatDate(cachedBeat.createdAt || cachedBeat.created || cachedBeat.uploadedAt);
+
       $("beatStatus").style.display = "none";
       $("beatContent").style.display = "grid";
     }
