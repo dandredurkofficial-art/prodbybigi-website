@@ -646,7 +646,65 @@
           width:46px;
           height:46px;
         }
-      }
+
+        /* =========================
+   SMART FINDER
+========================= */
+.smart-finder-wrap{
+  position:relative;
+}
+
+.smart-finder-meta{
+  margin-top:12px;
+}
+
+.smart-finder-hint{
+  color:rgba(255,255,255,.68);
+  font-size:13px;
+  line-height:1.5;
+  margin-bottom:10px;
+}
+
+.smart-finder-hint span{
+  color:#fff;
+  opacity:.9;
+  font-weight:700;
+}
+
+.smart-finder-chips{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.smart-chip{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.05);
+  color:#fff;
+  border-radius:999px;
+  padding:9px 13px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+  transition:.18s ease;
+}
+
+.smart-chip:hover{
+  background:rgba(255,255,255,.09);
+  border-color:rgba(59,130,246,.38);
+}
+
+@media (max-width:640px){
+  .smart-finder-hint{
+    font-size:12px;
+  }
+
+  .smart-chip{
+    padding:8px 12px;
+    font-size:11.5px;
+  }
+}
+      
   </style>
 
 </head>
@@ -718,10 +776,25 @@
   <section class="hero">
     <div class="card hero-card">
       <h1 class="hero-title">Your first hit starts here</h1>
-      <div class="hero-search">
-        <input id="searchInput" placeholder="Explore new sounds…" />
-        <button id="searchBtn" type="button">Search</button>
-      </div>
+      <div class="hero-search smart-finder-wrap">
+  <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
+  <button id="searchBtn" type="button">Search</button>
+</div>
+
+<div class="smart-finder-meta">
+  <div class="smart-finder-hint">
+    Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
+  </div>
+
+  <div class="smart-finder-chips">
+    <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
+    <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
+    <button type="button" class="smart-chip" data-smart-fill="Afrobeats">Afrobeats</button>
+    <button type="button" class="smart-chip" data-smart-fill="Drill dark">Drill dark</button>
+    <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
+    <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
+  </div>
+</div>
     </div>
   </section>
 
