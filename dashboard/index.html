@@ -3999,14 +3999,14 @@ async function publishBeat(){
     return;
   }
 
-  if (!$("exclusiveEnabled").checked){
+  if (!$("exclusiveEnabled")?.checked){
     stemsZipUrl = null;
     stemsZipPath = null;
   }
 
   const publishBtn = $("publishBtn");
   publishBtn.disabled = true;
-  publishBtn.innerText = "Publishing...";
+  publishBtn.innerText = editingBeatId ? "Updating..." : "Publishing...";
 
   try{
     const producerName = getProducerDisplayName();
@@ -4021,6 +4021,9 @@ async function publishBeat(){
       .map(x => x.trim())
       .filter(Boolean);
 
+    const isEditing = !!editingBeatId;
+    const beatIdToUpdate = isEditing ? String(editingBeatId) : null;
+
     const payload = {
       title: $("title")?.value || "Untitled Beat",
       desc: $("desc")?.value || "",
@@ -4033,7 +4036,6 @@ async function publishBeat(){
       tags,
       mood,
 
-      plays: 0,
       producerName,
       artwork: uploadedArtwork || "",
 
@@ -4064,32 +4066,49 @@ async function publishBeat(){
       freeDownload: $("freeDownload")?.checked === true,
       bulkDiscount: $("bulkDiscount")?.checked === true,
 
-      ...(editingBeatId ? {} : { createdAt: Date.now() }),
       updatedAt: Date.now()
     };
 
-    payload.searchableText = buildSearchableText(payload);
-
-    if (editingBeatId){
-      await window.updateDoc(window.doc(window.db,"beats",editingBeatId), payload);
-      editingBeatId = null;
-    } else {
-      await window.addDoc(window.collection(window.db,"beats"), payload);
+    if (!isEditing){
+      payload.createdAt = Date.now();
+      payload.plays = 0;
     }
 
+    payload.searchableText = buildSearchableText(payload);
+
+    console.log("SAVE MODE:", isEditing ? "UPDATE" : "CREATE", beatIdToUpdate);
+
+    if (isEditing && beatIdToUpdate){
+      await window.updateDoc(
+        window.doc(window.db, "beats", beatIdToUpdate),
+        payload
+      );
+    } else {
+      await window.addDoc(window.collection(window.db, "beats"), payload);
+    }
+
+    editingBeatId = null;
+    editingBeatData = null;
+
     resetUploadForm();
+    if ($("publishBtn")) $("publishBtn").innerText = "Publish Beat";
+
     await loadBeats();
     await loadDashboardStats();
-    alert("Beat published");
+
+    alert(isEditing ? "Beat updated" : "Beat published");
   }catch(err){
     console.error(err);
     alert("Publish failed: " + (err?.message || err));
+  }finally{
+    publishBtn.disabled = false;
+    publishBtn.innerText = editingBeatId ? "Update Beat" : "Publish Beat";
   }
-
-  publishBtn.disabled = false;
-  publishBtn.innerText = "Publish Beat";
 }
 function resetUploadForm(){
+  editingBeatId = null;
+  editingBeatData = null;
+
   if ($("title")) $("title").value = "";
   if ($("desc")) $("desc").value = "";
   if ($("beatDescription")) $("beatDescription").value = "";
@@ -4108,11 +4127,22 @@ function resetUploadForm(){
   previewAudioPath = null;
   stemsZipPath = null;
 
+  if ($("basicEnabled")) $("basicEnabled").checked = false;
+  if ($("basicPrice")) $("basicPrice").value = "";
+  if ($("premiumEnabled")) $("premiumEnabled").checked = false;
+  if ($("premiumPrice")) $("premiumPrice").value = "";
+  if ($("exclusiveEnabled")) $("exclusiveEnabled").checked = false;
+  if ($("exclusivePrice")) $("exclusivePrice").value = "";
+  if ($("freeDownload")) $("freeDownload").checked = false;
+  if ($("bulkDiscount")) $("bulkDiscount").checked = false;
+
   if ($("artworkBox")) $("artworkBox").innerHTML = "<span>Artwork Preview</span>";
   if ($("artworkStatus")) $("artworkStatus").innerHTML = "";
   if ($("fullStatus")) $("fullStatus").innerHTML = "";
   if ($("previewStatus")) $("previewStatus").innerHTML = "";
   if ($("stemsStatus")) $("stemsStatus").innerHTML = "";
+
+  if ($("publishBtn")) $("publishBtn").innerText = "Publish Beat";
 }
 
 /* ===========================
@@ -4204,9 +4234,13 @@ function renderTracks(){
 }
 function editBeat(i){
   const b = beatsData[i];
-  if (!b) return;
+  if (!b || !b.id) {
+    alert("Beat not found for editing.");
+    return;
+  }
 
-  editingBeatId = b.id;
+  editingBeatId = String(b.id);
+  editingBeatData = b;
 
   if ($("title")) $("title").value = b.title || "";
   if ($("desc")) $("desc").value = b.desc || "";
@@ -4222,6 +4256,9 @@ function editBeat(i){
   fullAudio = b.fullAudio || null;
   previewAudio = b.previewAudio || null;
   stemsZipUrl = b.stemsZipUrl || null;
+  fullAudioPath = b.filePath || null;
+  previewAudioPath = b.previewPath || null;
+  stemsZipPath = b.stemsZipPath || null;
 
   if ($("artworkBox")){
     $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
@@ -4238,6 +4275,10 @@ function editBeat(i){
 
   if ($("freeDownload")) $("freeDownload").checked = !!b.freeDownload;
   if ($("bulkDiscount")) $("bulkDiscount").checked = !!b.bulkDiscount;
+
+  if ($("publishBtn")) $("publishBtn").innerText = "Update Beat";
+
+  console.log("EDIT MODE ON:", editingBeatId);
 
   showPage("upload");
 }
