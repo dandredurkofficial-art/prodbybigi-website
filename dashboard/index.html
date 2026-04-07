@@ -3994,7 +3994,7 @@ async function startBulkUpload(){
 async function publishBeat(){
   if (blockIfUploadLimitReached()) return;
 
-  if(!fullAudio || !previewAudio){
+  if (!fullAudio || !previewAudio){
     alert("Upload both audios first");
     return;
   }
@@ -4005,8 +4005,11 @@ async function publishBeat(){
   }
 
   const publishBtn = $("publishBtn");
+  const isEditing = !!editingBeatId;
+  const beatIdToUpdate = isEditing ? String(editingBeatId) : null;
+
   publishBtn.disabled = true;
-  publishBtn.innerText = editingBeatId ? "Updating..." : "Publishing...";
+  publishBtn.innerText = isEditing ? "Updating..." : "Publishing...";
 
   try{
     const producerName = getProducerDisplayName();
@@ -4021,15 +4024,12 @@ async function publishBeat(){
       .map(x => x.trim())
       .filter(Boolean);
 
-    const isEditing = !!editingBeatId;
-    const beatIdToUpdate = isEditing ? String(editingBeatId) : null;
-
     const payload = {
-      title: $("title")?.value || "Untitled Beat",
-      desc: $("desc")?.value || "",
-      beatDescription: $("beatDescription")?.value || "",
-      bpm: $("bpm")?.value || "",
-      key: $("key")?.value || "",
+      title: ($("title")?.value || "Untitled Beat").trim(),
+      desc: ($("desc")?.value || "").trim(),
+      beatDescription: ($("beatDescription")?.value || "").trim(),
+      bpm: ($("bpm")?.value || "").trim(),
+      key: ($("key")?.value || "").trim(),
       genre: ($("genre")?.value || "").trim(),
 
       typeBeat: ($("typeBeat")?.value || "").trim(),
@@ -4059,13 +4059,22 @@ async function publishBeat(){
 
       published: true,
       licenses: {
-        basic: { enabled: $("basicEnabled")?.checked === true, price: Number($("basicPrice")?.value || 0) },
-        premium: { enabled: $("premiumEnabled")?.checked === true, price: Number($("premiumPrice")?.value || 0) },
-        exclusive: { enabled: $("exclusiveEnabled")?.checked === true, price: Number($("exclusivePrice")?.value || 0) }
+        basic: {
+          enabled: $("basicEnabled")?.checked === true,
+          price: Number($("basicPrice")?.value || 0)
+        },
+        premium: {
+          enabled: $("premiumEnabled")?.checked === true,
+          price: Number($("premiumPrice")?.value || 0)
+        },
+        exclusive: {
+          enabled: $("exclusiveEnabled")?.checked === true,
+          price: Number($("exclusivePrice")?.value || 0)
+        }
       },
+
       freeDownload: $("freeDownload")?.checked === true,
       bulkDiscount: $("bulkDiscount")?.checked === true,
-
       updatedAt: Date.now()
     };
 
@@ -4084,25 +4093,23 @@ async function publishBeat(){
         payload
       );
     } else {
-      await window.addDoc(window.collection(window.db, "beats"), payload);
+      await window.addDoc(
+        window.collection(window.db, "beats"),
+        payload
+      );
     }
 
-    editingBeatId = null;
-    editingBeatData = null;
-
     resetUploadForm();
-    if ($("publishBtn")) $("publishBtn").innerText = "Publish Beat";
-
     await loadBeats();
     await loadDashboardStats();
 
     alert(isEditing ? "Beat updated" : "Beat published");
-  }catch(err){
+  } catch (err){
     console.error(err);
     alert("Publish failed: " + (err?.message || err));
-  }finally{
+  } finally {
     publishBtn.disabled = false;
-    publishBtn.innerText = editingBeatId ? "Update Beat" : "Publish Beat";
+    if ($("publishBtn")) $("publishBtn").innerText = "Publish Beat";
   }
 }
 function resetUploadForm(){
@@ -4234,7 +4241,7 @@ function renderTracks(){
 }
 function editBeat(i){
   const b = beatsData[i];
-  if (!b || !b.id) {
+  if (!b || !b.id){
     alert("Beat not found for editing.");
     return;
   }
@@ -4261,17 +4268,24 @@ function editBeat(i){
   stemsZipPath = b.stemsZipPath || null;
 
   if ($("artworkBox")){
-    $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
+    $("artworkBox").innerHTML = b.artwork
+      ? `<img src="${b.artwork}">`
+      : "<span>Artwork Preview</span>";
   }
 
+  if ($("artworkStatus")) $("artworkStatus").innerHTML = b.artwork ? "Artwork loaded" : "";
+  if ($("fullStatus")) $("fullStatus").innerHTML = b.fullAudio ? "Full audio loaded" : "";
+  if ($("previewStatus")) $("previewStatus").innerHTML = b.previewAudio ? "Preview audio loaded" : "";
+  if ($("stemsStatus")) $("stemsStatus").innerHTML = b.stemsZipUrl ? "Stems loaded" : "";
+
   if ($("basicEnabled")) $("basicEnabled").checked = !!(b.licenses?.basic?.enabled);
-  if ($("basicPrice")) $("basicPrice").value = (b.licenses?.basic?.price ?? 0);
+  if ($("basicPrice")) $("basicPrice").value = b.licenses?.basic?.price ?? "";
 
   if ($("premiumEnabled")) $("premiumEnabled").checked = !!(b.licenses?.premium?.enabled);
-  if ($("premiumPrice")) $("premiumPrice").value = (b.licenses?.premium?.price ?? 0);
+  if ($("premiumPrice")) $("premiumPrice").value = b.licenses?.premium?.price ?? "";
 
   if ($("exclusiveEnabled")) $("exclusiveEnabled").checked = !!(b.licenses?.exclusive?.enabled);
-  if ($("exclusivePrice")) $("exclusivePrice").value = (b.licenses?.exclusive?.price ?? 0);
+  if ($("exclusivePrice")) $("exclusivePrice").value = b.licenses?.exclusive?.price ?? "";
 
   if ($("freeDownload")) $("freeDownload").checked = !!b.freeDownload;
   if ($("bulkDiscount")) $("bulkDiscount").checked = !!b.bulkDiscount;
@@ -4279,7 +4293,6 @@ function editBeat(i){
   if ($("publishBtn")) $("publishBtn").innerText = "Update Beat";
 
   console.log("EDIT MODE ON:", editingBeatId);
-
   showPage("upload");
 }
 async function playPreview(i){
