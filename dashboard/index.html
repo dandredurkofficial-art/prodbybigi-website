@@ -4207,36 +4207,40 @@ function renderTracks(){
 }
 function editBeat(i){
   const b = beatsData[i];
+  if (!b) return;
+
   editingBeatId = b.id;
 
-  $("title").value = b.title || "";
-  $("desc").value = b.desc || "";
-  $("beatDescription").value = b.beatDescription || "";
-  $("bpm").value = b.bpm || "";
-  $("key").value = b.key || "";
-  $("genre").value = b.genre || "";
-  $("typeBeat").value = b.typeBeat || "";
-  $("tags").value = Array.isArray(b.tags) ? b.tags.join(", ") : "";
-  $("mood").value = Array.isArray(b.mood) ? b.mood.join(", ") : "";
+  if ($("title")) $("title").value = b.title || "";
+  if ($("desc")) $("desc").value = b.desc || "";
+  if ($("beatDescription")) $("beatDescription").value = b.beatDescription || "";
+  if ($("bpm")) $("bpm").value = b.bpm || "";
+  if ($("key")) $("key").value = b.key || "";
+  if ($("genre")) $("genre").value = b.genre || "";
+  if ($("typeBeat")) $("typeBeat").value = b.typeBeat || "";
+  if ($("tags")) $("tags").value = Array.isArray(b.tags) ? b.tags.join(", ") : "";
+  if ($("mood")) $("mood").value = Array.isArray(b.mood) ? b.mood.join(", ") : "";
 
   uploadedArtwork = b.artwork || null;
   fullAudio = b.fullAudio || null;
   previewAudio = b.previewAudio || null;
   stemsZipUrl = b.stemsZipUrl || null;
 
-  $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
+  if ($("artworkBox")){
+    $("artworkBox").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "<span>Artwork Preview</span>";
+  }
 
-  $("basicEnabled").checked = !!(b.licenses?.basic?.enabled);
-  $("basicPrice").value = (b.licenses?.basic?.price ?? 0);
+  if ($("basicEnabled")) $("basicEnabled").checked = !!(b.licenses?.basic?.enabled);
+  if ($("basicPrice")) $("basicPrice").value = (b.licenses?.basic?.price ?? 0);
 
-  $("premiumEnabled").checked = !!(b.licenses?.premium?.enabled);
-  $("premiumPrice").value = (b.licenses?.premium?.price ?? 0);
+  if ($("premiumEnabled")) $("premiumEnabled").checked = !!(b.licenses?.premium?.enabled);
+  if ($("premiumPrice")) $("premiumPrice").value = (b.licenses?.premium?.price ?? 0);
 
-  $("exclusiveEnabled").checked = !!(b.licenses?.exclusive?.enabled);
-  $("exclusivePrice").value = (b.licenses?.exclusive?.price ?? 0);
+  if ($("exclusiveEnabled")) $("exclusiveEnabled").checked = !!(b.licenses?.exclusive?.enabled);
+  if ($("exclusivePrice")) $("exclusivePrice").value = (b.licenses?.exclusive?.price ?? 0);
 
-  $("freeDownload").checked = !!b.freeDownload;
-  $("bulkDiscount").checked = !!b.bulkDiscount;
+  if ($("freeDownload")) $("freeDownload").checked = !!b.freeDownload;
+  if ($("bulkDiscount")) $("bulkDiscount").checked = !!b.bulkDiscount;
 
   showPage("upload");
 }
