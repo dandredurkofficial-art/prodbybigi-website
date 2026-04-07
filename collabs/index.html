@@ -638,4 +638,462 @@
   function csvToArray(v){
     return String(v || "")
       .split(",")
-      .
+      .map(x => x.trim())
+      .filter(Boolean);
+  }
+
+  function normalizeArray(v){
+    if (Array.isArray(v)) return v.map(x => String(x || "").trim()).filter(Boolean);
+    return [];
+  }
+
+  function closeCreateRequestModal(){
+    $("createReqBackdrop").style.display = "none";
+    $("createReqModal").style.display = "none";
+  }
+
+  function openCreateRequestModal(){
+    $("createReqBackdrop").style.display = "block";
+    $("createReqModal").style.display = "block";
+  }
+
+  function closeSubmitModal(){
+    $("submitBackdrop").style.display = "none";
+    $("submitModal").style.display = "none";
+    currentSubmitRequestId = "";
+    currentSelectedBeatId = "";
+    $("submissionMessage").value = "";
+    $("myBeatsList").innerHTML = "";
+    $("submitModalSub").textContent = "Choose one of your beats and add a pitch.";
+  }
+
+  function openSubmitModal(){
+    $("submitBackdrop").style.display = "block";
+    $("submitModal").style.display = "block";
+  }
+
+  function resetCreateRequestForm(){
+    $("reqTitle").value = "";
+    $("reqDescription").value = "";
+    $("reqGenre").value = "";
+    $("reqBudget").value = "";
+    $("reqMood").value = "";
+    $("reqDeadline").value = "";
+  }
+
+  function getFilteredRequests(){
+    const search = String($("collabSearchInput")?.value || "").trim().toLowerCase();
+    const genre = String($("collabGenreFilter")?.value || "").trim().toLowerCase();
+    const status = String($("collabStatusFilter")?.value || "").trim().toLowerCase();
+
+    return (collabRequestsData || []).filter((item) => {
+      const title = String(item.title || "").toLowerCase();
+      const desc = String(item.description || "").toLowerCase();
+      const itemGenre = String(item.genre || "").toLowerCase();
+      const moods = normalizeArray(item.mood).join(" ").toLowerCase();
+      const itemStatus = String(item.status || "open").toLowerCase();
+
+      const searchOk = !search ||
+        title.includes(search) ||
+        desc.includes(search) ||
+        itemGenre.includes(search) ||
+        moods.includes(search);
+
+      const genreOk = !genre || itemGenre === genre;
+      const statusOk = !status || itemStatus === status;
+
+      return searchOk && genreOk && statusOk;
+    });
+  }
+
+  function renderRequests(){
+    const wrap = $("collabGrid");
+    const statusEl = $("collabStatus");
+    if (!wrap || !statusEl) return;
+
+    const filtered = getFilteredRequests();
+    wrap.innerHTML = "";
+
+    if (!collabRequestsData.length){
+      statusEl.textContent = "No requests yet.";
+      wrap.innerHTML = `
+        <div class="empty-box">
+          No collab requests yet. Be the first artist to post one.
+        </div>
+      `;
+      return;
+    }
+
+    statusEl.textContent = `${filtered.length} request${filtered.length === 1 ? "" : "s"} found`;
+
+    if (!filtered.length){
+      wrap.innerHTML = `
+        <div class="empty-box">
+          No requests match your filters.
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach((item) => {
+      const moodTags = normalizeArray(item.mood);
+      const card = document.createElement("div");
+      card.className = "collab-card";
+
+      card.innerHTML = `
+        <div class="collab-card-top">
+          <h3 class="collab-card-title">${escapeHtml(item.title)}</h3>
+          <div class="collab-card-meta">
+            ${item.genre ? `<span class="mini-chip">${escapeHtml(item.genre)}</span>` : ``}
+            <span class="mini-chip">Budget: $${Number(item.budget || 0)}</span>
+            <span class="mini-chip">${escapeHtml(String(item.status || "open").toUpperCase())}</span>
+            <span class="mini-chip">Deadline: ${escapeHtml(formatDate(item.deadline || null))}</span>
+          </div>
+        </div>
+
+        <div class="collab-card-body">
+          <div class="collab-desc">${escapeHtml(item.description || "")}</div>
+
+          ${
+            moodTags.length
+              ? `<div class="collab-tags">
+                  ${moodTags.map(tag => `<span class="collab-tag">${escapeHtml(tag)}</span>`).join("")}
+                </div>`
+              : ``
+          }
+
+          <div class="collab-bottom">
+            <div class="collab-small">
+              Posted ${escapeHtml(timeAgo(item.createdAt)) || "recently"}
+            </div>
+
+            <div class="collab-actions">
+              ${
+                String(item.status || "open").toLowerCase() === "open"
+                  ? `<button class="btnx" type="button" onclick="openSubmissionFlow('${item.id}')">Submit Beat</button>`
+                  : `<button class="btnx ghost" type="button" disabled>Closed</button>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+
+      wrap.appendChild(card);
+    });
+  }
+
+  async function loadCollabRequests(){
+    const statusEl = $("collabStatus");
+    const wrap = $("collabGrid");
+
+    if (statusEl) statusEl.textContent = "Loading requests…";
+    if (wrap) wrap.innerHTML = "";
+
+    try{
+      const snap = await window.FB.getDocs(
+        window.FB.collection(window.FB.db, "collabRequests")
+      );
+
+      const arr = [];
+      snap.forEach((docSnap) => {
+        const d = docSnap.data() || {};
+        arr.push({
+          id: docSnap.id,
+          ...d
+        });
+      });
+
+      arr.sort((a, b) => {
+        const av = typeof a.createdAt === "number" ? a.createdAt : (a.createdAt?.toDate ? a.createdAt.toDate().getTime() : 0);
+        const bv = typeof b.createdAt === "number" ? b.createdAt : (b.createdAt?.toDate ? b.createdAt.toDate().getTime() : 0);
+        return bv - av;
+      });
+
+      collabRequestsData = arr;
+      renderRequests();
+    }catch(err){
+      console.error(err);
+      if (statusEl) statusEl.textContent = "Failed to load requests.";
+      if (wrap){
+        wrap.innerHTML = `
+          <div class="empty-box">
+            Could not load requests right now.
+          </div>
+        `;
+      }
+    }
+  }
+
+  async function submitCreateRequest(){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    const title = String($("reqTitle").value || "").trim();
+    const description = String($("reqDescription").value || "").trim();
+    const genre = String($("reqGenre").value || "").trim();
+    const budget = Number($("reqBudget").value || 0);
+    const mood = csvToArray($("reqMood").value || "");
+    const deadlineRaw = String($("reqDeadline").value || "").trim();
+
+    if (!title){
+      alert("Please enter request title.");
+      return;
+    }
+
+    if (!description){
+      alert("Please enter request description.");
+      return;
+    }
+
+    const btn = $("submitCreateReqBtn");
+    btn.disabled = true;
+    btn.textContent = "Posting...";
+
+    try{
+      await window.FB.addDoc(
+        window.FB.collection(window.FB.db, "collabRequests"),
+        {
+          title,
+          description,
+          genre,
+          budget: Number.isFinite(budget) ? budget : 0,
+          mood,
+          deadline: deadlineRaw ? new Date(deadlineRaw).getTime() : null,
+          createdBy: user.uid,
+          createdAt: Date.now(),
+          status: "open"
+        }
+      );
+
+      resetCreateRequestForm();
+      closeCreateRequestModal();
+      await loadCollabRequests();
+      alert("Collab request posted.");
+    }catch(err){
+      console.error(err);
+      alert("Failed to post request: " + (err?.message || err));
+    }finally{
+      btn.disabled = false;
+      btn.textContent = "Post Request";
+    }
+  }
+
+  async function loadMyProducerBeats(){
+    const user = window.FB?.auth?.currentUser;
+    const wrap = $("myBeatsList");
+    if (!wrap) return;
+
+    wrap.innerHTML = `<div class="empty-box">Loading your beats…</div>`;
+    myProducerBeats = [];
+    currentSelectedBeatId = "";
+
+    if (!user){
+      wrap.innerHTML = `<div class="empty-box">Please sign in first.</div>`;
+      return;
+    }
+
+    try{
+      const q = window.FB.query(
+        window.FB.collection(window.FB.db, "beats"),
+        window.FB.where("producerId", "==", user.uid)
+      );
+
+      const snap = await window.FB.getDocs(q);
+      const arr = [];
+
+      snap.forEach((docSnap) => {
+        arr.push({
+          id: docSnap.id,
+          ...(docSnap.data() || {})
+        });
+      });
+
+      arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+      myProducerBeats = arr;
+
+      if (!arr.length){
+        wrap.innerHTML = `<div class="empty-box">You have no beats yet. You can still submit with message only.</div>`;
+        return;
+      }
+
+      wrap.innerHTML = "";
+
+      arr.forEach((beat) => {
+        const el = document.createElement("div");
+        el.className = "my-beat-item";
+        el.setAttribute("data-beat-id", beat.id);
+
+        el.innerHTML = `
+          <div class="my-beat-title">${escapeHtml(beat.title || "Untitled Beat")}</div>
+          <div class="my-beat-meta">
+            ${escapeHtml(beat.genre || "No genre")} • BPM ${escapeHtml(beat.bpm || "—")} • ${escapeHtml(beat.key || "—")}
+          </div>
+        `;
+
+        el.addEventListener("click", () => {
+          currentSelectedBeatId = beat.id;
+          Array.from(wrap.querySelectorAll(".my-beat-item")).forEach(node => node.classList.remove("active"));
+          el.classList.add("active");
+        });
+
+        wrap.appendChild(el);
+      });
+    }catch(err){
+      console.error(err);
+      wrap.innerHTML = `<div class="empty-box">Failed to load your beats.</div>`;
+    }
+  }
+
+  async function openSubmissionFlow(requestId){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    currentSubmitRequestId = String(requestId || "");
+    currentSelectedBeatId = "";
+    $("submissionMessage").value = "";
+
+    const req = collabRequestsData.find(x => String(x.id) === String(requestId));
+    if (req){
+      $("submitModalSub").textContent = `Submit to: ${req.title}`;
+    } else {
+      $("submitModalSub").textContent = "Choose one of your beats and add a pitch.";
+    }
+
+    openSubmitModal();
+    await loadMyProducerBeats();
+  }
+
+  async function submitSubmission(){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    if (!currentSubmitRequestId){
+      alert("Missing request.");
+      return;
+    }
+
+    const message = String($("submissionMessage").value || "").trim();
+    if (!message){
+      alert("Please enter your pitch message.");
+      return;
+    }
+
+    const btn = $("submitSubmissionBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending...";
+
+    try{
+      const selectedBeat = myProducerBeats.find(x => String(x.id) === String(currentSelectedBeatId));
+
+      await window.FB.addDoc(
+        window.FB.collection(window.FB.db, "collabSubmissions"),
+        {
+          requestId: currentSubmitRequestId,
+          producerId: user.uid,
+          producerName: user.displayName || "",
+          beatId: currentSelectedBeatId || "",
+          beatTitle: selectedBeat?.title || "",
+          beatGenre: selectedBeat?.genre || "",
+          message,
+          createdAt: Date.now()
+        }
+      );
+
+      closeSubmitModal();
+      alert("Submission sent.");
+    }catch(err){
+      console.error(err);
+      alert("Failed to send submission: " + (err?.message || err));
+    }finally{
+      btn.disabled = false;
+      btn.textContent = "Send Submission";
+    }
+  }
+
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
+
+      const user = auth?.currentUser;
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
+
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
+
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
+
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
+
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
+
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
+
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
+
+  window.openSubmissionFlow = openSubmissionFlow;
+
+  function bindCollabEvents(){
+    $("openCreateRequestBtn")?.addEventListener("click", openCreateRequestModal);
+    $("closeCreateReqBtn")?.addEventListener("click", closeCreateRequestModal);
+    $("cancelCreateReqBtn")?.addEventListener("click", closeCreateRequestModal);
+    $("submitCreateReqBtn")?.addEventListener("click", submitCreateRequest);
+    $("createReqBackdrop")?.addEventListener("click", closeCreateRequestModal);
+
+    $("closeSubmitBtn")?.addEventListener("click", closeSubmitModal);
+    $("cancelSubmitBtn")?.addEventListener("click", closeSubmitModal);
+    $("submitSubmissionBtn")?.addEventListener("click", submitSubmission);
+    $("submitBackdrop")?.addEventListener("click", closeSubmitModal);
+
+    $("collabSearchInput")?.addEventListener("input", renderRequests);
+    $("collabGenreFilter")?.addEventListener("change", renderRequests);
+    $("collabStatusFilter")?.addEventListener("change", renderRequests);
+
+    $("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    $("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+  }
+
+  window.addEventListener("firebase-ready", async () => {
+    bindCollabEvents();
+    await loadCollabRequests();
+  });
+</script>
