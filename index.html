@@ -1101,19 +1101,155 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
-  // ✅ Search: send query to marketplace
+  /* =========================
+     SMART FINDER (SAFE VERSION)
+     Homepage only
+  ========================= */
   (function(){
     const input = document.getElementById("searchInput");
     const btn = document.getElementById("searchBtn");
+    const chips = Array.from(document.querySelectorAll("[data-smart-fill]"));
+
     if(!input || !btn) return;
 
-    function go(){
-      const q = (input.value || "").trim();
-      if(!q) return location.href = "/marketplace/";
-      location.href = "/marketplace/?q=" + encodeURIComponent(q);
+    const KNOWN_GENRES = [
+      "trap",
+      "drill",
+      "afrobeats",
+      "amapiano",
+      "r&b",
+      "hip hop",
+      "hiphop",
+      "dancehall",
+      "bongo",
+      "gengetone",
+      "reggae"
+    ];
+
+    const KNOWN_MOODS = [
+      "chill",
+      "dark",
+      "happy",
+      "sad",
+      "emotional",
+      "lyrical",
+      "aggressive",
+      "club",
+      "romantic",
+      "melodic",
+      "hard",
+      "smooth"
+    ];
+
+    function normalizeText(str){
+      return String(str || "")
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
     }
-    btn.addEventListener("click", go);
-    input.addEventListener("keydown", (e)=>{ if(e.key === "Enter") go(); });
+
+    function unique(arr){
+      return [...new Set((arr || []).filter(Boolean))];
+    }
+
+    function parseSmartFinder(raw){
+      const original = String(raw || "").trim();
+      const normalized = normalizeText(original);
+
+      const foundGenres = [];
+      const foundMoods = [];
+
+      KNOWN_GENRES.forEach(g => {
+        if (normalized.includes(normalizeText(g))) foundGenres.push(g);
+      });
+
+      KNOWN_MOODS.forEach(m => {
+        if (normalized.includes(normalizeText(m))) foundMoods.push(m);
+      });
+
+      let detectedTypeBeat = "";
+
+      if (/\btype beat\b/i.test(original)) {
+        detectedTypeBeat = original
+          .replace(/\btype beat\b/i, "")
+          .trim();
+      } else {
+        const artistCandidates = [
+          "j cole","drake","burna boy","future","21 savage","travis scott",
+          "central cee","gunna","lil baby","wizkid","asake","davido",
+          "sza","the weeknd","tems","metro boomin","yeat","young thug"
+        ];
+
+        const hit = artistCandidates.find(name => normalized.includes(name));
+        if (hit) {
+          detectedTypeBeat = hit.replace(/\b\w/g, c => c.toUpperCase());
+        }
+      }
+
+      const cleanedWords = original
+        .split(/\s+/)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      const tags = cleanedWords.filter(word => {
+        const w = normalizeText(word);
+        if (!w) return false;
+        if (KNOWN_GENRES.includes(w)) return false;
+        if (KNOWN_MOODS.includes(w)) return false;
+        return true;
+      });
+
+      return {
+        q: original,
+        genre: unique(foundGenres),
+        mood: unique(foundMoods),
+        typeBeat: detectedTypeBeat,
+        tags: unique(tags)
+      };
+    }
+
+    function buildMarketplaceUrl(parsed){
+      const url = new URL("/marketplace/", location.origin);
+
+      if (parsed.q) url.searchParams.set("q", parsed.q);
+      if (parsed.genre.length) url.searchParams.set("genre", parsed.genre.join(","));
+      if (parsed.mood.length) url.searchParams.set("mood", parsed.mood.join(","));
+      if (parsed.typeBeat) url.searchParams.set("typeBeat", parsed.typeBeat);
+      if (parsed.tags.length) url.searchParams.set("tags", parsed.tags.join(","));
+      url.searchParams.set("smart", "1");
+
+      return url.pathname + url.search;
+    }
+
+    function goSmart(){
+      const raw = (input.value || "").trim();
+      if(!raw){
+        location.href = "/marketplace/";
+        return;
+      }
+
+      const parsed = parseSmartFinder(raw);
+      const target = buildMarketplaceUrl(parsed);
+      location.href = target;
+    }
+
+    btn.addEventListener("click", goSmart);
+
+    input.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){
+        e.preventDefault();
+        goSmart();
+      }
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        const fill = chip.getAttribute("data-smart-fill") || "";
+        input.value = fill;
+        input.focus();
+      });
+    });
   })();
 
   function money(n){
