@@ -762,9 +762,12 @@
       }
 
       // Message button (requires threads helpers)
-      if (mb && canMessage && window.FB && typeof window.FB.ensureThread === "function"){
+      if (mb && canMessage){
         mb.classList.remove("hidden");
-        mb.addEventListener("click", ()=> startDM({ otherUid: p.id, otherName: p.name }));
+        mb.addEventListener("click", ()=>{
+          location.href =
+            `/messages/?producerId=${encodeURIComponent(p.id)}&name=${encodeURIComponent(p.name || "Producer")}`;
+        });
       }
     }
   }
