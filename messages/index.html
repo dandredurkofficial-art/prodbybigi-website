@@ -746,42 +746,64 @@
   }
 
   async function sendMessageNow(){
-    const input = $("chatInput");
-    const btn = $("sendMsgBtn");
-    const text = String(input?.value || "").trim();
+  const input = $("chatInput");
+  const btn = $("sendMsgBtn");
+  const text = String(input?.value || "").trim();
 
-    if (!text) return;
+  if (!text) return;
 
+  try{
+    btn.disabled = true;
+
+    // If page opened with producerId but no thread is active yet,
+    // create/open it automatically
     if (!activeOtherUid){
-      alert("Select a conversation first.");
-      return;
+      const producerId = qs("producerId");
+      const name = qs("name") || "Producer";
+
+      if (!producerId){
+        alert("Select a conversation first.");
+        return;
+      }
+
+      if (!window.FB?.ensureThread){
+        alert("Messaging is not ready yet in firebase.js");
+        return;
+      }
+
+      const threadId = await window.FB.ensureThread({
+        otherUid: producerId,
+        otherDisplayName: name
+      });
+
+      await openThread({
+        threadId,
+        otherUid: producerId,
+        otherName: name
+      });
     }
 
-    if (!window.FB?.sendMessage){
-      alert("Messaging is not ready yet in firebase.js");
-      return;
-    }
+    await window.FB.sendMessage({
+      otherUid: activeOtherUid,
+      text,
+      otherDisplayName: activeOtherName || "User"
+    });
+
+    input.value = "";
 
     try{
-      btn.disabled = true;
-      await window.FB.sendMessage({
-        otherUid: activeOtherUid,
-        text,
-        otherDisplayName: activeOtherName || "User"
-      });
-      input.value = "";
-      try{
-        await window.FB.markThreadRead(activeThreadId);
-      }catch(e){}
-      await refreshThreadList();
-    }catch(err){
-      console.error(err);
-      alert("Failed to send message: " + (err?.message || err));
-    }finally{
-      btn.disabled = false;
-      input.focus();
-    }
+      await window.FB.markThreadRead(activeThreadId);
+    }catch(e){}
+
+    await refreshThreadList();
+  }catch(err){
+    console.error(err);
+    alert("Failed to send message: " + (err?.message || err));
+  }finally{
+    btn.disabled = false;
+    input?.focus();
   }
+}
 
   async function goToMyDashboard() {
     try {
