@@ -551,6 +551,35 @@
            flex-direction:column;
            align-items:flex-start;
          }
+
+         .submission-status{
+           display:inline-flex;
+           align-items:center;
+           min-height:30px;
+           padding:0 10px;
+           border-radius:999px;
+           font-size:12px;
+           font-weight:900;
+           border:1px solid rgba(255,255,255,.10);
+         }
+
+         .submission-status.pending{
+           background:rgba(245,158,11,.12);
+           color:#fbbf24;
+           border-color:rgba(245,158,11,.28);
+         }
+
+         .submission-status.accepted{
+           background:rgba(34,197,94,.12);
+           color:#4ade80;
+           border-color:rgba(34,197,94,.28);
+         }
+
+         .submission-status.rejected{
+           background:rgba(239,68,68,.12);
+           color:#f87171;
+           border-color:rgba(239,68,68,.28);
+         }
        }
   </style>
 </head>
@@ -982,6 +1011,13 @@
     return (collabRequestsData || []).filter(item => String(item.createdBy || "") === String(uid));
   }
 
+  function prettySubmissionStatus(v){
+    const s = String(v || "pending").toLowerCase();
+    if (s === "accepted") return "Accepted";
+    if (s === "rejected") return "Rejected";
+    return "Pending";
+  }
+
   function renderArtistInbox(myRequests, submissions){
     const section = $("artistInboxSection");
     const statusEl = $("artistInboxStatus");
@@ -1068,35 +1104,55 @@
             reqSubs.length
               ? `<div class="submission-list">
                   ${reqSubs.map(sub => `
-                    <div class="submission-card">
-                      <div class="submission-head">
-                        <div>
-                          <div class="submission-producer">${escapeHtml(sub.producerName || "Producer")}</div>
-                          <div class="submission-time">${escapeHtml(timeAgo(sub.createdAt) || "recently")}</div>
-                        </div>
-                      </div>
+  <div class="submission-card">
+    <div class="submission-head">
+      <div>
+        <div class="submission-producer">${escapeHtml(sub.producerName || "Producer")}</div>
+        <div class="submission-time">${escapeHtml(timeAgo(sub.createdAt) || "recently")}</div>
+      </div>
 
-                      <div class="submission-message">${escapeHtml(sub.message || "")}</div>
+      <div class="submission-status ${escapeHtml(String(sub.status || "pending").toLowerCase())}">
+        ${escapeHtml(prettySubmissionStatus(sub.status))}
+      </div>
+    </div>
 
-                      ${
-                        sub.beatId
-                          ? `<div class="submission-beat-box">
-                              <div class="submission-beat-title">${escapeHtml(sub.beatTitle || "Submitted Beat")}</div>
-                              <div class="submission-beat-meta">${escapeHtml(sub.beatGenre || "No genre")}</div>
-                            </div>`
-                          : ``
-                      }
+    <div class="submission-message">${escapeHtml(sub.message || "")}</div>
 
-                      <div class="submission-actions">
-                        ${
-                          sub.beatId
-                            ? `<a class="btnx small ghost" href="/beat/?id=${encodeURIComponent(sub.beatId)}">Open Beat</a>`
-                            : ``
-                        }
-                        <a class="btnx small ghost" href="/producer-profile/?producerId=${encodeURIComponent(sub.producerId || "")}">Producer Profile</a>
-                      </div>
-                    </div>
-                  `).join("")}
+    ${
+      sub.beatId
+        ? `<div class="submission-beat-box">
+            <div class="submission-beat-title">${escapeHtml(sub.beatTitle || "Submitted Beat")}</div>
+            <div class="submission-beat-meta">${escapeHtml(sub.beatGenre || "No genre")}</div>
+          </div>`
+        : ``
+    }
+
+    <div class="submission-actions">
+      ${
+        sub.beatId
+          ? `<a class="btnx small ghost" href="/beat/?id=${encodeURIComponent(sub.beatId)}">Open Beat</a>`
+          : ``
+      }
+
+      <a class="btnx small ghost" href="/producer-profile/?producerId=${encodeURIComponent(sub.producerId || "")}">
+        Producer Profile
+      </a>
+
+      <button class="btnx small ghost" type="button" onclick="messageSubmissionProducer('${sub.producerId || ""}', '${escapeHtml(sub.producerName || "Producer").replace(/'/g, "\\'")}')">
+        Message Producer
+      </button>
+
+      ${
+        String(sub.status || "pending").toLowerCase() === "pending"
+          ? `
+            <button class="btnx small" type="button" onclick="acceptSubmission('${sub.id}')">Accept</button>
+            <button class="btnx small danger" type="button" onclick="rejectSubmission('${sub.id}')">Reject</button>
+          `
+          : ``
+      }
+    </div>
+  </div>
+`).join("")}
                 </div>`
               : `<div class="empty-box" style="margin-top:12px;">No submissions yet for this request.</div>`
           }
@@ -1446,13 +1502,16 @@
 
           producerId: user.uid,
           producerName: user.displayName || "",
- 
+
           beatId: currentSelectedBeatId || "",
           beatTitle: selectedBeat?.title || "",
           beatGenre: selectedBeat?.genre || "",
 
           message,
-          createdAt: Date.now()
+          createdAt: Date.now(),
+
+          status: "pending",
+          artistActionAt: null
         }
       );
 
