@@ -1306,12 +1306,19 @@
     }
   }
 
-  async function messageSubmissionProducer(producerId, producerName){
+  function messageSubmissionProducer(producerId, producerName){
     const user = window.FB?.auth?.currentUser;
     if (!user){
-      alert("Please sign in first.");
-      location.href = "/login/";
+      const ret = encodeURIComponent("/messages/?producerId=" + producerId + "&name=" + encodeURIComponent(producerName || "Producer"));
+      location.href = "/login/?return=" + ret;
       return;
+    }
+
+    location.href =
+      "/messages/?producerId=" +
+      encodeURIComponent(producerId) +
+      "&name=" +
+      encodeURIComponent(producerName || "Producer");
     }
 
     if (!producerId){
