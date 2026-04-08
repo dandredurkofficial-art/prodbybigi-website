@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Messages | Audiory</title>
 
-  <meta name="description" content="Your Audiory message inbox. Chat with producers and buyers." />
-  <meta name="robots" content="index, follow" />
+  <meta name="description" content="Chat with producers and buyers on Audiory." />
+  <meta name="robots" content="noindex, follow" />
 
   <link rel="icon" href="/audioryfavicon.webp" />
   <link rel="shortcut icon" href="/audioryfavicon.webp" />
@@ -24,21 +24,19 @@
       display:grid;
       grid-template-columns:340px minmax(0,1fr);
       gap:16px;
-      min-height:calc(100vh - 180px);
+      min-height:calc(100vh - 220px);
     }
 
-    .messages-panel,
-    .chat-panel{
+    .panel{
       border:1px solid rgba(255,255,255,.08);
       background:#141414;
-      border-radius:22px;
+      border-radius:20px;
       overflow:hidden;
     }
 
     .panel-head{
       padding:16px;
       border-bottom:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg, rgba(14,20,32,.96) 0%, rgba(10,16,27,.96) 100%);
     }
 
     .panel-title{
@@ -56,7 +54,7 @@
     }
 
     .thread-search-wrap{
-      padding:14px 16px;
+      padding:12px 16px;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
@@ -65,8 +63,8 @@
       box-sizing:border-box;
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.12);
-      color:#fff;
       border-radius:14px;
+      color:#fff;
       padding:12px 14px;
       outline:none;
       font-size:14px;
@@ -81,88 +79,103 @@
       box-shadow:0 0 0 3px rgba(41,93,255,.12);
     }
 
-    .thread-list{
-      padding:10px;
+    .threads-list{
       display:grid;
-      gap:10px;
-      max-height:calc(100vh - 320px);
+      gap:0;
+      max-height:calc(100vh - 330px);
       overflow:auto;
     }
 
     .thread-item{
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      border-radius:16px;
-      padding:12px;
+      border:0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:transparent;
+      color:#fff;
+      text-align:left;
+      padding:14px 16px;
       cursor:pointer;
-      transition:.18s ease;
+      display:grid;
+      gap:8px;
+      width:100%;
     }
 
     .thread-item:hover{
-      background:rgba(255,255,255,.05);
+      background:rgba(255,255,255,.04);
     }
 
     .thread-item.active{
-      border-color:rgba(41,93,255,.7);
-      box-shadow:0 0 0 2px rgba(41,93,255,.14);
-      background:rgba(41,93,255,.08);
+      background:rgba(41,93,255,.14);
     }
 
     .thread-top{
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;
+      align-items:center;
       gap:10px;
     }
 
     .thread-name{
-      color:#fff;
       font-size:14px;
       font-weight:900;
-      line-height:1.2;
-    }
-
-    .thread-time{
-      color:rgba(255,255,255,.52);
-      font-size:11px;
+      color:#fff;
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
       white-space:nowrap;
     }
 
-    .thread-last{
-      margin-top:8px;
-      color:rgba(255,255,255,.64);
-      font-size:12px;
-      line-height:1.45;
-      display:-webkit-box;
-      -webkit-box-orient:vertical;
-      -webkit-line-clamp:2;
-      overflow:hidden;
+    .thread-time{
+      font-size:11px;
+      color:rgba(255,255,255,.48);
+      flex-shrink:0;
     }
 
-    .thread-badges{
+    .thread-snippet-row{
       display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
     }
 
-    .mini-badge{
-      display:inline-flex;
-      align-items:center;
-      min-height:26px;
-      padding:0 10px;
+    .thread-snippet{
+      font-size:12px;
+      color:rgba(255,255,255,.62);
+      min-width:0;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+
+    .thread-unread{
+      min-width:22px;
+      height:22px;
+      padding:0 6px;
       border-radius:999px;
+      background:#295dff;
+      color:#fff;
       font-size:11px;
       font-weight:900;
-      border:1px solid rgba(255,255,255,.09);
-      background:rgba(255,255,255,.04);
-      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
     }
 
-    .mini-badge.unread{
-      background:rgba(41,93,255,.18);
-      border-color:rgba(41,93,255,.34);
-      color:#9ec0ff;
+    .empty-box{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:16px;
+      padding:22px;
+      color:rgba(255,255,255,.62);
+      font-size:14px;
+      text-align:center;
+      background:rgba(255,255,255,.03);
+      margin:16px;
+    }
+
+    .chat-panel{
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      min-height:calc(100vh - 220px);
     }
 
     .chat-head{
@@ -170,25 +183,25 @@
       border-bottom:1px solid rgba(255,255,255,.08);
       display:flex;
       justify-content:space-between;
-      align-items:flex-start;
+      align-items:center;
       gap:12px;
-      background:linear-gradient(180deg, rgba(14,20,32,.96) 0%, rgba(10,16,27,.96) 100%);
+      flex-wrap:wrap;
     }
 
-    .chat-title{
-      color:#fff;
-      font-size:18px;
-      font-weight:900;
+    .chat-name{
       margin:0;
+      color:#fff;
+      font-size:20px;
+      font-weight:900;
     }
 
-    .chat-sub{
-      color:rgba(255,255,255,.64);
+    .chat-meta{
+      margin-top:5px;
+      color:rgba(255,255,255,.62);
       font-size:12px;
-      margin-top:6px;
     }
 
-    .chat-head-actions{
+    .chat-actions{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
@@ -217,82 +230,72 @@
     }
 
     .chat-body{
-      height:calc(100vh - 360px);
-      min-height:340px;
-      overflow:auto;
       padding:16px;
+      overflow:auto;
       display:flex;
       flex-direction:column;
-      gap:12px;
+      gap:10px;
       background:
-        radial-gradient(circle at top left, rgba(41,93,255,.08), transparent 36%),
-        #141414;
-    }
-
-    .msg-row{
-      display:flex;
-    }
-
-    .msg-row.me{
-      justify-content:flex-end;
+        radial-gradient(circle at top right, rgba(41,93,255,.10), transparent 35%),
+        linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0));
     }
 
     .msg{
       max-width:min(78%, 620px);
       border-radius:18px;
-      padding:12px 14px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.05);
+      padding:12px 13px;
       color:#fff;
-    }
-
-    .msg-row.me .msg{
-      background:rgba(41,93,255,.18);
-      border-color:rgba(41,93,255,.34);
-    }
-
-    .msg-text{
       font-size:14px;
-      line-height:1.6;
+      line-height:1.5;
       white-space:pre-wrap;
       word-break:break-word;
     }
 
+    .msg.me{
+      margin-left:auto;
+      background:rgba(41,93,255,.18);
+      border-color:rgba(41,93,255,.30);
+    }
+
     .msg-meta{
-      display:flex;
-      gap:10px;
-      justify-content:space-between;
       margin-top:8px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      color:rgba(255,255,255,.48);
       font-size:11px;
-      color:rgba(255,255,255,.56);
     }
 
     .chat-foot{
-      padding:14px 16px 16px;
       border-top:1px solid rgba(255,255,255,.08);
-      background:#111214;
+      padding:14px 16px;
+      display:grid;
+      gap:10px;
     }
 
     .composer{
-      display:flex;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
       gap:10px;
-      align-items:flex-end;
+      align-items:end;
     }
 
     .composer textarea{
-      flex:1;
-      min-height:54px;
-      max-height:160px;
+      width:100%;
+      box-sizing:border-box;
+      min-height:52px;
+      max-height:140px;
       resize:vertical;
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.12);
-      color:#fff;
       border-radius:16px;
-      padding:14px;
+      color:#fff;
+      padding:13px 14px;
       outline:none;
       font-size:14px;
       font-family:inherit;
-      box-sizing:border-box;
     }
 
     .composer textarea::placeholder{
@@ -304,54 +307,48 @@
       box-shadow:0 0 0 3px rgba(41,93,255,.12);
     }
 
-    .empty-state{
-      display:grid;
-      place-items:center;
-      min-height:280px;
-      text-align:center;
-      color:rgba(255,255,255,.64);
-      padding:24px;
-    }
-
-    .empty-card{
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:18px;
-      background:rgba(255,255,255,.03);
-      padding:24px;
-      width:min(520px, 100%);
-    }
-
-    .empty-title{
-      color:#fff;
-      font-size:20px;
-      font-weight:900;
-      margin:0 0 8px;
-    }
-
-    .mobile-thread-toggle{
-      display:none;
-      margin-top:10px;
+    .composer-note{
+      color:rgba(255,255,255,.55);
+      font-size:12px;
     }
 
     .hidden{
       display:none !important;
     }
 
-    @media (max-width: 900px){
+    @media (max-width: 920px){
       .messages-shell{
         grid-template-columns:1fr;
       }
 
-      .messages-panel{
-        min-height:220px;
+      .panel{
+        min-height:auto;
       }
 
-      .chat-body{
-        height:56vh;
+      .threads-list{
+        max-height:300px;
       }
 
-      .mobile-thread-toggle{
-        display:inline-flex;
+      .chat-panel{
+        min-height:68vh;
+      }
+    }
+
+    @media (max-width: 640px){
+      .panel-title{
+        font-size:20px;
+      }
+
+      .chat-name{
+        font-size:18px;
+      }
+
+      .composer{
+        grid-template-columns:1fr;
+      }
+
+      .msg{
+        max-width:88%;
       }
     }
   </style>
@@ -411,7 +408,7 @@
 <main class="container messages-page">
   <div class="messages-shell">
 
-    <aside class="messages-panel" id="threadsPanel">
+    <section class="panel">
       <div class="panel-head">
         <h1 class="panel-title">Messages</h1>
         <div class="panel-sub">Your conversations with producers and buyers.</div>
@@ -421,37 +418,34 @@
         <input id="threadSearchInput" class="thread-search" placeholder="Search conversations..." />
       </div>
 
-      <div class="thread-list" id="threadList"></div>
-    </aside>
+      <div id="threadsStatus" class="panel-sub" style="padding:0 16px 12px;">Loading conversations…</div>
+      <div id="threadsList" class="threads-list"></div>
+    </section>
 
-    <section class="chat-panel">
+    <section class="panel chat-panel">
       <div class="chat-head">
         <div>
-          <h2 class="chat-title" id="chatTitle">Select a conversation</h2>
-          <div class="chat-sub" id="chatSub">Open an existing chat or start one from a producer page.</div>
-          <button class="btnx ghost mobile-thread-toggle" id="showThreadsBtn" type="button">Show conversations</button>
+          <h2 class="chat-name" id="chatName">Select a conversation</h2>
+          <div class="chat-meta" id="chatMeta">Choose a thread from the left or open one from a producer page.</div>
         </div>
 
-        <div class="chat-head-actions">
-          <a href="/producers/" class="btnx ghost">Browse Producers</a>
-          <a href="/marketplace/" class="btnx ghost">Browse Beats</a>
+        <div class="chat-actions">
+          <a href="#" class="btnx ghost hidden" id="openProfileBtn">Open Profile</a>
         </div>
       </div>
 
       <div class="chat-body" id="chatBody">
-        <div class="empty-state">
-          <div class="empty-card">
-            <h3 class="empty-title">No chat selected</h3>
-            <div>Open a producer profile and tap Message, or select a conversation from the left.</div>
-          </div>
+        <div class="empty-box" style="margin:0;">
+          No messages selected yet.
         </div>
       </div>
 
       <div class="chat-foot">
         <div class="composer">
-          <textarea id="messageInput" placeholder="Type a message..."></textarea>
-          <button class="btnx" id="sendMessageBtn" type="button">Send</button>
+          <textarea id="chatInput" placeholder="Type a message…"></textarea>
+          <button class="btnx" id="sendMsgBtn" type="button">Send</button>
         </div>
+        <div class="composer-note">Tip: press Ctrl + Enter or Cmd + Enter to send.</div>
       </div>
     </section>
 
@@ -506,10 +500,16 @@
 
   let allThreads = [];
   let filteredThreads = [];
-  let currentThreadId = "";
-  let currentOtherUid = "";
-  let currentOtherName = "";
-  let unsubscribeMessages = null;
+  let activeThreadId = "";
+  let activeOtherUid = "";
+  let activeOtherName = "";
+  let activeOtherProfileUrl = "";
+  let activeUnsub = null;
+
+  function qs(name){
+    const u = new URL(location.href);
+    return (u.searchParams.get(name) || "").trim();
+  }
 
   function escapeHtml(v){
     return String(v || "")
@@ -520,38 +520,33 @@
       .replace(/'/g,"&#39;");
   }
 
-  function qs(name){
-    const u = new URL(location.href);
-    return String(u.searchParams.get(name) || "").trim();
-  }
-
-  function formatTime(value){
+  function formatDateTime(v){
     try{
       let d = null;
-      if (!value) return "";
-      if (typeof value === "number") d = new Date(value);
-      else if (typeof value?.toDate === "function") d = value.toDate();
-      else d = new Date(value);
+      if (!v) return "";
+      if (typeof v === "number") d = new Date(v);
+      else if (typeof v?.toDate === "function") d = v.toDate();
+      else d = new Date(v);
 
       if (!d || isNaN(d.getTime())) return "";
       return d.toLocaleString(undefined, {
-        month:"short",
-        day:"numeric",
-        hour:"2-digit",
-        minute:"2-digit"
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
       });
     }catch(e){
       return "";
     }
   }
 
-  function formatRelative(value){
+  function timeAgo(v){
     try{
       let ms = 0;
-      if (!value) return "";
-      if (typeof value === "number") ms = value;
-      else if (typeof value?.toDate === "function") ms = value.toDate().getTime();
-      else ms = new Date(value).getTime();
+      if (!v) return "";
+      if (typeof v === "number") ms = v;
+      else if (typeof v?.toDate === "function") ms = v.toDate().getTime();
+      else ms = new Date(v).getTime();
 
       if (!ms) return "";
       const diff = Date.now() - ms;
@@ -568,186 +563,217 @@
     }
   }
 
-  function getOtherUidFromThread(thread){
-    const me = window.FB?.auth?.currentUser?.uid || "";
-    const members = Array.isArray(thread?.members) ? thread.members : [];
-    return members.find(uid => String(uid) !== String(me)) || "";
+  function myUid(){
+    return window.FB?.auth?.currentUser?.uid || "";
   }
 
-  function getOtherNameFromThread(thread){
-    const otherUid = getOtherUidFromThread(thread);
-    if (!otherUid) return "Conversation";
-
-    const memberNames = thread?.memberNames || {};
-    return String(memberNames?.[otherUid] || "").trim() || "User";
+  function otherUidFromThread(thread){
+    const me = myUid();
+    const members = Array.isArray(thread?.members) ? thread.members.map(x => String(x || "")) : [];
+    return members.find(uid => uid !== me) || "";
   }
 
-  function renderThreadList(){
-    const wrap = $("threadList");
-    if (!wrap) return;
+  function otherNameFromThread(thread){
+    const me = myUid();
+    const otherUid = otherUidFromThread(thread);
+    const names = thread?.memberNames || {};
+    return String(names?.[otherUid] || otherUid || "User");
+  }
+
+  function getThreadSearchableText(thread){
+    const otherName = otherNameFromThread(thread).toLowerCase();
+    const lastMessage = String(thread?.lastMessageText || "").toLowerCase();
+    return otherName + " " + lastMessage;
+  }
+
+  function applyThreadFilter(){
+    const q = String($("threadSearchInput")?.value || "").trim().toLowerCase();
+
+    filteredThreads = !q
+      ? [...allThreads]
+      : allThreads.filter(thread => getThreadSearchableText(thread).includes(q));
+
+    renderThreads();
+  }
+
+  function renderThreads(){
+    const wrap = $("threadsList");
+    const statusEl = $("threadsStatus");
+    if (!wrap || !statusEl) return;
 
     wrap.innerHTML = "";
 
+    if (!allThreads.length){
+      statusEl.textContent = "No conversations yet.";
+      wrap.innerHTML = `<div class="empty-box">Start from a producer profile, producers page, or collab inbox.</div>`;
+      return;
+    }
+
+    statusEl.textContent = `${filteredThreads.length} conversation${filteredThreads.length === 1 ? "" : "s"}`;
+
     if (!filteredThreads.length){
-      wrap.innerHTML = `
-        <div class="empty-card" style="width:100%;">
-          <h3 class="empty-title" style="font-size:18px;">No conversations</h3>
-          <div>Start by messaging a producer from their profile or the producers page.</div>
-        </div>
-      `;
+      wrap.innerHTML = `<div class="empty-box">No conversations match your search.</div>`;
       return;
     }
 
     filteredThreads.forEach((thread) => {
-      const otherUid = getOtherUidFromThread(thread);
-      const otherName = getOtherNameFromThread(thread);
-      const unread = Number(thread?.unreadMap?.[window.FB?.auth?.currentUser?.uid] || 0);
+      const otherUid = otherUidFromThread(thread);
+      const otherName = otherNameFromThread(thread);
+      const unread = Number(thread?.unreadMap?.[myUid()] || 0);
 
-      const el = document.createElement("div");
-      el.className = "thread-item" + (String(thread.id) === String(currentThreadId) ? " active" : "");
-      el.innerHTML = `
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "thread-item" + (String(thread.id) === String(activeThreadId) ? " active" : "");
+      btn.innerHTML = `
         <div class="thread-top">
           <div class="thread-name">${escapeHtml(otherName)}</div>
-          <div class="thread-time">${escapeHtml(formatRelative(thread.lastMessageAt || thread.createdAt))}</div>
+          <div class="thread-time">${escapeHtml(timeAgo(thread?.lastMessageAt))}</div>
         </div>
-
-        <div class="thread-last">${escapeHtml(thread.lastMessageText || "Open chat")}</div>
-
-        <div class="thread-badges">
-          ${unread > 0 ? `<span class="mini-badge unread">${unread} unread</span>` : ``}
-          ${otherUid ? `<span class="mini-badge">Chat</span>` : ``}
+        <div class="thread-snippet-row">
+          <div class="thread-snippet">${escapeHtml(thread?.lastMessageText || "No messages yet.")}</div>
+          ${unread > 0 ? `<span class="thread-unread">${unread}</span>` : ``}
         </div>
       `;
 
-      el.addEventListener("click", async () => {
-        await openThread(thread);
-        if (window.innerWidth <= 900){
-          $("threadsPanel")?.classList.add("hidden");
-        }
+      btn.addEventListener("click", async () => {
+        await openThread({
+          threadId: thread.id,
+          otherUid,
+          otherName
+        });
       });
 
-      wrap.appendChild(el);
+      wrap.appendChild(btn);
     });
   }
 
-  function filterThreads(){
-    const q = String($("threadSearchInput")?.value || "").trim().toLowerCase();
-
-    if (!q){
-      filteredThreads = [...allThreads];
-      renderThreadList();
-      return;
-    }
-
-    filteredThreads = allThreads.filter((thread) => {
-      const name = getOtherNameFromThread(thread).toLowerCase();
-      const lastText = String(thread.lastMessageText || "").toLowerCase();
-      return name.includes(q) || lastText.includes(q);
-    });
-
-    renderThreadList();
-  }
-
-  function renderMessages(list){
+  function renderMessages(messages){
     const body = $("chatBody");
     if (!body) return;
 
     body.innerHTML = "";
 
-    if (!list?.length){
-      body.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-card">
-            <h3 class="empty-title">No messages yet</h3>
-            <div>Start the conversation below.</div>
-          </div>
-        </div>
-      `;
+    if (!messages || !messages.length){
+      body.innerHTML = `<div class="empty-box" style="margin:0;">No messages yet. Start the conversation below.</div>`;
       return;
     }
 
-    const me = window.FB?.auth?.currentUser?.uid || "";
+    const me = myUid();
 
-    list.forEach((m) => {
-      const row = document.createElement("div");
-      row.className = "msg-row" + (String(m.senderId || "") === String(me) ? " me" : "");
-
-      row.innerHTML = `
-        <div class="msg">
-          <div class="msg-text">${escapeHtml(m.text || "")}</div>
-          <div class="msg-meta">
-            <span>${String(m.senderId || "") === String(me) ? "You" : escapeHtml(currentOtherName || "Them")}</span>
-            <span>${escapeHtml(formatTime(m.createdAt))}</span>
-          </div>
+    messages.forEach((msg) => {
+      const mine = String(msg?.senderId || "") === String(me);
+      const el = document.createElement("div");
+      el.className = "msg" + (mine ? " me" : "");
+      el.innerHTML = `
+        <div>${escapeHtml(msg?.text || "")}</div>
+        <div class="msg-meta">
+          <span>${mine ? "You" : escapeHtml(activeOtherName || "Them")}</span>
+          <span>${escapeHtml(formatDateTime(msg?.createdAt))}</span>
         </div>
       `;
-
-      body.appendChild(row);
+      body.appendChild(el);
     });
 
     body.scrollTop = body.scrollHeight;
   }
 
-  async function openThread(thread){
-    if (!thread?.id) return;
+  async function refreshThreadList(){
+    if (!window.FB?.getMyThreads) return;
 
-    currentThreadId = String(thread.id);
-    currentOtherUid = getOtherUidFromThread(thread);
-    currentOtherName = getOtherNameFromThread(thread);
+    const data = await window.FB.getMyThreads({ max: 100 });
+    allThreads = Array.isArray(data) ? data : [];
+    applyThreadFilter();
+  }
 
-    $("chatTitle").textContent = currentOtherName || "Conversation";
-    $("chatSub").textContent = currentOtherUid ? ("Chat with " + currentOtherName) : "Conversation";
+  async function openThread({ threadId, otherUid, otherName }){
+    if (!threadId || !otherUid) return;
 
-    renderThreadList();
+    activeThreadId = String(threadId);
+    activeOtherUid = String(otherUid);
+    activeOtherName = String(otherName || "User");
+    activeOtherProfileUrl = `/producer-profile/?producerId=${encodeURIComponent(activeOtherUid)}`;
 
-    if (typeof unsubscribeMessages === "function"){
-      try{ unsubscribeMessages(); }catch(e){}
-      unsubscribeMessages = null;
+    $("chatName").textContent = activeOtherName;
+    $("chatMeta").textContent = "Conversation";
+    $("openProfileBtn").classList.remove("hidden");
+    $("openProfileBtn").href = activeOtherProfileUrl;
+
+    if (typeof activeUnsub === "function"){
+      try{ activeUnsub(); }catch(e){}
+      activeUnsub = null;
     }
 
     try{
-      await window.FB.markThreadRead(currentThreadId);
+      await window.FB.markThreadRead(activeThreadId);
     }catch(e){}
 
-    unsubscribeMessages = window.FB.listenThreadMessages(currentThreadId, {
-      onData: async (msgs) => {
-        renderMessages(msgs || []);
-
+    activeUnsub = window.FB.listenThreadMessages(activeThreadId, {
+      onData: async (messages) => {
+        renderMessages(messages || []);
         try{
-          await window.FB.markThreadRead(currentThreadId);
+          await window.FB.markThreadRead(activeThreadId);
+          await refreshThreadList();
         }catch(e){}
       }
+    });
+
+    await refreshThreadList();
+  }
+
+  async function maybeOpenFromUrl(){
+    const producerId = qs("producerId");
+    const name = qs("name");
+
+    if (!producerId) return;
+
+    if (!window.FB?.ensureThread){
+      alert("Messaging is not ready yet in firebase.js");
+      return;
+    }
+
+    const threadId = await window.FB.ensureThread({
+      otherUid: producerId,
+      otherDisplayName: name || "Producer"
+    });
+
+    await refreshThreadList();
+
+    await openThread({
+      threadId,
+      otherUid: producerId,
+      otherName: name || "Producer"
     });
   }
 
   async function sendMessageNow(){
-    const input = $("messageInput");
-    const btn = $("sendMessageBtn");
+    const input = $("chatInput");
+    const btn = $("sendMsgBtn");
+    const text = String(input?.value || "").trim();
 
-    if (!input || !btn) return;
-
-    const text = String(input.value || "").trim();
     if (!text) return;
 
-    if (!currentOtherUid){
-      alert("Open a conversation first.");
+    if (!activeOtherUid){
+      alert("Select a conversation first.");
       return;
     }
 
-    btn.disabled = true;
+    if (!window.FB?.sendMessage){
+      alert("Messaging is not ready yet in firebase.js");
+      return;
+    }
 
     try{
+      btn.disabled = true;
       await window.FB.sendMessage({
-        otherUid: currentOtherUid,
+        otherUid: activeOtherUid,
         text,
-        otherDisplayName: currentOtherName || "User"
+        otherDisplayName: activeOtherName || "User"
       });
-
       input.value = "";
-
       try{
-        await reloadThreads();
+        await window.FB.markThreadRead(activeThreadId);
       }catch(e){}
+      await refreshThreadList();
     }catch(err){
       console.error(err);
       alert("Failed to send message: " + (err?.message || err));
@@ -757,13 +783,91 @@
     }
   }
 
-  async function reloadThreads(preferredThreadId = ""){
-    try{
-      const list = await window.FB.getMyThreads({ max: 100 });
-      allThreads = Array.isArray(list) ? list : [];
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
+      const user = auth?.currentUser;
 
-      allThreads.sort((a, b) => {
-        const av = a?.lastMessageAt?.toDate ? a.lastMessageAt.toDate().getTime() : Number(a?.lastMessageAt || 0);
-        const bv = b?.lastMessageAt?.toDate ? b.lastMessageAt.toDate().getTime() : Number(b?.lastMessageAt || 0);
-        return bv - av;
-     
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
+
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
+
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
+
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
+
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
+
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
+
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
+
+  function bindEvents(){
+    $("threadSearchInput")?.addEventListener("input", applyThreadFilter);
+
+    $("sendMsgBtn")?.addEventListener("click", sendMessageNow);
+
+    $("chatInput")?.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+        e.preventDefault();
+        sendMessageNow();
+      }
+    });
+
+    $("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    $("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+  }
+
+  window.addEventListener("firebase-ready", async () => {
+    const user = window.FB?.auth?.currentUser;
+
+    if (!user){
+      const ret = encodeURIComponent(location.pathname + location.search);
+      location.href = "/login/?return=" + ret;
+      return;
+    }
+
+    bindEvents();
+
+    try{
+      await refreshThreadList();
+      await maybeOpenFromUrl();
+    }catch(err){
+      console.error(err);
+      $("threadsStatus").textContent = "Failed to load conversations.";
+      $("threadsList").innerHTML = `<div class="empty-box">Could not load your inbox right now.</div>`;
+    }
+  });
+</script>
+
+</body>
+</html>
