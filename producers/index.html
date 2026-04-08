@@ -762,10 +762,12 @@
 
       // Message button (requires threads helpers)
       if (mb && canMessage){
-        mb.classList.remove("hidden");
         mb.addEventListener("click", ()=>{
           location.href =
-            `/messages/?producerId=${encodeURIComponent(p.id)}&name=${encodeURIComponent(p.name || "Producer")}`;
+            "/messages/?producerId=" +
+            encodeURIComponent(p.id) +
+            "&name=" +
+            encodeURIComponent(p.name || "Producer");
         });
       }
     }
