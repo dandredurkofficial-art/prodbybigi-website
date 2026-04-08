@@ -1257,87 +1257,87 @@
   window.closeCollabRequest = closeCollabRequest;
 
   async function acceptSubmission(submissionId){
-  const user = window.FB?.auth?.currentUser;
-  if (!user){
-    alert("Please sign in first.");
-    location.href = "/login/";
-    return;
-  }
-
-  try{
-    await window.FB.updateDoc(
-      window.FB.doc(window.FB.db, "collabSubmissions", String(submissionId)),
-      {
-        status: "accepted",
-        artistActionAt: Date.now()
-      }
-    );
-
-    await loadArtistInbox();
-  }catch(err){
-    console.error(err);
-    alert("Failed to accept submission: " + (err?.message || err));
-  }
-}
-
-async function rejectSubmission(submissionId){
-  const user = window.FB?.auth?.currentUser;
-  if (!user){
-    alert("Please sign in first.");
-    location.href = "/login/";
-    return;
-  }
-
-  try{
-    await window.FB.updateDoc(
-      window.FB.doc(window.FB.db, "collabSubmissions", String(submissionId)),
-      {
-        status: "rejected",
-        artistActionAt: Date.now()
-      }
-    );
-
-    await loadArtistInbox();
-  }catch(err){
-    console.error(err);
-    alert("Failed to reject submission: " + (err?.message || err));
-  }
-}
-
-async function messageSubmissionProducer(producerId, producerName){
-  const user = window.FB?.auth?.currentUser;
-  if (!user){
-    alert("Please sign in first.");
-    location.href = "/login/";
-    return;
-  }
-
-  if (!producerId){
-    alert("Producer not found.");
-    return;
-  }
-
-  try{
-    if (!window.FB?.ensureThread){
-      alert("Messaging is not ready yet.");
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
       return;
     }
 
-    const threadId = await window.FB.ensureThread({
-      otherUid: String(producerId),
-      otherDisplayName: String(producerName || "Producer")
-    });
+    try{
+      await window.FB.updateDoc(
+        window.FB.doc(window.FB.db, "collabSubmissions", String(submissionId)),
+        {
+          status: "accepted",
+          artistActionAt: Date.now()
+        }
+      );
 
-    location.href = `/inbox/?threadId=${encodeURIComponent(threadId)}`;
-  }catch(err){
-    console.error(err);
-    alert("Failed to open producer chat: " + (err?.message || err));
+      await loadArtistInbox();
+    }catch(err){
+      console.error(err);
+      alert("Failed to accept submission: " + (err?.message || err));
+    }
   }
-}
 
-window.acceptSubmission = acceptSubmission;
-window.rejectSubmission = rejectSubmission;
-window.messageSubmissionProducer = messageSubmissionProducer;
+  async function rejectSubmission(submissionId){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    try{
+      await window.FB.updateDoc(
+        window.FB.doc(window.FB.db, "collabSubmissions", String(submissionId)),
+        {
+          status: "rejected",
+          artistActionAt: Date.now()
+        }
+      );
+
+      await loadArtistInbox();
+    }catch(err){
+      console.error(err);
+      alert("Failed to reject submission: " + (err?.message || err));
+    }
+  }
+
+  async function messageSubmissionProducer(producerId, producerName){
+    const user = window.FB?.auth?.currentUser;
+    if (!user){
+      alert("Please sign in first.");
+      location.href = "/login/";
+      return;
+    }
+
+    if (!producerId){
+      alert("Producer not found.");
+      return;
+    }
+
+    try{
+      if (!window.FB?.ensureThread){
+        alert("Messaging is not ready yet.");
+        return;
+      }
+
+      const threadId = await window.FB.ensureThread({
+        otherUid: String(producerId),
+        otherDisplayName: String(producerName || "Producer")
+      });
+
+      location.href = `/inbox/?threadId=${encodeURIComponent(threadId)}`;
+    }catch(err){
+      console.error(err);
+      alert("Failed to open producer chat: " + (err?.message || err));
+    }
+  }
+
+  window.acceptSubmission = acceptSubmission;
+  window.rejectSubmission = rejectSubmission;
+  window.messageSubmissionProducer = messageSubmissionProducer;
 
   async function loadCollabRequests(){
     const statusEl = $("collabStatus");
