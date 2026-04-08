@@ -60,6 +60,25 @@
       margin-top:16px;
     }
 
+    .collab-toolbar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr .8fr;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .collab-status{
+      margin-bottom:12px;
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+    }
+
+    .collab-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+
     .btnx{
       min-height:46px;
       padding:0 16px;
@@ -81,11 +100,11 @@
       background:#dc2626;
     }
 
-    .collab-toolbar{
-      display:grid;
-      grid-template-columns:1.2fr .8fr .8fr;
-      gap:12px;
-      margin-bottom:16px;
+    .btnx.small{
+      min-height:38px;
+      padding:0 12px;
+      font-size:13px;
+      border-radius:12px;
     }
 
     .collab-toolbar input,
@@ -125,16 +144,25 @@
       box-shadow:0 0 0 3px rgba(41,93,255,.12);
     }
 
-    .collab-status{
-      margin-bottom:12px;
-      color:rgba(255,255,255,.7);
-      font-size:13px;
+    .row2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
     }
 
-    .collab-grid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0,1fr));
-      gap:14px;
+    .field-label{
+      display:block;
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
+
+    .hint{
+      color:rgba(255,255,255,.58);
+      font-size:12px;
+      line-height:1.45;
+      margin-top:4px;
     }
 
     .collab-card{
@@ -299,32 +327,11 @@
       gap:14px;
     }
 
-    .row2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .field-label{
-      display:block;
-      color:rgba(255,255,255,.78);
-      font-size:12px;
-      font-weight:900;
-      margin-bottom:7px;
-    }
-
     .modal-foot{
       padding:0 20px 20px;
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-    }
-
-    .hint{
-      color:rgba(255,255,255,.58);
-      font-size:12px;
-      line-height:1.45;
-      margin-top:4px;
     }
 
     .my-beat-list{
@@ -370,23 +377,173 @@
       background:rgba(255,255,255,.03);
     }
 
+    .artist-inbox-grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .artist-request-card{
+      border:1px solid rgba(255,255,255,.08);
+      background:#141414;
+      border-radius:18px;
+      overflow:hidden;
+    }
+
+    .artist-request-top{
+      padding:16px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .artist-request-title{
+      margin:0;
+      color:#fff;
+      font-size:20px;
+      font-weight:900;
+      line-height:1.2;
+    }
+
+    .artist-request-meta{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .artist-request-body{
+      padding:14px 16px 16px;
+    }
+
+    .artist-request-desc{
+      color:rgba(255,255,255,.76);
+      font-size:14px;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+
+    .artist-request-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+    .submission-count{
+      margin-top:14px;
+      color:#fff;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .submission-list{
+      display:grid;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .submission-card{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .submission-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .submission-producer{
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+    }
+
+    .submission-time{
+      color:rgba(255,255,255,.58);
+      font-size:12px;
+    }
+
+    .submission-message{
+      margin-top:10px;
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+
+    .submission-beat-box{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .submission-beat-title{
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .submission-beat-meta{
+      margin-top:6px;
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+    }
+
+    .submission-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .submission-status{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .submission-status.pending{
+      background:rgba(245,158,11,.12);
+      color:#fbbf24;
+      border-color:rgba(245,158,11,.28);
+    }
+
+    .submission-status.accepted{
+      background:rgba(34,197,94,.12);
+      color:#4ade80;
+      border-color:rgba(34,197,94,.28);
+    }
+
+    .submission-status.rejected{
+      background:rgba(239,68,68,.12);
+      color:#f87171;
+      border-color:rgba(239,68,68,.28);
+    }
+
+    /* =========================
+       9) RESPONSIVE
+    ========================= */
     @media (max-width: 860px){
       .collab-toolbar,
       .row2{
         grid-template-columns:1fr;
-      }
+      } 
+
       .collab-grid{
         grid-template-columns:1fr;
       }
+
       .collab-title{
         font-size:28px;
-      }
-
-      .collab-hero-actions{
-        display:flex;
-        flex-wrap:wrap;
-        gap:10px;
-        margin-top:16px;
       }
 
       .collab-hero-actions .btnx,
@@ -400,187 +557,27 @@
         text-decoration:none;
         box-sizing:border-box;
       }
+    }
 
-      @media (max-width: 640px){
-        .collab-hero-actions{
-          display:grid;
-          grid-template-columns:1fr 1fr;
-          gap:10px;
-        }
+    @media (max-width: 640px){
+      .collab-hero-actions{
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:10px;
+      }
 
-        .collab-hero-actions .btnx,
-        .collab-hero-actions a.btnx{
-          width:100%;
-          min-height:52px;
-          padding:0 14px;
-        }
+      .collab-hero-actions .btnx,
+      .collab-hero-actions a.btnx{
+        width:100%;
+        min-height:52px;
+        padding:0 14px;
+      }
 
-        .artist-inbox-grid{
-          display:grid;
-          gap:14px;
-        }
-
-        .artist-request-card{
-          border:1px solid rgba(255,255,255,.08);
-          background:#141414;
-          border-radius:18px;
-          overflow:hidden;
-        }
-
-        .artist-request-top{
-          padding:16px;
-          border-bottom:1px solid rgba(255,255,255,.06);
-        }
-
-        .artist-request-title{
-          margin:0;
-          color:#fff;
-          font-size:20px;
-          font-weight:900;
-          line-height:1.2;
-        }
-
-        .artist-request-meta{
-          display:flex;
-          flex-wrap:wrap;
-          gap:8px;
-          margin-top:12px;
-        }
-
-        .artist-request-body{
-          padding:14px 16px 16px;
-        }
-
-        .artist-request-desc{
-          color:rgba(255,255,255,.76);
-          font-size:14px;
-          line-height:1.6;
-          white-space:pre-line;
-        }
-
-        .submission-count{
-          margin-top:14px;
-          color:#fff;
-          font-size:13px;
-          font-weight:800;
-        }
-
-        .submission-list{
-          display:grid;
-          gap:12px;
-          margin-top:14px;
-        }
-
-        .submission-card{
-          border:1px solid rgba(255,255,255,.08);
-          background:rgba(255,255,255,.04);
-          border-radius:16px;
-          padding:14px;
-        }
-
-        .submission-head{
-          display:flex;
-          justify-content:space-between;
-          align-items:flex-start;
-          gap:12px;
-          flex-wrap:wrap;
-        }
-
-        .submission-producer{
-          color:#fff;
-          font-size:15px;
-          font-weight:900;
-        }
-
-        .submission-time{
-          color:rgba(255,255,255,.58);
-          font-size:12px;
-        }
-
-        .submission-message{
-          margin-top:10px;
-          color:rgba(255,255,255,.82);
-          font-size:14px;
-          line-height:1.6;
-          white-space:pre-line;
-        }
-
-        .submission-beat-box{
-          margin-top:12px;
-          border:1px solid rgba(255,255,255,.08);
-          background:rgba(255,255,255,.03);
-          border-radius:14px;
-          padding:12px;
-        }
-
-        .submission-beat-title{
-          color:#fff;
-          font-size:14px;
-          font-weight:900;
-        }
-
-        .submission-beat-meta{
-          margin-top:6px;
-          color:rgba(255,255,255,.62);
-          font-size:12px;
-       }
-
-       .submission-actions{
-         display:flex;
-         flex-wrap:wrap;
-         gap:10px;
-         margin-top:12px;
-       }
-
-       .btnx.small{
-         min-height:38px;
-         padding:0 12px;
-         font-size:13px;
-         border-radius:12px;
-       }
-
-       .artist-request-actions{
-         display:flex;
-         flex-wrap:wrap;
-         gap:10px;
-         margin-top:14px;
-       }
-
-       @media (max-width: 640px){
-         .submission-head{
-           flex-direction:column;
-           align-items:flex-start;
-         }
-
-         .submission-status{
-           display:inline-flex;
-           align-items:center;
-           min-height:30px;
-           padding:0 10px;
-           border-radius:999px;
-           font-size:12px;
-           font-weight:900;
-           border:1px solid rgba(255,255,255,.10);
-         }
-
-         .submission-status.pending{
-           background:rgba(245,158,11,.12);
-           color:#fbbf24;
-           border-color:rgba(245,158,11,.28);
-         }
-
-         .submission-status.accepted{
-           background:rgba(34,197,94,.12);
-           color:#4ade80;
-           border-color:rgba(34,197,94,.28);
-         }
-
-         .submission-status.rejected{
-           background:rgba(239,68,68,.12);
-           color:#f87171;
-           border-color:rgba(239,68,68,.28);
-         }
-       }
+      .submission-head{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+    }
   </style>
 </head>
 <body>
