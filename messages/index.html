@@ -825,30 +825,44 @@
   }
 
   function bindEvents(){
-    $("threadSearchInput")?.addEventListener("input", applyThreadFilter);
+  $("threadSearchInput")?.addEventListener("input", applyThreadFilter);
 
-    $("sendMsgBtn")?.addEventListener("click", sendMessageNow);
+  $("sendMsgBtn")?.addEventListener("click", sendMessageNow);
 
-    $("chatInput")?.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
-        e.preventDefault();
-        sendMessageNow();
-      }
-    });
-
-    $("navDashboard")?.addEventListener("click", async (e) => {
+  $("chatInput")?.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
       e.preventDefault();
-      await goToMyDashboard();
-    });
+      sendMessageNow();
+    }
+  });
 
-    $("mNavDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
-    });
+  $("navDashboard")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await goToMyDashboard();
+  });
+
+  $("mNavDashboard")?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    await goToMyDashboard();
+  });
+}
+
+let __messagesPageStarted = false;
+
+async function waitForRealAuthReady(){
+  while (!window.FB || window.FB.authReady !== true){
+    await new Promise(resolve => setTimeout(resolve, 80));
   }
+}
 
-  window.addEventListener("firebase-ready", async () => {
-    const user = window.FB?.auth?.currentUser;
+async function initMessagesPage(){
+  if (__messagesPageStarted) return;
+  __messagesPageStarted = true;
+
+  try{
+    await waitForRealAuthReady();
+
+    const user = window.FB?.auth?.currentUser || null;
 
     if (!user){
       const ret = encodeURIComponent(location.pathname + location.search);
@@ -858,15 +872,18 @@
 
     bindEvents();
 
-    try{
-      await refreshThreadList();
-      await maybeOpenFromUrl();
-    }catch(err){
-      console.error(err);
-      $("threadsStatus").textContent = "Failed to load conversations.";
-      $("threadsList").innerHTML = `<div class="empty-box">Could not load your inbox right now.</div>`;
-    }
-  });
+    await refreshThreadList();
+    await maybeOpenFromUrl();
+
+  }catch(err){
+    console.error(err);
+    $("threadsStatus").textContent = "Failed to load conversations.";
+    $("threadsList").innerHTML = `<div class="empty-box">Could not load your inbox right now.</div>`;
+  }
+}
+
+window.addEventListener("firebase-ready", initMessagesPage);
+  
 </script>
 
 </body>
