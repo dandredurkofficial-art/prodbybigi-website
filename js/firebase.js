@@ -508,9 +508,9 @@ window.FB.ensureThread = async function ({ otherUid, otherDisplayName = "" } = {
     await setDoc(tref, {
       threadId,
       members: correctMembers,
-      createdAt: serverTimestamp(),
+      createdAt: Date.now(),
       lastMessageText: "",
-      lastMessageAt: serverTimestamp(),
+      lastMessageAt: Date.now(),
       lastSenderId: "",
       unreadMap: {
         [me.uid]: 0,
@@ -559,16 +559,18 @@ window.FB.sendMessage = async function ({ otherUid, text, otherDisplayName = "" 
 
   const threadId = await window.FB.ensureThread({ otherUid: other, otherDisplayName });
 
+  const nowMs = Date.now();
+
   await addDoc(collection(db, "threads", threadId, "messages"), {
     threadId,
     senderId: me.uid,
     text: clean,
-    createdAt: serverTimestamp()
+    createdAt: nowMs
   });
 
   await updateDoc(doc(db, "threads", threadId), {
     lastMessageText: clean.slice(0, 300),
-    lastMessageAt: serverTimestamp(),
+    lastMessageAt: nowMs,
     lastSenderId: me.uid,
     [`unreadMap.${other}`]: increment(1),
     [`memberNames.${me.uid}`]: me.displayName || me.email || me.uid,
@@ -589,15 +591,38 @@ window.FB.markThreadRead = async function (threadId) {
 
 window.FB.getMyThreads = async function ({ max = 50 } = {}) {
   const me = _requireUser();
+
   const qy = query(
     collection(db, "threads"),
     where("members", "array-contains", me.uid),
-    orderBy("lastMessageAt", "desc"),
     limit(max)
   );
+
   const snap = await getDocs(qy);
   const out = [];
-  snap.forEach(d => out.push({ id: d.id, ...d.data() }));
+
+  snap.forEach((d) => {
+    out.push({ id: d.id, ...d.data() });
+  });
+
+  out.sort((a, b) => {
+    const av =
+      typeof a?.lastMessageAt === "number"
+        ? a.lastMessageAt
+        : (typeof a?.lastMessageAt?.toDate === "function"
+            ? a.lastMessageAt.toDate().getTime()
+            : 0);
+
+    const bv =
+      typeof b?.lastMessageAt === "number"
+        ? b.lastMessageAt
+        : (typeof b?.lastMessageAt?.toDate === "function"
+            ? b.lastMessageAt.toDate().getTime()
+            : 0);
+
+    return bv - av;
+  });
+
   return out;
 };
 
