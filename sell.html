@@ -1,33 +1,589 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8"/>
-  <title>Sell Beats</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <link rel="stylesheet" href="assets/style.css"/>
-</head>
-<body>
-<header class="nav">
-  <div class="logo">ProdBy</div>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="marketplace.html">Marketplace</a>
-  </nav>
-</header>
+<style>
+  /* =========================
+     1) PAGE LAYOUT
+  ========================= */
+  .collab-page{
+    padding:18px 0 28px;
+  }
 
-<section class="form">
-  <h2>Create Producer Account</h2>
-  <input placeholder="Producer name"/>
-  <input placeholder="Email"/>
-  <button class="btn">Create Account (Demo)</button>
+  .collab-hero{
+    border:1px solid rgba(255,255,255,.08);
+    background:linear-gradient(180deg, rgba(14,20,32,.96) 0%, rgba(10,16,27,.96) 100%);
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:18px;
+  }
 
-  <h3>Upload Beat (Demo)</h3>
-  <input placeholder="Beat title"/>
-  <input placeholder="Price (KES)"/>
-  <input type="file"/>
-  <button class="btn secondary">Upload</button>
+  .collab-kicker{
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.08em;
+    color:rgba(255,255,255,.65);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
 
-  <p class="note">⚠ Frontend demo only. Backend required for real uploads & payments.</p>
-</section>
-</body>
-</html>
+  .collab-title{
+    margin:0;
+    font-size:32px;
+    line-height:1.05;
+    font-weight:900;
+    color:#fff;
+  }
+
+  .collab-sub{
+    margin-top:10px;
+    color:rgba(255,255,255,.75);
+    font-size:14px;
+    line-height:1.5;
+    max-width:760px;
+  }
+
+  .collab-hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:16px;
+  }
+
+  .collab-toolbar{
+    display:grid;
+    grid-template-columns:1.2fr .8fr .8fr;
+    gap:12px;
+    margin-bottom:16px;
+  }
+
+  .collab-status{
+    margin-bottom:12px;
+    color:rgba(255,255,255,.7);
+    font-size:13px;
+  }
+
+  .collab-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0,1fr));
+    gap:14px;
+  }
+
+  /* =========================
+     2) BUTTONS
+  ========================= */
+  .btnx{
+    min-height:46px;
+    padding:0 16px;
+    border:none;
+    border-radius:14px;
+    font-weight:900;
+    cursor:pointer;
+    color:#fff;
+    background:#295dff;
+  }
+
+  .btnx.ghost{
+    background:transparent;
+    border:1px solid rgba(255,255,255,.14);
+    color:#fff;
+  }
+
+  .btnx.danger{
+    background:#dc2626;
+  }
+
+  .btnx.small{
+    min-height:38px;
+    padding:0 12px;
+    font-size:13px;
+    border-radius:12px;
+  }
+
+  /* =========================
+     3) INPUTS / FORMS
+  ========================= */
+  .collab-toolbar input,
+  .collab-toolbar select,
+  .modal-card input,
+  .modal-card select,
+  .modal-card textarea{
+    width:100%;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.12);
+    color:#fff;
+    border-radius:14px;
+    padding:13px 14px;
+    outline:none;
+    font-size:14px;
+    box-sizing:border-box;
+  }
+
+  .modal-card textarea{
+    min-height:110px;
+    resize:vertical;
+    font-family:inherit;
+  }
+
+  .collab-toolbar input::placeholder,
+  .modal-card input::placeholder,
+  .modal-card textarea::placeholder{
+    color:rgba(255,255,255,.42);
+  }
+
+  .collab-toolbar input:focus,
+  .collab-toolbar select:focus,
+  .modal-card input:focus,
+  .modal-card select:focus,
+  .modal-card textarea:focus{
+    border-color:rgba(41,93,255,.7);
+    box-shadow:0 0 0 3px rgba(41,93,255,.12);
+  }
+
+  .row2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  .field-label{
+    display:block;
+    color:rgba(255,255,255,.78);
+    font-size:12px;
+    font-weight:900;
+    margin-bottom:7px;
+  }
+
+  .hint{
+    color:rgba(255,255,255,.58);
+    font-size:12px;
+    line-height:1.45;
+    margin-top:4px;
+  }
+
+  /* =========================
+     4) REQUEST CARDS
+  ========================= */
+  .collab-card{
+    border:1px solid rgba(255,255,255,.08);
+    background:#141414;
+    border-radius:18px;
+    overflow:hidden;
+  }
+
+  .collab-card-top{
+    padding:16px 16px 12px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+
+  .collab-card-title{
+    font-size:20px;
+    font-weight:900;
+    color:#fff;
+    margin:0;
+    line-height:1.2;
+  }
+
+  .collab-card-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .mini-chip{
+    display:inline-flex;
+    align-items:center;
+    min-height:32px;
+    padding:0 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.09);
+    color:#fff;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .collab-card-body{
+    padding:14px 16px 16px;
+  }
+
+  .collab-desc{
+    color:rgba(255,255,255,.82);
+    font-size:14px;
+    line-height:1.6;
+    white-space:pre-line;
+  }
+
+  .collab-tags{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .collab-tag{
+    display:inline-flex;
+    align-items:center;
+    padding:7px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:800;
+    color:#fff;
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.09);
+  }
+
+  .collab-bottom{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap:12px;
+    align-items:center;
+    margin-top:16px;
+  }
+
+  .collab-small{
+    color:rgba(255,255,255,.62);
+    font-size:12px;
+  }
+
+  .collab-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  /* =========================
+     5) MODALS
+  ========================= */
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.62);
+    display:none;
+    z-index:10040;
+  }
+
+  .modal{
+    position:fixed;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:min(760px, calc(100vw - 20px));
+    max-height:calc(100vh - 24px);
+    overflow:auto;
+    display:none;
+    z-index:10041;
+  }
+
+  .modal-card{
+    border:1px solid rgba(255,255,255,.10);
+    background:linear-gradient(180deg,#0c1220 0%, #0a101b 100%);
+    border-radius:22px;
+    padding:0;
+    overflow:hidden;
+    box-shadow:0 30px 100px rgba(0,0,0,.55);
+  }
+
+  .modal-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    padding:20px 20px 14px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+
+  .modal-title{
+    margin:0;
+    font-size:22px;
+    font-weight:900;
+    color:#fff;
+  }
+
+  .modal-sub{
+    margin-top:8px;
+    color:rgba(255,255,255,.7);
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .modal-close{
+    border:none;
+    background:transparent;
+    color:#fff;
+    font-size:22px;
+    cursor:pointer;
+    padding:4px 8px;
+    border-radius:10px;
+  }
+
+  .modal-close:hover{
+    background:rgba(255,255,255,.08);
+  }
+
+  .modal-body{
+    padding:18px 20px 20px;
+    display:grid;
+    gap:14px;
+  }
+
+  .modal-foot{
+    padding:0 20px 20px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  /* =========================
+     6) BEAT PICKER
+  ========================= */
+  .my-beat-list{
+    display:grid;
+    gap:10px;
+    max-height:260px;
+    overflow:auto;
+    padding-right:2px;
+  }
+
+  .my-beat-item{
+    border:1px solid rgba(255,255,255,.10);
+    background:rgba(255,255,255,.04);
+    border-radius:14px;
+    padding:12px;
+    cursor:pointer;
+  }
+
+  .my-beat-item.active{
+    border-color:rgba(41,93,255,.7);
+    box-shadow:0 0 0 2px rgba(41,93,255,.14);
+  }
+
+  .my-beat-title{
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+  }
+
+  .my-beat-meta{
+    margin-top:6px;
+    color:rgba(255,255,255,.62);
+    font-size:12px;
+  }
+
+  /* =========================
+     7) EMPTY STATE
+  ========================= */
+  .empty-box{
+    border:1px dashed rgba(255,255,255,.14);
+    border-radius:16px;
+    padding:22px;
+    color:rgba(255,255,255,.62);
+    font-size:14px;
+    text-align:center;
+    background:rgba(255,255,255,.03);
+  }
+
+  /* =========================
+     8) ARTIST INBOX
+  ========================= */
+  .artist-inbox-grid{
+    display:grid;
+    gap:14px;
+  }
+
+  .artist-request-card{
+    border:1px solid rgba(255,255,255,.08);
+    background:#141414;
+    border-radius:18px;
+    overflow:hidden;
+  }
+
+  .artist-request-top{
+    padding:16px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+
+  .artist-request-title{
+    margin:0;
+    color:#fff;
+    font-size:20px;
+    font-weight:900;
+    line-height:1.2;
+  }
+
+  .artist-request-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .artist-request-body{
+    padding:14px 16px 16px;
+  }
+
+  .artist-request-desc{
+    color:rgba(255,255,255,.76);
+    font-size:14px;
+    line-height:1.6;
+    white-space:pre-line;
+  }
+
+  .artist-request-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:14px;
+  }
+
+  .submission-count{
+    margin-top:14px;
+    color:#fff;
+    font-size:13px;
+    font-weight:800;
+  }
+
+  .submission-list{
+    display:grid;
+    gap:12px;
+    margin-top:14px;
+  }
+
+  .submission-card{
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.04);
+    border-radius:16px;
+    padding:14px;
+  }
+
+  .submission-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+
+  .submission-producer{
+    color:#fff;
+    font-size:15px;
+    font-weight:900;
+  }
+
+  .submission-time{
+    color:rgba(255,255,255,.58);
+    font-size:12px;
+  }
+
+  .submission-message{
+    margin-top:10px;
+    color:rgba(255,255,255,.82);
+    font-size:14px;
+    line-height:1.6;
+    white-space:pre-line;
+  }
+
+  .submission-beat-box{
+    margin-top:12px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.03);
+    border-radius:14px;
+    padding:12px;
+  }
+
+  .submission-beat-title{
+    color:#fff;
+    font-size:14px;
+    font-weight:900;
+  }
+
+  .submission-beat-meta{
+    margin-top:6px;
+    color:rgba(255,255,255,.62);
+    font-size:12px;
+  }
+
+  .submission-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:12px;
+  }
+
+  .submission-status{
+    display:inline-flex;
+    align-items:center;
+    min-height:30px;
+    padding:0 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:900;
+    border:1px solid rgba(255,255,255,.10);
+  }
+
+  .submission-status.pending{
+    background:rgba(245,158,11,.12);
+    color:#fbbf24;
+    border-color:rgba(245,158,11,.28);
+  }
+
+  .submission-status.accepted{
+    background:rgba(34,197,94,.12);
+    color:#4ade80;
+    border-color:rgba(34,197,94,.28);
+  }
+
+  .submission-status.rejected{
+    background:rgba(239,68,68,.12);
+    color:#f87171;
+    border-color:rgba(239,68,68,.28);
+  }
+
+  /* =========================
+     9) RESPONSIVE
+  ========================= */
+  @media (max-width: 860px){
+    .collab-toolbar,
+    .row2{
+      grid-template-columns:1fr;
+    }
+
+    .collab-grid{
+      grid-template-columns:1fr;
+    }
+
+    .collab-title{
+      font-size:28px;
+    }
+
+    .collab-hero-actions .btnx,
+    .collab-hero-actions a.btnx{
+      flex:1 1 220px;
+      min-width:0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      text-decoration:none;
+      box-sizing:border-box;
+    }
+  }
+
+  @media (max-width: 640px){
+    .collab-hero-actions{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .collab-hero-actions .btnx,
+    .collab-hero-actions a.btnx{
+      width:100%;
+      min-height:52px;
+      padding:0 14px;
+    }
+
+    .submission-head{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+  }
+</style>
