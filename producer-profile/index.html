@@ -1146,8 +1146,11 @@
         if (!isSelf){
           msgBtn.classList.remove("hidden");
           msgBtn.addEventListener("click", ()=>{
-            const otherName = document.getElementById("prodName")?.textContent || "Producer";
-            startDM({ otherUid: pid, otherName });
+            const rawName = document.getElementById("prodName")?.textContent || "Producer";
+            const otherName = String(rawName).trim();
+
+            location.href =
+              `/messages/?producerId=${encodeURIComponent(pid)}&name=${encodeURIComponent(otherName)}`;
           });
         } else {
           msgBtn.classList.add("hidden");
