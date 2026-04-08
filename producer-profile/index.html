@@ -1145,11 +1145,12 @@
         if (!isSelf){
           msgBtn.classList.remove("hidden");
           msgBtn.addEventListener("click", ()=>{
-            const rawName = document.getElementById("prodName")?.textContent || "Producer";
-            const otherName = String(rawName).trim();
-
+            const otherName = document.getElementById("prodName")?.textContent || "Producer";
             location.href =
-              `/messages/?producerId=${encodeURIComponent(pid)}&name=${encodeURIComponent(otherName)}`;
+              "/messages/?producerId=" +
+              encodeURIComponent(pid) +
+              "&name=" +
+              encodeURIComponent(otherName);
           });
         } else {
           msgBtn.classList.add("hidden");
