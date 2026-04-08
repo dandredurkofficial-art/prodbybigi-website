@@ -722,29 +722,31 @@
 
   async function maybeOpenFromUrl(){
     const producerId = qs("producerId");
-    const name = qs("name");
+    const name = qs("name") || "Producer";
 
     if (!producerId) return;
 
     if (!window.FB?.ensureThread){
-      alert("Messaging is not ready yet in firebase.js");
-      return;
+      throw new Error("ensureThread is missing in firebase.js");
     }
 
     const threadId = await window.FB.ensureThread({
       otherUid: producerId,
-      otherDisplayName: name || "Producer"
+      otherDisplayName: name
     });
+
+    if (!threadId){
+      throw new Error("Failed to create/open thread");
+    }
 
     await refreshThreadList();
 
     await openThread({
       threadId,
       otherUid: producerId,
-      otherName: name || "Producer"
+      otherName: name
     });
   }
-
   async function sendMessageNow(){
     const input = $("chatInput");
     const btn = $("sendMsgBtn");
