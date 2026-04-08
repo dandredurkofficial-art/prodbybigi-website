@@ -919,7 +919,7 @@ window.FB.createCollabSubmission = async function ({
     beatGenre: cleanBeatGenre,
     message: cleanMessage,
     createdAt: Date.now(),
-    status: "new"
+    status: "pending"
   });
 };
 
@@ -969,8 +969,3 @@ window.FB.fetchSubmissionsForRequest = async function (requestId) {
   arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
   return arr;
 };
-
-/* =========================================================
-   ✅ FIREBASE READY EVENT
-========================================================= */
-window.dispatchEvent(new Event("firebase-ready"));
