@@ -1330,7 +1330,7 @@
         otherDisplayName: String(producerName || "Producer")
       });
 
-      location.href = `/inbox/?threadId=${encodeURIComponent(threadId)}`;
+      location.href = `/messages/?producerId=${encodeURIComponent(producerId)}&name=${encodeURIComponent(producerName || "Producer")}`;
     }catch(err){
       console.error(err);
       alert("Failed to open producer chat: " + (err?.message || err));
