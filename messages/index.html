@@ -748,64 +748,63 @@
     });
   }
   async function sendMessageNow(){
-    const input = $("chatInput");
-    const btn = $("sendMsgBtn");
-    const text = String(input?.value || "").trim();
+  const input = $("chatInput");
+  const btn = $("sendMsgBtn");
+  const text = String(input?.value || "").trim();
 
-    if (!text) return;
+  if (!text) return;
 
-    try{
-      btn.disabled = true;
+  try{
+    btn.disabled = true;
 
-      // If page opened with producerId but no thread is active yet,
-      // create/open it automatically
-      if (!activeOtherUid){
-        const producerId = qs("producerId");
-        const name = qs("name") || "Producer";
+    // if no active conversation yet, create/open one from URL
+    if (!activeOtherUid){
+      const producerId = qs("producerId");
+      const producerName = qs("name") || "Producer";
 
-        if (!producerId){
-          alert("Select a conversation first.");
-          return;
-        }
-
-        if (!window.FB?.ensureThread){
-          alert("Messaging is not ready yet in firebase.js");
-          return;
-        }
-
-        const threadId = await window.FB.ensureThread({
-          otherUid: producerId,
-          otherDisplayName: name
-        });
-
-        await openThread({
-          threadId,
-          otherUid: producerId,
-          otherName: name
-        });
+      if (!producerId){
+        alert("No producer selected.");
+        return;
       }
 
-      await window.FB.sendMessage({
-        otherUid: activeOtherUid,
-        text,
-        otherDisplayName: activeOtherName || "User"
+      const threadId = await window.FB.ensureThread({
+        otherUid: producerId,
+        otherDisplayName: producerName
       });
 
-      input.value = "";
-
-      try{
-        await window.FB.markThreadRead(activeThreadId);
-      }catch(e){}
-
-      await refreshThreadList();
-    }catch(err){
-      console.error(err);
-      alert("Failed to send message: " + (err?.message || err));
-    }finally{
-      btn.disabled = false;
-      input?.focus();
+      await openThread({
+        threadId,
+        otherUid: producerId,
+        otherName: producerName
+      });
     }
+
+    await window.FB.sendMessage({
+      otherUid: activeOtherUid,
+      text,
+      otherDisplayName: activeOtherName || "User"
+    });
+
+    input.value = "";
+
+    try{
+      await window.FB.markThreadRead(activeThreadId);
+    }catch(e){}
+
+    try{
+      await refreshThreadList();
+    }catch(e){
+      console.warn("refreshThreadList after send failed:", e);
+    }
+
+  }catch(err){
+    console.error("sendMessageNow", err);
+    alert("Failed to send message: " + (err?.message || err));
+  }finally{
+    btn.disabled = false;
+    input?.focus();
   }
+}
 
   async function goToMyDashboard() {
     try {
@@ -871,22 +870,50 @@
   });
 }
 
-let __messagesPageStarted = false;
+let __messagesInitDone = false;
 
-async function waitForRealAuthReady(){
-  while (!window.FB || window.FB.authReady !== true){
-    await new Promise(resolve => setTimeout(resolve, 80));
+  async function initMessagesPage(){
+    if (__messagesInitDone) return;
+    __messagesInitDone = true;
+
+    bindEvents();
+
+    const producerId = qs("producerId");
+    const producerName = qs("name") || "Producer";
+
+    try{
+      // 1. If page opened from a producer page, open/create that thread first
+      if (producerId) {
+        const threadId = await window.FB.ensureThread({
+          otherUid: producerId,
+          otherDisplayName: producerName
+        });
+
+        await openThread({
+          threadId,
+          otherUid: producerId,
+          otherName: producerName
+        });
+      }
+
+      // 2. Then try loading sidebar threads
+      try{
+        await refreshThreadList();
+      }catch(listErr){
+        console.warn("refreshThreadList failed:", listErr);
+        $("threadsStatus").textContent = "Could not load all conversations yet.";
+        $("threadsList").innerHTML = `<div class="empty-box">Your active chat can still work. Other conversations could not load yet.</div>`;
+      }
+
+    }catch(err){
+      console.error("initMessagesPage", err);
+      $("threadsStatus").textContent = "Failed to open messages.";
+      $("threadsList").innerHTML = `<div class="empty-box">Could not open this conversation right now.</div>`;
+    }
   }
-}
 
-async function initMessagesPage(){
-  if (__messagesPageStarted) return;
-  __messagesPageStarted = true;
-
-  try{
-    await waitForRealAuthReady();
-
-    const user = window.FB?.auth?.currentUser || null;
+  window.addEventListener("firebase-auth-changed", async (e) => {
+    const user = e?.detail?.user || window.FB?.auth?.currentUser || null;
 
     if (!user){
       const ret = encodeURIComponent(location.pathname + location.search);
@@ -894,20 +921,8 @@ async function initMessagesPage(){
       return;
     }
 
-    bindEvents();
-
-    await refreshThreadList();
-    await maybeOpenFromUrl();
-
-  }catch(err){
-    console.error(err);
-    $("threadsStatus").textContent = "Failed to load conversations.";
-    $("threadsList").innerHTML = `<div class="empty-box">Could not load your inbox right now.</div>`;
-  }
-}
-
-window.addEventListener("firebase-ready", initMessagesPage);
-  
+    await initMessagesPage();
+  });
 </script>
 
 </body>
