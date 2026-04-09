@@ -983,22 +983,22 @@
 
             <div class="collab-actions">
               ${
-  (() => {
-    const currentUid = window.FB?.auth?.currentUser?.uid || "";
-    const isOwner = String(item.createdBy || "") === String(currentUid);
-    const isOpen = String(item.status || "open").toLowerCase() === "open";
+                (() => {
+                  const currentUid = window.FB?.auth?.currentUser?.uid || "";
+                  const isOwner = String(item.createdBy || "") === String(currentUid);
+                  const isOpen = String(item.status || "open").toLowerCase() === "open";
 
-    if (!isOpen) {
-      return `<button class="btnx ghost" type="button" disabled>Closed</button>`;
-    }
+                  if (!isOpen) {
+                    return `<button class="btnx ghost" type="button" disabled>Closed</button>`;
+                  }
 
-    if (isOwner) {
-      return `<button class="btnx ghost" type="button" disabled>Your Request</button>`;
-    }
+                  if (isOwner) {
+                    return `<button class="btnx ghost" type="button" disabled>Your Request</button>`;
+                  }
 
-    return `<button class="btnx" type="button" onclick="openSubmissionFlow('${item.id}')">Submit Beat</button>`;
-  })()
-}
+                  return `<button class="btnx" type="button" onclick="openSubmissionFlow('${item.id}')">Submit Beat</button>`;
+                })()
+              }
             </div>
           </div>
         </div>
