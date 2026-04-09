@@ -505,19 +505,24 @@
     }
 
     .submission-actions{
-      display:flex;
-      flex-wrap:wrap;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(170px, max-content));
       gap:10px;
       margin-top:12px;
+      align-items:stretch;
     }
 
     .submission-actions .btnx,
     .submission-actions a.btnx{
-      min-width:140px;
-      width:auto;
+      display:inline-flex;
+      align-items:center;
       justify-content:center;
       text-align:center;
       text-decoration:none;
+      width:100%;
+      min-width:170px;
+      max-width:100%;
+      box-sizing:border-box;
     }
 
     .submission-status{
@@ -575,13 +580,13 @@
 
     @media (max-width: 760px){
       .submission-actions{
-        flex-direction:column;
+        grid-template-columns:1fr;
       }
 
       .submission-actions .btnx,
       .submission-actions a.btnx{
-        width:100%;
         min-width:0;
+        width:100%;
       }
     }
 
