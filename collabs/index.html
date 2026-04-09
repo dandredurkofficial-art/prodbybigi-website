@@ -1122,6 +1122,12 @@
       submissionsByRequest[reqId].sort((a, b) => normalizeTimeValue(b.createdAt) - normalizeTimeValue(a.createdAt));
     });
 
+    for (const reqId of Object.keys(submissionsByRequest)) {
+      for (const sub of submissionsByRequest[reqId]) {
+        sub._resolvedProducerName = await getSubmissionProducerName(sub);
+      }
+    }
+
     statusEl.textContent = `${myRequests.length} request${myRequests.length === 1 ? "" : "s"} in your inbox`;
 
     myRequests.forEach((req) => {
@@ -1173,11 +1179,7 @@
                     <div class="submission-card">
                       <div class="submission-head">
                         <div>
-                          <div class="submission-producer">${escapeHtml(
-                            sub.producerName ||
-                            sub.beatProducerName ||
-                            (sub.producerId ? `Producer ${String(sub.producerId).slice(0,6)}` : "Producer")
-                          )}</div>
+                          <div class="submission-producer">${escapeHtml(sub._resolvedProducerName || "Producer")}</div>
                           <div class="submission-time">${escapeHtml(timeAgo(sub.createdAt) || "recently")}</div>
                       </div>
 
