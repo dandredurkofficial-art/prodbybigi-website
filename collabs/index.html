@@ -1167,33 +1167,33 @@
                     }
 
                     <div class="submission-actions">
-  ${
-    sub.beatId
-      ? `<a class="btnx small ghost" href="/beat/?id=${encodeURIComponent(sub.beatId)}">Open Beat</a>`
-      : ``
-  }
+                      ${
+                        sub.beatId
+                          ? `<a class="btnx small ghost" href="/beat/?id=${encodeURIComponent(sub.beatId)}">Open Beat</a>`
+                          : ``
+                      }
 
-  <a class="btnx small ghost" href="/producer-profile/?producerId=${encodeURIComponent(sub.producerId || "")}">
-    Producer Profile
-  </a>
+                      <a class="btnx small ghost" href="/producer-profile/?producerId=${encodeURIComponent(sub.producerId || "")}">
+                        Producer Profile
+                      </a>
 
-  <button class="btnx small ghost" type="button" onclick="messageSubmissionProducer('${sub.producerId || ""}', '${escapeHtml(
-    sub.producerName ||
-    sub.beatProducerName ||
-    (sub.producerId ? `Producer ${String(sub.producerId).slice(0,6)}` : "Producer")
-  ).replace(/'/g, "\\'")}')">
-    Message Producer
-  </button>
+                      <button class="btnx small ghost" type="button" onclick="messageSubmissionProducer('${sub.producerId || ""}', '${escapeHtml(
+                        sub.producerName ||
+                        sub.beatProducerName ||
+                        (sub.producerId ? `Producer ${String(sub.producerId).slice(0,6)}` : "Producer")
+                      ).replace(/'/g, "\\'")}')">
+                        Message Producer
+                      </button>
 
-  ${
-    String(sub.status || "pending").toLowerCase() === "pending"
-      ? `
-        <button class="btnx small" type="button" onclick="acceptSubmission('${sub.id}')">Accept</button>
-        <button class="btnx small danger" type="button" onclick="rejectSubmission('${sub.id}')">Reject</button>
-      `
-      : ``
-  }
-</div>
+                      ${
+                        String(sub.status || "pending").toLowerCase() === "pending"
+                          ? `
+                            <button class="btnx small" type="button" onclick="acceptSubmission('${sub.id}')">Accept</button>
+                            <button class="btnx small danger" type="button" onclick="rejectSubmission('${sub.id}')">Reject</button>
+                          `
+                          : ``
+                      }
+                    </div>
                   </div>
                 `).join("")}
                 </div>`
