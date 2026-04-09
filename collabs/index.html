@@ -1260,7 +1260,7 @@
       const myRequests = getMyOwnedRequests();
 
       if (!myRequests.length){
-        renderArtistInbox([], []);
+        await renderArtistInbox([], []);
         return;
       }
 
@@ -1279,7 +1279,7 @@
         });
       });
 
-      renderArtistInbox(myRequests, arr);
+      await renderArtistInbox(myRequests, arr);
     }catch(err){
       console.error("loadArtistInbox:", err);
       statusEl.textContent = "Failed to load your inbox.";
