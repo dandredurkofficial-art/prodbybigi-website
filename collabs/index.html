@@ -1109,7 +1109,11 @@
                     <div class="submission-card">
                       <div class="submission-head">
                         <div>
-                          <div class="submission-producer">${escapeHtml(sub.producerName || "Producer")}</div>
+                          <div class="submission-producer">${escapeHtml(
+                            sub.producerName ||
+                            sub.beatProducerName ||
+                            (sub.producerId ? `Producer ${String(sub.producerId).slice(0,6)}` : "Producer")
+                          )}</div>
                           <div class="submission-time">${escapeHtml(timeAgo(sub.createdAt) || "recently")}</div>
                       </div>
 
