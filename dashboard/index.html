@@ -3076,6 +3076,13 @@ let profilePicUrl = null;
 let profilePicPath = null;
 let editingBeatId = null;
 
+let pmThreads = [];
+let pmFilteredThreads = [];
+let pmActiveThreadId = "";
+let pmActiveOtherUid = "";
+let pmActiveOtherName = "";
+let pmActiveUnsub = null;
+
 function $(id){ return document.getElementById(id); }
 
 /* ===========================
@@ -3568,16 +3575,6 @@ async function loadAdvancedAnalyticsReal(){
 }
 window.loadAdvancedAnalyticsReal = loadAdvancedAnalyticsReal;
 
-async function openProducerThread(threadId, otherUid, otherName){
-  try{
-    // if you already have a modal, hook this into it
-    alert(`Open thread with ${otherName} (${threadId})`);
-  }catch(err){
-    alert("Could not open thread: " + (err?.message || err));
-  }
-}
-window.openProducerThread = openProducerThread;
-
 function msLeftText(featuredUntil){
   const end = Number(featuredUntil || 0);
   if (!end) return "";
@@ -3652,6 +3649,326 @@ function buildSearchableText(data){
     .trim();
 }
 
+function pmMyUid(){
+  return window.currentUser?.uid || window.auth?.currentUser?.uid || "";
+}
+
+function pmEscape(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function pmInitials(s){
+  const t = String(s || "").trim();
+  if (!t) return "U";
+  const parts = t.split(/\s+/).filter(Boolean);
+  const a = (parts[0] || "U")[0] || "U";
+  const b = (parts[1] || "")[0] || "";
+  return (a + b).toUpperCase();
+}
+
+function pmTimeAgo(v){
+  try{
+    let ms = 0;
+    if (!v) return "";
+    if (typeof v === "number") ms = v;
+    else if (typeof v?.toDate === "function") ms = v.toDate().getTime();
+    else ms = new Date(v).getTime();
+
+    if (!ms) return "";
+    const diff = Date.now() - ms;
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 1) return "now";
+    if (mins < 60) return mins + "m";
+    if (hrs < 24) return hrs + "h";
+    return days + "d";
+  }catch(e){
+    return "";
+  }
+}
+
+function pmFormatDate(v){
+  try{
+    let d = null;
+    if (!v) return "";
+    if (typeof v === "number") d = new Date(v);
+    else if (typeof v?.toDate === "function") d = v.toDate();
+    else d = new Date(v);
+
+    if (!d || isNaN(d.getTime())) return "";
+    return d.toLocaleString(undefined, {
+      month:"short",
+      day:"numeric",
+      hour:"2-digit",
+      minute:"2-digit"
+    });
+  }catch(e){
+    return "";
+  }
+}
+
+function pmOtherUid(thread){
+  const me = pmMyUid();
+  const members = Array.isArray(thread?.members) ? thread.members : [];
+  return members.find(uid => String(uid) !== String(me)) || "";
+}
+
+function pmOtherName(thread){
+  const otherUid = pmOtherUid(thread);
+  const names = thread?.memberNames || {};
+  return String(names?.[otherUid] || otherUid || "Buyer");
+}
+
+function pmApplyFilter(){
+  const q = ($("pmSearchInput")?.value || "").trim().toLowerCase();
+
+  pmFilteredThreads = !q
+    ? [...pmThreads]
+    : pmThreads.filter(t => {
+        const name = pmOtherName(t).toLowerCase();
+        const msg = String(t?.lastMessageText || "").toLowerCase();
+        return name.includes(q) || msg.includes(q);
+      });
+
+  pmRenderThreads();
+}
+
+function pmRenderThreads(){
+  const list = $("threadsList");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  if (!pmFilteredThreads.length){
+    list.innerHTML = `<div class="pm-empty">No conversations yet.</div>`;
+    return;
+  }
+
+  list.innerHTML = pmFilteredThreads.map(t => {
+    const otherUid = pmOtherUid(t);
+    const otherName = pmOtherName(t);
+    const unread = Number(t?.unreadMap?.[pmMyUid()] || 0);
+
+    return `
+      <div class="pm-thread-card ${String(t.id) === String(pmActiveThreadId) ? "active" : ""}"
+           onclick="pmOpenThread('${t.id}','${otherUid}','${String(otherName).replace(/'/g,"\\'")}')">
+        <div class="pm-thread-avatar">${pmInitials(otherName)}</div>
+        <div class="pm-thread-main">
+          <div class="pm-thread-top">
+            <strong>${pmEscape(otherName)}</strong>
+            ${unread > 0 ? `<span class="pm-thread-badge">${unread}</span>` : ``}
+          </div>
+          <div class="pm-thread-preview">${pmEscape(t.lastMessageText || "No messages yet")}</div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function pmRenderMessages(messages){
+  const wrap = $("pmMessages");
+  if (!wrap) return;
+
+  wrap.innerHTML = "";
+
+  if (!messages || !messages.length){
+    wrap.innerHTML = `<div class="pm-empty">No messages yet. Start replying below.</div>`;
+    return;
+  }
+
+  const me = pmMyUid();
+
+  messages.forEach((msg) => {
+    const mine = String(msg?.senderId || "") === String(me);
+    const el = document.createElement("div");
+    el.className = "pm-msg" + (mine ? " me" : "");
+    el.innerHTML = `
+      <div>${pmEscape(msg?.text || "")}</div>
+      <div class="pm-msg-meta">
+        <span>${mine ? "You" : pmEscape(pmActiveOtherName || "Buyer")}</span>
+        <span>${pmEscape(pmFormatDate(msg?.createdAt))}</span>
+      </div>
+    `;
+    wrap.appendChild(el);
+  });
+
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+async function pmRefreshThreads(){
+  const list = $("threadsList");
+  if (!list) return;
+
+  try{
+    const q = window.query(
+      window.collection(window.db, "threads"),
+      window.where("members", "array-contains", pmMyUid())
+    );
+
+    const snap = await window.getDocs(q);
+    const arr = [];
+    snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
+
+    arr.sort((a,b) => Number(b.lastMessageAt || 0) - Number(a.lastMessageAt || 0));
+
+    pmThreads = arr;
+    pmApplyFilter();
+  }catch(err){
+    console.error("pmRefreshThreads:", err);
+    list.innerHTML = `<div class="pm-empty" style="color:#fecaca;">Could not load threads: ${err?.message || err}</div>`;
+  }
+}
+
+async function pmOpenThread(threadId, otherUid, otherName){
+  try{
+    pmActiveThreadId = String(threadId || "");
+    pmActiveOtherUid = String(otherUid || "");
+    pmActiveOtherName = String(otherName || "Buyer");
+
+    $("pmChatName").textContent = pmActiveOtherName;
+    $("pmChatMeta").textContent = "Conversation";
+
+    if (typeof pmActiveUnsub === "function"){
+      try{ pmActiveUnsub(); }catch(e){}
+      pmActiveUnsub = null;
+    }
+
+    try{
+      await window.updateDoc(
+        window.doc(window.db, "threads", pmActiveThreadId),
+        { [`unreadMap.${pmMyUid()}`]: 0 }
+      );
+    }catch(e){}
+
+    const q = window.query(
+      window.collection(window.db, "threads", pmActiveThreadId, "messages"),
+      window.orderBy("createdAt", "asc")
+    );
+
+    pmActiveUnsub = window.onSnapshot(q, async (snap) => {
+      const messages = [];
+      snap.forEach(d => messages.push({ id: d.id, ...d.data() }));
+      pmRenderMessages(messages);
+
+      try{
+        await window.updateDoc(
+          window.doc(window.db, "threads", pmActiveThreadId),
+          { [`unreadMap.${pmMyUid()}`]: 0 }
+        );
+      }catch(e){}
+
+      await pmRefreshThreads();
+    });
+
+    await pmRefreshThreads();
+  }catch(err){
+    console.error("pmOpenThread:", err);
+    alert("Could not open thread: " + (err?.message || err));
+  }
+}
+window.pmOpenThread = pmOpenThread;
+
+async function sendPrivateMessage(){
+  if (!isPro()) return alert("Private messages are Pro/Elite only.");
+  if (!window.currentUser) return alert("Login again.");
+
+  const text = ($("msgText")?.value || "").trim();
+
+  if (!pmActiveOtherUid){
+    return alert("Open a conversation first.");
+  }
+
+  if (!text){
+    return alert("Type a message");
+  }
+
+  const producerId = window.currentUser.uid;
+  const buyerId = pmActiveOtherUid;
+  const members = [producerId, buyerId].sort();
+  const threadId = members.join("__");
+
+  try{
+    const threadRef = window.doc(window.db, "threads", threadId);
+    const threadSnap = await window.getDoc(threadRef);
+
+    if (!threadSnap.exists()) {
+      await window.setDoc(threadRef, {
+        threadId,
+        members,
+        createdAt: Date.now(),
+        lastMessageText: text,
+        lastMessageAt: Date.now(),
+        lastSenderId: producerId,
+        unreadMap: {
+          [producerId]: 0,
+          [buyerId]: 1
+        },
+        memberNames: {
+          [producerId]: getProducerDisplayName(),
+          [buyerId]: pmActiveOtherName || buyerId
+        }
+      });
+    } else {
+      await window.updateDoc(threadRef, {
+        lastMessageText: text,
+        lastMessageAt: Date.now(),
+        lastSenderId: producerId,
+        [`unreadMap.${buyerId}`]: window.increment(1),
+        [`memberNames.${producerId}`]: getProducerDisplayName(),
+        [`memberNames.${buyerId}`]: pmActiveOtherName || buyerId
+      });
+    }
+
+    await window.addDoc(
+      window.collection(window.db, "threads", threadId, "messages"),
+      {
+        threadId,
+        senderId: producerId,
+        text,
+        createdAt: Date.now()
+      }
+    );
+
+    if ($("msgSendStatus")) $("msgSendStatus").textContent = "✅ Reply sent";
+    if ($("msgText")) $("msgText").value = "";
+
+    await pmOpenThread(threadId, buyerId, pmActiveOtherName);
+  }catch(err){
+    console.error("sendPrivateMessage:", err);
+    alert("Message failed: " + (err?.message || err));
+  }
+}
+window.sendPrivateMessage = sendPrivateMessage;
+
+async function initProducerMessagesUI(){
+  if (!isPro()) return;
+  if (!window.currentUser) return;
+
+  $("pmSearchInput")?.addEventListener("input", pmApplyFilter);
+
+  $("msgText")?.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      e.preventDefault();
+      sendPrivateMessage();
+    }
+  });
+
+  await pmRefreshThreads();
+
+  if (pmThreads.length){
+    const first = pmThreads[0];
+    await pmOpenThread(first.id, pmOtherUid(first), pmOtherName(first));
+  }
+}
+window.initProducerMessagesUI = initProducerMessagesUI;
+  
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
 =========================== */
