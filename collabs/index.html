@@ -1604,49 +1604,49 @@
     btn.textContent = "Sending...";
 
     try{
-  const selectedBeat = myProducerBeats.find(x => String(x.id) === String(currentSelectedBeatId));
+      const selectedBeat = myProducerBeats.find(x => String(x.id) === String(currentSelectedBeatId));
 
-  let producerDisplayName = user.displayName || "";
+      let producerDisplayName = user.displayName || "";
 
-  try{
-    if (!producerDisplayName && window.FB?.getProducerProfile){
-      const prof = await window.FB.getProducerProfile(user.uid);
-      producerDisplayName = String(
-        prof?.displayName ||
-        `${prof?.firstName || ""} ${prof?.lastName || ""}`.trim() ||
-        prof?.producerName ||
-        ""
-      ).trim();
-    }
-  }catch(e){
-    console.warn("Could not load producer profile name", e);
-  }
+      try{
+        if (!producerDisplayName && window.FB?.getProducerProfile){
+          const prof = await window.FB.getProducerProfile(user.uid);
+          producerDisplayName = String(
+            prof?.displayName ||
+            `${prof?.firstName || ""} ${prof?.lastName || ""}`.trim() ||
+            prof?.producerName ||
+            ""
+          ).trim();
+        }
+      }catch(e){
+        console.warn("Could not load producer profile name", e);
+      }
 
-  if (!producerDisplayName){
-    producerDisplayName = "Producer";
-  }
+      if (!producerDisplayName){
+        producerDisplayName = "Producer";
+      }
 
-  await window.FB.addDoc(
+      await window.FB.addDoc(
         window.FB.collection(window.FB.db, "collabSubmissions"),
-  {
-    requestId: currentSubmitRequestId,
-    requestTitle: req.title || "",
-    requestOwnerId: req.createdBy || "",
+        {
+          requestId: currentSubmitRequestId,
+          requestTitle: req.title || "",
+          requestOwnerId: req.createdBy || "",
 
-    producerId: user.uid,
-    producerName: producerDisplayName,
+          producerId: user.uid,
+          producerName: producerDisplayName,
 
-    beatId: currentSelectedBeatId || "",
-    beatTitle: selectedBeat?.title || "",
-    beatGenre: selectedBeat?.genre || "",
+          beatId: currentSelectedBeatId || "",
+          beatTitle: selectedBeat?.title || "",
+          beatGenre: selectedBeat?.genre || "",
 
-    message,
-    createdAt: Date.now(),
+          message,
+          createdAt: Date.now(),
 
-    status: "pending",
-    artistActionAt: null
-  }
-);
+          status: "pending",
+          artistActionAt: null
+        }
+      );
 
       closeSubmitModal();
       await loadArtistInbox();
