@@ -505,8 +505,8 @@
     }
 
     .submission-actions{
-      display:flex;
-      flex-wrap:wrap;
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
       gap:10px;
       margin-top:12px;
     }
@@ -582,7 +582,20 @@
         flex-direction:column;
         align-items:flex-start;
       }
-    }
+
+      .submission-actions .btnx,
+      .submission-actions a.btnx{
+        width:100%;
+        min-width:0;
+        text-align:center;
+        justify-content:center;
+      }
+
+      @media (max-width: 760px){
+        .submission-actions{
+          grid-template-columns:1fr;
+        }
+      }
   </style>
 </head>
 <body>
