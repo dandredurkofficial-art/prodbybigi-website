@@ -1054,37 +1054,37 @@
   }
 
   async function getSubmissionProducerName(sub){
-  const directName = String(
-    sub?.producerName ||
-    sub?.beatProducerName ||
-    ""
-  ).trim();
+    const directName = String(
+      sub?.producerName ||
+      sub?.beatProducerName ||
+      ""
+    ).trim();
 
-  if (directName) return directName;
+    if (directName) return directName;
 
-  const producerId = String(sub?.producerId || "").trim();
-  if (!producerId) return "Producer";
+    const producerId = String(sub?.producerId || "").trim();
+    if (!producerId) return "Producer";
 
-  try{
-    if (window.FB?.getProducerProfile){
-      const prof = await window.FB.getProducerProfile(producerId);
-      const profileName = String(
-        prof?.displayName ||
-        `${prof?.firstName || ""} ${prof?.lastName || ""}`.trim() ||
-        prof?.producerName ||
-        ""
-      ).trim();
+    try{
+      if (window.FB?.getProducerProfile){
+        const prof = await window.FB.getProducerProfile(producerId);
+        const profileName = String(
+          prof?.displayName ||
+          `${prof?.firstName || ""} ${prof?.lastName || ""}`.trim() ||
+          prof?.producerName ||
+          ""
+        ).trim();
 
-      if (profileName) return profileName;
+        if (profileName) return profileName;
+      }
+    }catch(e){
+      console.warn("Could not resolve producer profile name", e);
     }
-  }catch(e){
-    console.warn("Could not resolve producer profile name", e);
+
+    return `Producer ${producerId.slice(0,6)}`;
   }
 
-  return `Producer ${producerId.slice(0,6)}`;
-}
-
-  function renderArtistInbox(myRequests, submissions){
+  async function renderArtistInbox(myRequests, submissions){
     const section = $("artistInboxSection");
     const statusEl = $("artistInboxStatus");
     const wrap = $("artistInboxGrid");
