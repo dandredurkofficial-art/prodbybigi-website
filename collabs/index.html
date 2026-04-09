@@ -1053,6 +1053,37 @@
     return "Pending";
   }
 
+  async function getSubmissionProducerName(sub){
+  const directName = String(
+    sub?.producerName ||
+    sub?.beatProducerName ||
+    ""
+  ).trim();
+
+  if (directName) return directName;
+
+  const producerId = String(sub?.producerId || "").trim();
+  if (!producerId) return "Producer";
+
+  try{
+    if (window.FB?.getProducerProfile){
+      const prof = await window.FB.getProducerProfile(producerId);
+      const profileName = String(
+        prof?.displayName ||
+        `${prof?.firstName || ""} ${prof?.lastName || ""}`.trim() ||
+        prof?.producerName ||
+        ""
+      ).trim();
+
+      if (profileName) return profileName;
+    }
+  }catch(e){
+    console.warn("Could not resolve producer profile name", e);
+  }
+
+  return `Producer ${producerId.slice(0,6)}`;
+}
+
   function renderArtistInbox(myRequests, submissions){
     const section = $("artistInboxSection");
     const statusEl = $("artistInboxStatus");
