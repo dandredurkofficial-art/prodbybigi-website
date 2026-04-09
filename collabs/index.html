@@ -1307,41 +1307,25 @@
   }
 
   function messageSubmissionProducer(producerId, producerName){
-    const user = window.FB?.auth?.currentUser;
-    if (!user){
-      const ret = encodeURIComponent("/messages/?producerId=" + producerId + "&name=" + encodeURIComponent(producerName || "Producer"));
-      location.href = "/login/?return=" + ret;
-      return;
-    }
-
-    location.href =
-      "/messages/?producerId=" +
-      encodeURIComponent(producerId) +
-      "&name=" +
-      encodeURIComponent(producerName || "Producer");
-    }
-
     if (!producerId){
       alert("Producer not found.");
       return;
     }
 
-    try{
-      if (!window.FB?.ensureThread){
-        alert("Messaging is not ready yet.");
-        return;
-      }
+    const user = window.FB?.auth?.currentUser;
 
-      const threadId = await window.FB.ensureThread({
-        otherUid: String(producerId),
-        otherDisplayName: String(producerName || "Producer")
-      });
+    const targetUrl =
+      "/messages/?producerId=" +
+      encodeURIComponent(producerId) +
+      "&name=" +
+      encodeURIComponent(producerName || "Producer");
 
-      location.href = `/messages/?producerId=${encodeURIComponent(producerId)}&name=${encodeURIComponent(producerName || "Producer")}`;
-    }catch(err){
-      console.error(err);
-      alert("Failed to open producer chat: " + (err?.message || err));
+    if (!user){
+      location.href = "/login/?return=" + encodeURIComponent(targetUrl);
+      return;
     }
+
+    location.href = targetUrl;
   }
 
   window.acceptSubmission = acceptSubmission;
