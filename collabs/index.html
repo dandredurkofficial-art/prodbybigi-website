@@ -1210,7 +1210,7 @@
                         Producer Profile
                       </a>
 
-                      <button class="btnx small ghost" type="button" onclick="messageSubmissionProducer('${sub.producerId || ""}', '${escapeHtml(
+                      <button class="btnx small ghost" type="button" onclick="messageSubmissionProducer('${sub.producerId || ""}', '${escapeHtml(sub._resolvedProducerName || "Producer").replace(/'/g, "\\'")}')">
                         sub.producerName ||
                         sub.beatProducerName ||
                         (sub.producerId ? `Producer ${String(sub.producerId).slice(0,6)}` : "Producer")
