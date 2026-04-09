@@ -3831,6 +3831,9 @@ async function pmRefreshThreads(){
 
     pmThreads = arr;
     pmApplyFilter();
+    if (!arr.length) {
+      list.innerHTML = `<div class="pm-empty">No conversations yet.</div>`;
+    }
   }catch(err){
     console.error("pmRefreshThreads:", err);
     list.innerHTML = `<div class="pm-empty" style="color:#fecaca;">Could not load threads: ${err?.message || err}</div>`;
