@@ -3082,6 +3082,7 @@ let pmActiveThreadId = "";
 let pmActiveOtherUid = "";
 let pmActiveOtherName = "";
 let pmActiveUnsub = null;
+let pmInitialized = false;
 
 function $(id){ return document.getElementById(id); }
 
@@ -3211,8 +3212,18 @@ function refreshProLocks(){
 
   const msgLocked = $("msgLocked");
   const msgUnlocked = $("msgUnlocked");
+
   if (msgLocked) msgLocked.style.display = pro ? "none" : "block";
   if (msgUnlocked) msgUnlocked.style.display = pro ? "block" : "none";
+
+  if (pro && window.currentUser) {
+    if (!pmInitialized) {
+      pmInitialized = true;
+      initProducerMessagesUI();
+    }
+  } else {
+    pmInitialized = false;
+  }
 
   const btnStarter = $("btnStarter");
   const btnPro = $("btnPro");
