@@ -1299,25 +1299,57 @@
   async function logBeatPlay(beat){
     try{
       const b = beat || {};
-      const producerId = String(b.producerId || "");
-      const beatId = String(b.id || "");
+      const producerId = String(b.producerId || "").trim();
+      const beatId = String(b.id || "").trim();
       if (!producerId || !beatId) return;
 
       window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{} };
       const key = `${producerId}:${beatId}`;
-      if (window.__ANA_SENT__.play[key]) return;
-      window.__ANA_SENT__.play[key] = 1;
 
-      if (window.FB && typeof window.FB.trackEvent === "function"){
-        await window.FB.trackEvent({
-          type: "beat_play",
-          beatId,
-          producerId,
-          path: location.pathname + location.search,
-          meta: { surface: "home", action: "preview" }
+      if (window.__ANA_SENT__.play[key]) return;
+      window.__ANA_SENT__.play[key] = true;
+
+      const FB = window.FB;
+      if (!FB?.db || typeof FB.doc !== "function" || typeof FB.updateDoc !== "function" || typeof FB.increment !== "function"){
+        console.error("FB helpers missing for play tracking", {
+          hasFB: !!FB,
+          hasDb: !!FB?.db,
+          hasDoc: typeof FB?.doc,
+          hasUpdateDoc: typeof FB?.updateDoc,
+          hasIncrement: typeof FB?.increment
         });
+        return;
       }
-    } catch {}
+
+      try{
+        await FB.updateDoc(FB.doc(FB.db, "beats", beatId), {
+          plays: FB.increment(1),
+          lastPlayedAt: Date.now()
+        });
+        console.log("✅ plays incremented for", beatId);
+      }catch(err){
+        console.error("❌ Firestore plays increment failed", err);
+        delete window.__ANA_SENT__.play[key];
+        return;
+      }
+
+      try{
+        if (typeof FB.trackEvent === "function"){
+          await FB.trackEvent({
+            type: "beat_play",
+            beatId,
+            producerId,
+            path: location.pathname + location.search,
+            meta: { surface: "home", action: "preview" }
+          });
+        }
+      }catch(err){
+        console.warn("trackEvent failed", err);
+      }
+
+    }catch(err){
+      console.error("logBeatPlay failed", err);
+    }
   }
 
   /* ===========================
