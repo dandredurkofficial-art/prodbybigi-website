@@ -1155,7 +1155,7 @@
       playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
       playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
 
-      playBtn.addEventListener("click", async () => {
+      playBtn.onclick = async () => {
         const pid = String(beat.producerId || "");
         const bid = String(beat.id || beatId);
         const anaKey = `${pid}:${bid}`;
@@ -1169,19 +1169,25 @@
 
           if (!window.__beatPageAudio) {
             window.__beatPageAudio = new Audio();
+            window.__beatPageAudio.preload = "none";
           }
 
           const audio = window.__beatPageAudio;
           const icon = playBtn.querySelector(".playIcon");
 
-          if (audio.src === audioUrl && !audio.paused) {
+          const currentSrc = audio.getAttribute("data-current-src") || "";
+
+          if (currentSrc === audioUrl && !audio.paused) {
             audio.pause();
             if (icon) icon.textContent = "▶";
             return;
           }
 
-          if (audio.src !== audioUrl) {
+          if (currentSrc !== audioUrl) {
+            audio.pause();
+            audio.currentTime = 0;
             audio.src = audioUrl;
+            audio.setAttribute("data-current-src", audioUrl);
           }
 
           await audio.play();
@@ -1218,7 +1224,7 @@
         } catch (e) {
           console.error("audio play failed:", e);
         }
-      }, true);
+      };
 
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
