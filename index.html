@@ -1451,6 +1451,27 @@
     return (plays * 1) + (cartAdds * 3) + (downloads * 4) + (sales * 8);
   }
 
+  function setupHomePlayTracking(beats){
+    if (window.__HOME_PLAY_TRACKING_BOUND__) return;
+    window.__HOME_PLAY_TRACKING_BOUND__ = true;
+
+    const beatMap = new Map((beats || []).map(b => [String(b.id || ""), b]));
+
+    document.addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-play-btn]");
+      if (!btn) return;
+
+      const card = btn.closest("[data-beat-id]");
+      if (!card) return;
+
+      const beatId = String(card.getAttribute("data-beat-id") || "");
+      const beat = beatMap.get(beatId);
+      if (!beat) return;
+
+      logBeatPlay(beat);
+    }, true);
+  }
+
   /* =========================================================
      ✅ NEW: Selection tracker + Payment Modal logic
      Works without editing license-modal.js
@@ -1858,6 +1879,7 @@
      }
       
       window.__LATEST_BEATS__ = beats;
+      setupHomePlayTracking(beats);
 
       /* ======================================
          PRELOAD BEAT PAGES
@@ -1925,7 +1947,7 @@
           el.className = "card trend-card";
           el.setAttribute("data-beat-id", b.id);
 
-          const audioUrl = b.audio || "";
+          const audioUrl = b.previewAudio || b.audio || "";
 
           /* preload audio preview */
 
