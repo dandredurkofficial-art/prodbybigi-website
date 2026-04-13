@@ -1,0 +1,15 @@
+/* 🔒 Prevent iOS zoom on inputs */
+@media (max-width: 768px){
+  input,
+  select,
+  textarea,
+  button{
+    font-size:16px !important;
+  }
+}
+
+/* Optional: smoother input look */
+input, textarea{
+  -webkit-appearance: none;
+  appearance: none;
+}
