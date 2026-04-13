@@ -1442,61 +1442,90 @@
     return "/producer-profile/?producerId=" + encodeURIComponent(pid);
   }
 
-  async function logBeatPlay(beat){
-    try{
-      const b = beat || {};
-      const producerId = String(b.producerId || "").trim();
-      const beatId = String(b.id || "").trim();
-      if (!producerId || !beatId) return;
+  async function logBeatPlay(beat, playBtn){
+  try{
+    const b = beat || {};
+    const producerId = String(b.producerId || "").trim();
+    const beatId = String(b.id || "").trim();
+    if (!producerId || !beatId) return;
 
-      window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{} };
-      const key = `${producerId}:${beatId}`;
+    const anaKey = `${producerId}:${beatId}`;
+    const audioUrl = String(b.previewAudio || b.audio || "").trim();
 
-      if (window.__ANA_SENT__.play[key]) return;
-      window.__ANA_SENT__.play[key] = true;
-
-      const FB = window.FB;
-      if (!FB?.db || typeof FB.doc !== "function" || typeof FB.updateDoc !== "function" || typeof FB.increment !== "function"){
-        console.error("FB helpers missing for play tracking", {
-          hasFB: !!FB,
-          hasDb: !!FB?.db,
-          hasDoc: typeof FB?.doc,
-          hasUpdateDoc: typeof FB?.updateDoc,
-          hasIncrement: typeof FB?.increment
-        });
-        return;
-      }
-
-      try{
-        await FB.updateDoc(FB.doc(FB.db, "beats", beatId), {
-          plays: FB.increment(1),
-          lastPlayedAt: Date.now()
-        });
-        console.log("✅ plays incremented for", beatId);
-      }catch(err){
-        console.error("❌ Firestore plays increment failed", err);
-        delete window.__ANA_SENT__.play[key];
-        return;
-      }
-
-      try{
-        if (typeof FB.trackEvent === "function"){
-          await FB.trackEvent({
-            type: "beat_play",
-            beatId,
-            producerId,
-            path: location.pathname + location.search,
-            meta: { surface: "home", action: "preview" }
-          });
-        }
-      }catch(err){
-        console.warn("trackEvent failed", err);
-      }
-
-    }catch(err){
-      console.error("logBeatPlay failed", err);
+    if (!audioUrl) {
+      alert("No preview available for this beat.");
+      return;
     }
+
+    if (!window.__homeAudio) {
+      window.__homeAudio = new Audio();
+      window.__homeAudio.preload = "none";
+    }
+
+    const audio = window.__homeAudio;
+    const icon = playBtn?.querySelector(".playIcon");
+    const currentSrc = audio.getAttribute("data-current-src") || "";
+
+    if (currentSrc === audioUrl && !audio.paused) {
+      audio.pause();
+      if (icon) icon.textContent = "▶";
+      return;
+    }
+
+    if (currentSrc !== audioUrl) {
+      audio.pause();
+      audio.currentTime = 0;
+      audio.src = audioUrl;
+      audio.setAttribute("data-current-src", audioUrl);
+    }
+
+    await audio.play();
+    if (icon) icon.textContent = "❚❚";
+
+    audio.onpause = () => {
+      if (icon) icon.textContent = "▶";
+    };
+
+    audio.onended = () => {
+      if (icon) icon.textContent = "▶";
+    };
+
+    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+    if (window.__ANA_SENT__.play[anaKey]) return;
+    window.__ANA_SENT__.play[anaKey] = 1;
+
+    try{
+      const { doc, updateDoc, increment } = window.FB;
+      const ref = doc(window.FB.db, "beats", beatId);
+      await updateDoc(ref, {
+        plays: increment(1)
+      });
+      console.log("✅ homepage plays incremented:", beatId);
+    }catch(err){
+      console.error("❌ homepage plays increment failed:", err);
+      delete window.__ANA_SENT__.play[anaKey];
+      return;
+    }
+
+    try{
+      const FB = window.FB;
+      if (typeof FB?.trackEvent === "function"){
+        await FB.trackEvent({
+          type: "beat_play",
+          beatId,
+          producerId,
+          path: location.pathname + location.search,
+          meta: { surface: "home", action: "preview" }
+        });
+      }
+    }catch(err){
+      console.warn("trackEvent failed", err);
+    }
+
+  }catch(err){
+    console.error("logBeatPlay failed", err);
   }
+}
 
   /* ===========================
      ✅ FREE DOWNLOAD
@@ -1627,27 +1656,6 @@
     const sales = Number(b.sales || 0);
 
     return (plays * 1) + (cartAdds * 3) + (downloads * 4) + (sales * 8);
-  }
-
-  function setupHomePlayTracking(beats){
-    if (window.__HOME_PLAY_TRACKING_BOUND__) return;
-    window.__HOME_PLAY_TRACKING_BOUND__ = true;
-
-    const beatMap = new Map((beats || []).map(b => [String(b.id || ""), b]));
-
-    document.addEventListener("click", (e)=>{
-      const btn = e.target.closest("[data-play-btn]");
-      if (!btn) return;
-
-      const card = btn.closest("[data-beat-id]");
-      if (!card) return;
-
-      const beatId = String(card.getAttribute("data-beat-id") || "");
-      const beat = beatMap.get(beatId);
-      if (!beat) return;
-
-      logBeatPlay(beat);
-    }, true);
   }
 
   /* =========================================================
@@ -2059,7 +2067,6 @@
      }
       
       window.__LATEST_BEATS__ = beats;
-      setupHomePlayTracking(beats);
 
       /* ======================================
          PRELOAD BEAT PAGES
@@ -2145,7 +2152,6 @@
 
               <button
                 class="play-fab"
-                data-play-btn
                 data-ignore-license="1"
                 data-audio-url="${audioUrl}"
                 aria-label="Play preview"
@@ -2168,6 +2174,32 @@
                 ${pillHTML(b)}
             </div>
           `;
+
+           const playBtn = el.querySelector(".play-fab");
+           if (playBtn) {
+             playBtn.onclick = async (e) => {
+               e.preventDefault();
+               e.stopPropagation();
+               await logBeatPlay(b, playBtn);
+             };
+           }
+
+          el.addEventListener("click", (e)=>{
+            const freeBtn = e.target.closest("[data-free-download='1']");
+            if (!freeBtn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            FreeDL.open(b);
+          });
+
+          el.addEventListener("click", (e)=>{
+            if (e.target.closest(".play-fab")) return;
+            if (e.target.closest("[data-free-download='1']")) return;
+            if (e.target.closest(".price-pill")) return;
+            if (e.target.closest("[data-producer-link='1']")) return;
+            if (e.target.closest("[data-open-beat='1']")) return;
+            location.href = beatUrl;
+          });
 
          featuredStrip.appendChild(el);
 
@@ -2194,7 +2226,7 @@
               ${coverHTML(b.artwork, b.title)}
             </a>
 
-            <button class="play-fab" data-play-btn data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play">
+            <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play">
               <span class="playIcon">▶</span>
             </button>
           </div>
@@ -2214,6 +2246,15 @@
           </div>
         `;
 
+        const playBtn = el.querySelector(".play-fab");
+        if (playBtn) {
+          playBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await logBeatPlay(b, playBtn);
+          };
+        }
+
         el.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
           if (!freeBtn) return;
@@ -2222,19 +2263,13 @@
         });
 
         el.addEventListener("click", (e)=>{
-          if (e.target.closest("[data-play-btn]")) return;
+          if (e.target.closest(".play-fab")) return;
           if (e.target.closest("[data-free-download='1']")) return;
           if (e.target.closest(".price-pill")) return;
           if (e.target.closest("[data-producer-link='1']")) return;
           if (e.target.closest("[data-open-beat='1']")) return;
           location.href = beatUrl;
         });
-
-        el.addEventListener("click", (e)=>{
-          const btn = e.target.closest("[data-play-btn]");
-          if (!btn) return;
-          logBeatPlay(b);
-        }, true);
 
         strip.appendChild(el);
       });
@@ -2265,7 +2300,6 @@
 
             <button
               class="play-fab"
-              data-play-btn
               data-ignore-license="1"
               data-audio-url="${audioUrl}"
               aria-label="Play preview"
@@ -2291,6 +2325,15 @@
          </div>
        `;
 
+        const playBtn = el.querySelector(".play-fab");
+        if (playBtn) {
+          playBtn.onclick = async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            await logBeatPlay(b, playBtn);
+          };
+        }
+
         el.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
           if (!freeBtn) return;
@@ -2299,19 +2342,13 @@
         });
 
         el.addEventListener("click", (e)=>{
-          if (e.target.closest("[data-play-btn]")) return;
+          if (e.target.closest(".play-fab")) return;
           if (e.target.closest("[data-free-download='1']")) return;
           if (e.target.closest(".price-pill")) return;
           if (e.target.closest("[data-producer-link='1']")) return;
           if (e.target.closest("[data-open-beat='1']")) return;
           location.href = beatUrl;
         });
-
-        el.addEventListener("click", (e)=>{
-          const btn = e.target.closest("[data-play-btn]");
-          if (!btn) return;
-          logBeatPlay(b);
-        }, true);
 
         chart.appendChild(el);
       });
