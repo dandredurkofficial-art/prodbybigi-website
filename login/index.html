@@ -2,37 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login</title>
-  <link rel="stylesheet" href="/css/auth.css" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
   <style>
-    .auth-actions{
+    body{
+      margin:0;
+      background:#0b0d12;
+      color:#fff;
+      font-family:Inter, sans-serif;
       display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
+      align-items:center;
+      justify-content:center;
+      min-height:100vh;
+      padding:16px;
+      box-sizing:border-box;
     }
 
-    .auth-actions button{
-      flex:1;
-      min-width:140px;
+    .auth-box{
+      background:#121726;
+      padding:30px;
+      border-radius:16px;
+      width:100%;
+      max-width:420px;
+      border:1px solid #1d2230;
+      box-sizing:border-box;
     }
 
-    .link-btn{
-      background:none;
-      border:none;
-      color:#6cf;
-      cursor:pointer;
-      padding:0;
-      margin-top:10px;
-      text-align:left;
-      font:inherit;
-    }
-
-    .muted{
-      color:#9ca3af;
-      font-size:13px;
-      margin-top:8px;
+    h2{
+      text-align:center;
+      margin:0 0 18px;
+      font-size:26px;
+      font-weight:800;
     }
 
     .field{
@@ -116,31 +119,106 @@
       opacity:1;
     }
 
-    /* ✅ FIXED to match register page */
+    /* EXACT register-style eye button */
     .auth-eye-btn{
-      width:72px;
-      min-width:72px;
-      height:58px;
+      width:56px;
+      min-width:56px;
+      height:56px;
       margin-right:8px;
       border:none;
       border-radius:16px;
-      background:#31365a;
+      background:#3b416d;
       color:#b9bee8;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       padding:0;
-      flex:0 0 72px;
+      flex:0 0 56px;
+      box-sizing:border-box;
     }
 
     .auth-eye-btn svg{
-      width:26px;
-      height:26px;
+      width:24px;
+      height:24px;
       display:block;
     }
 
+    .auth-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .auth-actions button{
+      flex:1;
+      min-width:140px;
+    }
+
+    button{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:none;
+      background:linear-gradient(90deg,#4fc3f7 0%, #8b9bff 100%);
+      color:#06111f;
+      font-weight:800;
+      font-size:16px;
+      cursor:pointer;
+      margin-top:8px;
+      box-sizing:border-box;
+    }
+
+    #googleBtn{
+      background:#111827;
+      border:1px solid #1d2230;
+      color:#fff;
+    }
+
+    .link-btn{
+      background:none;
+      border:none;
+      color:#6cf;
+      cursor:pointer;
+      padding:0;
+      margin-top:16px;
+      text-align:left;
+      font:inherit;
+      font-size:13px;
+      font-weight:700;
+    }
+
+    .muted{
+      color:#9ca3af;
+      font-size:13px;
+      margin-top:10px;
+      text-align:center;
+    }
+
+    #status{
+      margin-top:10px;
+      text-align:center;
+      color:#9ca3af;
+      font-size:13px;
+      min-height:18px;
+    }
+
+    a{
+      color:#6cf;
+      text-decoration:none;
+    }
+
     @media (max-width: 480px){
+      .auth-box{
+        padding:22px;
+        border-radius:18px;
+      }
+
+      h2{
+        font-size:24px;
+      }
+
       .auth-input{
         height:70px;
         border-radius:18px;
@@ -170,17 +248,17 @@
       }
 
       .auth-eye-btn{
-        width:64px;
-        min-width:64px;
+        width:52px;
+        min-width:52px;
         height:52px;
-        flex:0 0 64px;
+        flex:0 0 52px;
         margin-right:8px;
         border-radius:14px;
       }
 
       .auth-eye-btn svg{
-        width:24px;
-        height:24px;
+        width:22px;
+        height:22px;
       }
     }
   </style>
@@ -245,7 +323,7 @@
     <button class="link-btn" id="resetBtn" type="button">Forgot password?</button>
     <div class="muted" id="status"></div>
 
-    <p style="margin-top:14px;">
+    <p class="muted" style="margin-top:14px;">
       Don’t have an account?
       <a href="/register/">Register</a>
     </p>
@@ -262,6 +340,7 @@
       const btn = document.getElementById("pwToggle");
       const eyeOpen = document.getElementById("pwEyeOpen");
       const eyeOff = document.getElementById("pwEyeOff");
+
       if(!pw || !btn) return;
 
       btn.addEventListener("click", ()=>{
