@@ -1692,7 +1692,6 @@
 
           <button
             class="play-fab"
-            data-play-btn
             data-ignore-license="1"
             data-audio-url="${audioUrl}"
             data-producer-id="${String(b.producerId || "")}"
@@ -1742,6 +1741,81 @@
   </div>
 `;
 
+      const playBtn = card.querySelector(".play-fab");
+
+if (playBtn) {
+  playBtn.onclick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const pid = String(b.producerId || "");
+    const bid = String(b.id || "");
+    const anaKey = `${pid}:${bid}`;
+
+    try {
+      const audioUrl = String(b.previewAudio || b.audio || "").trim();
+      if (!audioUrl) {
+        alert("No preview available for this beat.");
+        return;
+      }
+
+      if (!window.__marketAudio) {
+        window.__marketAudio = new Audio();
+        window.__marketAudio.preload = "none";
+      }
+
+      const audio = window.__marketAudio;
+      const icon = playBtn.querySelector(".playIcon");
+      const currentSrc = audio.getAttribute("data-current-src") || "";
+
+      if (currentSrc === audioUrl && !audio.paused) {
+        audio.pause();
+        if (icon) icon.textContent = "▶";
+        return;
+      }
+
+      if (currentSrc !== audioUrl) {
+        audio.pause();
+        audio.currentTime = 0;
+        audio.src = audioUrl;
+        audio.setAttribute("data-current-src", audioUrl);
+      }
+
+      await audio.play();
+      if (icon) icon.textContent = "❚❚";
+
+      audio.onpause = () => {
+        if (icon) icon.textContent = "▶";
+      };
+
+      audio.onended = () => {
+        if (icon) icon.textContent = "▶";
+      };
+
+      if (pid && bid && !window.__ANA_SENT__.play[anaKey]) {
+        window.__ANA_SENT__.play[anaKey] = 1;
+
+        try {
+          logAnalyticsEvent({ producerId: pid, type: "play", beatId: bid });
+        } catch (err) {
+          console.warn("analytics event failed", err);
+        }
+
+        try {
+          const { doc, updateDoc, increment } = window.FB;
+          const ref = doc(window.FB.db, "beats", bid);
+          await updateDoc(ref, { plays: increment(1) });
+          console.log("✅ marketplace plays incremented:", bid);
+        } catch (err) {
+          console.error("❌ marketplace plays increment failed:", err);
+        }
+      }
+    } catch (err) {
+      console.error("marketplace audio play failed:", err);
+    }
+  };
+}
+      
       /* FREE DOWNLOAD */
       card.addEventListener("click", (e)=>{
         const freeBtn = e.target.closest("[data-free-download='1']");
