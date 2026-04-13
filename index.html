@@ -1463,15 +1463,21 @@
     }
 
     const audio = window.__homeAudio;
-    const icon = playBtn?.querySelector(".playIcon");
     const currentSrc = audio.getAttribute("data-current-src") || "";
 
+    // reset every play icon first
+    document.querySelectorAll(".play-fab .playIcon").forEach(icon => {
+      icon.textContent = "▶";
+    });
+
+    // same beat currently playing = pause
     if (currentSrc === audioUrl && !audio.paused) {
       audio.pause();
-      if (icon) icon.textContent = "▶";
+      audio.removeAttribute("data-current-src");
       return;
     }
 
+    // switch to new beat
     if (currentSrc !== audioUrl) {
       audio.pause();
       audio.currentTime = 0;
@@ -1480,14 +1486,21 @@
     }
 
     await audio.play();
+
+    const icon = playBtn?.querySelector(".playIcon");
     if (icon) icon.textContent = "❚❚";
 
     audio.onpause = () => {
-      if (icon) icon.textContent = "▶";
+      document.querySelectorAll(".play-fab .playIcon").forEach(i => {
+        i.textContent = "▶";
+      });
     };
 
     audio.onended = () => {
-      if (icon) icon.textContent = "▶";
+      document.querySelectorAll(".play-fab .playIcon").forEach(i => {
+        i.textContent = "▶";
+      });
+      audio.removeAttribute("data-current-src");
     };
 
     window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
@@ -1497,9 +1510,7 @@
     try{
       const { doc, updateDoc, increment } = window.FB;
       const ref = doc(window.FB.db, "beats", beatId);
-      await updateDoc(ref, {
-        plays: increment(1)
-      });
+      await updateDoc(ref, { plays: increment(1) });
       console.log("✅ homepage plays incremented:", beatId);
     }catch(err){
       console.error("❌ homepage plays increment failed:", err);
@@ -2216,7 +2227,7 @@
         el.className = "card trend-card";
         el.setAttribute("data-beat-id", b.id);
 
-        const audioUrl = b.audio || "";
+        const audioUrl = b.previewAudio || b.audio || "";
         const beatUrl = beatPageUrl(b);
         const prodUrl = producerPageUrl(b);
 
@@ -2281,7 +2292,7 @@
         el.style.padding = "10px";
         el.style.borderRadius = "18px";
 
-        const audioUrl = b.audio || "";
+        const audioUrl = b.previewAudio || b.audio || "";
         const beatUrl = beatPageUrl(b);
         const prodUrl = producerPageUrl(b);
 
