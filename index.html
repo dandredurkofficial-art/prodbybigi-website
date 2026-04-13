@@ -1442,6 +1442,30 @@
     return "/producer-profile/?producerId=" + encodeURIComponent(pid);
   }
 
+  async function logAnalyticsEvent({ producerId, type, beatId=null }){
+    try{
+      const FB = window.FB;
+      if (!FB?.auth?.currentUser) return;
+      if (!producerId || !type) return;
+      if (!FB?.db || typeof FB.addDoc !== "function" || typeof FB.collection !== "function") return;
+
+      const ts =
+        (typeof FB.serverTimestamp === "function")
+          ? FB.serverTimestamp()
+          : Date.now();
+
+      await FB.addDoc(FB.collection(FB.db, "analyticsEvents"), {
+        producerId: String(producerId),
+        type: String(type),
+        beatId: beatId ? String(beatId) : null,
+        actorUid: FB.auth.currentUser.uid,
+        createdAt: ts
+      });
+    }catch(err){
+      console.warn("homepage analytics log failed:", err);
+    }
+  }
+
   async function logBeatPlay(beat, playBtn){
   try{
     const b = beat || {};
@@ -1519,18 +1543,13 @@
     }
 
     try{
-      const FB = window.FB;
-      if (typeof FB?.trackEvent === "function"){
-        await FB.trackEvent({
-          type: "beat_play",
-          beatId,
-          producerId,
-          path: location.pathname + location.search,
-          meta: { surface: "home", action: "preview" }
-        });
-      }
+      await logAnalyticsEvent({
+        producerId,
+        type: "play",
+        beatId
+      });
     }catch(err){
-      console.warn("trackEvent failed", err);
+      console.warn("homepage analytics log failed", err);
     }
 
   }catch(err){
