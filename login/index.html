@@ -6,14 +6,34 @@
   <title>Login</title>
   <link rel="stylesheet" href="/css/auth.css" />
   <style>
-    .auth-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    .auth-actions button { flex:1; min-width:140px; }
+    .auth-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .auth-actions button{
+      flex:1;
+      min-width:140px;
+    }
 
     .link-btn{
-      background:none;border:none;color:#6cf;cursor:pointer;
-      padding:0;margin-top:10px;text-align:left;
+      background:none;
+      border:none;
+      color:#6cf;
+      cursor:pointer;
+      padding:0;
+      margin-top:10px;
+      text-align:left;
+      font:inherit;
     }
-    .muted{ color:#9ca3af;font-size:13px;margin-top:8px; }
+
+    .muted{
+      color:#9ca3af;
+      font-size:13px;
+      margin-top:8px;
+    }
 
     .field{
       margin-bottom:18px;
@@ -51,6 +71,7 @@
       min-width:0;
       height:100%;
       overflow:hidden;
+      box-sizing:border-box;
     }
 
     .auth-icon{
@@ -66,6 +87,7 @@
     .auth-icon svg{
       width:24px;
       height:24px;
+      display:block;
     }
 
     .auth-divider{
@@ -97,27 +119,28 @@
     }
 
     .auth-eye-btn{
-      width:54px;
-      min-width:54px;
-      max-width:54px;
-      height:54px;
-      margin-right:8px;
+      width:48px;
+      min-width:48px;
+      max-width:48px;
+      height:48px;
+      margin-right:10px;
       border:none;
-      border-radius:16px;
-      background:#31365a;
+      border-radius:14px;
+      background:#3b416d;
       color:#b9bee8;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       padding:0;
-      flex:0 0 54px;
-      align-self:center;
+      flex:0 0 48px;
+      box-sizing:border-box;
     }
 
     .auth-eye-btn svg{
-      width:24px;
-      height:24px;
+      width:22px;
+      height:22px;
+      display:block;
     }
 
     @media (max-width: 480px){
@@ -150,18 +173,18 @@
       }
 
       .auth-eye-btn{
-        width:50px;
-        min-width:50px;
-        max-width:50px;
-        height:50px;
-        flex:0 0 50px;
+        width:44px;
+        min-width:44px;
+        max-width:44px;
+        height:44px;
+        flex:0 0 44px;
         margin-right:8px;
-        border-radius:14px;
+        border-radius:13px;
       }
 
       .auth-eye-btn svg{
-        width:22px;
-        height:22px;
+        width:20px;
+        height:20px;
       }
     }
   </style>
@@ -202,11 +225,13 @@
           <span class="auth-divider"></span>
           <input id="password" type="password" placeholder="Enter password" autocomplete="current-password" />
         </div>
+
         <button class="auth-eye-btn" id="pwToggle" type="button" aria-label="Show password">
           <svg id="pwEyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
+
           <svg id="pwEyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
             <path d="M3 3l18 18"></path>
             <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
@@ -242,6 +267,7 @@
       const btn = document.getElementById("pwToggle");
       const eyeOpen = document.getElementById("pwEyeOpen");
       const eyeOff = document.getElementById("pwEyeOff");
+
       if(!pw || !btn) return;
 
       btn.addEventListener("click", ()=>{
