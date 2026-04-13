@@ -1471,85 +1471,121 @@
     const b = beat || {};
     const producerId = String(b.producerId || "").trim();
     const beatId = String(b.id || "").trim();
-    if (!producerId || !beatId) return;
-
-    const anaKey = `${producerId}:${beatId}`;
     const audioUrl = String(b.previewAudio || b.audio || "").trim();
 
+    if (!producerId || !beatId) return;
     if (!audioUrl) {
       alert("No preview available for this beat.");
       return;
     }
 
-    if (!window.__homeAudio) {
-      window.__homeAudio = new Audio();
-      window.__homeAudio.preload = "none";
+    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+    window.__HOME_AUDIO_STATE__ = window.__HOME_AUDIO_STATE__ || {
+      audio: null,
+      currentBeatKey: "",
+      currentBtn: null
+    };
+
+    const state = window.__HOME_AUDIO_STATE__;
+
+    if (!state.audio) {
+      state.audio = new Audio();
+      state.audio.preload = "none";
     }
 
-    const audio = window.__homeAudio;
-    const currentSrc = audio.getAttribute("data-current-src") || "";
+    const audio = state.audio;
+    const playKey = `${producerId}:${beatId}`;
+    const icon = playBtn?.querySelector(".playIcon");
 
-    // reset every play icon first
-    document.querySelectorAll(".play-fab .playIcon").forEach(icon => {
-      icon.textContent = "▶";
-    });
+    function resetAllPlayIcons(){
+      document.querySelectorAll(".play-fab .playIcon").forEach(el => {
+        el.textContent = "▶";
+      });
+    }
 
-    // same beat currently playing = pause
-    if (currentSrc === audioUrl && !audio.paused) {
+    if (state.currentBeatKey === playKey && !audio.paused) {
       audio.pause();
-      audio.removeAttribute("data-current-src");
+      audio.currentTime = 0;
+      state.currentBeatKey = "";
+      state.currentBtn = null;
+      resetAllPlayIcons();
       return;
     }
 
-    // switch to new beat
-    if (currentSrc !== audioUrl) {
+    if (state.currentBtn && state.currentBtn !== playBtn) {
+      const oldIcon = state.currentBtn.querySelector(".playIcon");
+      if (oldIcon) oldIcon.textContent = "▶";
+    }
+
+    if (audio.src !== audioUrl) {
       audio.pause();
       audio.currentTime = 0;
       audio.src = audioUrl;
-      audio.setAttribute("data-current-src", audioUrl);
     }
 
-    await audio.play();
+    state.currentBeatKey = playKey;
+    state.currentBtn = playBtn;
 
-    const icon = playBtn?.querySelector(".playIcon");
+    resetAllPlayIcons();
+    await audio.play();
     if (icon) icon.textContent = "❚❚";
 
     audio.onpause = () => {
-      document.querySelectorAll(".play-fab .playIcon").forEach(i => {
-        i.textContent = "▶";
-      });
+      resetAllPlayIcons();
+      if (state.currentBeatKey === playKey) {
+        state.currentBeatKey = "";
+        state.currentBtn = null;
+      }
     };
 
     audio.onended = () => {
-      document.querySelectorAll(".play-fab .playIcon").forEach(i => {
-        i.textContent = "▶";
-      });
-      audio.removeAttribute("data-current-src");
+      resetAllPlayIcons();
+      if (state.currentBeatKey === playKey) {
+        state.currentBeatKey = "";
+        state.currentBtn = null;
+      }
     };
 
-    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
-    if (window.__ANA_SENT__.play[anaKey]) return;
-    window.__ANA_SENT__.play[anaKey] = 1;
+    if (window.__ANA_SENT__.play[playKey]) return;
+    window.__ANA_SENT__.play[playKey] = 1;
 
-    try{
-      const { doc, updateDoc, increment } = window.FB;
-      const ref = doc(window.FB.db, "beats", beatId);
-      await updateDoc(ref, { plays: increment(1) });
-      console.log("✅ homepage plays incremented:", beatId);
-    }catch(err){
-      console.error("❌ homepage plays increment failed:", err);
-      delete window.__ANA_SENT__.play[anaKey];
+    const FB = window.FB;
+    if (
+      !FB?.db ||
+      typeof FB.doc !== "function" ||
+      typeof FB.updateDoc !== "function" ||
+      typeof FB.increment !== "function"
+    ){
+      console.error("Homepage play tracking failed: Firebase helpers missing");
+      delete window.__ANA_SENT__.play[playKey];
       return;
     }
 
     try{
-      await logAnalyticsEvent({
-        producerId,
-        type: "play",
-        beatId
+      const ref = FB.doc(FB.db, "beats", beatId);
+      await FB.updateDoc(ref, {
+        plays: FB.increment(1),
+        lastPlayedAt: Date.now()
       });
+      console.log("✅ homepage plays incremented:", beatId);
     }catch(err){
-      console.warn("homepage analytics log failed", err);
+      console.error("❌ homepage Firestore increment failed:", err);
+      delete window.__ANA_SENT__.play[playKey];
+      return;
+    }
+
+    try{
+      if (typeof FB.trackEvent === "function"){
+        await FB.trackEvent({
+          type: "beat_play",
+          beatId,
+          producerId,
+          path: location.pathname + location.search,
+          meta: { surface: "home", action: "preview" }
+        });
+      }
+    }catch(err){
+      console.warn("Homepage trackEvent failed:", err);
     }
 
   }catch(err){
