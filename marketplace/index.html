@@ -1327,27 +1327,30 @@
        Fallback: Date.now()
   ========================================================== */
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
-    try{
-      if (!window.auth?.currentUser) return; // requires signed-in (matches your rules)
-      if (!producerId || !type) return;
-      if (!window.db || !window.addDoc || !window.collection) return;
+  try{
+    const FB = window.FB;
+    const user = FB?.auth?.currentUser || null;
 
-      const ts =
-        (typeof window.serverTimestamp === "function")
-          ? window.serverTimestamp()
-          : Date.now();
+    if (!user) return;
+    if (!producerId || !type) return;
+    if (!FB?.db || typeof FB.addDoc !== "function" || typeof FB.collection !== "function") return;
 
-      await window.addDoc(window.collection(window.db,"analyticsEvents"), {
-        producerId: String(producerId),
-        type: String(type),          // "view" | "play"
-        beatId: beatId ? String(beatId) : null,
-        actorUid: window.auth.currentUser.uid,
-        createdAt: ts
-      });
-    }catch(e){
-      // silently ignore
-    }
+    const ts =
+      (typeof FB.serverTimestamp === "function")
+        ? FB.serverTimestamp()
+        : Date.now();
+
+    await FB.addDoc(FB.collection(FB.db, "analyticsEvents"), {
+      producerId: String(producerId),
+      type: String(type),
+      beatId: beatId ? String(beatId) : null,
+      actorUid: user.uid,
+      createdAt: ts
+    });
+  }catch(e){
+    console.warn("logAnalyticsEvent failed:", e);
   }
+}
   window.logAnalyticsEvent = logAnalyticsEvent;
 
   // Prevent spamming same event in one session
@@ -1611,6 +1614,62 @@
   }, true);
 })();
 
+  async function trackMarketplacePlay({ producerId, beatId }){
+  try{
+    producerId = String(producerId || "").trim();
+    beatId = String(beatId || "").trim();
+
+    if (!producerId || !beatId) return;
+
+    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+    const key = `${producerId}:${beatId}`;
+
+    if (window.__ANA_SENT__.play[key]) return;
+    window.__ANA_SENT__.play[key] = true;
+
+    const FB = window.FB;
+
+    if (
+      !FB?.db ||
+      typeof FB.doc !== "function" ||
+      typeof FB.updateDoc !== "function" ||
+      typeof FB.increment !== "function"
+    ){
+      console.error("Marketplace play tracking failed: Firebase helpers missing", {
+        hasFB: !!FB,
+        hasDb: !!FB?.db,
+        docType: typeof FB?.doc,
+        updateDocType: typeof FB?.updateDoc,
+        incrementType: typeof FB?.increment
+      });
+      delete window.__ANA_SENT__.play[key];
+      return;
+    }
+
+    try{
+      await FB.updateDoc(FB.doc(FB.db, "beats", beatId), {
+        plays: FB.increment(1),
+        lastPlayedAt: Date.now()
+      });
+
+      console.log("✅ marketplace plays incremented:", beatId);
+    }catch(err){
+      console.error("❌ marketplace plays increment failed:", err);
+      delete window.__ANA_SENT__.play[key];
+      return;
+    }
+
+    try{
+      await logAnalyticsEvent({ producerId, type:"play", beatId });
+    }catch(err){
+      console.warn("marketplace analytics play log failed:", err);
+    }
+
+  }catch(err){
+    console.error("trackMarketplacePlay error:", err);
+  }
+}
+
   function renderMarketplace(filtered, grid){
 
     filtered.forEach((b)=>{
@@ -1715,7 +1774,7 @@
         window.location.href = url;
       });
 
-      /* PLAY ANALYTICS */
+      /* PLAY TRACKER */
       card.addEventListener("click", (e)=>{
         const btn = e.target.closest("[data-play-btn]");
         if (!btn) return;
@@ -1723,15 +1782,7 @@
         const producerId = btn.getAttribute("data-producer-id") || "";
         const beatId = btn.getAttribute("data-beat-id") || "";
 
-        if (!producerId || !beatId) return;
-
-        const key = `${producerId}:${beatId}`;
-        if (window.__ANA_SENT__.play[key]) return;
-
-        window.__ANA_SENT__.play[key] = 1;
-
-        logAnalyticsEvent({ producerId, type:"play", beatId });
-
+        trackMarketplacePlay({ producerId, beatId });
       }, true);
 
       grid.appendChild(card);
