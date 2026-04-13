@@ -12,7 +12,7 @@
       margin:0;
       background:#0b0d12;
       color:#fff;
-      font-family:Inter;
+      font-family:Inter, sans-serif;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -20,6 +20,7 @@
       padding:16px;
       box-sizing:border-box;
     }
+
     .card{
       background:#121726;
       padding:30px;
@@ -29,9 +30,16 @@
       border:1px solid #1d2230;
       box-sizing:border-box;
     }
-    h2{text-align:center;margin-bottom:18px}
+
+    h2{
+      text-align:center;
+      margin-bottom:18px;
+      font-size:26px;
+      font-weight:800;
+    }
 
     .field{ margin-bottom:18px; }
+
     .field label{
       display:block;
       font-size:16px;
@@ -63,6 +71,7 @@
       padding:0 18px;
       min-width:0;
       height:100%;
+      box-sizing:border-box;
     }
 
     .auth-icon{
@@ -108,59 +117,220 @@
     }
 
     .auth-eye-btn{
-      width:72px;
-      min-width:72px;
-      height:58px;
+      width:56px;
+      min-width:56px;
+      height:56px;
       margin-right:8px;
       border:none;
       border-radius:16px;
-      background:#31365a;
+      background:#3b416d;
       color:#b9bee8;
       display:flex;
       align-items:center;
       justify-content:center;
       cursor:pointer;
       padding:0;
-      flex:0 0 72px;
+      flex:0 0 56px;
+      box-sizing:border-box;
     }
 
     .auth-eye-btn svg{
-      width:26px;
-      height:26px;
+      width:24px;
+      height:24px;
+      display:block;
     }
 
-    .role{ display:flex; gap:14px; margin-bottom:18px; }
-    .role label{
-      flex:1;
-      background:#0f1219;
-      padding:12px;
-      border-radius:10px;
-      border:1px solid #1d2230;
-      cursor:pointer;
-      text-align:center;
+    .role-wrap{
+      margin-bottom:18px;
+    }
+
+    .role-title{
+      display:block;
+      font-size:16px;
+      font-weight:800;
+      color:#fff;
+      margin-bottom:12px;
+    }
+
+    .role{
       display:flex;
-      gap:10px;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .role-card{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      width:100%;
+      min-height:96px;
+      padding:18px;
+      border-radius:20px;
+      border:1px solid #232941;
+      background:#0f1219;
+      cursor:pointer;
+      box-sizing:border-box;
+      transition:.18s ease;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .role-card:hover{
+      border-color:#3a4267;
+      background:#151925;
+    }
+
+    .role-card.selected{
+      border-color:#8b5cf6;
+      box-shadow:0 0 0 2px rgba(139,92,246,.14);
+      background:linear-gradient(180deg, #161528 0%, #101423 100%);
+    }
+
+    .role-card input[type="radio"]{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .role-radio{
+      width:28px;
+      height:28px;
+      border-radius:50%;
+      border:2px solid #9b5cff;
+      display:flex;
       align-items:center;
       justify-content:center;
-      user-select:none;
-      -webkit-tap-highlight-color: transparent;
+      flex:0 0 28px;
       box-sizing:border-box;
-      min-height:48px;
-    }
-    .role label input[type="radio"]{
-      margin:0;
-      flex:0 0 auto;
-      width:18px;
-      height:18px;
-      accent-color:#6cf;
-    }
-    .role label.selected{
-      border-color:#6cf;
-      box-shadow:0 0 0 2px rgba(102,204,255,.22);
-      background:#0b1220;
     }
 
-    button{
+    .role-radio::after{
+      content:"";
+      width:14px;
+      height:14px;
+      border-radius:50%;
+      background:transparent;
+      transition:.18s ease;
+    }
+
+    .role-card.selected .role-radio::after{
+      background:#9b5cff;
+    }
+
+    .role-icon{
+      width:34px;
+      height:34px;
+      color:#9b5cff;
+      flex:0 0 34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .role-icon svg{
+      width:34px;
+      height:34px;
+      display:block;
+    }
+
+    .role-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .role-name{
+      display:block;
+      font-size:17px;
+      font-weight:800;
+      color:#fff;
+      line-height:1.2;
+    }
+
+    .role-desc{
+      display:block;
+      margin-top:6px;
+      font-size:14px;
+      color:#8f95c8;
+      line-height:1.35;
+    }
+
+    .agree-box{
+      margin-top:4px;
+      margin-bottom:18px;
+    }
+
+    .agree-card{
+      position:relative;
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+      width:100%;
+      min-height:78px;
+      padding:18px;
+      border-radius:20px;
+      border:1px solid #232941;
+      background:#05091b;
+      box-sizing:border-box;
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .agree-card input[type="checkbox"]{
+      position:absolute;
+      opacity:0;
+      pointer-events:none;
+    }
+
+    .agree-check{
+      width:26px;
+      height:26px;
+      border-radius:8px;
+      border:2px solid #39435f;
+      background:#222b42;
+      flex:0 0 26px;
+      margin-top:2px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+    }
+
+    .agree-check::after{
+      content:"";
+      width:12px;
+      height:12px;
+      border-radius:4px;
+      background:transparent;
+      transition:.18s ease;
+    }
+
+    .agree-card.checked .agree-check{
+      border-color:#6cf;
+      background:#23324d;
+    }
+
+    .agree-card.checked .agree-check::after{
+      background:#6cf;
+    }
+
+    .agree-text{
+      font-size:15px;
+      line-height:1.55;
+      color:#cfd5ff;
+    }
+
+    .agree-text a{
+      color:#ffb347;
+      font-weight:700;
+      text-decoration:none;
+    }
+
+    .agree-text a:hover{
+      text-decoration:underline;
+    }
+
+    button#createBtn{
       width:100%;
       padding:12px;
       border-radius:12px;
@@ -169,17 +339,51 @@
       font-weight:700;
       cursor:pointer;
       margin-top:8px;
+      font-size:16px;
     }
+
     .btn-secondary{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
       background:#111827;
       border:1px solid #1d2230;
       color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:10px;
     }
-    a{color:#6cf;text-decoration:none}
-    .muted{color:#9ca3af;font-size:13px;margin-top:10px;text-align:center}
-    #status{ margin-top:10px; text-align:center; color:#9ca3af; font-size:13px; min-height:18px; }
+
+    a{
+      color:#6cf;
+      text-decoration:none;
+    }
+
+    .muted{
+      color:#9ca3af;
+      font-size:13px;
+      margin-top:10px;
+      text-align:center;
+    }
+
+    #status{
+      margin-top:10px;
+      text-align:center;
+      color:#9ca3af;
+      font-size:13px;
+      min-height:18px;
+    }
 
     @media (max-width: 480px){
+      .card{
+        padding:22px;
+        border-radius:18px;
+      }
+
+      h2{
+        font-size:24px;
+      }
+
       .auth-input{
         height:70px;
         border-radius:18px;
@@ -209,21 +413,41 @@
       }
 
       .auth-eye-btn{
-        width:64px;
-        min-width:64px;
+        width:52px;
+        min-width:52px;
         height:52px;
-        flex:0 0 64px;
+        flex:0 0 52px;
         margin-right:8px;
         border-radius:14px;
       }
 
       .auth-eye-btn svg{
-        width:24px;
-        height:24px;
+        width:22px;
+        height:22px;
+      }
+
+      .role-card{
+        min-height:88px;
+        padding:16px;
+      }
+
+      .role-name{
+        font-size:16px;
+      }
+
+      .role-desc{
+        font-size:13px;
+      }
+
+      .agree-card{
+        padding:16px;
+        min-height:74px;
+      }
+
+      .agree-text{
+        font-size:14px;
       }
     }
-
-    @media (max-width: 420px){ .role{flex-direction:column} }
   </style>
 </head>
 
@@ -262,11 +486,13 @@
           <span class="auth-divider"></span>
           <input id="password" type="password" placeholder="Enter password" autocomplete="new-password" />
         </div>
+
         <button class="auth-eye-btn" id="pwToggle" type="button" aria-label="Show password">
           <svg id="pwEyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
+
           <svg id="pwEyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
             <path d="M3 3l18 18"></path>
             <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
@@ -277,9 +503,59 @@
       </div>
     </div>
 
-    <div class="role">
-      <label><input type="radio" name="role" value="producer"> Producer</label>
-      <label><input type="radio" name="role" value="buyer"> Buyer</label>
+    <div class="role-wrap">
+      <label class="role-title">Account Type</label>
+
+      <div class="role">
+        <label class="role-card">
+          <input type="radio" name="role" value="buyer" />
+          <span class="role-radio"></span>
+
+          <span class="role-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21a8 8 0 0 0-16 0"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </span>
+
+          <span class="role-copy">
+            <span class="role-name">Buyer</span>
+            <span class="role-desc">Purchase beats for your projects</span>
+          </span>
+        </label>
+
+        <label class="role-card">
+          <input type="radio" name="role" value="producer" />
+          <span class="role-radio"></span>
+
+          <span class="role-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M19 8v6"></path>
+              <path d="M22 11h-6"></path>
+            </svg>
+          </span>
+
+          <span class="role-copy">
+            <span class="role-name">Producer</span>
+            <span class="role-desc">Upload and sell your beats</span>
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="agree-box">
+      <label class="agree-card" id="agreeCard">
+        <input type="checkbox" id="agreeTerms" />
+        <span class="agree-check"></span>
+        <span class="agree-text">
+          I agree to the
+          <a href="/terms/" target="_blank" rel="noopener noreferrer">Terms of Service</a>
+          and
+          <a href="/privacy/" target="_blank" rel="noopener noreferrer">Privacy Policy</a>
+        </span>
+      </label>
     </div>
 
     <button id="createBtn" type="button">Create Account</button>
@@ -297,26 +573,58 @@
 
   <script>
     (function(){
-      const labels = Array.from(document.querySelectorAll(".role label"));
-      const radios = Array.from(document.querySelectorAll(".role input[type='radio']"));
-      function sync(){
-        labels.forEach(l => l.classList.remove("selected"));
+      const cards = Array.from(document.querySelectorAll(".role-card"));
+      const radios = Array.from(document.querySelectorAll(".role-card input[type='radio']"));
+
+      function syncRoles(){
+        cards.forEach(card => card.classList.remove("selected"));
         const checked = radios.find(r => r.checked);
         if (!checked) return;
-        checked.closest("label")?.classList.add("selected");
+        checked.closest(".role-card")?.classList.add("selected");
       }
-      radios.forEach(r => r.addEventListener("change", sync));
-      labels.forEach(l => l.addEventListener("click", sync));
-      sync();
+
+      radios.forEach(r => r.addEventListener("change", syncRoles));
+      cards.forEach(card => card.addEventListener("click", syncRoles));
+      syncRoles();
     })();
 
-    document.getElementById("createBtn")?.addEventListener("click", ()=> window.registerUser?.());
+    (function(){
+      const agree = document.getElementById("agreeTerms");
+      const card = document.getElementById("agreeCard");
+
+      if (!agree || !card) return;
+
+      function syncAgree(){
+        card.classList.toggle("checked", !!agree.checked);
+      }
+
+      agree.addEventListener("change", syncAgree);
+      card.addEventListener("click", () => {
+        setTimeout(syncAgree, 0);
+      });
+
+      syncAgree();
+    })();
+
+    document.getElementById("createBtn")?.addEventListener("click", ()=>{
+      const agreed = document.getElementById("agreeTerms")?.checked;
+      const status = document.getElementById("status");
+
+      if (!agreed){
+        if (status) status.textContent = "Please agree to the Terms of Service and Privacy Policy.";
+        return;
+      }
+
+      if (status) status.textContent = "";
+      window.registerUser?.();
+    });
 
     (function(){
       const pw = document.getElementById("password");
       const btn = document.getElementById("pwToggle");
       const eyeOpen = document.getElementById("pwEyeOpen");
       const eyeOff = document.getElementById("pwEyeOff");
+
       if(!pw || !btn) return;
 
       btn.addEventListener("click", ()=>{
