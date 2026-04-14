@@ -1730,7 +1730,120 @@
     .pm-msg{
       max-width:88%;
     }
-  }
+
+    .producer-collab-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .producer-collab-card{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .producer-collab-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .producer-collab-title{
+      color:#fff;
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+    }
+
+    .producer-collab-sub{
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      margin-top:6px;
+    }
+
+    .producer-collab-message{
+      margin-top:12px;
+      color:rgba(255,255,255,.82);
+      font-size:14px;
+      line-height:1.6;
+      white-space:pre-line;
+    }
+
+    .producer-collab-beat{
+      margin-top:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .producer-collab-beat-title{
+      color:#fff;
+      font-size:14px;
+      font-weight:900;
+    }
+
+    .producer-collab-beat-meta{
+      margin-top:6px;
+      color:rgba(255,255,255,.6);
+      font-size:12px;
+    }
+
+    .producer-collab-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .producer-collab-actions .btn2,
+    .producer-collab-actions .ghost-btn{
+      min-width:150px;
+    }
+
+    .collab-status-pill{
+      display:inline-flex;
+      align-items:center;
+      min-height:30px;
+      padding:0 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .collab-status-pill.pending{
+      background:rgba(245,158,11,.12);
+      color:#fbbf24;
+      border-color:rgba(245,158,11,.28);
+    }
+
+    .collab-status-pill.accepted{
+      background:rgba(34,197,94,.12);
+      color:#4ade80;
+      border-color:rgba(34,197,94,.28);
+    }
+
+    .collab-status-pill.rejected{
+      background:rgba(239,68,68,.12);
+      color:#f87171;
+      border-color:rgba(239,68,68,.28);
+    }
+
+    @media (max-width: 760px){
+      .producer-collab-actions{
+        flex-direction:column;
+      }
+
+      .producer-collab-actions .btn2,
+      .producer-collab-actions .ghost-btn{
+        width:100%;
+        min-width:0;
+      }
+    }
 </style>
 </head>
 
@@ -1764,6 +1877,7 @@
   <a onclick="showPage('advancedAnalytics', this)" id="navAdv">Advanced Analytics</a>
   <a onclick="showPage('marketingTools', this)" id="navMkt">Marketing Tools</a>
   <a onclick="showPage('privateMessages', this)" id="navMsg">Private Messages</a>
+  <a onclick="showPage('collabSubmissions', this)" id="navCollabSubmissions">Collab Submissions</a>
   <a onclick="showPage('upgrade', this)" id="navUpg">Upgrade</a>
   
   <a onclick="showPage('customizeStore', this)" id="navStore">Customize Store</a>
@@ -2148,6 +2262,32 @@
 
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ✅ COLLAB SUBMISSIONS -->
+<section id="collabSubmissions" class="page" style="display:none;">
+  <div class="card">
+    <div class="row" style="align-items:center;">
+      <div class="col">
+        <h2 style="margin:0;">Collab Submissions</h2>
+        <div class="subtle">Track the beats and pitches you have submitted to artist requests.</div>
+      </div>
+      <div class="col" style="display:flex;justify-content:flex-end;">
+        <span class="chip" id="collabSubmissionsCountChip">0 submissions</span>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;">
+      <input
+        id="producerCollabSearch"
+        class="pm-input"
+        placeholder="Search by request title, artist, beat, or status..."
+      />
+    </div>
+
+    <div id="producerCollabStatus" class="subtle" style="margin-top:14px;">Loading submissions…</div>
+    <div id="producerCollabList" style="margin-top:14px;"></div>
   </div>
 </section>
 
@@ -3338,6 +3478,10 @@ function showPage(id, el){
     window.loadMessagesThreadList();
   }
 
+  if (id === "collabSubmissions" && typeof window.loadProducerCollabSubmissions === "function") {
+    window.loadProducerCollabSubmissions();
+  }
+
   if (id === "upgrade" && typeof window.loadUpgradeUI === "function") {
     window.loadUpgradeUI();
   }
@@ -3984,6 +4128,200 @@ async function initProducerMessagesUI(){
   }
 }
 window.initProducerMessagesUI = initProducerMessagesUI;
+
+function collabSubmissionStatusText(v){
+  const s = String(v || "pending").toLowerCase();
+  if (s === "accepted") return "Accepted";
+  if (s === "rejected") return "Rejected";
+  return "Pending";
+}
+
+function collabSubmissionStatusClass(v){
+  const s = String(v || "pending").toLowerCase();
+  if (s === "accepted") return "accepted";
+  if (s === "rejected") return "rejected";
+  return "pending";
+}
+
+function collabTimeAgo(v){
+  try{
+    const ms = Number(v || 0);
+    if (!ms) return "";
+    const diff = Date.now() - ms;
+    const mins = Math.floor(diff / 60000);
+    const hrs = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + "m ago";
+    if (hrs < 24) return hrs + "h ago";
+    return days + "d ago";
+  }catch(e){
+    return "";
+  }
+}
+
+function escapeHtmlSafe(v){
+  return String(v || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+let __producerCollabSubmissions = [];
+
+async function loadProducerCollabSubmissions(){
+  const statusEl = document.getElementById("producerCollabStatus");
+  const listEl = document.getElementById("producerCollabList");
+  const chipEl = document.getElementById("collabSubmissionsCountChip");
+
+  if (!statusEl || !listEl || !chipEl) return;
+
+  if (!window.currentUser){
+    statusEl.textContent = "Login to view your submissions.";
+    listEl.innerHTML = "";
+    chipEl.textContent = "0 submissions";
+    return;
+  }
+
+  statusEl.textContent = "Loading submissions…";
+  listEl.innerHTML = "";
+
+  try{
+    const q = window.query(
+      window.collection(window.db, "collabSubmissions"),
+      window.where("producerId", "==", window.currentUser.uid)
+    );
+
+    const snap = await window.getDocs(q);
+
+    const arr = [];
+    snap.forEach((d)=>{
+      arr.push({
+        id: d.id,
+        ...(d.data() || {})
+      });
+    });
+
+    arr.sort((a,b)=> Number(b.createdAt || 0) - Number(a.createdAt || 0));
+    __producerCollabSubmissions = arr;
+
+    chipEl.textContent = `${arr.length} submission${arr.length === 1 ? "" : "s"}`;
+    renderProducerCollabSubmissions(arr);
+  }catch(err){
+    console.error("loadProducerCollabSubmissions:", err);
+    statusEl.textContent = "Could not load submissions.";
+    listEl.innerHTML = `<div class="subtle" style="color:#fecaca;">${err?.message || err}</div>`;
+    chipEl.textContent = "0 submissions";
+  }
+}
+
+function renderProducerCollabSubmissions(items){
+  const statusEl = document.getElementById("producerCollabStatus");
+  const listEl = document.getElementById("producerCollabList");
+
+  if (!statusEl || !listEl) return;
+
+  const q = String(document.getElementById("producerCollabSearch")?.value || "").trim().toLowerCase();
+
+  const filtered = (items || []).filter((item)=>{
+    if (!q) return true;
+
+    const hay =
+      String(item.requestTitle || "").toLowerCase() + " " +
+      String(item.message || "").toLowerCase() + " " +
+      String(item.beatTitle || "").toLowerCase() + " " +
+      String(item.status || "").toLowerCase();
+
+    return hay.includes(q);
+  });
+
+  if (!filtered.length){
+    statusEl.textContent = items?.length ? "No matching submissions." : "You have not submitted to any requests yet.";
+    listEl.innerHTML = `
+      <div class="empty-box">
+        ${items?.length ? "No submissions match your search." : "Your collab submissions will appear here."}
+      </div>
+    `;
+    return;
+  }
+
+  statusEl.textContent = `${filtered.length} submission${filtered.length === 1 ? "" : "s"}`;
+
+  listEl.innerHTML = `
+    <div class="producer-collab-list">
+      ${filtered.map(item => `
+        <div class="producer-collab-card">
+          <div class="producer-collab-top">
+            <div>
+              <div class="producer-collab-title">${escapeHtmlSafe(item.requestTitle || "Untitled Request")}</div>
+              <div class="producer-collab-sub">
+                Submitted ${escapeHtmlSafe(collabTimeAgo(item.createdAt) || "recently")}
+              </div>
+            </div>
+
+            <div class="collab-status-pill ${collabSubmissionStatusClass(item.status)}">
+              ${escapeHtmlSafe(collabSubmissionStatusText(item.status))}
+            </div>
+          </div>
+
+          <div class="producer-collab-message">${escapeHtmlSafe(item.message || "")}</div>
+
+          ${item.beatId ? `
+            <div class="producer-collab-beat">
+              <div class="producer-collab-beat-title">${escapeHtmlSafe(item.beatTitle || "Submitted Beat")}</div>
+              <div class="producer-collab-beat-meta">${escapeHtmlSafe(item.beatGenre || "No genre")}</div>
+            </div>
+          ` : ``}
+
+          <div class="producer-collab-actions">
+            <a class="ghost-btn" href="/collabs/">Open Request</a>
+
+            ${item.beatId ? `
+              <a class="ghost-btn" href="/beat/?id=${encodeURIComponent(item.beatId)}">Open Beat</a>
+            ` : ``}
+
+            <button class="ghost-btn" type="button" onclick="openCollabSubmissionMessage('${String(item.requestOwnerId || "").replace(/'/g,"\\'")}')">
+              Message Artist
+            </button>
+
+            ${String(item.status || "pending").toLowerCase() === "pending" ? `
+              <button class="btn2" type="button" onclick="withdrawCollabSubmission('${item.id}')">Withdraw</button>
+            ` : ``}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function withdrawCollabSubmission(submissionId){
+  if (!window.currentUser) return alert("Login first.");
+
+  const ok = confirm("Withdraw this submission?");
+  if (!ok) return;
+
+  try{
+    await window.deleteDoc(
+      window.doc(window.db, "collabSubmissions", String(submissionId))
+    );
+
+    await loadProducerCollabSubmissions();
+  }catch(err){
+    console.error("withdrawCollabSubmission:", err);
+    alert("Failed to withdraw submission: " + (err?.message || err));
+  }
+}
+
+function openCollabSubmissionMessage(artistUid){
+  if (!artistUid) return alert("Artist not found.");
+  location.href = "/messages/?producerId=" + encodeURIComponent(artistUid) + "&name=" + encodeURIComponent("Artist");
+}
+
+window.withdrawCollabSubmission = withdrawCollabSubmission;
+window.openCollabSubmissionMessage = openCollabSubmissionMessage;
   
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
