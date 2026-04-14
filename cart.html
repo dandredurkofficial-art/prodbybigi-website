@@ -74,13 +74,9 @@
       background:rgba(59,130,246,.08);
     }
 
-    /* payment modal - same feel as producer dashboard */
     .pb-pay-backdrop{
       position:fixed;
-      top:0;
-      left:0;
-      width:100%;
-      height:100%;
+      inset:0;
       background:rgba(0,0,0,.65);
       display:none;
       z-index:9998;
@@ -105,7 +101,7 @@
     .pb-pay-head{
       display:flex;
       justify-content:space-between;
-      align-items:center;
+      align-items:flex-start;
       margin-bottom:16px;
       gap:10px;
     }
@@ -139,7 +135,7 @@
       padding:12px;
       border-radius:10px;
       border:none;
-      font-weight:600;
+      font-weight:700;
       cursor:pointer;
       width:100%;
     }
@@ -152,6 +148,11 @@
     .pb-pay-btn.success{
       background:#22c55e;
       color:white;
+    }
+
+    .pb-pay-btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
     }
 
     .pb-pay-phone-wrap{
@@ -174,6 +175,11 @@
       color:white;
       box-sizing:border-box;
       margin-bottom:10px;
+      outline:none;
+    }
+
+    .pb-pay-input:focus{
+      border-color:#2b6cff;
     }
 
     .pb-pay-status{
@@ -181,6 +187,17 @@
       margin-top:8px;
       color:#9ca3af;
       white-space:pre-wrap;
+    }
+
+    @media (max-width: 700px){
+      .row{
+        flex-wrap:wrap;
+        align-items:flex-start;
+      }
+      .right{
+        width:100%;
+        justify-content:space-between;
+      }
     }
   </style>
 </head>
@@ -206,7 +223,6 @@
     <div class="status" id="status"></div>
   </div>
 
-  <!-- payment modal -->
   <div id="payBackdrop" class="pb-pay-backdrop"></div>
 
   <div id="payModal" class="pb-pay-modal">
@@ -229,7 +245,7 @@
 
       <div id="mpesaBox" class="pb-pay-phone-wrap">
         <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
-        <input id="mpesaPhone" class="pb-pay-input" placeholder="2547XXXXXXXX" />
+        <input id="mpesaPhone" class="pb-pay-input" placeholder="2547XXXXXXXX" inputmode="numeric" />
         <button id="sendMpesaBtn" class="pb-pay-btn success" type="button">
           Send STK Push
         </button>
@@ -242,8 +258,6 @@
     window.API_BASE = "https://prodbybigi-api.onrender.com";
     window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
     window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
-
-    /* set this only when your real cart mpesa endpoint exists */
     window.PB_MPESA_CART_ORDER_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
   </script>
 
@@ -268,6 +282,8 @@
     const sendMpesaBtn = document.getElementById("sendMpesaBtn");
     const payModalStatus = document.getElementById("payModalStatus");
 
+    let isProcessingCheckout = false;
+
     function money(n){
       const v = Number(n || 0);
       return "$" + (Number.isFinite(v) ? v.toFixed(2) : "0.00");
@@ -282,12 +298,30 @@
       if (payModalStatus) payModalStatus.textContent = msg || "";
     }
 
+    function setCheckoutBusy(busy){
+      isProcessingCheckout = !!busy;
+
+      if (checkoutBtn) checkoutBtn.disabled = busy || getItems().length === 0;
+      if (clearBtn) clearBtn.disabled = busy;
+      if (payWithPaypal) payWithPaypal.disabled = busy;
+      if (payWithMpesa) payWithMpesa.disabled = busy;
+      if (sendMpesaBtn) sendMpesaBtn.disabled = busy;
+    }
+
     function normalizePhone(phone){
-      let clean = String(phone || "").trim().replace(/\D/g, "");
+      let clean = String(phone || "").trim();
+      clean = clean.replace(/\s+/g, "").replace(/[^\d+]/g, "");
+
+      if (clean.startsWith("+")) clean = clean.slice(1);
       if (clean.startsWith("0")) clean = "254" + clean.slice(1);
       if (clean.startsWith("7")) clean = "254" + clean;
-      if (clean.startsWith("+")) clean = clean.slice(1);
-      return clean;
+      if (clean.startsWith("1") && clean.length === 9) clean = "254" + clean;
+
+      return clean.replace(/\D/g, "");
+    }
+
+    function validKenyaPhone(phone){
+      return /^(2547\d{8}|2541\d{8})$/.test(String(phone || ""));
     }
 
     function getItems(){
@@ -310,11 +344,18 @@
     }
 
     function calcTotal(items){
-      return items.reduce((sum, it) => sum + (Number(it.price || 0) * Math.max(1, Number(it.qty || 1))), 0);
+      return items.reduce((sum, it) => {
+        return sum + (Number(it.price || 0) * Math.max(1, Number(it.qty || 1)));
+      }, 0);
     }
 
     function openPayModal(){
       const items = getItems();
+      if (!items.length) {
+        setStatus("Your cart is empty.", "bad");
+        return;
+      }
+
       const total = money(calcTotal(items));
 
       if (paySub) {
@@ -342,11 +383,15 @@
       const count = items.reduce((a,b)=> a + (b.qty || 1), 0);
       subEl.textContent = `${count} item(s)`;
       totalEl.textContent = money(calcTotal(items));
-      checkoutBtn.disabled = items.length === 0;
 
       if (!items.length){
+        checkoutBtn.disabled = true;
         list.innerHTML = `<p class="muted" style="margin-top:14px">Cart is empty.</p>`;
         return;
+      }
+
+      if (!isProcessingCheckout) {
+        checkoutBtn.disabled = false;
       }
 
       items.forEach(it => {
@@ -393,18 +438,21 @@
 
         if (!isBonus) {
           el.querySelector('[data-remove="1"]').onclick = () => {
+            if (isProcessingCheckout) return;
             window.PB_CART.remove(it.beatId, it.licenseKey);
             setStatus("");
             render();
           };
 
           el.querySelector('[data-inc="1"]').onclick = () => {
+            if (isProcessingCheckout) return;
             window.PB_CART.setQty(it.beatId, it.licenseKey, it.qty + 1);
             setStatus("");
             render();
           };
 
           el.querySelector('[data-dec="1"]').onclick = () => {
+            if (isProcessingCheckout) return;
             window.PB_CART.setQty(it.beatId, it.licenseKey, Math.max(1, it.qty - 1));
             setStatus("");
             render();
@@ -452,19 +500,28 @@
       try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
 
       if (!res.ok){
-        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Create order failed: " + text));
+        throw new Error(
+          (data && (data.message || data.error))
+            ? (data.message || data.error)
+            : ("Create order failed: " + text)
+        );
       }
 
       const approveUrl =
         data.approveUrl ||
         data.approval_url ||
-        (Array.isArray(data.links) ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href) : null);
+        (Array.isArray(data.links)
+          ? (data.links.find(l => l.rel === "approve" || l.rel === "payer-action")?.href)
+          : null);
 
       if (!approveUrl){
         throw new Error("Create order succeeded but no approval URL returned.");
       }
 
-      return { approveUrl, orderId: (data.id || data.orderID || data.orderId || null) };
+      return {
+        approveUrl,
+        orderId: (data.id || data.orderID || data.orderId || null)
+      };
     }
 
     async function createMpesaOrder(items, phone){
@@ -521,7 +578,11 @@
       try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
 
       if (!res.ok){
-        throw new Error((data && (data.message || data.error)) ? (data.message || data.error) : ("Capture failed: " + text));
+        throw new Error(
+          (data && (data.message || data.error))
+            ? (data.message || data.error)
+            : ("Capture failed: " + text)
+        );
       }
 
       return data;
@@ -532,7 +593,9 @@
       const token = qs.get("token") || qs.get("orderID") || qs.get("orderId");
       if (!token) return;
 
+      setCheckoutBusy(true);
       setStatus("Finalizing payment…");
+
       try{
         await capture(token);
         window.PB_CART.clear();
@@ -542,10 +605,13 @@
       }catch(err){
         console.error(err);
         setStatus("Payment capture failed:\n" + (err?.message || err), "bad");
+      }finally{
+        setCheckoutBusy(false);
       }
     }
 
     clearBtn.onclick = () => {
+      if (isProcessingCheckout) return;
       window.PB_CART.clear();
       setStatus("");
       render();
@@ -555,8 +621,13 @@
       e.preventDefault();
       e.stopPropagation();
 
+      if (isProcessingCheckout) return;
+
       const items = getItems();
-      if (!items.length) return;
+      if (!items.length) {
+        setStatus("Your cart is empty.", "bad");
+        return;
+      }
 
       openPayModal();
     };
@@ -568,8 +639,9 @@
       const items = getItems();
       if (!items.length) return;
 
-      checkoutBtn.disabled = true;
+      setCheckoutBusy(true);
       setStatus("Creating PayPal checkout…");
+      setPayStatus("");
       closePayModal();
 
       try{
@@ -579,13 +651,15 @@
       }catch(err){
         console.error(err);
         setStatus("Load failed:\n" + (err?.message || err), "bad");
-        checkoutBtn.disabled = false;
+        setCheckoutBusy(false);
       }
     });
 
     payWithMpesa?.addEventListener("click", () => {
+      if (isProcessingCheckout) return;
       if (mpesaBox) mpesaBox.style.display = "block";
       if (mpesaPhone) mpesaPhone.focus();
+      setPayStatus("");
     });
 
     sendMpesaBtn?.addEventListener("click", async () => {
@@ -593,12 +667,12 @@
       if (!items.length) return;
 
       const phone = normalizePhone(mpesaPhone?.value || "");
-      if (!phone) {
-        alert("Enter phone number");
+      if (!validKenyaPhone(phone)) {
+        setPayStatus("Use format: 2547XXXXXXXX");
         return;
       }
 
-      checkoutBtn.disabled = true;
+      setCheckoutBusy(true);
       setStatus("Sending M-Pesa STK Push…");
       setPayStatus("Sending STK Push...");
 
@@ -611,7 +685,7 @@
         setPayStatus("Failed: " + (err?.message || err));
         setStatus("M-Pesa failed:\n" + (err?.message || err), "bad");
       } finally {
-        checkoutBtn.disabled = false;
+        setCheckoutBusy(false);
       }
     });
 
