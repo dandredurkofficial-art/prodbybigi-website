@@ -1376,6 +1376,90 @@
   const payStatus = $("pbPayStatus");
   const pbSendStkPush = $("pbSendStkPush");
 
+  function getBeatById(beatId){
+    return (window.__LATEST_BEATS__ || []).find(
+      b => String(b?.id || "") === String(beatId || "")
+    ) || null;
+  }
+
+  function getDefaultLicenseForBeat(beat){
+    if (!beat) {
+      return {
+        licenseKey: "basic",
+        amount: 0
+      };
+    }
+
+    const lic = beat.licenses || {};
+
+    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+      return {
+        licenseKey: "basic",
+        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+      return {
+        licenseKey: "premium",
+        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+      return {
+        licenseKey: "exclusive",
+        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+      };
+    }
+
+    return {
+      licenseKey: "basic",
+      amount: Number(beat.price || 0)
+    };
+  }
+
+  function syncSelectionFromModal(){
+    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+    const selectedCard =
+      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+      document.querySelector('#pbLicensesGrid .selected') ||
+      document.querySelector('#pbLicensesGrid .active') ||
+      document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+    let licenseKey = "";
+    if (selectedCard) {
+      licenseKey =
+        selectedCard.dataset.licenseKey ||
+        selectedCard.dataset.key ||
+        "";
+    }
+
+    if (!licenseKey && selectedCard) {
+      const txt = (selectedCard.textContent || "").toLowerCase();
+      if (txt.includes("exclusive")) licenseKey = "exclusive";
+      else if (txt.includes("premium")) licenseKey = "premium";
+      else if (txt.includes("basic")) licenseKey = "basic";
+    }
+
+    if (!licenseKey) {
+      const existing = window.__PB_SELECTED__ || {};
+      licenseKey = existing.licenseKey || "basic";
+    }
+
+    window.__PB_SELECTED__ = {
+      ...(window.__PB_SELECTED__ || {}),
+      title: title || window.__PB_SELECTED__?.title || "",
+      licenseKey,
+      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+    };
+
+    console.log("✅ marketplace synced from modal", window.__PB_SELECTED__);
+  }
+
   function openPayModal(){
     const sel = window.__PB_SELECTED__;
     if (!sel?.beatId) {
@@ -1544,74 +1628,74 @@
   btnMpesa?.addEventListener("click", showMpesaBox);
   pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
 
+  document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
+
+    const beatId = String(card.getAttribute("data-beat-id") || "");
+    if (!beatId) return;
+
+    const title = (
+      card.querySelector("h3")?.textContent || ""
+    ).trim();
+
+    const beat = getBeatById(beatId);
+    const fallback = getDefaultLicenseForBeat(beat);
+
+    window.__PB_SELECTED__ = {
+      beatId,
+      title: title || "",
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+
+    console.log("✅ marketplace default selection", window.__PB_SELECTED__);
+  }, true);
+
+  document.addEventListener("click", (e)=>{
+    const clickedCard = e.target.closest("#pbLicensesGrid > *");
+    if (!clickedCard) return;
+
+    setTimeout(syncSelectionFromModal, 0);
+  }, true);
+
   const buyNowBtn = document.getElementById("pbBuyNow");
   if (buyNowBtn) {
     buyNowBtn.addEventListener("click", (e)=>{
       e.preventDefault();
       e.stopPropagation();
 
-      const sel = window.__PB_SELECTED__ || {};
-      if (!sel.beatId) {
+      let sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) {
         alert("Select a beat and license first.");
         return;
       }
 
-      if (!sel.amount || sel.amount <= 0) {
-        const priceTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
-        const amt = Number(String(priceTxt).replace(/[^0-9.]/g,"")) || 0;
-        window.__PB_SELECTED__ = { ...sel, amount: amt };
+      syncSelectionFromModal();
+      sel = window.__PB_SELECTED__;
+
+      if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+        const beat = getBeatById(sel.beatId);
+        const fallback = getDefaultLicenseForBeat(beat);
+
+        window.__PB_SELECTED__ = {
+          ...sel,
+          licenseKey: fallback.licenseKey,
+          amount: fallback.amount
+        };
+
+        sel = window.__PB_SELECTED__;
+      }
+
+      if (!sel?.amount || sel.amount <= 0) {
+        alert("Select a license first.");
+        return;
       }
 
       openPayModal();
     }, true);
   }
-
-  document.addEventListener("click", (e)=>{
-    const clickedCard = e.target.closest("#pbLicensesGrid > *");
-    if (!clickedCard) return;
-
-    const t = (document.getElementById("pbModalTitle")?.textContent || "").trim();
-    const priceTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
-    const amt = Number(String(priceTxt).replace(/[^0-9.]/g,"")) || 0;
-
-    let licenseKey = clickedCard?.dataset?.licenseKey || clickedCard?.dataset?.key || "";
-    if (!licenseKey) {
-      const txt = (clickedCard.textContent || "").toLowerCase();
-      if (txt.includes("exclusive")) licenseKey = "exclusive";
-      else if (txt.includes("premium")) licenseKey = "premium";
-      else if (txt.includes("basic")) licenseKey = "basic";
-    }
-    if (!licenseKey) licenseKey = "basic";
-
-    const beatId = window.__PB_SELECTED__?.beatId || "";
-
-    window.__PB_SELECTED__ = {
-      ...(window.__PB_SELECTED__ || {}),
-      title: t || window.__PB_SELECTED__?.title || "",
-      licenseKey,
-      amount: amt || window.__PB_SELECTED__?.amount || 0,
-      beatId
-    };
-  }, true);
-
-  document.addEventListener("click", (e)=>{
-    const card = e.target.closest("[data-beat-id]");
-    if (!card) return;
-    if (!e.target.closest(".price-pill")) return;
-
-    const beatId = card.getAttribute("data-beat-id");
-    if (!beatId) return;
-
-    const title =
-      (card.querySelector("h3")?.textContent || "").trim();
-
-    window.__PB_SELECTED__ = {
-      beatId,
-      title: title || "",
-      licenseKey: window.__PB_SELECTED__?.licenseKey || "basic",
-      amount: window.__PB_SELECTED__?.amount || 0
-    };
-  }, true);
 })();
 
   async function trackMarketplacePlay({ producerId, beatId }){
