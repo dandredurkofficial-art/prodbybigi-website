@@ -1730,320 +1730,348 @@
      Works without editing license-modal.js
   ========================================================= */
   (function(){
-    const $ = (id)=>document.getElementById(id);
+  const $ = (id)=>document.getElementById(id);
 
-    const payBackdrop = $("pbPayBackdrop");
-    const payModal = $("pbPayModal");
-    const payClose = $("pbPayClose");
-    const payTitle = $("pbPayTitle");
-    const paySub = $("pbPaySub");
-    const payAmountA = $("pbPayAmountA");
-    const payAmountB = $("pbPayAmountB");
-    const btnPaypal = $("pbPayWithPaypal");
-    const btnMpesa = $("pbPayWithMpesa");
-    const mpesaBox = $("pbMpesaBox");
-    const mpesaPhone = $("pbMpesaPhone");
-    const payStatus = $("pbPayStatus");
-    const pbSendStkPush = $("pbSendStkPush");
+  const payBackdrop = $("pbPayBackdrop");
+  const payModal = $("pbPayModal");
+  const payClose = $("pbPayClose");
+  const payTitle = $("pbPayTitle");
+  const paySub = $("pbPaySub");
+  const payAmountA = $("pbPayAmountA");
+  const payAmountB = $("pbPayAmountB");
+  const btnPaypal = $("pbPayWithPaypal");
+  const btnMpesa = $("pbPayWithMpesa");
+  const mpesaBox = $("pbMpesaBox");
+  const mpesaPhone = $("pbMpesaPhone");
+  const payStatus = $("pbPayStatus");
+  const pbSendStkPush = $("pbSendStkPush");
 
-    function openPayModal(){
-      const currentSel = window.__PB_SELECTED__ || sel;
+  function getBeatById(beatId){
+    return (window.__LATEST_BEATS__ || []).find(
+      b => String(b?.id || "") === String(beatId || "")
+    ) || null;
+  }
+
+  function getDefaultLicenseForBeat(beat){
+    if (!beat) {
+      return {
+        licenseKey: "basic",
+        amount: 0
+      };
+    }
+
+    const lic = beat.licenses || {};
+
+    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+      return {
+        licenseKey: "basic",
+        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+      return {
+        licenseKey: "premium",
+        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+      return {
+        licenseKey: "exclusive",
+        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+      };
+    }
+
+    return {
+      licenseKey: "basic",
+      amount: Number(beat.price || 0)
+    };
+  }
+
+  function syncSelectionFromModal(){
+    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+    const selectedCard =
+      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+      document.querySelector('#pbLicensesGrid .selected') ||
+      document.querySelector('#pbLicensesGrid .active') ||
+      document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+    let licenseKey = "";
+    if (selectedCard) {
+      licenseKey =
+        selectedCard.dataset.licenseKey ||
+        selectedCard.dataset.key ||
+        "";
+    }
+
+    if (!licenseKey && selectedCard) {
+      const txt = (selectedCard.textContent || "").toLowerCase();
+      if (txt.includes("exclusive")) licenseKey = "exclusive";
+      else if (txt.includes("premium")) licenseKey = "premium";
+      else if (txt.includes("basic")) licenseKey = "basic";
+    }
+
+    if (!licenseKey) {
+      const existing = window.__PB_SELECTED__ || {};
+      licenseKey = existing.licenseKey || "basic";
+    }
+
+    window.__PB_SELECTED__ = {
+      ...(window.__PB_SELECTED__ || {}),
+      title: title || window.__PB_SELECTED__?.title || "",
+      licenseKey,
+      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+    };
+
+    console.log("✅ synced from modal", window.__PB_SELECTED__);
+  }
+
+  function openPayModal(){
+    const sel = window.__PB_SELECTED__;
+
+    if (!sel?.beatId) {
+      alert("Select a beat and license first.");
+      return;
+    }
+
+    const currentSel = window.__PB_SELECTED__;
+
+    payTitle.textContent = "Choose payment method";
+    paySub.textContent = `${currentSel.title || "Beat"} • License: ${currentSel.licenseKey || "basic"}`;
+    payAmountA.textContent = money(currentSel.amount || 0);
+    payAmountB.textContent = money(currentSel.amount || 0);
+    payStatus.textContent = "";
+    mpesaBox.style.display = "none";
+    mpesaPhone.value = "";
+
+    payBackdrop.style.display = "block";
+    payModal.style.display = "block";
+    payBackdrop.setAttribute("aria-hidden","false");
+  }
+
+  function closePayModal(){
+    payBackdrop.style.display = "none";
+    payModal.style.display = "none";
+    payBackdrop.setAttribute("aria-hidden","true");
+    mpesaBox.style.display = "none";
+    payStatus.textContent = "";
+  }
+
+  payBackdrop?.addEventListener("click", closePayModal);
+  payClose?.addEventListener("click", closePayModal);
+
+  document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
+
+    const beatId = String(card.getAttribute("data-beat-id") || "");
+    if (!beatId) return;
+
+    const title =
+      (card.querySelector(".t")?.textContent ||
+       card.querySelector(".home-title-clamp")?.textContent ||
+       "").trim();
+
+    const beat = getBeatById(beatId);
+    const fallback = getDefaultLicenseForBeat(beat);
+
+    window.__PB_SELECTED__ = {
+      beatId,
+      title: title || "",
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+
+    console.log("✅ homepage default selection", window.__PB_SELECTED__);
+  }, true);
+
+  document.addEventListener("click", (e)=>{
+    const clickedCard = e.target.closest("#pbLicensesGrid > *");
+    if (!clickedCard) return;
+
+    setTimeout(syncSelectionFromModal, 0);
+  }, true);
+
+  const buyNowBtn = document.getElementById("pbBuyNow");
+  if (buyNowBtn) {
+    buyNowBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      let sel = window.__PB_SELECTED__;
       if (!sel?.beatId) {
         alert("Select a beat and license first.");
         return;
       }
 
-      payTitle.textContent = "Choose payment method";
-      paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
-      payAmountA.textContent = money(sel.amount || 0);
-      payAmountB.textContent = money(sel.amount || 0);
-      payStatus.textContent = "";
-      mpesaBox.style.display = "none";
-      mpesaPhone.value = "";
+      syncSelectionFromModal();
+      sel = window.__PB_SELECTED__;
 
-      payBackdrop.style.display = "block";
-      payModal.style.display = "block";
-      payBackdrop.setAttribute("aria-hidden","false");
-    }
+      if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+        const beat = getBeatById(sel.beatId);
+        const fallback = getDefaultLicenseForBeat(beat);
 
-    function closePayModal(){
-      payBackdrop.style.display = "none";
-      payModal.style.display = "none";
-      payBackdrop.setAttribute("aria-hidden","true");
-      mpesaBox.style.display = "none";
-      payStatus.textContent = "";
-    }
-
-    payBackdrop?.addEventListener("click", closePayModal);
-    payClose?.addEventListener("click", closePayModal);
-
-    // ✅ Track selection from the license modal UI (clicks inside #pbLicensesGrid)
-    document.addEventListener("click", (e)=>{
-  const card = e.target.closest("[data-beat-id]");
-  if (!card) return;
-  if (!e.target.closest(".price-pill")) return;
-
-  const beatId = String(card.getAttribute("data-beat-id") || "");
-  if (!beatId) return;
-
-  const title =
-    (card.querySelector(".t")?.textContent ||
-     card.querySelector(".home-title-clamp")?.textContent ||
-     "").trim();
-
-  const beat = (window.__LATEST_BEATS__ || []).find(
-    b => String(b?.id || "") === beatId
-  );
-
-  let defaultLicenseKey = "basic";
-  let defaultAmount = 0;
-
-  if (beat) {
-    const lic = beat.licenses || {};
-
-    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
-      defaultLicenseKey = "basic";
-      defaultAmount = Number(lic?.basic?.price ?? beat.price ?? 0);
-    } else if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
-      defaultLicenseKey = "premium";
-      defaultAmount = Number(lic?.premium?.price ?? beat.price ?? 0);
-    } else if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
-      defaultLicenseKey = "exclusive";
-      defaultAmount = Number(lic?.exclusive?.price ?? beat.price ?? 0);
-    } else {
-      defaultLicenseKey = "basic";
-      defaultAmount = Number(beat.price || 0);
-    }
-  }
-
-  window.__PB_SELECTED__ = {
-    beatId,
-    title: title || "",
-    licenseKey: defaultLicenseKey,
-    amount: defaultAmount
-  };
-
-  console.log("✅ default homepage selection set", window.__PB_SELECTED__);
-}, true);
-
-    // ✅ Track beatId when user clicks a beat card (trend or chart)
-    document.addEventListener("click", (e)=>{
-      const card = e.target.closest("[data-beat-id]");
-      if (!card) return;
-
-      // Only store if it was a paid pill click (license modal open path)
-      if (!e.target.closest(".price-pill")) return;
-
-      const beatId = card.getAttribute("data-beat-id");
-      if (!beatId) return;
-
-      // Find beat title in card
-      const title =
-        (card.querySelector(".t")?.textContent || card.querySelector(".home-title-clamp")?.textContent || "").trim();
-
-      window.__PB_SELECTED__ = {
-        beatId,
-        title: title || "",
-        licenseKey: window.__PB_SELECTED__?.licenseKey || "basic",
-        amount: window.__PB_SELECTED__?.amount || 0
-      };
-    }, true);
-
-    // ✅ Hook Buy Now button: show payment choices instead of going straight to PayPal
-    const buyNowBtn = document.getElementById("pbBuyNow");
-    if (buyNowBtn) {
-      buyNowBtn.addEventListener("click", (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Try to ensure we have beatId + amount
-        const sel = window.__PB_SELECTED__;
-if (!sel?.beatId) {
-  alert("Select a beat and license first.");
-  return;
-}
-
-if (!sel.licenseKey || !sel.amount || sel.amount <= 0) {
-  const beat = (window.__LATEST_BEATS__ || []).find(
-    b => String(b?.id || "") === String(sel.beatId || "")
-  );
-
-  if (beat) {
-    const lic = beat.licenses || {};
-
-    let fallbackKey = "basic";
-    let fallbackAmount = Number(beat.price || 0);
-
-    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
-      fallbackKey = "basic";
-      fallbackAmount = Number(lic?.basic?.price ?? beat.price ?? 0);
-    } else if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
-      fallbackKey = "premium";
-      fallbackAmount = Number(lic?.premium?.price ?? beat.price ?? 0);
-    } else if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
-      fallbackKey = "exclusive";
-      fallbackAmount = Number(lic?.exclusive?.price ?? beat.price ?? 0);
-    }
-
-    window.__PB_SELECTED__ = {
-      ...sel,
-      licenseKey: fallbackKey,
-      amount: fallbackAmount
-    };
-  }
-}
-
-        // amount could still be 0 if license-modal hasn’t set total yet
-        if (!sel.amount || sel.amount <= 0) {
-          alert("Select a license first.");
-          return;
-        }
-
-        openPayModal();
-      }, true);
-    }
-
-    // ✅ PayPal flow (single item)
-    async function payWithPaypal(){
-      const sel = window.__PB_SELECTED__;
-      if (!sel?.beatId) return alert("Select a beat first.");
-
-      const body = {
-        beatId: sel.beatId,
-        licenseKey: sel.licenseKey || "basic"
-      };
-
-      btnPaypal.disabled = true;
-      btnMpesa.disabled = true;
-      payStatus.textContent = "Opening PayPal…";
-
-      try{
-        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(body)
-        });
-
-        const data = await r.json().catch(()=> ({}));
-        if (!r.ok) {
-          console.error("PayPal createOrder failed:", data);
-          alert(data?.error || "PayPal create order failed");
-          payStatus.textContent = "";
-          return;
-        }
-
-        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
-        if (!url) {
-          console.error("No approveUrl:", data);
-          alert("PayPal approval link missing.");
-          payStatus.textContent = "";
-          return;
-        }
-
-        // redirect user to PayPal
-        location.href = url;
-      } catch (err){
-        console.error(err);
-        alert("PayPal error: " + (err?.message || err));
-        payStatus.textContent = "";
-      } finally {
-        btnPaypal.disabled = false;
-        btnMpesa.disabled = false;
-      }
-    }
-
-    // ✅ M-Pesa flow (STK Push)
-    function showMpesaBox(){
-      mpesaBox.style.display = "block";
-      payStatus.textContent = "";
-      setTimeout(()=> mpesaPhone?.focus(), 50);
-    }
-
-    async function sendMpesaStkPush(){
-      const sel = window.__PB_SELECTED__;
-      if (!sel?.beatId) return alert("Select a beat first.");
-
-      const phone = (mpesaPhone.value || "").trim();
-      if (!phone) {
-        payStatus.textContent = "Enter your phone number first.";
-        return;
-      }
-
-      const digits = phone.replace(/\D/g,"");
-      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
-        payStatus.textContent = "Use format: 2547XXXXXXXX";
-        return;
-      }
-
-      const amt = Number(sel.amount || 0);
-      if (!amt || amt <= 0) {
-        payStatus.textContent = "Price not detected. Try selecting the license again.";
-        return;
-      }
-
-      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      if (!u?.uid){
-        payStatus.textContent = "Please sign in to pay with M-Pesa.";
-        setTimeout(()=> location.href="/login/", 600);
-        return;
-      }
-
-      pbSendStkPush.disabled = true;
-      btnPaypal.disabled = true;
-      btnMpesa.disabled = true;
-      payStatus.textContent = "Sending STK Push… check your phone.";
-
-      const controller = new AbortController();
-      const t = setTimeout(()=>controller.abort(), 25000);
-
-      try{
-        const body = {
-          phone: digits,
-          beatId: String(sel.beatId),
-          buyerId: String(u.uid),
-          licenseKey: String(sel.licenseKey || "basic"),
-          amount: Math.round(amt),
-          amountUsd: Number(amt)
+        window.__PB_SELECTED__ = {
+          ...sel,
+          licenseKey: fallback.licenseKey,
+          amount: fallback.amount
         };
 
-        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(body),
-          signal: controller.signal
-        });
-
-        const data = await r.json().catch(()=> ({}));
-
-        if (!r.ok) {
-          console.error("STK push failed:", data);
-          payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
-          return;
-        }
-
-        payStatus.textContent =
-          "✅ STK Push sent.\nApprove on your phone." +
-          (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
-
-      } catch (err){
-        console.error(err);
-        if (String(err?.name) === "AbortError"){
-          payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
-        } else {
-          payStatus.textContent = "Error: " + (err?.message || err);
-        }
-      } finally {
-        clearTimeout(t);
-        pbSendStkPush.disabled = false;
-        btnPaypal.disabled = false;
-        btnMpesa.disabled = false;
+        sel = window.__PB_SELECTED__;
       }
+
+      if (!sel?.amount || sel.amount <= 0) {
+        alert("Select a license first.");
+        return;
+      }
+
+      openPayModal();
+    }, true);
+  }
+
+  async function payWithPaypal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const body = {
+      beatId: sel.beatId,
+      licenseKey: sel.licenseKey || "basic"
+    };
+
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Opening PayPal…";
+
+    try{
+      const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await r.json().catch(()=> ({}));
+      if (!r.ok) {
+        console.error("PayPal createOrder failed:", data);
+        alert(data?.error || "PayPal create order failed");
+        payStatus.textContent = "";
+        return;
+      }
+
+      const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+      if (!url) {
+        console.error("No approveUrl:", data);
+        alert("PayPal approval link missing.");
+        payStatus.textContent = "";
+        return;
+      }
+
+      location.href = url;
+    } catch (err){
+      console.error(err);
+      alert("PayPal error: " + (err?.message || err));
+      payStatus.textContent = "";
+    } finally {
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
     }
-  
-    btnPaypal?.addEventListener("click", payWithPaypal);
-    btnMpesa?.addEventListener("click", showMpesaBox);
-    pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
-  })();
+  }
+
+  function showMpesaBox(){
+    mpesaBox.style.display = "block";
+    payStatus.textContent = "";
+    setTimeout(()=> mpesaPhone?.focus(), 50);
+  }
+
+  async function sendMpesaStkPush(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const phone = (mpesaPhone.value || "").trim();
+    if (!phone) {
+      payStatus.textContent = "Enter your phone number first.";
+      return;
+    }
+
+    const digits = phone.replace(/\D/g,"");
+    if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+      payStatus.textContent = "Use format: 2547XXXXXXXX";
+      return;
+    }
+
+    const amt = Number(sel.amount || 0);
+    if (!amt || amt <= 0) {
+      payStatus.textContent = "Price not detected. Try selecting the license again.";
+      return;
+    }
+
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    if (!u?.uid){
+      payStatus.textContent = "Please sign in to pay with M-Pesa.";
+      setTimeout(()=> location.href="/login/", 600);
+      return;
+    }
+
+    pbSendStkPush.disabled = true;
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Sending STK Push… check your phone.";
+
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), 25000);
+
+    try{
+      const body = {
+        phone: digits,
+        beatId: String(sel.beatId),
+        buyerId: String(u.uid),
+        licenseKey: String(sel.licenseKey || "basic"),
+        amount: Math.round(amt),
+        amountUsd: Number(amt)
+      };
+
+      const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      const data = await r.json().catch(()=> ({}));
+
+      if (!r.ok) {
+        console.error("STK push failed:", data);
+        payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+        return;
+      }
+
+      payStatus.textContent =
+        "✅ STK Push sent.\nApprove on your phone." +
+        (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+
+    } catch (err){
+      console.error(err);
+      if (String(err?.name) === "AbortError"){
+        payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
+      } else {
+        payStatus.textContent = "Error: " + (err?.message || err);
+      }
+    } finally {
+      clearTimeout(t);
+      pbSendStkPush.disabled = false;
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  btnPaypal?.addEventListener("click", payWithPaypal);
+  btnMpesa?.addEventListener("click", showMpesaBox);
+  pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+})();
 
   async function goToMyDashboard() {
     try {
