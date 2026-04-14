@@ -1779,45 +1779,54 @@
 
     // ✅ Track selection from the license modal UI (clicks inside #pbLicensesGrid)
     document.addEventListener("click", (e)=>{
-      const modal = document.getElementById("pbLicenseModal");
-      const inModal = modal && !modal.classList.contains("hidden") && modal.style.display !== "none";
+  const licGrid = document.getElementById("pbLicensesGrid");
+  const clickedCard = e.target.closest("#pbLicensesGrid > *");
+  if (!licGrid || !clickedCard) return;
 
-      // Always try to catch license clicks (even if modal is hidden, harmless)
-      const licGrid = document.getElementById("pbLicensesGrid");
-      const clickedCard = e.target.closest("#pbLicensesGrid > *");
-      if (!licGrid || !clickedCard) return;
+  const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+  const beatId = String(window.__PB_SELECTED__?.beatId || "");
 
-      // Try to infer beat title
-      const t = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+  let licenseKey =
+    clickedCard.dataset.licenseKey ||
+    clickedCard.dataset.key ||
+    "";
 
-      // amount from #pbTotalPrice ($xx.xx)
-      const priceTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
-      const amt = Number(String(priceTxt).replace(/[^0-9.]/g,"")) || 0;
+  if (!licenseKey) {
+    const txt = (clickedCard.textContent || "").toLowerCase();
+    if (txt.includes("exclusive")) licenseKey = "exclusive";
+    else if (txt.includes("premium")) licenseKey = "premium";
+    else if (txt.includes("basic")) licenseKey = "basic";
+  }
+  if (!licenseKey) licenseKey = "basic";
 
-      // Try to infer licenseKey from dataset or text content
-      let licenseKey = "";
-      licenseKey = clickedCard?.dataset?.licenseKey || clickedCard?.dataset?.key || "";
-      if (!licenseKey) {
-        const txt = (clickedCard.textContent || "").toLowerCase();
-        if (txt.includes("exclusive")) licenseKey = "exclusive";
-        else if (txt.includes("premium")) licenseKey = "premium";
-        else if (txt.includes("basic")) licenseKey = "basic";
-      }
-      if (!licenseKey) licenseKey = "basic";
+  let amount = 0;
 
-      // beatId: most reliable is to map from the last opened beat card
-      // license-modal.js normally opens based on the beat card data-beat-id
-      // We'll keep a separate tracker when user clicks on a beat card
-      const beatId = window.__PB_SELECTED__?.beatId || "";
+  const beat = (window.__LATEST_BEATS__ || []).find(
+    b => String(b?.id || "") === beatId
+  );
 
-      window.__PB_SELECTED__ = {
-        ...(window.__PB_SELECTED__ || {}),
-        title: t || window.__PB_SELECTED__?.title || "",
-        licenseKey,
-        amount: amt || window.__PB_SELECTED__?.amount || 0,
-        beatId
-      };
-    }, true);
+  if (beat) {
+    const lic = beat.licenses || {};
+    const cfg = lic?.[licenseKey] || null;
+    const tierPrice = Number(cfg?.price);
+
+    if (Number.isFinite(tierPrice) && tierPrice > 0) {
+      amount = tierPrice;
+    } else {
+      amount = Number(beat.price || 0);
+    }
+  }
+
+  window.__PB_SELECTED__ = {
+    ...(window.__PB_SELECTED__ || {}),
+    beatId,
+    title: title || window.__PB_SELECTED__?.title || "",
+    licenseKey,
+    amount
+  };
+
+  console.log("✅ homepage selected license", window.__PB_SELECTED__);
+}, true);
 
     // ✅ Track beatId when user clicks a beat card (trend or chart)
     document.addEventListener("click", (e)=>{
@@ -1858,9 +1867,8 @@
 
         // amount could still be 0 if license-modal hasn’t set total yet
         if (!sel.amount || sel.amount <= 0) {
-          const priceTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
-          const amt = Number(String(priceTxt).replace(/[^0-9.]/g,"")) || 0;
-          window.__PB_SELECTED__ = { ...sel, amount: amt };
+          alert("Select a license first.");
+          return;
         }
 
         openPayModal();
