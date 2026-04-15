@@ -1843,7 +1843,33 @@
         width:100%;
         min-width:0;
       }
-    }
+
+      .collab-submission-actions{
+        display:flex;
+        flex-wrap:wrap;
+        gap:10px;
+        margin-top:12px;
+      }
+
+      .collab-submission-actions .btn2,
+      .collab-submission-actions a.btn2{
+        min-width:150px;
+        text-align:center;
+        justify-content:center;
+        text-decoration:none;
+      }
+
+      @media (max-width: 640px){
+        .collab-submission-actions{
+          flex-direction:column;
+        }
+
+        .collab-submission-actions .btn2,
+        .collab-submission-actions a.btn2{
+          width:100%;
+          min-width:0;
+        }
+      }
 </style>
 </head>
 
@@ -4322,6 +4348,48 @@ function openCollabSubmissionMessage(artistUid){
 
 window.withdrawCollabSubmission = withdrawCollabSubmission;
 window.openCollabSubmissionMessage = openCollabSubmissionMessage;
+
+async function openArtistChatFromSubmission(artistUid, artistName){
+  try{
+    if (!artistUid) {
+      alert("Artist not found.");
+      return;
+    }
+
+    // move to dashboard private messages page
+    showPage("privateMessages", document.getElementById("navPrivateMessages"));
+
+    // wait a little so page elements are visible
+    setTimeout(async () => {
+      try{
+        // if your dashboard private messages page has buyer/artist input
+        const buyerInput = document.getElementById("msgBuyerId");
+        if (buyerInput) buyerInput.value = artistUid;
+
+        // if your inbox system uses threads helpers
+        if (window.FB && typeof window.FB.ensureThread === "function") {
+          const threadId = await window.FB.ensureThread({
+            otherUid: artistUid,
+            otherDisplayName: artistName || "Artist"
+          });
+
+          // if you have a thread opener in dashboard use it
+          if (typeof window.openProducerThreadReal === "function") {
+            await window.openProducerThreadReal(threadId, artistUid, artistName || "Artist");
+          }
+        }
+      } catch (err) {
+        console.error("openArtistChatFromSubmission error:", err);
+        alert("Could not open artist chat: " + (err?.message || err));
+      }
+    }, 120);
+
+  }catch(err){
+    console.error(err);
+    alert("Could not open artist chat: " + (err?.message || err));
+  }
+}
+window.openArtistChatFromSubmission = openArtistChatFromSubmission;
   
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
