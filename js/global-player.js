@@ -265,7 +265,7 @@
     }
 
     bind() {
-      document.addEventListener("click", (e) => this.handlePagePlayClick(e));
+      document.addEventListener("click", (e) => this.handlePagePlayClick(e), true);
 
       this.miniOpen?.addEventListener("click", () => this.openFull());
       this.miniPlay?.addEventListener("click", () => this.togglePlay());
