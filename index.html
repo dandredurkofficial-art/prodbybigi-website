@@ -1223,6 +1223,8 @@
   </div>
 </div>
 
+<div id="globalPlayerHost" class="global-player-host"></div>
+
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
@@ -1527,102 +1529,6 @@ async function logBeatPlay(beat, playBtn){
   }
 }
 window.logBeatPlay = logBeatPlay;
-
-    function resetAllPlayIcons(){
-      document.querySelectorAll(".play-fab .playIcon").forEach(el => {
-        el.textContent = "▶";
-      });
-    }
-
-    if (state.currentBeatKey === playKey && !audio.paused) {
-      audio.pause();
-      audio.currentTime = 0;
-      state.currentBeatKey = "";
-      state.currentBtn = null;
-      resetAllPlayIcons();
-      return;
-    }
-
-    if (state.currentBtn && state.currentBtn !== playBtn) {
-      const oldIcon = state.currentBtn.querySelector(".playIcon");
-      if (oldIcon) oldIcon.textContent = "▶";
-    }
-
-    if (audio.src !== audioUrl) {
-      audio.pause();
-      audio.currentTime = 0;
-      audio.src = audioUrl;
-    }
-
-    state.currentBeatKey = playKey;
-    state.currentBtn = playBtn;
-
-    resetAllPlayIcons();
-    await audio.play();
-    if (icon) icon.textContent = "❚❚";
-
-    audio.onpause = () => {
-      resetAllPlayIcons();
-      if (state.currentBeatKey === playKey) {
-        state.currentBeatKey = "";
-        state.currentBtn = null;
-      }
-    };
-
-    audio.onended = () => {
-      resetAllPlayIcons();
-      if (state.currentBeatKey === playKey) {
-        state.currentBeatKey = "";
-        state.currentBtn = null;
-      }
-    };
-
-    if (window.__ANA_SENT__.play[playKey]) return;
-    window.__ANA_SENT__.play[playKey] = 1;
-
-    const FB = window.FB;
-    if (
-      !FB?.db ||
-      typeof FB.doc !== "function" ||
-      typeof FB.updateDoc !== "function" ||
-      typeof FB.increment !== "function"
-    ){
-      console.error("Homepage play tracking failed: Firebase helpers missing");
-      delete window.__ANA_SENT__.play[playKey];
-      return;
-    }
-
-    try{
-      const ref = FB.doc(FB.db, "beats", beatId);
-      await FB.updateDoc(ref, {
-        plays: FB.increment(1),
-        lastPlayedAt: Date.now()
-      });
-      console.log("✅ homepage plays incremented:", beatId);
-    }catch(err){
-      console.error("❌ homepage Firestore increment failed:", err);
-      delete window.__ANA_SENT__.play[playKey];
-      return;
-    }
-
-    try{
-      if (typeof FB.trackEvent === "function"){
-        await FB.trackEvent({
-          type: "beat_play",
-          beatId,
-          producerId,
-          path: location.pathname + location.search,
-          meta: { surface: "home", action: "preview" }
-        });
-      }
-    }catch(err){
-      console.warn("Homepage trackEvent failed:", err);
-    }
-
-  }catch(err){
-    console.error("logBeatPlay failed", err);
-  }
-}
 
   /* ===========================
      ✅ FREE DOWNLOAD
