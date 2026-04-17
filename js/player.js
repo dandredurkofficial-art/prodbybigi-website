@@ -720,69 +720,139 @@
 
       @media (max-width: 700px){
         body{
-          padding-bottom:96px;
+          padding-bottom:88px;
         }
 
         .ap-mini{
           width:calc(100vw - 12px);
-          margin-bottom:8px;
-          border-radius:20px;
+          margin-bottom:6px;
+          border-radius:18px;
         }
 
         .ap-mini-inner{
-          min-height:76px;
-          padding:10px 12px;
+          min-height:70px;
+          padding:8px 10px;
+          gap:10px;
         }
 
         .ap-cover{
-          width:52px;
-          height:52px;
-          border-radius:14px;
+          width:46px;
+          height:46px;
+          border-radius:12px;
         }
 
         .ap-title{
-          font-size:16px;
+          font-size:15px;
         }
 
         .ap-artist{
-          font-size:13px;
+          font-size:12px;
         }
 
         .ap-mini-play{
-          width:50px;
-          height:50px;
+          width:46px;
+          height:46px;
         }
 
         .ap-btn{
-          width:38px;
-          height:38px;
+          width:34px;
+          height:34px;
+        }
+
+        .ap-sheet{
+          max-height:86vh;
+          border-radius:22px 22px 0 0;
         }
 
         .ap-full{
-          padding:14px 14px 22px;
+          padding:12px 12px 18px;
+        }
+
+        .ap-top{
+          margin-bottom:12px;
+        }
+
+        .ap-main-layout{
+          grid-template-columns:1fr;
+          gap:12px;
+        }
+
+        .ap-main-cover{
+          max-width:100%;
+          border-radius:18px;
         }
 
         .ap-main-title{
-          font-size:21px;
+          font-size:18px;
         }
 
-        .ap-grid{
-          grid-template-columns:1fr 1fr;
+        .ap-main-artist{
+          font-size:14px;
+          margin-top:6px;
         }
 
-        .ap-main-btn.big{
-          width:76px;
-          height:76px;
+        .ap-link{
+          margin-top:10px;
+          font-size:14px;
         }
 
-        .ap-main-btn.small{
-          width:48px;
-          height:48px;
+        .ap-buy-row{
+          margin-top:12px;
+          gap:10px;
         }
 
         .ap-buy-btn{
           width:100%;
           justify-content:center;
+          min-height:50px;
+          border-radius:16px;
+          font-size:15px;
+        }
+
+        .ap-progress-wrap{
+          margin-top:14px;
+        }
+
+        .ap-time{
+          margin-top:8px;
+          font-size:12px;
+        }
+
+        .ap-controls{
+          margin-top:12px;
+        }
+
+        .ap-controls-center{
+          gap:12px;
+        }
+
+        .ap-main-btn.big{
+          width:64px;
+          height:64px;
+        }
+
+        .ap-main-btn.big svg{
+          width:28px;
+          height:28px;
+        }
+
+        .ap-main-btn.small{
+          width:42px;
+          height:42px;
+        }
+
+        .ap-grid{
+          grid-template-columns:1fr 1fr;
+          gap:10px;
+        }
+
+        .ap-panel{
+          max-height:76vh;
+          border-radius:22px 22px 0 0;
+        }
+
+        .ap-panel-inner{
+          padding:14px 12px 18px;
         }
       }
     `;
