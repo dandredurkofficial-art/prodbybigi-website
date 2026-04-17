@@ -722,159 +722,159 @@
       }
 
       @media (max-width: 700px){
-  body{
-    padding-bottom:84px;
-  }
+        body{
+          padding-bottom:84px;
+        }
 
-  .ap-mini{
-    width:calc(100vw - 10px);
-    margin-bottom:5px;
-    border-radius:16px;
-  }
+        .ap-mini{
+          width:calc(100vw - 10px);
+          margin-bottom:5px;
+          border-radius:16px;
+        }
 
-  .ap-mini-inner{
-    min-height:66px;
-    padding:8px 9px;
-    gap:9px;
-  }
+        .ap-mini-inner{
+          min-height:66px;
+          padding:8px 9px;
+          gap:9px;
+        }
 
-  .ap-cover{
-    width:42px;
-    height:42px;
-    border-radius:10px;
-  }
+        .ap-cover{
+          width:42px;
+          height:42px;
+          border-radius:10px;
+        }
 
-  .ap-title{
-    font-size:14px;
-  }
+        .ap-title{
+          font-size:14px;
+        }
 
-  .ap-artist{
-    font-size:11px;
-  }
+        .ap-artist{
+          font-size:11px;
+        }
 
-  .ap-mini-play{
-    width:42px;
-    height:42px;
-  }
+        .ap-mini-play{
+          width:42px;
+          height:42px;
+        }
 
-  .ap-btn{
-    width:32px;
-    height:32px;
-  }
+        .ap-btn{
+          width:32px;
+          height:32px;
+        }
 
-  .ap-sheet{
-    max-height:78vh;
-    border-radius:20px 20px 0 0;
-  }
+        .ap-sheet{
+          max-height:78vh;
+          border-radius:20px 20px 0 0;
+        }
 
-  .ap-full{
-    padding:10px 10px 14px;
-  }
+        .ap-full{
+          padding:10px 10px 14px;
+        }
 
-  .ap-top{
-    margin-bottom:10px;
-  }
+        .ap-top{
+          margin-bottom:10px;
+        }
 
-  .ap-main-layout{
-    grid-template-columns:1fr;
-    gap:10px;
-  }
+        .ap-main-layout{
+          grid-template-columns:1fr;
+          gap:10px;
+        }
 
-  .ap-main-cover{
-    width:100%;
-    max-width:100%;
-    max-height:42vh;
-    aspect-ratio:1/1;
-    border-radius:16px;
-    margin:0 auto;
-  }
+        .ap-main-cover{
+          width:100%;
+          max-width:100%;
+          max-height:42vh;
+          aspect-ratio:1/1;
+          border-radius:16px;
+          margin:0 auto;
+        }
 
-  .ap-main-title{
-    font-size:16px;
-    line-height:1.15;
-  }
+        .ap-main-title{
+          font-size:16px;
+          line-height:1.15;
+        }
 
-  .ap-main-artist{
-    font-size:13px;
-    margin-top:5px;
-  }
+        .ap-main-artist{
+          font-size:13px;
+          margin-top:5px;
+        }
 
-  .ap-link{
-    margin-top:8px;
-    font-size:13px;
-  }
+        .ap-link{
+          margin-top:8px;
+          font-size:13px;
+        }
 
-  .ap-buy-row{
-    margin-top:10px;
-    gap:8px;
-  }
+        .ap-buy-row{
+          margin-top:10px;
+          gap:8px;
+        }
 
-  .ap-buy-btn{
-    width:100%;
-    justify-content:center;
-    min-height:46px;
-    border-radius:14px;
-    font-size:14px;
-    padding:0 14px;
-  }
+        .ap-buy-btn{
+          width:100%;
+          justify-content:center;
+          min-height:46px;
+          border-radius:14px;
+          font-size:14px;
+          padding:0 14px;
+        }
 
-  .ap-row-actions{
-    width:100%;
-    justify-content:flex-start;
-    gap:6px;
-  }
+        .ap-row-actions{
+          width:100%;
+          justify-content:flex-start;
+          gap:6px;
+        }
 
-  .ap-progress-wrap{
-    margin-top:10px;
-  }
+        .ap-progress-wrap{
+          margin-top:10px;
+        }
 
-  .ap-time{
-    margin-top:6px;
-    font-size:11px;
-  }
+        .ap-time{
+          margin-top:6px;
+          font-size:11px;
+        }
 
-  .ap-controls{
-    margin-top:10px;
-    gap:8px;
-  }
+        .ap-controls{
+          margin-top:10px;
+          gap:8px;
+        }
 
-  .ap-controls-center{
-    gap:10px;
-  }
+        .ap-controls-center{
+          gap:10px;
+        }
 
-  .ap-main-btn.big{
-    width:58px;
-    height:58px;
-  }
+        .ap-main-btn.big{
+          width:58px;
+          height:58px;
+        }
 
-  .ap-main-btn.big svg{
-    width:24px;
-    height:24px;
-  }
+        .ap-main-btn.big svg{
+          width:24px;
+          height:24px;
+        }
 
-  .ap-main-btn.small{
-    width:38px;
-    height:38px;
-  }
+        .ap-main-btn.small{
+          width:38px;
+          height:38px;
+        }
 
-  .ap-grid{
-    grid-template-columns:1fr 1fr;
-    gap:8px;
-  }
+        .ap-grid{
+          grid-template-columns:1fr 1fr;
+          gap:8px;
+        }
 
-  .ap-panel{
-    max-height:72vh;
-    border-radius:20px 20px 0 0;
-  }
+        .ap-panel{
+          max-height:72vh;
+          border-radius:20px 20px 0 0;
+        }
 
-  .ap-panel-inner{
-    padding:12px 10px 14px;
-  }
+        .ap-panel-inner{
+          padding:12px 10px 14px;
+        }
 
-  .ap-panel-title{
-    font-size:18px;
-  }
-}
+        .ap-panel-title{
+          font-size:18px;
+        }
+      }
     `;
     document.head.appendChild(style);
   }
