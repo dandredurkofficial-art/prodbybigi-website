@@ -1109,11 +1109,8 @@
     ].forEach((el) => {
       if (!el) return;
       el.addEventListener("click", (e) => {
-      e.stopPropagation();
-      });
-      el.addEventListener("touchstart", (e) => {
         e.stopPropagation();
-      }, { passive: true });
+      });
     });
 
     AP.miniMain.addEventListener("click", (e) => {
