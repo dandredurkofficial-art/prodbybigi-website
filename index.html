@@ -2238,15 +2238,6 @@ window.logBeatPlay = logBeatPlay;
             </div>
           `;
 
-           const playBtn = el.querySelector(".play-fab");
-           if (playBtn) {
-             playBtn.onclick = async (e) => {
-               e.preventDefault();
-               e.stopPropagation();
-               await logBeatPlay(b, playBtn);
-             };
-           }
-
           el.addEventListener("click", (e)=>{
             const freeBtn = e.target.closest("[data-free-download='1']");
             if (!freeBtn) return;
@@ -2308,15 +2299,6 @@ window.logBeatPlay = logBeatPlay;
             ${pillHTML(b)}
           </div>
         `;
-
-        const playBtn = el.querySelector(".play-fab");
-        if (playBtn) {
-          playBtn.onclick = async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            await logBeatPlay(b, playBtn);
-          };
-        }
 
         el.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
@@ -2387,15 +2369,6 @@ window.logBeatPlay = logBeatPlay;
              ${pillHTML(b)}
          </div>
        `;
-
-        const playBtn = el.querySelector(".play-fab");
-        if (playBtn) {
-          playBtn.onclick = async (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            await logBeatPlay(b, playBtn);
-          };
-        }
 
         el.addEventListener("click", (e)=>{
           const freeBtn = e.target.closest("[data-free-download='1']");
