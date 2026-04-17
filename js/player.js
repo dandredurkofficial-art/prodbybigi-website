@@ -875,6 +875,25 @@
           font-size:18px;
         }
       }
+
+      @media (max-width: 430px){
+        .ap-sheet{
+          max-height:70dvh;
+        }
+
+        .ap-main-cover{
+          max-height:30dvh;
+        }
+
+        .ap-main-title{
+          font-size:14px;
+        }
+
+        .ap-buy-btn{
+          min-height:44px;
+          font-size:13.5px;
+        }
+      }
     `;
     document.head.appendChild(style);
   }
