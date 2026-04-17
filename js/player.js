@@ -1287,3 +1287,578 @@
   async function countPlay(track) {
     if (!track?.id) return;
     if (playedSession[track.id]) return;
+        playedSession[track.id] = true;
+
+    try {
+      const FB = window.FB;
+      if (FB?.db && typeof FB.doc === "function" && typeof FB.updateDoc === "function" && typeof FB.increment === "function") {
+        await FB.updateDoc(
+          FB.doc(FB.db, "beats", track.id),
+          { plays: FB.increment(1), lastPlayedAt: Date.now() }
+        );
+      }
+    } catch (e) {
+      console.log("[player] play count failed", e);
+    }
+
+    try {
+      if (typeof window.logAnalyticsEvent === "function") {
+        await window.logAnalyticsEvent({
+          producerId: track.producerId || "",
+          type: "play",
+          beatId: track.id
+        });
+      }
+    } catch (e) {
+      console.log("[player] analytics play failed", e);
+    }
+  }
+
+  function updateUi() {
+    const AP = window.__AP;
+    const playing = currentTrack && !audio.paused;
+
+    AP.miniPlay.innerHTML = playing ? iconPause() : iconPlay();
+    AP.playBtn.innerHTML = playing ? iconPause() : iconPlay();
+
+    AP.shuffleBtn.classList.toggle("ap-active", shuffle);
+    AP.repeatBtn.classList.toggle("ap-active", repeatMode !== "off");
+    AP.repeatBtn.innerHTML = repeatMode === "one" ? iconRepeatOne() : iconRepeat();
+
+    AP.currentTime.textContent = formatTime(audio.currentTime || 0);
+    AP.duration.textContent = formatTime(audio.duration || 0);
+    AP.fxSwitch.classList.toggle("on", fxEnabled);
+    AP.currentFxLabel.textContent = prettyFxLabel(currentFx);
+
+    if (!currentTrack) {
+      AP.fullArtist.textContent = "";
+      AP.trackLink.href = "#";
+      AP.buyBtn.innerHTML = `${iconBagPlus()}<span>Buy License</span>`;
+      return;
+    }
+
+    AP.miniImg.src = currentTrack.artwork || "";
+    AP.fullImg.src = currentTrack.artwork || "";
+    AP.miniTitle.textContent = currentTrack.title || "Untitled Beat";
+    AP.miniArtist.innerHTML = currentTrack.producerUrl
+      ? `<a href="${escapeAttr(currentTrack.producerUrl)}">${escapeHtml(currentTrack.producerName || "Unknown Producer")}</a>`
+      : escapeHtml(currentTrack.producerName || "Unknown Producer");
+
+    AP.fullTitle.textContent = currentTrack.title || "Untitled Beat";
+    AP.fullArtist.innerHTML = currentTrack.producerUrl
+      ? `<a href="${escapeAttr(currentTrack.producerUrl)}">${escapeHtml(currentTrack.producerName || "Unknown Producer")}</a>`
+      : escapeHtml(currentTrack.producerName || "Unknown Producer");
+
+    AP.trackLink.href = currentTrack.beatUrl || "#";
+
+    AP.buyBtn.innerHTML = currentTrack.isFree
+      ? `${iconBagPlus()}<span>Get Free Beat</span>`
+      : `${iconBagPlus()}<span>Buy License</span>`;
+  }
+
+  function updateCardButtons() {
+    document.querySelectorAll(".play-fab .playIcon, [data-play-btn] .playIcon").forEach((icon) => {
+      const btn = icon.closest(".play-fab, [data-play-btn]");
+      const card = btn?.closest("[data-beat-id]");
+      const beatId = card?.getAttribute("data-beat-id") || btn?.getAttribute("data-beat-id") || "";
+      const isCurrent = currentTrack && String(currentTrack.id) === String(beatId) && !audio.paused;
+      icon.textContent = isCurrent ? "❚❚" : "▶";
+    });
+  }
+
+  function openFullPlayer() {
+    if (!currentTrack) return;
+    const AP = window.__AP;
+    AP.backdrop.classList.add("show");
+    AP.sheet.classList.add("show");
+    AP.fxPanel.classList.remove("show");
+    AP.skinPanel.classList.remove("show");
+    AP.queuePanel.classList.remove("show");
+  }
+
+  function closeFullPlayer() {
+    const AP = window.__AP;
+    AP.sheet.classList.remove("show");
+    AP.backdrop.classList.remove("show");
+  }
+
+  function openFxPanel() {
+    const AP = window.__AP;
+    AP.backdrop.classList.add("show");
+    AP.fxPanel.classList.add("show");
+    AP.sheet.classList.remove("show");
+    AP.skinPanel.classList.remove("show");
+    AP.queuePanel.classList.remove("show");
+  }
+
+  function closeFxPanel() {
+    window.__AP.fxPanel.classList.remove("show");
+    window.__AP.backdrop.classList.remove("show");
+  }
+
+  function openSkinPanel() {
+    const AP = window.__AP;
+    AP.backdrop.classList.add("show");
+    AP.skinPanel.classList.add("show");
+    AP.sheet.classList.remove("show");
+    AP.fxPanel.classList.remove("show");
+    AP.queuePanel.classList.remove("show");
+  }
+
+  function closeSkinPanel() {
+    window.__AP.skinPanel.classList.remove("show");
+    window.__AP.backdrop.classList.remove("show");
+  }
+
+  function openQueuePanel() {
+    const AP = window.__AP;
+    AP.backdrop.classList.add("show");
+    AP.queuePanel.classList.add("show");
+    AP.sheet.classList.remove("show");
+    AP.fxPanel.classList.remove("show");
+    AP.skinPanel.classList.remove("show");
+    renderQueue();
+  }
+
+  function closeQueuePanel() {
+    window.__AP.queuePanel.classList.remove("show");
+    window.__AP.backdrop.classList.remove("show");
+  }
+
+  function closeAllPanels() {
+    const AP = window.__AP;
+    AP.backdrop.classList.remove("show");
+    AP.sheet.classList.remove("show");
+    AP.fxPanel.classList.remove("show");
+    AP.skinPanel.classList.remove("show");
+    AP.queuePanel.classList.remove("show");
+  }
+
+  function renderQueue() {
+    const AP = window.__AP;
+    AP.queueList.innerHTML = queue.map((track, index) => `
+      <button class="ap-queue-item ${currentTrack && String(track.id) === String(currentTrack.id) ? "active" : ""}" data-ap-queue-index="${index}">
+        <div class="ap-queue-thumb">
+          ${track.artwork ? `<img src="${escapeAttr(track.artwork)}" alt="">` : ""}
+        </div>
+        <div class="ap-queue-meta">
+          <div class="ap-queue-title">${escapeHtml(track.title || "Untitled Beat")}</div>
+          <div class="ap-queue-artist">${escapeHtml(track.producerName || "Unknown Producer")}</div>
+        </div>
+      </button>
+    `).join("");
+
+    AP.queueList.querySelectorAll("[data-ap-queue-index]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const index = Number(btn.getAttribute("data-ap-queue-index"));
+        if (!Number.isFinite(index) || !queue[index]) return;
+        currentIndex = index;
+        loadTrack(queue[index], true);
+        closeQueuePanel();
+      });
+    });
+  }
+
+  function renderFxCards() {
+    const fxCards = [
+      { key: "bass", title: "Bass boost", subtitle: "More low-end", tag: "B" },
+      { key: "vocal", title: "Vocal boost", subtitle: "Clearer vocal range", tag: "V" },
+      { key: "hifi", title: "Hi-Fi", subtitle: "Balanced shine", tag: "H" },
+      { key: "wide", title: "Wide space", subtitle: "More stereo feel", tag: "W" }
+    ];
+
+    const more = ["normal", "classical", "rock", "pop", "acoustic", "live"];
+    const AP = window.__AP;
+
+    AP.fxGrid.innerHTML = fxCards.map((x) => `
+      <button class="ap-fx-card ${currentFx === x.key ? "active" : ""}" data-ap-fx="${x.key}">
+        <div class="ap-fx-icon">${x.tag}</div>
+        <div class="ap-fx-title">${x.title}</div>
+        <div class="ap-fx-sub">${x.subtitle}</div>
+      </button>
+    `).join("");
+
+    AP.fxMore.innerHTML = more.map((x) => `
+      <button class="ap-simple-btn" data-ap-fx="${x}">${prettyFxLabel(x)}</button>
+    `).join("");
+
+    document.querySelectorAll("[data-ap-fx]").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        currentFx = btn.getAttribute("data-ap-fx") || "normal";
+        localStorage.setItem("audiory_player_fx", currentFx);
+        renderFxCards();
+        updateUi();
+        await ensureFxGraph();
+        await resumeAudioCtx();
+        applyFxPreset(currentFx);
+      });
+    });
+  }
+
+  function renderSkinCards() {
+    const skins = [
+      { key: "brown", title: "Original", cls: "" },
+      { key: "graphite", title: "Graphite", cls: "graphite" },
+      { key: "midnight", title: "Midnight", cls: "midnight" },
+      { key: "sunset", title: "Sunset", cls: "sunset" },
+      { key: "ocean", title: "Ocean", cls: "ocean" },
+    ];
+
+    const AP = window.__AP;
+    const art = currentTrack?.artwork || "";
+
+    AP.skinGrid.innerHTML = skins.map((skin) => `
+      <button class="ap-skin-card ${currentSkin === skin.key ? "active" : ""}" data-ap-skin="${skin.key}">
+        <div class="ap-skin-preview ${skin.cls}">
+          <div class="ap-skin-art">${art ? `<img src="${escapeAttr(art)}" alt="">` : ""}</div>
+        </div>
+        <div class="ap-skin-title">${skin.title}</div>
+      </button>
+    `).join("");
+
+    AP.downloadedGrid.innerHTML = skins
+      .filter((x) => downloadedSkins.includes(x.key))
+      .map((skin) => `
+        <button class="ap-skin-card ${currentSkin === skin.key ? "active" : ""}" data-ap-skin="${skin.key}">
+          <div class="ap-skin-preview ${skin.cls}">
+            <div class="ap-skin-art">${art ? `<img src="${escapeAttr(art)}" alt="">` : ""}</div>
+            <div class="ap-download-badge">${iconDownloadSmall()}</div>
+          </div>
+          <div class="ap-skin-title">${skin.title}</div>
+        </button>
+      `).join("");
+
+    document.querySelectorAll("[data-ap-skin]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        currentSkin = btn.getAttribute("data-ap-skin") || "brown";
+        localStorage.setItem("audiory_player_skin", currentSkin);
+        applySkin(currentSkin);
+        renderSkinCards();
+      });
+    });
+  }
+
+  function applySkin(key) {
+    const root = document.documentElement;
+
+    if (key === "graphite") {
+      root.style.setProperty("--ap-bg", "#565b64");
+      root.style.setProperty("--ap-bg-2", "#252932");
+      root.style.setProperty("--ap-accent", "#45e0ff");
+    } else if (key === "midnight") {
+      root.style.setProperty("--ap-bg", "#0e1838");
+      root.style.setProperty("--ap-bg-2", "#07101d");
+      root.style.setProperty("--ap-accent", "#56d0ff");
+    } else if (key === "sunset") {
+      root.style.setProperty("--ap-bg", "#d16035");
+      root.style.setProperty("--ap-bg-2", "#5d2411");
+      root.style.setProperty("--ap-accent", "#ffd15a");
+    } else if (key === "ocean") {
+      root.style.setProperty("--ap-bg", "#1686d6");
+      root.style.setProperty("--ap-bg-2", "#0f3156");
+      root.style.setProperty("--ap-accent", "#82fff2");
+    } else {
+      root.style.setProperty("--ap-bg", "#8b5a3c");
+      root.style.setProperty("--ap-bg-2", "#6f452f");
+      root.style.setProperty("--ap-accent", "#23d7ff");
+    }
+  }
+
+  async function ensureFxGraph() {
+    if (fxReady) return;
+
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+
+    audioCtx = new Ctx();
+    sourceNode = audioCtx.createMediaElementSource(audio);
+    biquad1 = audioCtx.createBiquadFilter();
+    biquad2 = audioCtx.createBiquadFilter();
+    masterGain = audioCtx.createGain();
+
+    sourceNode.connect(biquad1);
+    biquad1.connect(biquad2);
+    biquad2.connect(masterGain);
+    masterGain.connect(audioCtx.destination);
+
+    masterGain.gain.value = 1;
+    fxReady = true;
+  }
+
+  async function resumeAudioCtx() {
+    if (!audioCtx) return;
+    if (audioCtx.state === "suspended") {
+      try {
+        await audioCtx.resume();
+      } catch (e) {
+        console.warn("[player] audio context resume failed", e);
+      }
+    }
+  }
+
+  function applyFxPreset(name) {
+    if (!fxReady || !biquad1 || !biquad2 || !masterGain) return;
+
+    if (!fxEnabled) {
+      biquad1.type = "peaking";
+      biquad1.frequency.value = 1000;
+      biquad1.gain.value = 0;
+      biquad1.Q.value = 1;
+
+      biquad2.type = "peaking";
+      biquad2.frequency.value = 3000;
+      biquad2.gain.value = 0;
+      biquad2.Q.value = 1;
+
+      masterGain.gain.value = 1;
+      return;
+    }
+
+    switch (name) {
+      case "bass":
+        biquad1.type = "lowshelf";
+        biquad1.frequency.value = 180;
+        biquad1.gain.value = 8;
+        biquad2.type = "peaking";
+        biquad2.frequency.value = 2800;
+        biquad2.gain.value = -1;
+        biquad2.Q.value = 1;
+        masterGain.gain.value = 1;
+        break;
+
+      case "vocal":
+        biquad1.type = "peaking";
+        biquad1.frequency.value = 1800;
+        biquad1.gain.value = 5;
+        biquad1.Q.value = 1.2;
+        biquad2.type = "highshelf";
+        biquad2.frequency.value = 5000;
+        biquad2.gain.value = 2;
+        masterGain.gain.value = 1;
+        break;
+
+      case "hifi":
+        biquad1.type = "lowshelf";
+        biquad1.frequency.value = 200;
+        biquad1.gain.value = 3;
+        biquad2.type = "highshelf";
+        biquad2.frequency.value = 4200;
+        biquad2.gain.value = 3;
+        masterGain.gain.value = 1;
+        break;
+
+      case "wide":
+        biquad1.type = "peaking";
+        biquad1.frequency.value = 700;
+        biquad1.gain.value = 1.5;
+        biquad1.Q.value = 0.8;
+        biquad2.type = "peaking";
+        biquad2.frequency.value = 4500;
+        biquad2.gain.value = 2.5;
+        biquad2.Q.value = 0.8;
+        masterGain.gain.value = 1;
+        break;
+
+      case "rock":
+        biquad1.type = "lowshelf";
+        biquad1.frequency.value = 160;
+        biquad1.gain.value = 4;
+        biquad2.type = "highshelf";
+        biquad2.frequency.value = 4200;
+        biquad2.gain.value = 4;
+        masterGain.gain.value = 1;
+        break;
+
+      case "classical":
+        biquad1.type = "peaking";
+        biquad1.frequency.value = 900;
+        biquad1.gain.value = 1;
+        biquad2.type = "highshelf";
+        biquad2.frequency.value = 6000;
+        biquad2.gain.value = 2;
+        masterGain.gain.value = 1;
+        break;
+
+      default:
+        biquad1.type = "peaking";
+        biquad1.frequency.value = 1000;
+        biquad1.gain.value = 0;
+        biquad1.Q.value = 1;
+        biquad2.type = "peaking";
+        biquad2.frequency.value = 3000;
+        biquad2.gain.value = 0;
+        biquad2.Q.value = 1;
+        masterGain.gain.value = 1;
+        break;
+    }
+  }
+
+  function openCurrentBeatBuy() {
+    if (!currentTrack?.id) return;
+
+    const selectorId = cssEscapeSimple(currentTrack.id);
+    const card = document.querySelector(`[data-beat-id="${selectorId}"]`);
+    if (!card) {
+      if (currentTrack.beatUrl) location.href = currentTrack.beatUrl;
+      return;
+    }
+
+    const freeBtn = card.querySelector("[data-free-download='1']");
+    const priceBtn = card.querySelector(".price-pill");
+
+    if (currentTrack.isFree && freeBtn) {
+      freeBtn.click();
+      closeAllPanels();
+      return;
+    }
+
+    if (priceBtn) {
+      priceBtn.click();
+      closeAllPanels();
+      return;
+    }
+
+    if (currentTrack.beatUrl) {
+      location.href = currentTrack.beatUrl;
+    }
+  }
+
+  function shareCurrentTrack() {
+    if (!currentTrack?.beatUrl) return;
+    const url = new URL(currentTrack.beatUrl, location.origin).toString();
+
+    if (navigator.share) {
+      navigator.share({
+        title: currentTrack.title || "Audiory",
+        text: currentTrack.producerName || "Audiory",
+        url
+      }).catch(() => {});
+      return;
+    }
+
+    navigator.clipboard.writeText(url).then(() => {
+      alert("Track link copied.");
+    }).catch(() => {
+      alert("Could not copy track link.");
+    });
+  }
+
+  function isFreeBeatForPlayer(beat) {
+    if (!beat) return false;
+    if (beat.freeDownload === true || beat.isFree === true) return true;
+    if (Number.isFinite(Number(beat.price)) && Number(beat.price) <= 0) return true;
+
+    const lic = beat.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    return !hasPaidLicense;
+  }
+
+  function prettyFxLabel(key) {
+    const map = {
+      normal: "Normal",
+      bass: "Bass boost",
+      vocal: "Vocal boost",
+      hifi: "Hi-Fi",
+      wide: "Wide space",
+      classical: "Classical",
+      rock: "Rock",
+      pop: "Pop",
+      acoustic: "Acoustic",
+      live: "Live"
+    };
+    return map[key] || "Normal";
+  }
+
+  function formatTime(sec) {
+    if (!Number.isFinite(sec)) return "00:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  function escapeHtml(str) {
+    return String(str || "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(str) {
+    return escapeHtml(str);
+  }
+
+  function cssEscapeSimple(str) {
+    return String(str || "").replace(/"/g, '\\"');
+  }
+
+  function iconPlay() {
+    return `<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" stroke="none"/></svg>`;
+  }
+
+  function iconPause() {
+    return `<svg viewBox="0 0 24 24"><path d="M8 5h3v14H8zM13 5h3v14h-3z" fill="currentColor" stroke="none"/></svg>`;
+  }
+
+  function iconPrev() {
+    return `<svg viewBox="0 0 24 24"><path d="M6 6v12"/><path d="M18 6 9.5 12 18 18z"/></svg>`;
+  }
+
+  function iconNext() {
+    return `<svg viewBox="0 0 24 24"><path d="M18 6v12"/><path d="M6 6 14.5 12 6 18z"/></svg>`;
+  }
+
+  function iconShuffle() {
+    return `<svg viewBox="0 0 24 24"><path d="M16 3h5v5"/><path d="M4 20l7-7"/><path d="M21 3l-7 7"/><path d="M16 21h5v-5"/><path d="M4 4l7 7"/></svg>`;
+  }
+
+  function iconRepeat() {
+    return `<svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
+  }
+
+  function iconRepeatOne() {
+    return `<svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/><path d="M12 8v8"/><path d="M10.5 10.5 12 9l1.5 1.5"/></svg>`;
+  }
+
+  function iconWave() {
+    return `<svg viewBox="0 0 24 24"><path d="M3 12h2l2-5 4 10 3-7 2 2h5"/></svg>`;
+  }
+
+  function iconQueue() {
+    return `<svg viewBox="0 0 24 24"><path d="M4 6h10"/><path d="M4 12h10"/><path d="M4 18h10"/><path d="M18 17l3-2-3-2"/><path d="M18 7l3-2-3-2"/></svg>`;
+  }
+
+  function iconShare() {
+    return `<svg viewBox="0 0 24 24"><path d="M14 10 21 3"/><path d="M21 3h-6"/><path d="M21 3v6"/><path d="M10 14 3 21"/><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/></svg>`;
+  }
+
+  function iconSparkles() {
+    return `<svg viewBox="0 0 24 24"><path d="m12 3 1.7 4.3L18 9l-4.3 1.7L12 15l-1.7-4.3L6 9l4.3-1.7L12 3Z"/><path d="m19 15 .8 2 .2.2 2 .8-2 .8-.2.2-.8 2-.8-2-.2-.2-2-.8 2-.8.2-.2.8-2Z"/></svg>`;
+  }
+
+  function iconSettings() {
+    return `<svg viewBox="0 0 24 24"><path d="M12 3v2"/><path d="M12 19v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="m4.9 19.1 1.4-1.4"/><path d="m17.7 6.3 1.4-1.4"/><circle cx="12" cy="12" r="4"/></svg>`;
+  }
+
+  function iconChevronDown() {
+    return `<svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>`;
+  }
+
+  function iconBack() {
+    return `<svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>`;
+  }
+
+  function iconDownloadSmall() {
+    return `<svg viewBox="0 0 24 24" style="width:18px;height:18px;display:block;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 20h16"/></svg>`;
+  }
+
+  function iconBagPlus() {
+    return `<svg viewBox="0 0 24 24"><path d="M6 8h12l-1 11H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M19.5 14.5h-4"/><path d="M17.5 12.5v4"/></svg>`;
+  }
+
+})();
