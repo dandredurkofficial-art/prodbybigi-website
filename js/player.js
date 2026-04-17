@@ -875,25 +875,6 @@
           font-size:18px;
         }
       }
-
-      @media (max-width: 430px){
-        .ap-sheet{
-          max-height:70dvh;
-        }
-
-        .ap-main-cover{
-          max-height:30dvh;
-        }
-
-        .ap-main-title{
-          font-size:14px;
-        }
-
-        .ap-buy-btn{
-          min-height:44px;
-          font-size:13.5px;
-        }
-      }
     `;
     document.head.appendChild(style);
   }
@@ -1139,7 +1120,28 @@
     AP.trackLink.addEventListener("click", (e) => {
       if (!currentTrack?.beatUrl) {
         e.preventDefault();
+        return;
       }
+
+      e.preventDefault();
+      location.href = currentTrack.beatUrl;
+    });
+
+    AP.fullArtist.addEventListener("click", (e) => {
+      const link = e.target.closest("a");
+      if (!link) return;
+      e.preventDefault();
+      const href = link.getAttribute("href");
+      if (href) location.href = href;
+    });
+
+    AP.miniArtist.addEventListener("click", (e) => {
+      const link = e.target.closest("a");
+      if (!link) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const href = link.getAttribute("href");
+      if (href) location.href = href;
     });
 
     AP.fxSwitch.addEventListener("click", async () => {
@@ -1335,6 +1337,8 @@
     window.__AP.mini.classList.add("show");
     updateCardButtons();
     renderQueue();
+    renderSkinCards();
+    updateUi();
   }
 
   async function togglePlay() {
@@ -1358,8 +1362,14 @@
     }
   }
 
-  function playNext() {
+  async function playNext() {
     if (!queue.length) return;
+
+    if (currentIndex < 0) {
+      currentIndex = 0;
+      await loadTrack(queue[currentIndex], true);
+      return;
+    }
 
     if (shuffle && queue.length > 1) {
       let next = currentIndex;
@@ -1368,14 +1378,16 @@
       }
       currentIndex = next;
     } else {
-      currentIndex = currentIndex + 1;
-      if (currentIndex >= queue.length) currentIndex = 0;
+      currentIndex += 1;
+      if (currentIndex >= queue.length) {
+        currentIndex = repeatMode === "all" ? 0 : queue.length - 1;
+      }
     }
 
-    loadTrack(queue[currentIndex], true);
+    await loadTrack(queue[currentIndex], true);
   }
 
-  function playPrev() {
+  async function playPrev() {
     if (!queue.length) return;
 
     if (audio.currentTime > 3) {
@@ -1383,9 +1395,18 @@
       return;
     }
 
-    currentIndex = currentIndex - 1;
-    if (currentIndex < 0) currentIndex = queue.length - 1;
-    loadTrack(queue[currentIndex], true);
+    if (currentIndex < 0) {
+      currentIndex = 0;
+      await loadTrack(queue[currentIndex], true);
+      return;
+    }
+
+    currentIndex -= 1;
+    if (currentIndex < 0) {
+      currentIndex = repeatMode === "all" ? queue.length - 1 : 0;
+    }
+
+    await loadTrack(queue[currentIndex], true);
   }
 
   async function countPlay(track) {
@@ -1489,10 +1510,10 @@
   function openFxPanel() {
     const AP = window.__AP;
     AP.backdrop.classList.add("show");
-    AP.fxPanel.classList.add("show");
     AP.sheet.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
+    AP.fxPanel.classList.add("show");
   }
 
   function closeFxPanel() {
@@ -1503,11 +1524,12 @@
   function openSkinPanel() {
     const AP = window.__AP;
     AP.backdrop.classList.add("show");
-    AP.skinPanel.classList.add("show");
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
+    AP.skinPanel.classList.add("show");
   }
+
 
   function closeSkinPanel() {
     window.__AP.skinPanel.classList.remove("show");
@@ -1516,12 +1538,12 @@
 
   function openQueuePanel() {
     const AP = window.__AP;
+    renderQueue();
     AP.backdrop.classList.add("show");
-    AP.queuePanel.classList.add("show");
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.skinPanel.classList.remove("show");
-    renderQueue();
+    AP.queuePanel.classList.add("show");
   }
 
   function closeQueuePanel() {
@@ -1800,8 +1822,7 @@
   function openCurrentBeatBuy() {
     if (!currentTrack?.id) return;
 
-    const selectorId = cssEscapeSimple(currentTrack.id);
-    const card = document.querySelector(`[data-beat-id="${selectorId}"]`);
+    const card = document.querySelector(`[data-beat-id="${cssEscapeSimple(currentTrack.id)}"]`);
     if (!card) {
       if (currentTrack.beatUrl) location.href = currentTrack.beatUrl;
       return;
@@ -1811,14 +1832,14 @@
     const priceBtn = card.querySelector(".price-pill");
 
     if (currentTrack.isFree && freeBtn) {
-      freeBtn.click();
       closeAllPanels();
+      setTimeout(() => freeBtn.click(), 30);
       return;
     }
 
     if (priceBtn) {
-      priceBtn.click();
       closeAllPanels();
+      setTimeout(() => priceBtn.click(), 30);
       return;
     }
 
