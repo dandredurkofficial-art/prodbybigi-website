@@ -5,7 +5,10 @@
 
   const audio = new Audio();
   audio.preload = "metadata";
-  audio.crossOrigin = "anonymous";
+
+  /* Homepage fix:
+     do NOT force crossOrigin here.
+     It can mute audio when using some hosted preview URLs. */
 
   let queue = [];
   let currentTrack = null;
@@ -1280,10 +1283,8 @@
     audio.src = track.audioUrl;
     audio.currentTime = 0;
 
-    await ensureFxGraph();
-    await resumeAudioCtx();
-    applyFxPreset(currentFx);
-
+    /* Homepage first:
+       skip Web Audio FX chain for now so preview sound works normally */
     updateUi();
 
     if (autoplay) {
@@ -1307,10 +1308,7 @@
       currentIndex = 0;
       await loadTrack(queue[0], true);
       return;
-    }
-
-    await ensureFxGraph();
-    await resumeAudioCtx();
+     }
 
     if (audio.paused) {
       try {
