@@ -238,6 +238,7 @@
         max-height:92vh;
         overflow:auto;
         box-shadow:0 -12px 40px rgba(0,0,0,.34);
+        pointer-events:auto;
       }
 
       .ap-sheet.show{
@@ -451,6 +452,7 @@
         max-height:82vh;
         overflow:auto;
         box-shadow:0 -10px 30px rgba(0,0,0,.34);
+        pointer-events:auto;
       }
 
       .ap-panel.show{
