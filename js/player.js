@@ -1100,119 +1100,119 @@
     const AP = window.__AP;
 
     // stop player clicks from leaking outside
-  [
-    AP.mini,
-    AP.sheet,
-    AP.fxPanel,
-    AP.skinPanel,
-    AP.queuePanel
-  ].forEach((el) => {
-    if (!el) return;
-    el.addEventListener("click", (e) => {
+    [
+      AP.mini,
+      AP.sheet,
+      AP.fxPanel,
+      AP.skinPanel,
+      AP.queuePanel
+    ].forEach((el) => {
+      if (!el) return;
+      el.addEventListener("click", (e) => {
       e.stopPropagation();
+      });
+      el.addEventListener("touchstart", (e) => {
+        e.stopPropagation();
+      }, { passive: true });
     });
-    el.addEventListener("touchstart", (e) => {
-      e.stopPropagation();
-    }, { passive: true });
-  });
 
     AP.miniMain.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openFullPlayer();
-});
+      e.preventDefault();
+      e.stopPropagation();
+      openFullPlayer();
+    });
 
-AP.miniPlay.addEventListener("click", async (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  await togglePlay();
-});
+    AP.miniPlay.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await togglePlay();
+    });
 
-AP.miniQueue.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openQueuePanel();
-});
+    AP.miniQueue.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openQueuePanel();
+    });
 
-AP.closeFull.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeFullPlayer();
-});
+    AP.closeFull.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeFullPlayer();
+    });
 
-AP.openSkins.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openSkinPanel();
-});
+    AP.openSkins.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openSkinPanel();
+    });
 
-AP.share.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  shareCurrentTrack();
-});
+    AP.share.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      shareCurrentTrack();
+    });
 
-AP.fxBtn.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openFxPanel();
-});
+    AP.fxBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openFxPanel();
+    });
 
-AP.queueBtn.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openQueuePanel();
-});
+    AP.queueBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openQueuePanel();
+    });
 
-AP.buyBtn.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  openCurrentBeatBuy();
-});
+    AP.buyBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openCurrentBeatBuy();
+    });
 
-AP.closeFx.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeFxPanel();
-});
+    AP.closeFx.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeFxPanel();
+    });
 
-AP.closeSkin.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeSkinPanel();
-});
+    AP.closeSkin.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeSkinPanel();
+    });
 
-AP.closeQueue.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
-  closeQueuePanel();
-});
+    AP.closeQueue.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeQueuePanel();
+    });
 
     AP.trackLink.addEventListener("click", (e) => {
-  e.preventDefault();
-  e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
 
-  if (!currentTrack?.beatUrl) return;
-  location.href = currentTrack.beatUrl;
-});
+      if (!currentTrack?.beatUrl) return;
+      location.href = currentTrack.beatUrl;
+    });
 
     AP.fullArtist.addEventListener("click", (e) => {
-  const link = e.target.closest("a");
-  if (!link) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const href = link.getAttribute("href");
-  if (href) location.href = href;
-});
+      const link = e.target.closest("a");
+      if (!link) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const href = link.getAttribute("href");
+      if (href) location.href = href;
+    });
 
-AP.miniArtist.addEventListener("click", (e) => {
-  const link = e.target.closest("a");
-  if (!link) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const href = link.getAttribute("href");
-  if (href) location.href = href;
-});
+    AP.miniArtist.addEventListener("click", (e) => {
+      const link = e.target.closest("a");
+      if (!link) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const href = link.getAttribute("href");
+      if (href) location.href = href;
+    });
 
     AP.fxSwitch.addEventListener("click", async () => {
       fxEnabled = !fxEnabled;
