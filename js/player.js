@@ -1287,7 +1287,7 @@
   async function countPlay(track) {
     if (!track?.id) return;
     if (playedSession[track.id]) return;
-        playedSession[track.id] = true;
+    playedSession[track.id] = true;
 
     try {
       const FB = window.FB;
