@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Audiory</title>
+  <title>Audiory – Global Beat Marketplace | Buy & Sell Beats Online</title>
 
   <!-- ✅ SEO META (ADDED - does not remove anything) -->
-  <meta name="description" content="Audiory is a global beat marketplace where producers sell beats and artists buy high-quality instrumentals. Discover trending beats, sound kits, and top producers worldwide.">
-  <meta name="keywords" content="buy beats, sell beats, beat marketplace, instrumentals, hip hop beats, trap beats, afrobeats beats, amapiano beats, drill beats, music producers, sound kits">
+  <meta name="description" content="Audiory is a global beat marketplace where producers sell beats and artists buy high-quality instrumentals. Discover trending beats, free beats, sound kits, and top producers worldwide.">
   <meta name="author" content="Audiory">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://audiory.site/">
@@ -33,6 +32,32 @@
   <meta name="twitter:title" content="Audiory – Global Beat Marketplace">
   <meta name="twitter:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers.">
   <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Audiory",
+    "url": "https://audiory.site/",
+    "logo": "https://audiory.site/audioryfavicon.webp",
+    "sameAs": [
+      "https://www.instagram.com/audiorybeatstore",
+      "https://www.tiktok.com/@audiorybeatstore",
+      "https://x.com/audiorybeats",
+      "https://www.facebook.com/audiorybeatstore",
+      "https://youtube.com/@audiorybeatstore"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Audiory",
+    "url": "https://audiory.site/"
+  }
+  </script>
 
   <!-- small perf -->
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -287,6 +312,21 @@
     .audiory-support-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
     .audiory-support-fab b{font-size:14px}
     .audiory-support-fab span{font-size:12px;opacity:.8}
+
+    .hero-sub{
+      margin:10px 0 0;
+      color:rgba(255,255,255,.78);
+      font-size:15px;
+      line-height:1.6;
+      max-width:760px;
+    }
+
+    @media (max-width:768px){
+      .hero-sub{
+        font-size:14px;
+        line-height:1.5;
+      }
+    }
 
     /* =========================
        PAYMENT MODAL - NEW STYLE
@@ -910,6 +950,7 @@
   <section class="hero">
     <div class="card hero-card">
       <h1 class="hero-title">Your first hit starts here</h1>
+      <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
       <div class="hero-search smart-finder-wrap">
         <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
         <button id="searchBtn" type="button">Search</button>
@@ -928,6 +969,20 @@
           <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
           <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card" style="padding:18px;">
+      <h2 class="h2" style="margin-bottom:12px;">Explore Audiory</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <a class="play-btn" href="/marketplace/">Browse Beats</a>
+        <a class="play-btn" href="/freebeats/">Free Beats</a>
+        <a class="play-btn" href="/soundkits/">Sound Kits</a>
+        <a class="play-btn" href="/producers/">Top Producers</a>
+        <a class="play-btn" href="/pricing/">Pricing</a>
+        <a class="play-btn" href="/register/">Sell Beats</a>
       </div>
     </div>
   </section>
