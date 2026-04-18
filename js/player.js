@@ -1294,7 +1294,6 @@
       else repeatMode = "off";
       updateUi();
       savePlayerState();
-k
     });
 
     AP.prevBtn.addEventListener("click", playPrev);
@@ -1829,7 +1828,6 @@ k
         applyFxPreset(currentFx);
         savePlayerState();
       });
-    });
     });
   }
 
