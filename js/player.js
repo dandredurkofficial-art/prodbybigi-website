@@ -33,42 +33,42 @@
 
   const PLAYER_STATE_KEY = "audiory_player_state_v1";
 
-function savePlayerState() {
-  try {
-    const state = {
-      queue,
-      currentTrack,
-      currentIndex,
-      shuffle,
-      repeatMode,
-      currentSkin,
-      currentFx,
-      fxEnabled,
-      currentTime: Number(audio.currentTime || 0),
-      paused: audio.paused
-    };
-    sessionStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.warn("[player] save state failed", e);
+  function savePlayerState() {
+    try {
+      const state = {
+        queue,
+        currentTrack,
+        currentIndex,
+        shuffle,
+        repeatMode,
+        currentSkin,
+        currentFx,
+        fxEnabled,
+        currentTime: Number(audio.currentTime || 0),
+        paused: audio.paused
+      };
+      sessionStorage.setItem(PLAYER_STATE_KEY, JSON.stringify(state));
+    } catch (e) {
+      console.warn("[player] save state failed", e);
+    }
   }
-}
 
-function loadPlayerState() {
-  try {
-    const raw = sessionStorage.getItem(PLAYER_STATE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) {
-    console.warn("[player] load state failed", e);
-    return null;
+  function loadPlayerState() {
+    try {
+      const raw = sessionStorage.getItem(PLAYER_STATE_KEY);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      console.warn("[player] load state failed", e);
+      return null;
+    }
   }
-}
 
-function clearPlayerState() {
-  try {
-    sessionStorage.removeItem(PLAYER_STATE_KEY);
-  } catch {}
-}
+  function clearPlayerState() {
+    try {
+      sessionStorage.removeItem(PLAYER_STATE_KEY);
+    } catch {}
+  }
 
   injectStyles();
   renderPlayer();
