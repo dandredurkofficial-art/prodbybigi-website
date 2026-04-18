@@ -1479,6 +1479,8 @@ k
     renderQueue();
     renderSkinCards();
     updateUi();
+    savePlayerState();
+
   }
 
   async function togglePlay() {
@@ -1500,6 +1502,7 @@ k
     } else {
       audio.pause();
     }
+    savePlayerState();
   }
 
   async function playNext() {
@@ -1576,6 +1579,46 @@ k
       }
     } catch (e) {
       console.log("[player] analytics play failed", e);
+    }
+  }
+
+  async function restorePlayerFromSession() {
+    const saved = loadPlayerState();
+    if (!saved || !saved.currentTrack?.audioUrl) return;
+
+    try {
+      queue = Array.isArray(saved.queue) ? saved.queue : [];
+      currentTrack = saved.currentTrack || null;
+      currentIndex = Number.isFinite(saved.currentIndex) ? saved.currentIndex : -1;
+      shuffle = !!saved.shuffle;
+      repeatMode = saved.repeatMode || "off";
+      currentSkin = saved.currentSkin || currentSkin;
+      currentFx = saved.currentFx || currentFx;
+      fxEnabled = typeof saved.fxEnabled === "boolean" ? saved.fxEnabled : fxEnabled;
+
+      applySkin(currentSkin);
+      renderFxCards();
+      renderSkinCards();
+
+      audio.src = currentTrack.audioUrl;
+      window.__AP.mini.classList.add("show");
+      updateUi();
+      renderQueue();
+      updateCardButtons();
+
+      audio.addEventListener("loadedmetadata", function onMeta() {
+        audio.removeEventListener("loadedmetadata", onMeta);
+        const t = Number(saved.currentTime || 0);
+        if (Number.isFinite(t) && t > 0) {
+          audio.currentTime = t;
+        }
+
+        if (saved.paused === false) {
+          audio.play().catch(() => {});
+        }
+      });
+    } catch (e) {
+      console.warn("[player] restore failed", e);
     }
   }
 
@@ -1757,6 +1800,7 @@ k
         await ensureFxGraph();
         await resumeAudioCtx();
         applyFxPreset(currentFx);
+        savePlayerState();
       });
     });
   }
@@ -1800,6 +1844,7 @@ k
         localStorage.setItem("audiory_player_skin", currentSkin);
         applySkin(currentSkin);
         renderSkinCards();
+        savePlayerState();
       });
     });
   }
@@ -2061,6 +2106,10 @@ k
   function cssEscapeSimple(str) {
     return String(str || "").replace(/"/g, '\\"');
   }
+
+  window.addEventListener("beforeunload", () => {
+    savePlayerState();
+  });
 
   function iconPlay() {
     return `<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" stroke="none"/></svg>`;
