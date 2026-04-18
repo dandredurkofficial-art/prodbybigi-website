@@ -502,10 +502,15 @@
         overflow:auto;
         box-shadow:0 -10px 30px rgba(0,0,0,.34);
         pointer-events:auto;
+        display:block;
+        visibility:hidden;
+        opacity:0;
       }
 
       .ap-panel.show{
         transform:translateY(0);
+        visibility:visible;
+        opacity:1;
       }
 
       .ap-panel-inner{
@@ -922,6 +927,7 @@
 
         .ap-panel{
           max-height:76vh;
+          min-height:320px;
           border-radius:22px 22px 0 0;
         }
 
@@ -1832,17 +1838,33 @@
 
   function openSkinPanel() {
     const AP = window.__AP;
+    if (!AP || !AP.skinPanel) return;
+
+    renderSkinCards();
+
     AP.backdrop.classList.add("show");
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
-    AP.skinPanel.classList.add("show");
+
+    // force repaint before showing
+    AP.skinPanel.style.display = "block";
+    requestAnimationFrame(() => {
+      AP.skinPanel.classList.add("show");
+    });
   }
 
 
   function closeSkinPanel() {
-    window.__AP.skinPanel.classList.remove("show");
-    window.__AP.backdrop.classList.remove("show");
+    const AP = window.__AP;
+    if (!AP || !AP.skinPanel) return;
+
+    AP.skinPanel.classList.remove("show");
+    setTimeout(() => {
+      AP.skinPanel.style.display = "";
+    }, 250);
+
+    AP.backdrop.classList.remove("show");
   }
 
   function openQueuePanel() {
