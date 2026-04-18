@@ -1580,13 +1580,10 @@
     renderQueue();
     updateCardButtons();
 
-    if (audio.src !== track.audioUrl) {
+    const currentSrc = audio.currentSrc || audio.src || "";
+    if (currentSrc !== track.audioUrl) {
       audio.pause();
-      audio.removeAttribute("src");
-      audio.load();
-
       audio.src = track.audioUrl;
-      audio.load();
     }
 
     audio.currentTime = 0;
@@ -1846,25 +1843,22 @@
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
-
-    // force repaint before showing
-    AP.skinPanel.style.display = "block";
-    requestAnimationFrame(() => {
-      AP.skinPanel.classList.add("show");
-    });
+    AP.skinPanel.classList.add("show");
   }
-
 
   function closeSkinPanel() {
     const AP = window.__AP;
     if (!AP || !AP.skinPanel) return;
 
     AP.skinPanel.classList.remove("show");
-    setTimeout(() => {
-      AP.skinPanel.style.display = "";
-    }, 250);
 
-    AP.backdrop.classList.remove("show");
+    if (
+      !AP.fxPanel.classList.contains("show") &&
+      !AP.queuePanel.classList.contains("show") &&
+      !AP.sheet.classList.contains("show")
+    ) {
+      AP.backdrop.classList.remove("show");
+    }
   }
 
   function openQueuePanel() {
