@@ -79,6 +79,7 @@
   renderSkinCards();
   collectQueueFromPage();
   updateUi();
+  restorePlayerFromSession();
 
   function injectStyles() {
     if (document.getElementById("audiory-player-styles-v2")) return;
@@ -1261,12 +1262,14 @@
       AP.fxSwitch.classList.toggle("on", fxEnabled);
       await ensureFxGraph();
       await resumeAudioCtx();
+      savePlayerState();
       applyFxPreset(currentFx);
     });
 
     AP.shuffleBtn.addEventListener("click", () => {
       shuffle = !shuffle;
       updateUi();
+      savePlayerState();
     });
 
     AP.repeatBtn.addEventListener("click", () => {
@@ -1274,6 +1277,8 @@
       else if (repeatMode === "all") repeatMode = "one";
       else repeatMode = "off";
       updateUi();
+      savePlayerState();
+k
     });
 
     AP.prevBtn.addEventListener("click", playPrev);
@@ -1301,20 +1306,26 @@
       AP.progress.value = String(percent);
       AP.currentTime.textContent = formatTime(audio.currentTime);
       AP.duration.textContent = formatTime(audio.duration);
+      savePlayerState();
     });
-
     audio.addEventListener("loadedmetadata", () => {
       AP.duration.textContent = formatTime(audio.duration || 0);
+      savePlayerState();
+
     });
 
     audio.addEventListener("play", () => {
       updateUi();
       updateCardButtons();
+      savePlayerState();
+
     });
 
     audio.addEventListener("pause", () => {
       updateUi();
       updateCardButtons();
+      savePlayerState();
+
     });
 
     audio.addEventListener("ended", () => {
