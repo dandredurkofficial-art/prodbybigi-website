@@ -10,127 +10,380 @@
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    .page{ padding:18px 0 44px; }
-    .head{
-      display:flex; justify-content:space-between; align-items:flex-start;
-      gap:14px; flex-wrap:wrap; margin: 18px 0 14px;
+    .page{
+      padding:18px 0 44px;
     }
-    .title{ font-size:28px; font-weight:950; letter-spacing:-.02em; margin:0; }
-    .sub{ color:var(--muted); margin-top:6px; font-size:13px; }
-    .right-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    .head{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      flex-wrap:wrap;
+      margin:18px 0 14px;
+    }
+
+    .classic-head{
+      padding:18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(16,22,34,.96) 0%, rgba(10,14,24,.96) 100%);
+      box-shadow:0 18px 50px rgba(0,0,0,.28);
+    }
+
+    .eyebrow{
+      display:inline-block;
+      margin-bottom:8px;
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+      color:rgba(255,255,255,.72);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .title{
+      font-size:28px;
+      font-weight:950;
+      letter-spacing:-.02em;
+      margin:0;
+    }
+
+    .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .right-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
 
     .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px; border-radius:999px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: var(--text); font-weight:900; font-size:12px;
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:900;
+      font-size:12px;
     }
-    .btn{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color:inherit; font-weight:900; font-size:13px;
-      cursor:pointer; text-decoration:none;
-    }
-    .btn.primary{ background: rgba(59,130,246,.22); border-color: rgba(59,130,246,.35); }
-    .btn.danger{ background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.28); }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; }
 
-    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin: 8px 0 14px; }
-    .tab{
-      padding:10px 12px; border-radius:999px;
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:14px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      font-weight:900; font-size:13px; cursor:pointer;
+      background:rgba(255,255,255,.06);
+      color:inherit;
+      font-weight:900;
+      font-size:13px;
+      cursor:pointer;
+      text-decoration:none;
     }
-    .tab.active{ background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.22); }
+
+    .btn.primary{
+      background:rgba(59,130,246,.22);
+      border-color:rgba(59,130,246,.35);
+    }
+
+    .btn.danger{
+      background:rgba(239,68,68,.14);
+      border-color:rgba(239,68,68,.28);
+    }
+
+    .ghost-btn{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(255,255,255,.10);
+    }
+
+    .subtle-danger{
+      background:rgba(239,68,68,.10);
+      border-color:rgba(239,68,68,.20);
+    }
+
+    .btn:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .tabs{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:14px 0 14px;
+      padding:6px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .tab{
+      padding:11px 14px;
+      border-radius:999px;
+      border:1px solid transparent;
+      background:transparent;
+      font-weight:900;
+      font-size:13px;
+      cursor:pointer;
+      color:rgba(255,255,255,.78);
+    }
+
+    .tab.active{
+      background:rgba(255,255,255,.12);
+      border-color:rgba(255,255,255,.16);
+      color:#fff;
+    }
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:12px;
-      margin: 10px 0 18px;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:14px;
+      margin:14px 0 18px;
     }
-    @media (max-width: 980px){ .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; } }
 
-    .stat{ padding:14px; border-radius:18px; }
-    .k{ color:var(--muted); font-size:12px; }
-    .v{ margin-top:6px; font-size:22px; font-weight:950; }
-    .mini{ margin-top:6px; color:var(--muted); font-size:12px; }
+    @media (max-width:980px){
+      .grid{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+    }
 
-    .panel{ padding:14px; border-radius: 18px; margin-top: 12px; }
+    @media (max-width:520px){
+      .grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .stat{
+      padding:18px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(17,24,39,.88) 0%, rgba(12,18,30,.94) 100%);
+      box-shadow:0 10px 30px rgba(0,0,0,.18);
+    }
+
+    .k{
+      color:rgba(255,255,255,.62);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+    }
+
+    .v{
+      margin-top:8px;
+      font-size:28px;
+      font-weight:950;
+      line-height:1;
+    }
+
+    .mini{
+      margin-top:8px;
+      color:rgba(255,255,255,.56);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .panel{
+      padding:18px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(17,24,39,.82) 0%, rgba(12,18,30,.92) 100%);
+      margin-top:12px;
+    }
 
     .tools{
-      display:flex; gap:10px; flex-wrap:wrap;
-      margin: 10px 0 12px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:10px 0 12px;
     }
+
     .tools input{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
-      padding: 12px 12px;
-      border-radius: 14px;
-      outline: none;
-      width: min(420px, 100%);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      padding:13px 14px;
+      border-radius:14px;
+      outline:none;
+      width:min(420px, 100%);
+    }
+
+    .tools input:focus{
+      border-color:rgba(59,130,246,.40);
+      box-shadow:0 0 0 3px rgba(59,130,246,.10);
     }
 
     .loading-box{
-      margin: 12px 0;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.85);
-      white-space: pre-wrap;
-      word-break: break-word;
+      margin:12px 0;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+      color:rgba(255,255,255,.85);
+      white-space:pre-wrap;
+      word-break:break-word;
     }
 
     .table{
       width:100%;
-      border-collapse: separate;
-      border-spacing: 0 10px;
+      border-collapse:separate;
+      border-spacing:0 12px;
     }
+
     .table th{
       text-align:left;
-      color: var(--muted);
+      color:var(--muted);
       font-size:12px;
       font-weight:900;
-      padding: 0 10px;
+      padding:0 10px;
     }
+
     .rowcard{
-      background: rgba(17,24,39,.42);
-      border: 1px solid rgba(31,41,55,.75);
-      border-radius: 16px;
+      background:linear-gradient(180deg, rgba(17,24,39,.88) 0%, rgba(12,18,30,.92) 100%);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
     }
+
     .table td{
-      padding: 12px 10px;
-      vertical-align: top;
-      font-size: 13px;
+      padding:14px 12px;
+      vertical-align:top;
+      font-size:13px;
     }
-    .table td:first-child{ border-top-left-radius:16px; border-bottom-left-radius:16px; }
-    .table td:last-child{ border-top-right-radius:16px; border-bottom-right-radius:16px; }
+
+    .table td:first-child{
+      border-top-left-radius:16px;
+      border-bottom-left-radius:16px;
+    }
+
+    .table td:last-child{
+      border-top-right-radius:16px;
+      border-bottom-right-radius:16px;
+    }
 
     .pill{
       display:inline-flex;
       padding:6px 10px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
+      background:rgba(255,255,255,.06);
       font-weight:900;
       font-size:12px;
       white-space:nowrap;
     }
-    .pill.ok{ border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.12); }
-    .pill.no{ border-color: rgba(239,68,68,.30); background: rgba(239,68,68,.12); }
 
-    .actions{
-      display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end;
+    .pill.ok{
+      border-color:rgba(16,185,129,.35);
+      background:rgba(16,185,129,.12);
     }
 
-    .hidden{ display:none !important; }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .help-card{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+
+    .help-copy{
+      max-width:700px;
+    }
+
+    .social a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+    }
+
+    @media (max-width:700px){
+      .classic-head{
+        padding:16px;
+      }
+
+      .title{
+        font-size:24px;
+      }
+
+      .right-actions{
+        width:100%;
+      }
+
+      .right-actions .btn{
+        flex:1 1 160px;
+      }
+
+      .top-actions{
+        width:100%;
+      }
+
+      .top-actions .btn{
+        flex:1 1 140px;
+      }
+
+      .actions{
+        justify-content:flex-start;
+      }
+
+      .table,
+      .table thead,
+      .table tbody,
+      .table tr,
+      .table th,
+      .table td{
+        display:block;
+        width:100%;
+      }
+
+      .table thead{
+        display:none;
+      }
+
+      .rowcard{
+        display:block;
+        padding:4px 0;
+      }
+
+      .table td{
+        border-radius:0 !important;
+        padding:10px 12px;
+      }
+    }
   </style>
 </head>
 
@@ -149,14 +402,19 @@
       <a href="/soundkits/">Sound Kits</a>
       <a href="/producers/">Producers</a>
       <a href="/pricing/">Pricing</a>
+
+      <!-- Logged OUT -->
       <a class="cta" href="/register/" id="navStartSelling">Start Selling</a>
       <a class="ghost" href="/login/" id="navSignIn">Sign in</a>
+
+      <!-- Logged IN -->
+      <a class="ghost hidden" href="/buyer-dashboard/" id="navBuyerDashboard">Dashboard</a>
     </nav>
 
-    <div style="display:flex; gap:10px; align-items:center;">
-      <span class="chip" id="authChip">Auth: checking…</span>
-      <button class="btn" id="refreshBtn" type="button">↻ Refresh</button>
-      <button class="btn danger" id="signOutBtn" type="button">Sign out</button>
+    <div class="top-actions">
+      <button class="btn ghost-btn" id="refreshBtn" type="button">Refresh</button>
+      <a class="btn ghost-btn" href="/help/" id="helpTopBtn">Help</a>
+      <button class="btn danger subtle-danger" id="signOutBtn" type="button">Sign out</button>
     </div>
   </div>
 </header>
@@ -167,24 +425,34 @@
     <div class="menu-title">Menu</div>
     <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
   </div>
+
   <a href="/index.html">Feed</a>
   <a href="/marketplace/">Tracks</a>
   <a href="/soundkits/">Sound Kits</a>
   <a href="/producers/">Producers</a>
   <a href="/pricing/">Pricing</a>
+
+  <!-- Logged OUT -->
   <a href="/register/" class="cta" id="mNavStartSelling">Start Selling</a>
   <a href="/login/" id="mNavSignIn">Sign in</a>
+
+  <!-- Logged IN -->
+  <a href="/buyer-dashboard/" class="hidden" id="mNavBuyerDashboard">Dashboard</a>
+  <a href="/help/" class="hidden" id="mHelpBtn">Help</a>
+  <button class="btn hidden" id="mSignOutBtn" type="button" style="margin-top:10px;">Sign out</button>
 </nav>
 
 <main class="container page">
 
-  <section class="head">
+  <section class="head classic-head">
     <div>
+      <div class="eyebrow">Audiory Account</div>
       <h1 class="title">Buyer Dashboard</h1>
-      <div class="sub">View your orders, downloads and account details.</div>
+      <div class="sub">Manage your purchased beats, downloads, and account in one place.</div>
     </div>
+
     <div class="right-actions">
-      <a class="btn" href="/marketplace/">← Browse Tracks</a>
+      <a class="btn ghost-btn" href="/marketplace/">Browse Tracks</a>
       <a class="btn primary" href="/soundkits/">Browse Kits</a>
     </div>
   </section>
@@ -202,27 +470,40 @@
   <section id="view-overview">
     <div class="grid">
       <div class="card stat">
-        <div class="k">Total Purchases</div>
+        <div class="k">Purchased Beats</div>
         <div class="v" id="statOrders">0</div>
-        <div class="mini" id="statOrdersMini">—</div>
+        <div class="mini" id="statOrdersMini">Only successful purchases</div>
       </div>
+
       <div class="card stat">
-        <div class="k">Paid / Unlocked</div>
+        <div class="k">Unlocked Items</div>
         <div class="v" id="statPaid">0</div>
-        <div class="mini" id="statPaidMini">—</div>
+        <div class="mini" id="statPaidMini">Ready inside your account</div>
       </div>
+
       <div class="card stat">
         <div class="k">Downloads Ready</div>
         <div class="v" id="statDownloads">0</div>
-        <div class="mini" id="statDownloadsMini">—</div>
+        <div class="mini" id="statDownloadsMini">Files available now</div>
       </div>
     </div>
 
     <div class="card panel">
-      <div style="font-weight:950; font-size:14px;">Quick Tips</div>
+      <div style="font-weight:950; font-size:14px;">Quick Tip</div>
       <div class="sub" style="margin-top:6px;">
-        M-Pesa unlocks are confirmed after Safaricom callback (a few seconds).
-        If you paid but don’t see it, click Refresh.
+        Only completed payments and unlocked beats appear here. If a payment failed or was not completed, it will not show inside your dashboard.
+      </div>
+    </div>
+
+    <div class="card panel">
+      <div class="help-card">
+        <div class="help-copy">
+          <div style="font-weight:950; font-size:14px;">Need help with your order?</div>
+          <div class="sub" style="margin-top:6px;">
+            If you paid and something looks wrong, or you need support from Audiory, contact the help team.
+          </div>
+        </div>
+        <a class="btn primary" href="/help/">Contact Audiory Help</a>
       </div>
     </div>
   </section>
@@ -230,7 +511,7 @@
   <!-- ORDERS -->
   <section id="view-orders" class="hidden">
     <div class="tools">
-      <input id="ordersSearch" placeholder="Search orders (beat id, title)..." />
+      <input id="ordersSearch" placeholder="Search purchased beats..." />
     </div>
 
     <table class="table">
@@ -249,7 +530,7 @@
   <!-- DOWNLOADS -->
   <section id="view-downloads" class="hidden">
     <div class="tools">
-      <input id="downloadsSearch" placeholder="Search downloads..." />
+      <input id="downloadsSearch" placeholder="Search your downloads..." />
     </div>
 
     <table class="table">
@@ -269,9 +550,11 @@
     <div class="card panel">
       <div style="font-weight:950; font-size:14px;">Account</div>
       <div class="sub" style="margin-top:8px;" id="profileInfo">—</div>
+
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
         <a class="btn" href="/login/" id="switchAccountBtn">Switch account</a>
         <a class="btn primary" href="/marketplace/">Go shopping</a>
+        <a class="btn ghost-btn" href="/help/">Help</a>
       </div>
     </div>
   </section>
@@ -281,6 +564,7 @@
 <footer class="footer">
   <div class="container footer-row">
     <div>© 2026 Audiory</div>
+
     <div class="footer-links">
       <a href="/privacy/">Privacy Policy</a>
       <a href="/terms/">Terms</a>
@@ -333,18 +617,6 @@
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 
-<script>
-  // ✅ PayPal (no trailing slash)
-  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
-
-  // ✅ M-Pesa STK Push (no trailing slash)
-  window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
-
-  // ✅ We'll track the selected beat/license here
-  window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
-</script>
-
 <script type="module" src="/js/firebase.js"></script>
 <script src="/js/menu.js"></script>
 
@@ -354,26 +626,30 @@
 
   const $ = (id)=>document.getElementById(id);
 
-  // Unified list that includes PayPal orders + M-Pesa unlocks
   let ALL_ITEMS = [];
 
-  // ✅ Cloud Function endpoints
   const DOWNLOAD_FN_URL = "https://securedownload-f65rhsquva-uc.a.run.app";
-  const LICENSE_FN_URL  = "https://licensedownload-f65rhsquva-uc.a.run.app";
+  const LICENSE_FN_URL = "https://licensedownload-f65rhsquva-uc.a.run.app";
 
   function setStatus(text){
     $("status").textContent = text || "";
     $("status").classList.remove("hidden");
   }
-  function hideStatus(){ $("status").classList.add("hidden"); }
+
+  function hideStatus(){
+    $("status").classList.add("hidden");
+  }
 
   function fmtDate(ts){
     if (!ts) return "—";
+
     if (typeof ts === "object" && typeof ts.toMillis === "function"){
       return new Date(ts.toMillis()).toLocaleString();
     }
-    const n = Number(ts||0);
+
+    const n = Number(ts || 0);
     if (!n) return "—";
+
     const d = new Date(n);
     if (isNaN(d.getTime())) return "—";
     return d.toLocaleString();
@@ -389,6 +665,7 @@
     document.querySelectorAll(".tab").forEach(b=>{
       b.classList.toggle("active", b.dataset.tab === tab);
     });
+
     ["overview","orders","downloads","profile"].forEach(name=>{
       const v = $("view-" + name);
       if (!v) return;
@@ -398,53 +675,78 @@
 
   function updateNavAuthUI(user){
     const isIn = !!user;
+
     const navSignIn = document.getElementById("navSignIn");
-    const navStart  = document.getElementById("navStartSelling");
-    const mSignIn   = document.getElementById("mNavSignIn");
-    const mStart    = document.getElementById("mNavStartSelling");
+    const navStart = document.getElementById("navStartSelling");
+    const navBuyerDashboard = document.getElementById("navBuyerDashboard");
+
+    const mSignIn = document.getElementById("mNavSignIn");
+    const mStart = document.getElementById("mNavStartSelling");
+    const mBuyerDashboard = document.getElementById("mNavBuyerDashboard");
+    const mSignOutBtn = document.getElementById("mSignOutBtn");
+    const mHelpBtn = document.getElementById("mHelpBtn");
 
     if (navSignIn) navSignIn.style.display = isIn ? "none" : "";
-    if (mSignIn)   mSignIn.style.display   = isIn ? "none" : "";
-    if (navStart)  navStart.style.display  = isIn ? "none" : "";
-    if (mStart)    mStart.style.display    = isIn ? "none" : "";
+    if (navStart) navStart.style.display = isIn ? "none" : "";
+
+    if (mSignIn) mSignIn.style.display = isIn ? "none" : "";
+    if (mStart) mStart.style.display = isIn ? "none" : "";
+
+    if (navBuyerDashboard) navBuyerDashboard.classList.toggle("hidden", !isIn);
+    if (mBuyerDashboard) mBuyerDashboard.classList.toggle("hidden", !isIn);
+    if (mSignOutBtn) mSignOutBtn.classList.toggle("hidden", !isIn);
+    if (mHelpBtn) mHelpBtn.classList.toggle("hidden", !isIn);
 
     const sw = document.getElementById("switchAccountBtn");
     if (sw) sw.textContent = isIn ? "Switch account" : "Sign in";
   }
 
-  // Convert PayPal/normal orders to unified item
+  function isSuccessfulStatus(status){
+    const s = String(status || "").toLowerCase().trim();
+
+    return (
+      s === "paid" ||
+      s === "completed" ||
+      s === "complete" ||
+      s === "captured" ||
+      s === "success" ||
+      s === "successful" ||
+      s === "unlocked" ||
+      s === "ok"
+    );
+  }
+
   function normalizeOrder(x){
     const beatId = x.beatId || x.beatID || x.itemId || x.itemID || "";
-    const status = (x.status || x.state || (x.paid ? "paid" : "") || "—").toString().toLowerCase();
+    const status = (x.status || x.state || "").toString().toLowerCase().trim();
 
     return {
       id: String(x.id),
       source: "order",
-      beatId: String(beatId),
+      beatId: String(beatId || ""),
       itemTitle: String(x.itemTitle || x.title || x.beatTitle || "Beat"),
       itemType: (x.itemType || x.type || "beat").toString().toLowerCase(),
       status,
       createdAt: x.createdAt || x.timestamp || null,
-      isUnlocked: status.includes("paid") || status.includes("complete"),
+      isUnlocked: isSuccessfulStatus(status),
       licenseKey: String(x.licenseKey || x.license || "basic"),
-      downloadUrl: x.downloadUrl || x.url || null
+      downloadUrl: x.downloadUrl || x.url || null,
+      orderId: String(x.id || "")
     };
   }
 
-  // Convert unlocks (PayPal unlock docs OR M-Pesa unlock docs) to unified item
   function normalizeUnlock(x){
-    const beatId = x.beatId || "";
-    const st = (x.status || "unlocked").toString().toLowerCase();
+    const status = (x.status || "unlocked").toString().toLowerCase().trim();
 
     return {
       id: String(x.id),
       source: "unlock",
-      beatId: String(beatId),
+      beatId: String(x.beatId || ""),
       itemTitle: String(x.beatTitle || x.title || "Beat"),
       itemType: (x.type || "beat").toString().toLowerCase(),
-      status: st,
+      status,
       createdAt: x.createdAt || null,
-      isUnlocked: st.includes("unlock") || st.includes("paid") || st === "ok",
+      isUnlocked: isSuccessfulStatus(status),
       licenseKey: String(x.licenseKey || "basic"),
       downloadPath: x.downloadPath || null,
       audioUrl: x.audioUrl || null,
@@ -452,22 +754,53 @@
     };
   }
 
+  function filterPurchasedItems(items){
+    return (items || []).filter(item => {
+      if (!item) return false;
+      if (!item.beatId) return false;
+      if (!item.isUnlocked) return false;
+      return true;
+    });
+  }
+
+  function dedupePurchasedItems(items){
+    const map = new Map();
+
+    (items || []).forEach(item => {
+      const key = `${item.beatId}__${item.licenseKey || "basic"}`;
+      const existing = map.get(key);
+
+      const currentTime =
+        item.createdAt?.toMillis ? item.createdAt.toMillis() : Number(item.createdAt || 0);
+
+      const existingTime =
+        existing?.createdAt?.toMillis ? existing.createdAt.toMillis() : Number(existing?.createdAt || 0);
+
+      if (!existing || currentTime > existingTime) {
+        map.set(key, item);
+      }
+    });
+
+    return Array.from(map.values()).sort((a,b)=>{
+      const am = a.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt || 0);
+      const bm = b.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt || 0);
+      return bm - am;
+    });
+  }
+
   function renderOverview(){
     $("statOrders").textContent = String(ALL_ITEMS.length);
+    $("statPaid").textContent = String(ALL_ITEMS.length);
+    $("statDownloads").textContent = String(ALL_ITEMS.filter(o => o.beatId).length);
 
-    const paid = ALL_ITEMS.filter(o => o.isUnlocked).length;
-    $("statPaid").textContent = String(paid);
-
-    const ready = ALL_ITEMS.filter(o => o.isUnlocked && o.beatId).length;
-    $("statDownloads").textContent = String(ready);
-
-    $("statOrdersMini").textContent = "PayPal orders + unlocks";
-    $("statPaidMini").textContent = "Paid or unlocked items";
-    $("statDownloadsMini").textContent = "Items you can download";
+    $("statOrdersMini").textContent = "Only successful purchases";
+    $("statPaidMini").textContent = "Completed and unlocked";
+    $("statDownloadsMini").textContent = "Ready for download";
   }
 
   function renderOrders(){
-    const qtxt = ($("ordersSearch").value||"").trim().toLowerCase();
+    const qtxt = ($("ordersSearch").value || "").trim().toLowerCase();
+
     const list = ALL_ITEMS.filter(o=>{
       const hay = `${o.itemTitle} ${o.id} ${o.status} ${o.beatId}`.toLowerCase();
       return !qtxt || hay.includes(qtxt);
@@ -476,50 +809,58 @@
     const tb = $("ordersTbody");
     tb.innerHTML = "";
 
-    list.slice(0, 250).forEach(o=>{
-      const ok = o.isUnlocked;
+    list.forEach(o=>{
       const tr = document.createElement("tr");
       tr.className = "rowcard";
+
       tr.innerHTML = `
         <td>
           <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">${o.source}: ${o.id}${o.beatId ? ` • beatId: ${o.beatId}` : ""}</div>
+          <div class="sub">${o.beatId ? `Beat ID: ${o.beatId}` : "Purchased item"}</div>
         </td>
         <td>
-          ${ok ? `<span class="pill ok">${o.status}</span>` : `<span class="pill no">${o.status}</span>`}
+          <span class="pill ok">${o.status || "unlocked"}</span>
         </td>
         <td>${fmtDate(o.createdAt)}</td>
         <td>
           <div class="actions">
             <button class="btn" type="button" data-action="open" data-id="${o.id}">Open</button>
-            <button class="btn primary" type="button" data-action="download" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>Download</button>
-            <button class="btn" type="button" data-action="license" data-id="${o.id}" ${ok && o.beatId ? "" : "disabled"}>License PDF</button>
+            <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
+            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
           </div>
         </td>
       `;
+
       tb.appendChild(tr);
     });
+
+    if (!list.length){
+      tb.innerHTML = "";
+      setStatus("No purchased beats found yet.");
+    } else {
+      hideStatus();
+    }
   }
 
   function renderDownloads(){
-    const qtxt = ($("downloadsSearch").value||"").trim().toLowerCase();
-    const list = ALL_ITEMS
-      .filter(o => o.isUnlocked && o.beatId)
-      .filter(o=>{
-        const hay = `${o.itemTitle} ${o.itemType} ${o.beatId}`.toLowerCase();
-        return !qtxt || hay.includes(qtxt);
-      });
+    const qtxt = ($("downloadsSearch").value || "").trim().toLowerCase();
+
+    const list = ALL_ITEMS.filter(o=>{
+      const hay = `${o.itemTitle} ${o.itemType} ${o.beatId}`.toLowerCase();
+      return !qtxt || hay.includes(qtxt);
+    });
 
     const tb = $("downloadsTbody");
     tb.innerHTML = "";
 
-    list.slice(0, 250).forEach(o=>{
+    list.forEach(o=>{
       const tr = document.createElement("tr");
       tr.className = "rowcard";
+
       tr.innerHTML = `
         <td>
           <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">${o.source}: ${o.id} • beatId: ${o.beatId}</div>
+          <div class="sub">Beat ID: ${o.beatId}</div>
         </td>
         <td><span class="pill">${o.itemType}</span></td>
         <td style="text-align:right;">
@@ -529,11 +870,12 @@
           </div>
         </td>
       `;
+
       tb.appendChild(tr);
     });
 
     if (!list.length){
-      setStatus("No downloads yet.\n\nTip: After M-Pesa payment, wait a few seconds then click Refresh.");
+      setStatus("No downloads yet.\n\nOnly successful purchases appear here.");
     } else {
       hideStatus();
     }
@@ -541,6 +883,7 @@
 
   function refreshVisible(){
     const active = document.querySelector(".tab.active")?.dataset?.tab || "overview";
+
     if (active === "overview") renderOverview();
     if (active === "orders") renderOrders();
     if (active === "downloads") renderDownloads();
@@ -550,72 +893,10 @@
     return ALL_ITEMS.find(o => o.id === id) || null;
   }
 
-  async function requestDownloadUrl(item){
-    if (item?.downloadUrl && typeof item.downloadUrl === "string") {
-      const u = item.downloadUrl.trim();
-      if (u && !u.includes("/beat/")) return u;
-    }
-
-    const u = window.FB?.auth?.currentUser;
-    const token = u ? await u.getIdToken().catch(()=>null) : null;
-
-    const r = await fetch(DOWNLOAD_FN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json",
-        ...(token ? { "Authorization": "Bearer " + token } : {})
-      },
-      body: JSON.stringify({
-        orderId: item.source === "order" ? item.id : (item.orderId || null),
-        unlockId: item.source === "unlock" ? item.id : null,
-        beatId: item.beatId || null,
-        licenseKey: item.licenseKey || "basic" // ✅ add
-      })
-    });
-
-    let data = {};
-    let raw = "";
-    try { data = await r.json(); }
-    catch(e){ raw = await r.text().catch(()=> ""); }
-
-    if (!r.ok) throw new Error(data?.error || raw || `Download failed (${r.status})`);
-    if (!data?.url) throw new Error("No download URL returned.");
-    return data.url;
-  }
-
-  async function requestLicensePdfUrl(item){
-    const u = window.FB?.auth?.currentUser;
-    const token = u ? await u.getIdToken().catch(()=>null) : null;
-
-    const r = await fetch(LICENSE_FN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type":"application/json",
-        ...(token ? { "Authorization": "Bearer " + token } : {})
-      },
-      body: JSON.stringify({
-        orderId: item.source === "order" ? item.id : (item.orderId || null),
-        unlockId: item.source === "unlock" ? item.id : null,
-        beatId: item.beatId || null,
-        licenseKey: item.licenseKey || "basic"
-      })
-    });
-
-    let data = {};
-    let raw = "";
-    try { data = await r.json(); }
-    catch(e){ raw = await r.text().catch(()=> ""); }
-
-    if (!r.ok) throw new Error(data?.error || raw || `License failed (${r.status})`);
-    if (!data?.url) throw new Error("No license PDF URL returned.");
-    
-    return data.url;
-  }
-
   async function loadAll(){
-    setStatus("Loading your purchases…");
+    setStatus("Loading your purchased beats…");
 
-    const u = window.FB?.auth?.currentUser || window.FB?.user;
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
     updateNavAuthUI(u);
 
     if (!u){
@@ -628,9 +909,9 @@
 
     const merged = [];
 
-    // 1) Orders (buyerId or uid) — keep, but downloads are better from unlocks
     try{
       let snap = null;
+
       try{
         snap = await getDocs(query(
           collection(window.FB.db, "orders"),
@@ -644,38 +925,37 @@
           limit(300)
         ));
       }
+
       snap.forEach(d => merged.push(normalizeOrder({ id:d.id, ...d.data() })));
     }catch(err){
       console.warn("orders load failed:", err);
     }
 
-    // 2) Unlocks (this is the best source for downloads)
     try{
       const usnap = await getDocs(query(
         collection(window.FB.db, "unlocks"),
         where("buyerId", "==", u.uid),
         limit(500)
       ));
+
       usnap.forEach(d => merged.push(normalizeUnlock({ id:d.id, ...d.data() })));
     }catch(err){
       console.warn("unlocks load failed:", err);
     }
 
-    // sort newest first
-    merged.sort((a,b)=>{
-      const am = (a.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt||0)) || 0;
-      const bm = (b.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt||0)) || 0;
-      return bm - am;
-    });
+    const purchasedOnly = dedupePurchasedItems(filterPurchasedItems(merged));
+    ALL_ITEMS = purchasedOnly;
 
-    ALL_ITEMS = merged;
+    if (!ALL_ITEMS.length){
+      setStatus("No purchased beats found yet.\n\nOnly completed payments and unlocked beats appear here.");
+    } else {
+      hideStatus();
+    }
 
-    hideStatus();
     renderOverview();
     refreshVisible();
   }
 
-  // ✅ Tabs + actions
   document.addEventListener("click", async (e)=>{
     const tabBtn = e.target.closest(".tab");
     if (tabBtn){
@@ -693,7 +973,7 @@
     if (!item) return;
 
     if (action === "open"){
-      if (!item.beatId) return alert("No beatId stored for this item.");
+      if (!item.beatId) return alert("No beat found for this purchase.");
       location.href = "/beat/?id=" + encodeURIComponent(item.beatId);
       return;
     }
@@ -712,24 +992,26 @@
             "Authorization": "Bearer " + token
           },
           body: JSON.stringify({
-            beatId: item.beatId
+            orderId: item.source === "order" ? item.id : (item.orderId || null),
+            unlockId: item.source === "unlock" ? item.id : null,
+            beatId: item.beatId,
+            licenseKey: item.licenseKey || "basic"
           })
         });
 
         const data = await r.json().catch(()=> ({}));
+
         if (!r.ok) throw new Error(data?.error || `Download failed (${r.status})`);
         if (!data?.url) throw new Error("No download URL returned.");
 
-        // open the signed url
         window.location.href = data.url;
-
-       }catch(err){
+      }catch(err){
         alert(err?.message || String(err));
-       }finally{
+      }finally{
         btn.disabled = false;
         btn.textContent = "Download";
-       }
-       return;
+      }
+      return;
     }
 
     if (action === "license"){
@@ -746,28 +1028,29 @@
             "Authorization": "Bearer " + token
           },
           body: JSON.stringify({
+            orderId: item.source === "order" ? item.id : (item.orderId || null),
+            unlockId: item.source === "unlock" ? item.id : null,
             beatId: item.beatId,
             licenseKey: item.licenseKey || "basic"
           })
         });
 
         const data = await r.json().catch(()=> ({}));
+
         if (!r.ok) throw new Error(data?.error || `License failed (${r.status})`);
         if (!data?.url) throw new Error("No license URL returned.");
 
         window.location.href = data.url;
-
-       }catch(err){
+      }catch(err){
         alert(err?.message || String(err));
-       }finally{
+      }finally{
         btn.disabled = false;
         btn.textContent = "License PDF";
-       }
-       return;
+      }
+      return;
     }
   });
 
-  // ✅ Top buttons + search
   $("refreshBtn")?.addEventListener("click", loadAll);
   $("ordersSearch")?.addEventListener("input", renderOrders);
   $("downloadsSearch")?.addEventListener("input", renderDownloads);
@@ -782,17 +1065,34 @@
     }
   });
 
-  window.addEventListener("firebase-ready", ()=>{
-    const tick = ()=>{
-      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-      $("authChip").textContent = u ? ("Signed in: " + (u.email || u.uid)) : "Auth: not signed in";
-      updateNavAuthUI(u);
-    };
-    tick();
-    setInterval(tick, 1000);
+  $("mSignOutBtn")?.addEventListener("click", async ()=>{
+    try{
+      await signOut(window.FB.auth);
+      updateNavAuthUI(null);
+      location.href = "/login/";
+    }catch(e){
+      alert("Sign out failed: " + (e?.message || e));
+    }
+  });
 
+  window.addEventListener("firebase-ready", ()=>{
     const u = window.FB?.auth?.currentUser || window.FB?.user || null;
     updateNavAuthUI(u);
+
+    if (window.FB?.auth?.onAuthStateChanged) {
+      window.FB.auth.onAuthStateChanged((user) => {
+        updateNavAuthUI(user);
+
+        if (!user) {
+          setStatus("You must sign in to use Buyer Dashboard.\n\nRedirecting to login…");
+          setTimeout(()=>location.href="/login/", 800);
+          return;
+        }
+
+        loadAll();
+      });
+      return;
+    }
 
     if (!u){
       setStatus("You must sign in to use Buyer Dashboard.\n\nRedirecting to login…");
