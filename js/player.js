@@ -33,6 +33,15 @@
 
   const PLAYER_STATE_KEY = "audiory_player_state_v1";
 
+  const IS_IOS =
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  const IS_SAFARI =
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+  const FX_SAFE_MODE = IS_IOS || IS_SAFARI;
+
   function savePlayerState() {
     try {
       const state = {
@@ -1260,10 +1269,17 @@
       fxEnabled = !fxEnabled;
       localStorage.setItem("audiory_player_fx_enabled", fxEnabled ? "1" : "0");
       AP.fxSwitch.classList.toggle("on", fxEnabled);
+
+      if (FX_SAFE_MODE) {
+        console.warn("[player] FX disabled on this device for stable playback");
+        savePlayerState();
+        return;
+      }
+
       await ensureFxGraph();
       await resumeAudioCtx();
-      savePlayerState();
       applyFxPreset(currentFx);
+      savePlayerState();
     });
 
     AP.shuffleBtn.addEventListener("click", () => {
@@ -1454,7 +1470,12 @@ k
     updateCardButtons();
 
     if (audio.src !== track.audioUrl) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+
       audio.src = track.audioUrl;
+      audio.load();
     }
 
     audio.currentTime = 0;
@@ -1613,9 +1634,8 @@ k
           audio.currentTime = t;
         }
 
-        if (saved.paused === false) {
-          audio.play().catch(() => {});
-        }
+      // On mobile Safari, auto-play after page restore is unreliable.
+      // We restore the player UI and time, but do not force playback here.
       });
     } catch (e) {
       console.warn("[player] restore failed", e);
@@ -1797,11 +1817,19 @@ k
         localStorage.setItem("audiory_player_fx", currentFx);
         renderFxCards();
         updateUi();
+
+        if (FX_SAFE_MODE) {
+          console.warn("[player] FX preset saved but not applied on this device");
+          savePlayerState();
+          return;
+        }
+
         await ensureFxGraph();
         await resumeAudioCtx();
         applyFxPreset(currentFx);
         savePlayerState();
       });
+    });
     });
   }
 
@@ -1876,6 +1904,7 @@ k
   }
 
   async function ensureFxGraph() {
+    if (FX_SAFE_MODE) return;
     if (fxReady) return;
 
     const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -1908,6 +1937,7 @@ k
   }
 
   function applyFxPreset(name) {
+    if (FX_SAFE_MODE) return;
     if (!fxReady || !biquad1 || !biquad2 || !masterGain) return;
 
     if (!fxEnabled) {
