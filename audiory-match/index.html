@@ -1,1 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Audiory Match</title>
+  <meta name="description" content="Find the perfect beat on Audiory with smart beat matching." />
 
+  <style>
+    :root{
+      --bg:#0b1020;
+      --bg2:#121933;
+      --panel:#151d3a;
+      --panel2:#0f1630;
+      --text:#f5f7ff;
+      --muted:#aab3d1;
+      --line:rgba(255,255,255,.08);
+      --primary:#6d5efc;
+      --accent:#22c55e;
+      --danger:#ef4444;
+      --shadow:0 18px 50px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#070b16);color:var(--text)}
+    a{text-decoration:none;color:inherit}
+    img{max-width:100%;display:block}
+    button,input,select,textarea{font:inherit}
+
+    .container{
+      width:min(1180px,92%);
+      margin:auto;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      backdrop-filter:blur(10px);
+      background:rgba(8,12,24,.75);
+      border-bottom:1px solid var(--line);
+    }
+
+    .topbar-inner{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:14px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      font-weight:800;
+      letter-spacing:.3px;
+      font-size:1.1rem;
+    }
+
+    .brand-badge{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      background:linear-gradient(135deg,var(--primary),#8b7bff);
+      display:grid;
+      place-items:center;
+      box-shadow:var(--shadow);
+      font-weight:900;
+    }
+
+    .nav-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      outline:none;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-weight:700;
+      transition:.2s ease;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{
+      background:linear-gradient(135deg,var(--primary),#8b7bff);
+      color:#fff;
+    }
+    .btn-secondary{
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      border:1px solid var(--line);
+    }
+
+    .hero{
+      padding:54px 0 28px;
+    }
+
+    .hero-card{
+      background:radial-gradient(circle at top left, rgba(109,94,252,.20), transparent 34%), linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:34px;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      width:280px;
+      height:280px;
+      right:-70px;
+      top:-60px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(34,197,94,.15), transparent 70%);
+      pointer-events:none;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      font-size:.86rem;
+      color:#d7ddff;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      padding:8px 12px;
+      border-radius:999px;
+      margin-bottom:16px;
+    }
+
+    h1{
+      margin:0 0 12px;
+      font-size:clamp(2rem,5vw,3.5rem);
+      line-height:1.04;
+    }
+
+    .hero p{
+      margin:0;
+      max-width:760px;
+      color:var(--muted);
+      font-size:1.02rem;
+      line-height:1.7;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:340px 1fr;
+      gap:22px;
+      padding:26px 0 60px;
+    }
+
+    @media (max-width: 980px){
+      .layout{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:linear-gradient(180deg,var(--panel),var(--panel2));
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .filters{
+      padding:20px;
+      position:sticky;
+      top:78px;
+    }
+
+    .panel-title{
+      margin:0 0 4px;
+      font-size:1.1rem;
+    }
+
+    .panel-sub{
+      margin:0 0 18px;
+      color:var(--muted);
+      font-size:.95rem;
+      line-height:1.5;
+    }
+
+    .field{
+      margin-bottom:14px;
+    }
+
+    .field label{
+      display:block;
+      margin-bottom:7px;
+      color:#dbe2ff;
+      font-size:.92rem;
+      font-weight:600;
+    }
+
+    .input,
+    .select,
+    .textarea{
+      width:100%;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      border-radius:12px;
+      padding:13px 14px;
+      outline:none;
+    }
+
+    .textarea{
+      resize:vertical;
+      min-height:108px;
+    }
+
+    .input::placeholder,
+    .textarea::placeholder{
+      color:#94a0c5;
+    }
+
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .results-wrap{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .summary{
+      padding:18px 20px;
+    }
+
+    .summary-top{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .summary strong{
+      font-size:1.02rem;
+    }
+
+    .summary small{
+      display:block;
+      color:var(--muted);
+      margin-top:4px;
+      line-height:1.5;
+    }
+
+    .chips{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .chip{
+      padding:8px 11px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#dce4ff;
+      font-size:.86rem;
+    }
+
+    .section{
+      padding:18px;
+    }
+
+    .section h2{
+      margin:0 0 14px;
+      font-size:1.15rem;
+    }
+
+    .result-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:16px;
+    }
+
+    .beat-card{
+      border:1px solid var(--line);
+      border-radius:18px;
+      overflow:hidden;
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+      transition:.2s ease;
+    }
+
+    .beat-card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(255,255,255,.14);
+    }
+
+    .beat-cover{
+      aspect-ratio:1/1;
+      background:#0a0f1f;
+      overflow:hidden;
+      position:relative;
+    }
+
+    .beat-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .match-badge{
+      position:absolute;
+      top:12px;
+      left:12px;
+      background:rgba(34,197,94,.92);
+      color:#04100a;
+      font-weight:800;
+      font-size:.8rem;
+      padding:7px 10px;
+      border-radius:999px;
+    }
+
+    .beat-body{
+      padding:15px;
+    }
+
+    .beat-title{
+      font-size:1rem;
+      font-weight:800;
+      margin:0 0 8px;
+    }
+
+    .beat-meta{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.6;
+      min-height:68px;
+    }
+
+    .beat-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .beat-tag{
+      font-size:.8rem;
+      padding:7px 9px;
+      border-radius:999px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--line);
+      color:#dbe4ff;
+    }
+
+    .beat-bottom{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .price{
+      font-size:1rem;
+      font-weight:800;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    .empty{
+      padding:40px 20px;
+      text-align:center;
+      color:var(--muted);
+    }
+
+    .loader{
+      display:none;
+      padding:26px 20px;
+      text-align:center;
+      color:#d8deff;
+    }
+
+    .loader.show{display:block}
+
+    .mini-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .producer-card{
+      padding:14px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .producer-name{
+      font-weight:800;
+      margin-bottom:4px;
+    }
+
+    .score-note{
+      font-size:.84rem;
+      color:var(--muted);
+    }
+
+    .footer-space{
+      height:40px;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a href="/" class="brand">
+        <div class="brand-badge">A</div>
+        <span>Audiory Match</span>
+      </a>
+
+      <div class="nav-actions">
+        <a href="/marketplace/" class="btn btn-secondary">Marketplace</a>
+        <a href="/dashboard/" class="btn btn-secondary">Dashboard</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-card">
+          <div class="eyebrow">🎯 Smart Beat Matching</div>
+          <h1>Find the right beat faster.</h1>
+          <p>
+            Audiory Match helps artists discover beats that fit their sound using smart filters,
+            keyword matching, BPM closeness, mood, genre, key, and licensing preferences — all built by Audiory.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="container layout">
+      <aside class="panel filters">
+        <h2 class="panel-title">Match Preferences</h2>
+        <p class="panel-sub">Tell Audiory what kind of beat you want and we will rank the best matches.</p>
+
+        <div class="field">
+          <label for="matchQuery">Describe your sound</label>
+          <textarea id="matchQuery" class="textarea" placeholder="Example: I want an emotional Afrobeat x R&B vibe with soft drums and clean guitar"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="matchGenre">Genre</label>
+          <select id="matchGenre" class="select">
+            <option value="">Any Genre</option>
+            <option>Afrobeats</option>
+            <option>Hip Hop</option>
+            <option>Drill</option>
+            <option>Trap</option>
+            <option>R&B</option>
+            <option>Amapiano</option>
+            <option>Dancehall</option>
+            <option>Pop</option>
+            <option>Gospel</option>
+            <option>Reggae</option>
+          </select>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="matchMood">Mood</label>
+            <select id="matchMood" class="select">
+              <option value="">Any Mood</option>
+              <option>Dark</option>
+              <option>Emotional</option>
+              <option>Melodic</option>
+              <option>Energetic</option>
+              <option>Chill</option>
+              <option>Romantic</option>
+              <option>Street</option>
+              <option>Sad</option>
+              <option>Happy</option>
+              <option>Spiritual</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="matchKey">Key</label>
+            <select id="matchKey" class="select">
+              <option value="">Any Key</option>
+              <option>C</option><option>C#</option><option>D</option><option>D#</option>
+              <option>E</option><option>F</option><option>F#</option><option>G</option>
+              <option>G#</option><option>A</option><option>A#</option><option>B</option>
+              <option>Cm</option><option>C#m</option><option>Dm</option><option>D#m</option>
+              <option>Em</option><option>Fm</option><option>F#m</option><option>Gm</option>
+              <option>G#m</option><option>Am</option><option>A#m</option><option>Bm</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="matchBpm">Target BPM</label>
+            <input id="matchBpm" class="input" type="number" min="40" max="220" placeholder="e.g. 98" />
+          </div>
+
+          <div class="field">
+            <label for="matchType">Beat Type</label>
+            <select id="matchType" class="select">
+              <option value="">Any</option>
+              <option value="free">Free Beats</option>
+              <option value="paid">Paid Beats</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="matchLicense">License</label>
+            <select id="matchLicense" class="select">
+              <option value="">Any License</option>
+              <option value="basic">Basic</option>
+              <option value="premium">Premium</option>
+              <option value="exclusive">Exclusive</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="matchSort">Sort</label>
+            <select id="matchSort" class="select">
+              <option value="best">Best Match</option>
+              <option value="newest">Newest</option>
+              <option value="plays">Most Played</option>
+              <option value="price_low">Lowest Price</option>
+              <option value="price_high">Highest Price</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:8px;">
+          <button id="runMatchBtn" class="btn btn-primary" type="button">Find Matches</button>
+          <button id="resetMatchBtn" class="btn btn-secondary" type="button">Reset</button>
+        </div>
+      </aside>
+
+      <section class="results-wrap">
+        <div class="panel summary">
+          <div class="summary-top">
+            <div>
+              <strong id="summaryTitle">Ready to match beats</strong>
+              <small id="summaryText">Choose your sound preferences and click Find Matches.</small>
+            </div>
+            <div class="chips" id="activeChips"></div>
+          </div>
+        </div>
+
+        <div class="panel section">
+          <h2>Top Producers</h2>
+          <div id="producerResults" class="mini-list">
+            <div class="empty">No producer matches yet.</div>
+          </div>
+        </div>
+
+        <div class="panel section">
+          <h2>Best Beat Matches</h2>
+          <div id="loader" class="loader">Matching beats...</div>
+          <div id="beatResults" class="result-grid"></div>
+          <div id="emptyState" class="empty">No matches yet. Start your search from the left panel.</div>
+        </div>
+      </section>
+    </section>
+
+    <div class="footer-space"></div>
+  </main>
+
+  <script type="module">
+    import "/js/firebase.js";
+
+    const db = window.FB?.db;
+    const {
+      collection,
+      getDocs,
+      query,
+      where,
+      limit,
+      orderBy
+    } = window.FB || {};
+
+    const els = {
+      query: document.getElementById("matchQuery"),
+      genre: document.getElementById("matchGenre"),
+      mood: document.getElementById("matchMood"),
+      key: document.getElementById("matchKey"),
+      bpm: document.getElementById("matchBpm"),
+      type: document.getElementById("matchType"),
+      license: document.getElementById("matchLicense"),
+      sort: document.getElementById("matchSort"),
+      run: document.getElementById("runMatchBtn"),
+      reset: document.getElementById("resetMatchBtn"),
+      summaryTitle: document.getElementById("summaryTitle"),
+      summaryText: document.getElementById("summaryText"),
+      activeChips: document.getElementById("activeChips"),
+      beatResults: document.getElementById("beatResults"),
+      producerResults: document.getElementById("producerResults"),
+      loader: document.getElementById("loader"),
+      emptyState: document.getElementById("emptyState")
+    };
+
+    let allBeats = [];
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^\w\s#-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function textToWords(value) {
+      return normalizeText(value)
+        .split(" ")
+        .filter(Boolean);
+    }
+
+    function safeNumber(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function getBeatPrice(beat) {
+      if (beat?.freeDownload === true) return 0;
+      if (beat?.price != null) return safeNumber(beat.price, 0);
+
+      const licenses = beat?.licenses || {};
+      const order = ["basic", "premium", "exclusive"];
+      for (const key of order) {
+        const item = licenses[key];
+        if (item?.enabled && item?.price != null) {
+          return safeNumber(item.price, 0);
+        }
+      }
+      return 0;
+    }
+
+    function hasLicense(beat, wanted) {
+      if (!wanted) return true;
+      const licenses = beat?.licenses || {};
+      return !!licenses[wanted]?.enabled;
+    }
+
+    function bpmScore(targetBpm, beatBpm) {
+      if (!targetBpm || !beatBpm) return 0;
+      const diff = Math.abs(Number(targetBpm) - Number(beatBpm));
+      if (diff === 0) return 25;
+      if (diff <= 2) return 22;
+      if (diff <= 5) return 18;
+      if (diff <= 8) return 12;
+      if (diff <= 12) return 7;
+      return 0;
+    }
+
+    function keywordScore(queryText, beat) {
+      if (!queryText) return 0;
+
+      const words = textToWords(queryText);
+      if (!words.length) return 0;
+
+      const haystack = normalizeText([
+        beat.title,
+        beat.desc,
+        beat.genre,
+        beat.key,
+        beat.producerName,
+        beat.mood,
+        ...(Array.isArray(beat.tags) ? beat.tags : []),
+        ...(Array.isArray(beat.keywords) ? beat.keywords : [])
+      ].join(" "));
+
+      let score = 0;
+      for (const word of words) {
+        if (word.length < 3) continue;
+        if (haystack.includes(word)) score += 5;
+      }
+
+      return Math.min(score, 30);
+    }
+
+    function matchScore(beat, filters) {
+      let score = 0;
+
+      const beatGenre = normalizeText(beat.genre);
+      const beatMood = normalizeText(beat.mood);
+      const beatKey = normalizeText(beat.key);
+      const beatType = beat.freeDownload ? "free" : "paid";
+
+      if (filters.genre && beatGenre === normalizeText(filters.genre)) score += 25;
+      if (filters.mood && beatMood.includes(normalizeText(filters.mood))) score += 18;
+      if (filters.key && beatKey === normalizeText(filters.key)) score += 14;
+      if (filters.type && beatType === filters.type) score += 12;
+      if (filters.license && hasLicense(beat, filters.license)) score += 14;
+
+      score += bpmScore(filters.bpm, beat.bpm);
+      score += keywordScore(filters.query, beat);
+
+      if (safeNumber(beat.plays, 0) >= 100) score += 4;
+      if (safeNumber(beat.plays, 0) >= 1000) score += 6;
+
+      return score;
+    }
+
+    function buildActiveChips(filters) {
+      const chips = [];
+      if (filters.genre) chips.push(`Genre: ${filters.genre}`);
+      if (filters.mood) chips.push(`Mood: ${filters.mood}`);
+      if (filters.key) chips.push(`Key: ${filters.key}`);
+      if (filters.bpm) chips.push(`BPM: ${filters.bpm}`);
+      if (filters.type) chips.push(filters.type === "free" ? "Free Beats" : "Paid Beats");
+      if (filters.license) chips.push(`License: ${filters.license}`);
+      if (filters.query) chips.push(`"${filters.query.slice(0, 28)}${filters.query.length > 28 ? "..." : ""}"`);
+      return chips;
+    }
+
+    function getFilters() {
+      return {
+        query: els.query.value.trim(),
+        genre: els.genre.value.trim(),
+        mood: els.mood.value.trim(),
+        key: els.key.value.trim(),
+        bpm: els.bpm.value.trim(),
+        type: els.type.value.trim(),
+        license: els.license.value.trim(),
+        sort: els.sort.value
+      };
+    }
+
+    function renderChips(filters) {
+      const chips = buildActiveChips(filters);
+      els.activeChips.innerHTML = chips.length
+        ? chips.map(ch => `<span class="chip">${escapeHtml(ch)}</span>`).join("")
+        : `<span class="chip">All Beats</span>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatPrice(price) {
+      const n = safeNumber(price, 0);
+      if (n <= 0) return "Free";
+      return `$${n}`;
+    }
+
+    function sortResults(items, sortType) {
+      if (sortType === "newest") {
+        items.sort((a, b) => (b.createdAtMs || 0) - (a.createdAtMs || 0));
+      } else if (sortType === "plays") {
+        items.sort((a, b) => safeNumber(b.plays) - safeNumber(a.plays));
+      } else if (sortType === "price_low") {
+        items.sort((a, b) => getBeatPrice(a) - getBeatPrice(b));
+      } else if (sortType === "price_high") {
+        items.sort((a, b) => getBeatPrice(b) - getBeatPrice(a));
+      } else {
+        items.sort((a, b) => b.matchScore - a.matchScore);
+      }
+      return items;
+    }
+
+    function renderBeatResults(results) {
+      els.beatResults.innerHTML = "";
+
+      if (!results.length) {
+        els.emptyState.style.display = "block";
+        return;
+      }
+
+      els.emptyState.style.display = "none";
+
+      els.beatResults.innerHTML = results.map(beat => {
+        const cover = beat.artworkUrl || beat.artwork || "/assets/placeholder-cover.jpg";
+        return `
+          <article class="beat-card">
+            <div class="beat-cover">
+              <img src="${escapeHtml(cover)}" alt="${escapeHtml(beat.title || "Beat artwork")}" onerror="this.src='/assets/placeholder-cover.jpg'">
+              <div class="match-badge">${beat.matchScore}% Match</div>
+            </div>
+            <div class="beat-body">
+              <h3 class="beat-title">${escapeHtml(beat.title || "Untitled Beat")}</h3>
+              <div class="beat-meta">
+                Producer: ${escapeHtml(beat.producerName || "Unknown")}<br>
+                Genre: ${escapeHtml(beat.genre || "—")}<br>
+                BPM: ${escapeHtml(beat.bpm || "—")} · Key: ${escapeHtml(beat.key || "—")}
+              </div>
+
+              <div class="beat-tags">
+                ${beat.mood ? `<span class="beat-tag">${escapeHtml(beat.mood)}</span>` : ""}
+                ${beat.freeDownload ? `<span class="beat-tag">Free</span>` : `<span class="beat-tag">Paid</span>`}
+                ${beat.licenseLabel ? `<span class="beat-tag">${escapeHtml(beat.licenseLabel)}</span>` : ""}
+              </div>
+
+              <div class="beat-bottom">
+                <div class="price">${formatPrice(getBeatPrice(beat))}</div>
+                <a class="btn btn-primary" href="/beat/?id=${encodeURIComponent(beat.id)}">Open Beat</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderProducerResults(results) {
+      const grouped = new Map();
+
+      for (const beat of results) {
+        const pid = beat.producerId || "unknown";
+        if (!grouped.has(pid)) {
+          grouped.set(pid, {
+            producerId: pid,
+            producerName: beat.producerName || "Unknown Producer",
+            bestScore: beat.matchScore,
+            beats: 1
+          });
+        } else {
+          const item = grouped.get(pid);
+          item.beats += 1;
+          item.bestScore = Math.max(item.bestScore, beat.matchScore);
+        }
+      }
+
+      const producers = [...grouped.values()]
+        .sort((a, b) => b.bestScore - a.bestScore)
+        .slice(0, 6);
+
+      if (!producers.length) {
+        els.producerResults.innerHTML = `<div class="empty">No producer matches yet.</div>`;
+        return;
+      }
+
+      els.producerResults.innerHTML = producers.map(item => `
+        <div class="producer-card">
+          <div>
+            <div class="producer-name">${escapeHtml(item.producerName)}</div>
+            <div class="score-note">${item.beats} matching beat${item.beats > 1 ? "s" : ""}</div>
+          </div>
+          <div>
+            <span class="chip">${item.bestScore}% Match</span>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadBeats() {
+      if (!db || !collection || !getDocs) {
+        console.error("Firebase helpers are missing on window.FB");
+        return [];
+      }
+
+      const q = query(
+        collection(db, "beats"),
+        where("published", "==", true),
+        limit(200)
+      );
+
+      const snap = await getDocs(q);
+
+      return snap.docs.map(doc => {
+        const data = doc.data() || {};
+        const createdAtMs =
+          data.createdAt?.toMillis?.() ||
+          data.createdAt?.seconds ? data.createdAt.seconds * 1000 : 0;
+
+        let artworkUrl = data.artwork || "";
+        if (!artworkUrl && typeof window.FB?.resolvePhotoURL === "function") {
+          artworkUrl = window.FB.resolvePhotoURL(data.artwork);
+        }
+
+        const licenses = data.licenses || {};
+        let licenseLabel = "";
+        if (licenses.exclusive?.enabled) licenseLabel = "Exclusive";
+        else if (licenses.premium?.enabled) licenseLabel = "Premium";
+        else if (licenses.basic?.enabled) licenseLabel = "Basic";
+
+        return {
+          id: doc.id,
+          ...data,
+          artworkUrl,
+          createdAtMs,
+          licenseLabel
+        };
+      });
+    }
+
+    async function runMatch() {
+      const filters = getFilters();
+
+      els.loader.classList.add("show");
+      els.beatResults.innerHTML = "";
+      els.producerResults.innerHTML = `<div class="empty">Loading producers...</div>`;
+      els.emptyState.style.display = "none";
+
+      try {
+        if (!allBeats.length) {
+          allBeats = await loadBeats();
+        }
+
+        let results = allBeats.map(beat => ({
+          ...beat,
+          matchScore: Math.min(matchScore(beat, filters), 99)
+        }));
+
+        if (filters.type) {
+          results = results.filter(beat => (beat.freeDownload ? "free" : "paid") === filters.type);
+        }
+
+        if (filters.license) {
+          results = results.filter(beat => hasLicense(beat, filters.license));
+        }
+
+        if (filters.genre) {
+          results = results.filter(beat =>
+            normalizeText(beat.genre) === normalizeText(filters.genre) || beat.matchScore >= 25
+          );
+        }
+
+        if (filters.mood) {
+          results = results.filter(beat =>
+            normalizeText(beat.mood).includes(normalizeText(filters.mood)) || beat.matchScore >= 25
+          );
+        }
+
+        if (filters.key) {
+          results = results.filter(beat =>
+            normalizeText(beat.key) === normalizeText(filters.key) || beat.matchScore >= 25
+          );
+        }
+
+        if (filters.bpm) {
+          results = results.filter(beat => {
+            const bpm = safeNumber(beat.bpm, 0);
+            const wanted = safeNumber(filters.bpm, 0);
+            if (!bpm || !wanted) return true;
+            return Math.abs(bpm - wanted) <= 18 || beat.matchScore >= 35;
+          });
+        }
+
+        results = results.filter(beat => beat.matchScore > 0 || !hasAnyStrongFilter(filters));
+        sortResults(results, filters.sort);
+
+        const finalResults = results.slice(0, 24);
+
+        renderChips(filters);
+        renderBeatResults(finalResults);
+        renderProducerResults(finalResults);
+
+        els.summaryTitle.textContent = finalResults.length
+          ? `${finalResults.length} beat matches found`
+          : "No strong matches found";
+
+        els.summaryText.textContent = finalResults.length
+          ? "These beats were ranked using your selected genre, mood, BPM, key, text description, and license preferences."
+          : "Try removing some filters or using a shorter description.";
+
+      } catch (err) {
+        console.error(err);
+        els.summaryTitle.textContent = "Could not load matches";
+        els.summaryText.textContent = "Something went wrong while fetching beats.";
+        els.beatResults.innerHTML = "";
+        els.producerResults.innerHTML = `<div class="empty">Failed to load producer matches.</div>`;
+        els.emptyState.style.display = "block";
+        els.emptyState.textContent = "Something went wrong while loading beats.";
+      } finally {
+        els.loader.classList.remove("show");
+      }
+    }
+
+    function hasAnyStrongFilter(filters) {
+      return !!(
+        filters.query ||
+        filters.genre ||
+        filters.mood ||
+        filters.key ||
+        filters.bpm ||
+        filters.type ||
+        filters.license
+      );
+    }
+
+    function resetFilters() {
+      els.query.value = "";
+      els.genre.value = "";
+      els.mood.value = "";
+      els.key.value = "";
+      els.bpm.value = "";
+      els.type.value = "";
+      els.license.value = "";
+      els.sort.value = "best";
+
+      els.summaryTitle.textContent = "Ready to match beats";
+      els.summaryText.textContent = "Choose your sound preferences and click Find Matches.";
+      els.activeChips.innerHTML = "";
+      els.beatResults.innerHTML = "";
+      els.producerResults.innerHTML = `<div class="empty">No producer matches yet.</div>`;
+      els.emptyState.style.display = "block";
+      els.emptyState.textContent = "No matches yet. Start your search from the left panel.";
+    }
+
+    els.run.addEventListener("click", runMatch);
+    els.reset.addEventListener("click", resetFilters);
+
+    window.addEventListener("DOMContentLoaded", () => {
+      renderChips(getFilters());
+    });
+  </script>
+</body>
+</html>
