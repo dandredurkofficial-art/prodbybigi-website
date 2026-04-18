@@ -1025,17 +1025,39 @@
           </div>
 
           <div class="ap-tabs">
-            <button class="ap-tab active" type="button">Presets</button>
-            <button class="ap-tab" type="button">Custom(EQ)</button>
+            <button class="ap-tab active" type="button" id="apTabPresets">Presets</button>
+            <button class="ap-tab" type="button" id="apTabEq">Custom(EQ)</button>
           </div>
 
-          <h3 style="font-size:22px;margin:0 0 14px;">Suggested presets</h3>
-          <div class="ap-grid" id="apFxGrid"></div>
+          <div id="apPresetSection">
+            <h3 style="font-size:22px;margin:0 0 14px;">Suggested presets</h3>
+            <div class="ap-grid" id="apFxGrid"></div>
 
-          <h3 style="font-size:22px;margin:24px 0 14px;">More presets</h3>
-          <div class="ap-simple-list" id="apFxMore"></div>
+            <h3 style="font-size:22px;margin:24px 0 14px;">More presets</h3>
+            <div class="ap-simple-list" id="apFxMore"></div>
+          </div>
+
+          <div id="apEqSection" class="ap-hidden">
+            <div class="ap-card" style="display:grid;gap:14px;">
+              <div>
+                <div style="font-size:13px;margin-bottom:6px;">Bass</div>
+                <input type="range" min="-12" max="12" value="0" id="apEqBass" class="ap-progress">
+              </div>
+
+              <div>
+                <div style="font-size:13px;margin-bottom:6px;">Mid</div>
+                <input type="range" min="-12" max="12" value="0" id="apEqMid" class="ap-progress">
+              </div>
+
+              <div>
+                <div style="font-size:13px;margin-bottom:6px;">Treble</div>
+                <input type="range" min="-12" max="12" value="0" id="apEqTreble" class="ap-progress">
+              </div>
+
+              <button class="ap-simple-btn" type="button" id="apEqReset">Reset EQ</button>
+            </div>
+          </div>
         </div>
-      </div>
 
       <div class="ap-panel" id="apSkinPanel">
         <div class="ap-panel-inner">
@@ -1109,6 +1131,15 @@
       fxGrid: document.getElementById("apFxGrid"),
       fxMore: document.getElementById("apFxMore"),
 
+      tabPresets: document.getElementById("apTabPresets"),
+      tabEq: document.getElementById("apTabEq"),
+      presetSection: document.getElementById("apPresetSection"),
+      eqSection: document.getElementById("apEqSection"),
+      eqBass: document.getElementById("apEqBass"),
+      eqMid: document.getElementById("apEqMid"),
+      eqTreble: document.getElementById("apEqTreble"),
+      eqReset: document.getElementById("apEqReset"),
+
       skinPanel: document.getElementById("apSkinPanel"),
       closeSkin: document.getElementById("apCloseSkin"),
       downloadedOpen: document.getElementById("apDownloadedOpen"),
@@ -1146,6 +1177,19 @@
     AP.closeSkin.innerHTML = iconBack();
     AP.downloadedOpen.innerHTML = iconSettings();
     AP.closeQueue.innerHTML = iconBack();
+  }
+
+  function switchFxTab(tab) {
+    const AP = window.__AP;
+    if (!AP) return;
+
+    const showEq = tab === "eq";
+
+    AP.tabPresets?.classList.toggle("active", !showEq);
+    AP.tabEq?.classList.toggle("active", showEq);
+
+    AP.presetSection?.classList.toggle("ap-hidden", showEq);
+    AP.eqSection?.classList.toggle("ap-hidden", !showEq);
   }
 
   function bindEvents() {
@@ -1207,6 +1251,68 @@
       e.preventDefault();
       e.stopPropagation();
       openFxPanel();
+    });
+
+    AP.tabPresets?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      switchFxTab("presets");
+    });
+
+    AP.tabEq?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      switchFxTab("eq");
+    });
+
+    AP.eqBass?.addEventListener("input", () => {
+      if (FX_SAFE_MODE) return;
+      ensureFxGraph().then(() => {
+        if (biquad1) {
+          biquad1.type = "lowshelf";
+          biquad1.frequency.value = 180;
+          biquad1.gain.value = Number(AP.eqBass.value || 0);
+        }
+      });
+    });
+
+    AP.eqMid?.addEventListener("input", () => {
+      if (FX_SAFE_MODE) return;
+      ensureFxGraph().then(() => {
+        if (biquad2) {
+          biquad2.type = "peaking";
+          biquad2.frequency.value = 1200;
+          biquad2.Q.value = 1;
+          biquad2.gain.value = Number(AP.eqMid.value || 0);
+        }
+      });
+    });
+
+    AP.eqTreble?.addEventListener("input", () => {
+      if (FX_SAFE_MODE) return;
+      ensureFxGraph().then(() => {
+        if (masterGain) {
+          // keep master unchanged, treble can reuse biquad2 if needed later
+        }
+      });
+    });
+
+    AP.eqReset?.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (AP.eqBass) AP.eqBass.value = 0;
+      if (AP.eqMid) AP.eqMid.value = 0;
+      if (AP.eqTreble) AP.eqTreble.value = 0;
+
+      currentFx = "normal";
+      localStorage.setItem("audiory_player_fx", currentFx);
+      renderFxCards();
+      updateUi();
+
+      if (!FX_SAFE_MODE) {
+        applyFxPreset("normal");
+      }
     });
 
     AP.queueBtn.addEventListener("click", (e) => {
@@ -1711,6 +1817,7 @@
 
   function openFxPanel() {
     const AP = window.__AP;
+    switchFxTab("presets");
     AP.backdrop.classList.add("show");
     AP.sheet.classList.remove("show");
     AP.skinPanel.classList.remove("show");
