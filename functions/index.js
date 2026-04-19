@@ -31,8 +31,8 @@ const {
   onDocumentWritten,
 } = require("firebase-functions/v2/firestore");
 
-// ✅ SendGrid
-const sgMail = require("@sendgrid/mail");
+// ✅ Resend
+const { Resend } = require("resend");
 
 admin.initializeApp({
   storageBucket: "audiory-beat-store.firebasestorage.app",
@@ -54,9 +54,8 @@ const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
 const PRICE_CURRENCY = defineSecret("PRICE_CURRENCY");
 const USD_KES_RATE = defineSecret("USD_KES_RATE");
 
-// SendGrid
-const SENDGRID_API_KEY = defineSecret("SENDGRID_API_KEY");
-const SENDGRID_FROM = defineSecret("SENDGRID_FROM");
+// Resend
+const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 const APP_BASE_URL = defineSecret("APP_BASE_URL");
 
@@ -597,30 +596,38 @@ async function cfFindCustomHostnameByName({ zoneId, apiToken, hostname }) {
 }
 
 /* =========================================================
-✅ SENDGRID EMAIL HELPERS
+✅ RESEND EMAIL HELPERS
 ========================================================= */
-let SENDGRID_READY = false;
+let RESEND_CLIENT = null;
 
-function initSendgrid() {
-  if (SENDGRID_READY) return;
-  const key = SENDGRID_API_KEY.value();
-  if (!key) throw new Error("Missing SENDGRID_API_KEY secret");
-  sgMail.setApiKey(key);
-  SENDGRID_READY = true;
+function getResendClient() {
+  if (RESEND_CLIENT) return RESEND_CLIENT;
+
+  const key = RESEND_API_KEY.value();
+  if (!key) throw new Error("Missing RESEND_API_KEY secret");
+
+  RESEND_CLIENT = new Resend(key);
+  return RESEND_CLIENT;
 }
 
 async function sendEmail({ to, subject, text, html }) {
-  initSendgrid();
-  const from = SENDGRID_FROM.value();
-  if (!from) throw new Error("Missing SENDGRID_FROM secret");
+  const resend = getResendClient();
 
-  await sgMail.send({
-    to,
+  const from = "Audiory <noreply@mail.audiory.site>";
+
+  const result = await resend.emails.send({
     from,
+    to,
     subject,
     text: text || "",
     html: html || "",
   });
+
+  if (result?.error) {
+    throw new Error(result.error.message || "Failed to send email");
+  }
+
+  return result;
 }
 
 /* =========================================================
@@ -1059,7 +1066,7 @@ exports.testEmail = onRequest(
 exports.sendVerificationEmail = onRequest(
   {
     region: "us-central1",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, APP_BASE_URL],
+    secrets: [RESEND_API_KEY, APP_BASE_URL],
   },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
@@ -1114,7 +1121,6 @@ exports.sendVerificationEmail = onRequest(
       return res.json({ ok: true, message: "Verification email sent" });
     } catch (e) {
       console.error("sendVerificationEmail error:", e?.message || e);
-      if (e?.response?.body) console.error("SendGrid body:", e.response.body);
       return res.status(500).json({ ok: false, error: e.message });
     }
   }
@@ -1218,7 +1224,7 @@ exports.verifyEmailToken = onRequest(
 exports.resendVerificationEmail = onRequest(
   {
     region: "us-central1",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, APP_BASE_URL],
+    secrets: [RESEND_API_KEY, APP_BASE_URL],
   },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
@@ -1268,7 +1274,6 @@ exports.resendVerificationEmail = onRequest(
       return res.json({ ok: true, message: "Verification email sent again" });
     } catch (e) {
       console.error("resendVerificationEmail error:", e?.message || e);
-      if (e?.response?.body) console.error("SendGrid body:", e.response.body);
       return res.status(500).json({ ok: false, error: e.message });
     }
   }
