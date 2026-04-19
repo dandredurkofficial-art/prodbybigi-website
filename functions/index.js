@@ -32,6 +32,7 @@ const {
 } = require("firebase-functions/v2/firestore");
 
 // ✅ Resend
+const crypto = require("crypto");
 const { Resend } = require("resend");
 
 admin.initializeApp({
