@@ -56,6 +56,7 @@ const USD_KES_RATE = defineSecret("USD_KES_RATE");
 
 // Resend
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+const RESEND_FROM = defineSecret("RESEND_FROM");
 const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 const APP_BASE_URL = defineSecret("APP_BASE_URL");
 
@@ -5301,7 +5302,7 @@ exports.onProducerSignup = onDocumentCreated(
   {
     region: "us-central1",
     document: "users/{uid}",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+    secrets: [RESEND_API_KEY, RESEND_FROM, ADMIN_NOTIFY_EMAIL],
   },
   async (event) => {
     try {
@@ -5356,7 +5357,7 @@ exports.onUserBecameProducer = onDocumentWritten(
     region: "us-central1",
     maxInstances: 1,
     document: "users/{uid}",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+    secrets: [RESEND_API_KEY, RESEND_FROM, ADMIN_NOTIFY_EMAIL],
   },
   async (event) => {
     try {
@@ -5415,8 +5416,8 @@ exports.onPayoutRequest = onDocumentCreated(
   {
     region: "us-central1",
     maxInstances: 1,
-    document: "payouts/{payoutId}",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+    document: "payoutsRequest/{payoutId}",
+    secrets: [RESEND_API_KEY, RESEND_FROM, ADMIN_NOTIFY_EMAIL],
   },
   async (event) => {
     try {
@@ -5455,7 +5456,7 @@ exports.onOrderPaid = onDocumentUpdated(
   {
     region: "us-central1",
     document: "orders/{orderId}",
-    secrets: [SENDGRID_API_KEY, SENDGRID_FROM, ADMIN_NOTIFY_EMAIL],
+    secrets: [RESEND_API_KEY, RESEND_FROM, ADMIN_NOTIFY_EMAIL],
   },
   async (event) => {
     try {
