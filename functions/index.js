@@ -36,7 +36,6 @@ const { Resend } = require("resend");
 
 admin.initializeApp({
   storageBucket: "audiory-beat-store.firebasestorage.app",
-  credential: admin.credential.cert(require("./serviceAccountKey.json"))
 });
 
 const db = admin.firestore();
