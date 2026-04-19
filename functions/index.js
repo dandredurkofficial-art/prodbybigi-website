@@ -255,18 +255,6 @@ function defaultLicensePaths() {
   };
 }
 
-async function makeAdmin() {
-  const email = "hanselbeatzllc@gmail.com";
-
-  const user = await admin.auth().getUserByEmail(email);
-
-  await admin.auth().setCustomUserClaims(user.uid, { admin: true });
-
-  console.log("Admin claim set for:", user.email, user.uid);
-}
-
-makeAdmin().catch(console.error);
-
 async function ensureBeatFields(beatRef, beatData) {
   if (!beatData) return;
 
