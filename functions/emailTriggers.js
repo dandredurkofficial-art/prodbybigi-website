@@ -108,41 +108,60 @@ exports.onProducerSignupWelcome = onDocumentCreated(
 exports.onPayoutProcessed = onDocumentUpdated(
   {
     region: "us-central1",
-    document: "payouts/{payoutId}",
+    document: "payoutsRequests/{payoutId}",
     secrets: [RESEND_API_KEY, RESEND_FROM],
   },
   async (event) => {
     try {
       const before = event.data?.before?.data() || {};
       const after = event.data?.after?.data() || {};
+      const payoutId = event.params.payoutId;
 
-      const beforeStatus = safeStr(before.status).toLowerCase();
-      const afterStatus = safeStr(after.status).toLowerCase();
+      const beforeCode = Number(before?.rawResult?.Result?.ResultCode);
+      const afterCode = Number(after?.rawResult?.Result?.ResultCode);
 
-      if (beforeStatus === afterStatus) return;
-      if (!["paid", "completed", "sent", "success"].includes(afterStatus)) return;
+      // only send when result becomes successful
+      if (afterCode !== 0) return;
+      if (beforeCode === 0) return;
 
       const producerId = safeStr(after.producerId);
       if (!producerId) return;
 
-      let producerName = "Producer";
-      let producerEmail = safeStr(after.email);
+      const userSnap = await db.collection("users").doc(producerId).get();
+      if (!userSnap.exists) return;
 
-      try {
-        const userSnap = await db.collection("users").doc(producerId).get();
-        if (userSnap.exists) {
-          const u = userSnap.data() || {};
-          producerName = safeStr(u.displayName || u.name || "Producer");
-          if (!producerEmail) producerEmail = safeStr(u.email);
-        }
-      } catch (_) {}
+      const userData = userSnap.data() || {};
+      const producerName = safeStr(userData.displayName || userData.name || "Producer");
+      const producerEmail = safeStr(userData.email).toLowerCase();
 
       if (!producerEmail) return;
 
-      const paymentType = safeStr(after.method || after.type || "Payment");
-      const amount = money(after.amount);
-      const invoice = safeStr(after.invoiceId || after.reference || after.receipt || event.params.payoutId);
-      const dateText = fmtDate(after.updatedAt || after.paidAt || Date.now());
+      const paymentType = safeStr(after.method || "mpesa").toUpperCase();
+      const amount =
+        Number(after.amountUsd || after.amount || 0) > 0
+          ? `$${Number(after.amountUsd || after.amount || 0).toFixed(2)}`
+          : `${Number(after.amountKes || 0)} KES`;
+
+      const dateText = new Date(Number(after.createdAt || Date.now())).toLocaleString();
+
+      let invoice = payoutId;
+      let transactionReceipt = "";
+
+      const resultParams =
+        after?.rawResult?.Result?.ResultParameters?.ResultParameter || [];
+
+      for (const item of resultParams) {
+        const key = safeStr(item?.Key);
+        const value = safeStr(item?.Value);
+
+        if (key === "TransactionReceipt") {
+          transactionReceipt = value;
+        }
+      }
+
+      if (transactionReceipt) {
+        invoice = transactionReceipt;
+      }
 
       await sendEmail({
         to: producerEmail,
@@ -162,7 +181,11 @@ exports.onPayoutProcessed = onDocumentUpdated(
             <div style="max-width:560px;margin:0 auto;padding:40px 16px;">
               <div style="background:#121726;border:1px solid #1d2230;border-radius:20px;padding:32px;">
                 <h2 style="margin:0 0 16px;font-size:28px;color:#ffffff;">Payment processed successfully</h2>
-                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">Dear ${producerName},</p>
+
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
+                  Dear ${producerName},
+                </p>
+
                 <p style="margin:0 0 18px;color:#b6bfd6;line-height:1.7;">
                   A payment was sent to you by Audiory.
                 </p>
@@ -176,7 +199,7 @@ exports.onPayoutProcessed = onDocumentUpdated(
 
                 <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
                   If you have any questions, please contact
-                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>.
+                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>
                 </p>
 
                 <p style="margin:18px 0 0;color:#9ca3af;line-height:1.7;">
@@ -188,6 +211,8 @@ exports.onPayoutProcessed = onDocumentUpdated(
           </div>
         `,
       });
+
+      console.log("Payout processed email sent:", payoutId, producerEmail);
     } catch (e) {
       console.error("onPayoutProcessed error:", e);
     }
