@@ -2,7 +2,7 @@ const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
-const { RESEND_API_KEY, safeStr, sendEmail } = require("./emailUtils");
+const { RESEND_API_KEY, safeStr, sendEmail, RESEND_FROM } = require("./emailUtils");
 
 const db = admin.firestore();
 const APP_BASE_URL = defineSecret("APP_BASE_URL");
@@ -172,7 +172,7 @@ async function createAndSendVerificationEmail({ uid, email, name }) {
 exports.sendVerificationEmail = onRequest(
   {
     region: "us-central1",
-    secrets: [RESEND_API_KEY, APP_BASE_URL],
+    secrets: [RESEND_API_KEY, RESEND_FROM, APP_BASE_URL],
   },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
@@ -365,7 +365,7 @@ exports.verifyEmailToken = onRequest(
 exports.resendVerificationEmail = onRequest(
   {
     region: "us-central1",
-    secrets: [RESEND_API_KEY, APP_BASE_URL],
+    secrets: [RESEND_API_KEY, RESEND_FROM, APP_BASE_URL],
   },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
