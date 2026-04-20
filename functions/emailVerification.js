@@ -175,32 +175,34 @@ exports.sendVerificationEmail = onRequest(
     secrets: [RESEND_API_KEY, APP_BASE_URL],
   },
   async (req, res) => {
-    const stop = handleCorsPreflight(req, res);
-    if (stop) return;
-
     try {
       if (req.method !== "POST") {
         return res.status(405).json({ error: "Use POST" });
       }
 
       const { uid, email, name } = req.body || {};
-      const cleanUid = safeStr(uid);
-      const cleanEmail = safeStr(email).toLowerCase();
-      const cleanName = safeStr(name || "there");
+      const cleanUid = safeStr(uid).trim();
+      const cleanEmail = safeStr(email).trim().toLowerCase();
+      const cleanName = safeStr(name || "there").trim();
 
-      if (!cleanUid) return res.status(400).json({ error: "uid is required" });
-      if (!cleanEmail) return res.status(400).json({ error: "email is required" });
+      if (!cleanUid) {
+        return res.status(400).json({ ok: false, error: "uid is required" });
+      }
+
+      if (!cleanEmail) {
+        return res.status(400).json({ ok: false, error: "email is required" });
+      }
 
       const userSnap = await db.collection("users").doc(cleanUid).get();
       if (!userSnap.exists) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ ok: false, error: "User not found" });
       }
 
       const userData = userSnap.data() || {};
-      const savedEmail = safeStr(userData.email).toLowerCase();
+      const savedEmail = safeStr(userData.email).trim().toLowerCase();
 
       if (savedEmail && savedEmail !== cleanEmail) {
-        return res.status(400).json({ error: "Email does not match user record" });
+        return res.status(400).json({ ok: false, error: "Email does not match user record" });
       }
 
       if (userData.emailVerified === true) {
@@ -222,10 +224,16 @@ exports.sendVerificationEmail = onRequest(
         { merge: true }
       );
 
-      return res.json({ ok: true, message: "Verification email sent" });
+      return res.json({
+        ok: true,
+        message: "Verification email sent",
+      });
     } catch (e) {
-      console.error("sendVerificationEmail error:", e?.message || e);
-      return res.status(500).json({ ok: false, error: e?.message || "Internal error" });
+      console.error("sendVerificationEmail error:", e);
+      return res.status(500).json({
+        ok: false,
+        error: e?.message || "Internal error",
+      });
     }
   }
 );
