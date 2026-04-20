@@ -1,23 +1,11 @@
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
-const { Resend } = require("resend");
 const crypto = require("crypto");
+const { RESEND_API_KEY, safeStr, sendEmail } = require("./emailUtils");
 
 const db = admin.firestore();
-
-/* =========================================================
-   SECRETS
-========================================================= */
-const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const APP_BASE_URL = defineSecret("APP_BASE_URL");
-
-/* =========================================================
-   HELPERS
-========================================================= */
-function safeStr(v) {
-  return String(v ?? "").trim();
-}
 
 const ALLOWED_ORIGINS = [
   "https://audiory.site",
@@ -47,44 +35,6 @@ function handleCorsPreflight(req, res) {
   return false;
 }
 
-/* =========================================================
-   RESEND EMAIL HELPERS
-========================================================= */
-let RESEND_CLIENT = null;
-
-function getResendClient() {
-  if (RESEND_CLIENT) return RESEND_CLIENT;
-
-  const key = RESEND_API_KEY.value();
-  if (!key) throw new Error("Missing RESEND_API_KEY secret");
-
-  RESEND_CLIENT = new Resend(key);
-  return RESEND_CLIENT;
-}
-
-async function sendEmail({ to, subject, text, html }) {
-  const resend = getResendClient();
-
-  const from = "Audiory <noreply@mail.audiory.site>";
-
-  const result = await resend.emails.send({
-    from,
-    to,
-    subject,
-    text: text || "",
-    html: html || "",
-  });
-
-  if (result?.error) {
-    throw new Error(result.error.message || "Failed to send email");
-  }
-
-  return result;
-}
-
-/* =========================================================
-   CUSTOM EMAIL VERIFICATION HELPERS
-========================================================= */
 function makeVerifyToken() {
   return crypto.randomBytes(32).toString("hex");
 }
@@ -216,15 +166,9 @@ async function createAndSendVerificationEmail({ uid, email, name }) {
     html: verifyEmailHtml({ name, verifyUrl: url, email: cleanEmail }),
   });
 
-  return {
-    ok: true,
-    expiresAt,
-  };
+  return { ok: true, expiresAt };
 }
 
-/* =========================================================
-   FUNCTIONS
-========================================================= */
 exports.sendVerificationEmail = onRequest(
   {
     region: "us-central1",
@@ -233,7 +177,6 @@ exports.sendVerificationEmail = onRequest(
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
-    applyCors(req, res);
 
     try {
       if (req.method !== "POST") {
@@ -241,7 +184,6 @@ exports.sendVerificationEmail = onRequest(
       }
 
       const { uid, email, name } = req.body || {};
-
       const cleanUid = safeStr(uid);
       const cleanEmail = safeStr(email).toLowerCase();
       const cleanName = safeStr(name || "there");
@@ -289,13 +231,10 @@ exports.sendVerificationEmail = onRequest(
 );
 
 exports.verifyEmailToken = onRequest(
-  {
-    region: "us-central1",
-  },
+  { region: "us-central1" },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
-    applyCors(req, res);
 
     try {
       if (req.method !== "POST") {
@@ -306,13 +245,8 @@ exports.verifyEmailToken = onRequest(
       const rawToken = safeStr(token);
       const cleanEmail = safeStr(email).toLowerCase();
 
-      if (!rawToken) {
-        return res.status(400).json({ ok: false, error: "token is required" });
-      }
-
-      if (!cleanEmail) {
-        return res.status(400).json({ ok: false, error: "email is required" });
-      }
+      if (!rawToken) return res.status(400).json({ ok: false, error: "token is required" });
+      if (!cleanEmail) return res.status(400).json({ ok: false, error: "email is required" });
 
       const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
 
@@ -324,10 +258,7 @@ exports.verifyEmailToken = onRequest(
         .get();
 
       if (snap.empty) {
-        return res.status(400).json({
-          ok: false,
-          error: "Invalid verification link",
-        });
+        return res.status(400).json({ ok: false, error: "Invalid verification link" });
       }
 
       const docSnap = snap.docs[0];
@@ -335,26 +266,15 @@ exports.verifyEmailToken = onRequest(
       const uid = safeStr(data.uid);
 
       if (!uid) {
-        return res.status(400).json({
-          ok: false,
-          error: "Verification record is invalid",
-        });
+        return res.status(400).json({ ok: false, error: "Verification record is invalid" });
       }
 
       if (data.used === true) {
-        return res.json({
-          ok: true,
-          alreadyVerified: true,
-          uid,
-          email: cleanEmail,
-        });
+        return res.json({ ok: true, alreadyVerified: true, uid, email: cleanEmail });
       }
 
       if (Number(data.expiresAt || 0) < Date.now()) {
-        return res.status(400).json({
-          ok: false,
-          error: "Verification link expired",
-        });
+        return res.status(400).json({ ok: false, error: "Verification link expired" });
       }
 
       await db.collection("users").doc(uid).set(
@@ -367,9 +287,7 @@ exports.verifyEmailToken = onRequest(
       );
 
       try {
-        await admin.auth().updateUser(uid, {
-          emailVerified: true,
-        });
+        await admin.auth().updateUser(uid, { emailVerified: true });
       } catch (e) {
         console.warn("admin.auth().updateUser emailVerified failed:", e?.message || e);
       }
@@ -383,18 +301,10 @@ exports.verifyEmailToken = onRequest(
         { merge: true }
       );
 
-      return res.json({
-        ok: true,
-        verified: true,
-        uid,
-        email: cleanEmail,
-      });
+      return res.json({ ok: true, verified: true, uid, email: cleanEmail });
     } catch (e) {
       console.error("verifyEmailToken error:", e?.message || e);
-      return res.status(500).json({
-        ok: false,
-        error: e?.message || "Internal error",
-      });
+      return res.status(500).json({ ok: false, error: e?.message || "Internal error" });
     }
   }
 );
@@ -407,7 +317,6 @@ exports.resendVerificationEmail = onRequest(
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
     if (stop) return;
-    applyCors(req, res);
 
     try {
       if (req.method !== "POST") {
@@ -428,9 +337,7 @@ exports.resendVerificationEmail = onRequest(
       const email = safeStr(userData.email).toLowerCase();
       const name = safeStr(userData.displayName || userData.name || "there");
 
-      if (!email) {
-        return res.status(400).json({ error: "User email missing" });
-      }
+      if (!email) return res.status(400).json({ error: "User email missing" });
 
       if (userData.emailVerified === true) {
         return res.json({ ok: true, alreadyVerified: true });
