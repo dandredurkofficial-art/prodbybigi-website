@@ -66,40 +66,40 @@ exports.onProducerSignupWelcome = onDocumentCreated(
       if (!email) return;
 
       await sendEmail({
-  to: email,
-  subject: "Your Audiory producer account is ready",
-  text:
-    `Dear ${name},\n\n` +
-    `Your Audiory producer account has been created successfully.\n\n` +
-    `You can now upload beats, set prices, and start selling on Audiory.\n\n` +
-    `If you have any questions, please contact support@audiory.site\n\n` +
-    `Best Regards,\n` +
-    `The Audiory Team`,
-  html: `
-    <div style="margin:0;padding:0;background:#0b0d12;font-family:Inter,Arial,sans-serif;color:#ffffff;">
-      <div style="max-width:560px;margin:0 auto;padding:40px 16px;">
-        <div style="background:#121726;border:1px solid #1d2230;border-radius:20px;padding:32px;">
-          <h2 style="margin:0 0 16px;font-size:28px;color:#ffffff;">Your Audiory producer account is ready</h2>
-          <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">Dear ${name},</p>
-          <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
-            Your Audiory producer account has been created successfully.
-          </p>
-          <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
-            You can now upload beats, set prices, and start selling on Audiory.
-          </p>
-          <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
-            If you have any questions, please contact
-            <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>
-          </p>
-          <p style="margin:18px 0 0;color:#9ca3af;line-height:1.7;">
-            Best Regards,<br>
-            The Audiory Team
-          </p>
-        </div>
-      </div>
-    </div>
-  `,
-});
+        to: email,
+        subject: "Your Audiory producer account is ready",
+        text:
+          `Dear ${name},\n\n` +
+          `Your Audiory producer account has been created successfully.\n\n` +
+          `You can now upload beats, set prices, and start selling on Audiory.\n\n` +
+          `If you have any questions, please contact support@audiory.site\n\n` +
+          `Best Regards,\n` +
+          `The Audiory Team`,
+        html: `
+          <div style="margin:0;padding:0;background:#0b0d12;font-family:Inter,Arial,sans-serif;color:#ffffff;">
+            <div style="max-width:560px;margin:0 auto;padding:40px 16px;">
+              <div style="background:#121726;border:1px solid #1d2230;border-radius:20px;padding:32px;">
+                <h2 style="margin:0 0 16px;font-size:28px;color:#ffffff;">Your Audiory producer account is ready</h2>
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">Dear ${name},</p>
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
+                  Your Audiory producer account has been created successfully.
+                </p>
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
+                  You can now upload beats, set prices, and start selling on Audiory.
+                </p>
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
+                  If you have any questions, please contact
+                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>
+                </p>
+                <p style="margin:18px 0 0;color:#9ca3af;line-height:1.7;">
+                  Best Regards,<br>
+                  The Audiory Team
+                </p>
+              </div>
+            </div>
+          </div>
+        `,
+      });
 
       const adminTo = safeStr(ADMIN_NOTIFY_EMAIL.value());
       if (adminTo) {
