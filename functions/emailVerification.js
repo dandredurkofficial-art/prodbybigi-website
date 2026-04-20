@@ -236,15 +236,103 @@ exports.verifyEmailToken = onRequest(
   },
   async (req, res) => {
     try {
-      return res.status(200).json({
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
+      }
+
+      const { token, email } = req.body || {};
+      const rawToken = safeStr(token).trim();
+      const cleanEmail = safeStr(email).trim().toLowerCase();
+
+      if (!rawToken) {
+        return res.status(400).json({ ok: false, error: "token is required" });
+      }
+
+      if (!cleanEmail) {
+        return res.status(400).json({ ok: false, error: "email is required" });
+      }
+
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
+
+      const snap = await db
+        .collection("emailVerifications")
+        .where("tokenHash", "==", tokenHash)
+        .where("email", "==", cleanEmail)
+        .limit(1)
+        .get();
+
+      if (snap.empty) {
+        return res.status(400).json({
+          ok: false,
+          error: "Invalid verification link",
+        });
+      }
+
+      const docSnap = snap.docs[0];
+      const data = docSnap.data() || {};
+      const uid = safeStr(data.uid).trim();
+
+      if (!uid) {
+        return res.status(400).json({
+          ok: false,
+          error: "Verification record is invalid",
+        });
+      }
+
+      if (data.used === true) {
+        return res.json({
+          ok: true,
+          alreadyVerified: true,
+          uid,
+          email: cleanEmail,
+        });
+      }
+
+      if (Number(data.expiresAt || 0) < Date.now()) {
+        return res.status(400).json({
+          ok: false,
+          error: "Verification link expired",
+        });
+      }
+
+      await db.collection("users").doc(uid).set(
+        {
+          emailVerified: true,
+          emailVerifiedAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      try {
+        await admin.auth().updateUser(uid, { emailVerified: true });
+      } catch (e) {
+        console.warn("admin auth update failed:", e?.message || e);
+      }
+
+      await docSnap.ref.set(
+        {
+          used: true,
+          usedAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      return res.json({
         ok: true,
-        message: "verifyEmailToken is alive",
+        verified: true,
+        uid,
+        email: cleanEmail,
       });
     } catch (e) {
-      console.error("verifyEmailToken test error:", e);
+      console.error("verifyEmailToken error:", e);
       return res.status(500).json({
         ok: false,
-        error: e.message,
+        error: e?.message || "Internal error",
       });
     }
   }
