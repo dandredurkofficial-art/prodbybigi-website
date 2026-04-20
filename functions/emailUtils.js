@@ -2,6 +2,7 @@ const { defineSecret } = require("firebase-functions/params");
 const { Resend } = require("resend");
 
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
+const RESEND_FROM = defineSecret("RESEND_FROM");
 
 let RESEND_CLIENT = null;
 
@@ -22,7 +23,8 @@ function getResendClient() {
 async function sendEmail({ to, subject, text, html }) {
   const resend = getResendClient();
 
-  const from = "Audiory <noreply@mail.audiory.site>";
+  const from = safeStr(RESEND_FROM.value());
+  if (!from) throw new Error("Missing RESEND_FROM secret");
 
   const result = await resend.emails.send({
     from,
@@ -41,6 +43,7 @@ async function sendEmail({ to, subject, text, html }) {
 
 module.exports = {
   RESEND_API_KEY,
+  RESEND_FROM,
   safeStr,
   sendEmail,
 };
