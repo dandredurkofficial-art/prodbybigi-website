@@ -33,6 +33,8 @@ const {
 
 // ✅ Resend
 const { Resend } = require("resend");
+const crypto = require("crypto");
+const { error } = require("console");
 
 admin.initializeApp({
   storageBucket: "audiory-beat-store.firebasestorage.app",
@@ -196,9 +198,6 @@ function money(n) {
   if (!isFinite(v)) return "$0.00";
   return "$" + v.toFixed(2);
 }
-
-const crypto = require("crypto");
-const { error } = require("console");
 
 function toKey(x) {
   return String(x || "").trim().toLowerCase();
