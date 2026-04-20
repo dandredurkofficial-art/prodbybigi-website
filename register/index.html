@@ -667,19 +667,34 @@
 
       syncAgree();
     })();
+    
+  document.getElementById("createBtn")?.addEventListener("click", async ()=>{
+    const agreed = document.getElementById("agreeTerms")?.checked;
+    const status = document.getElementById("status");
+    const btn = document.getElementById("createBtn");
 
-    document.getElementById("createBtn")?.addEventListener("click", ()=>{
-      const agreed = document.getElementById("agreeTerms")?.checked;
-      const status = document.getElementById("status");
+    if (!agreed){
+      if (status) status.textContent = "Please agree to the Terms of Service and Privacy Policy.";
+      return;
+    }
 
-      if (!agreed){
-        if (status) status.textContent = "Please agree to the Terms of Service and Privacy Policy.";
-        return;
+    try{
+      if (status) status.textContent = "";
+      if (btn){
+        btn.disabled = true;
+        btn.textContent = "Creating Account...";
       }
 
-      if (status) status.textContent = "";
-      window.registerUser?.();
-    });
+      await window.registerUser?.();
+    } catch (e){
+      console.error(e);
+    } finally {
+      if (btn){
+        btn.disabled = false;
+        btn.textContent = "Create Account";
+      }
+    }
+  });
 
     (function(){
       const pw = document.getElementById("password");
