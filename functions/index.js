@@ -61,12 +61,6 @@ const MPESA_CALLBACK_URL = defineSecret("MPESA_CALLBACK_URL");
 const PRICE_CURRENCY = defineSecret("PRICE_CURRENCY");
 const USD_KES_RATE = defineSecret("USD_KES_RATE");
 
-// Resend
-const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
-const RESEND_FROM = defineSecret("RESEND_FROM");
-const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
-const APP_BASE_URL = defineSecret("APP_BASE_URL");
-
 // PayPal
 const PAYPAL_CLIENT_ID = defineSecret("PAYPAL_CLIENT_ID");
 const PAYPAL_CLIENT_SECRET = defineSecret("PAYPAL_CLIENT_SECRET");
