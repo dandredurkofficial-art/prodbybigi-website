@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login</title>
+  <title>Login | Audiory Buyer & Producer Access</title>
   <link rel="stylesheet" href="/css/auth.css" />
   <link rel="stylesheet" href="/css/mobile-fix.css">
   <style>
@@ -261,8 +261,46 @@
   <script type="module" src="/auth-ui.js"></script>
 
   <script>
-    document.getElementById("loginBtn")?.addEventListener("click", () => window.loginUser?.());
-    document.getElementById("resetBtn")?.addEventListener("click", () => window.resetPassword?.());
+    document.getElementById("loginBtn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("loginBtn");
+  const status = document.getElementById("status");
+
+  try{
+    if (status) status.textContent = "";
+    if (btn){
+      btn.disabled = true;
+      btn.textContent = "Logging in...";
+    }
+
+    await window.loginUser?.();
+  } catch (e){
+    console.error(e);
+  } finally {
+    if (btn){
+      btn.disabled = false;
+      btn.textContent = "Login";
+    }
+  }
+});
+    document.getElementById("resetBtn")?.addEventListener("click", async () => {
+  const btn = document.getElementById("resetBtn");
+
+  try{
+    if (btn){
+      btn.disabled = true;
+      btn.textContent = "Sending reset email...";
+    }
+
+    await window.resetPassword?.();
+  } catch (e){
+    console.error(e);
+  } finally {
+    if (btn){
+      btn.disabled = false;
+      btn.textContent = "Forgot password?";
+    }
+  }
+});
 
     (function(){
       const pw = document.getElementById("password");
