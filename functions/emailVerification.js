@@ -245,11 +245,17 @@ exports.verifyEmailToken = onRequest(
       const cleanEmail = safeStr(email).trim().toLowerCase();
 
       if (!rawToken) {
-        return res.status(400).json({ ok: false, error: "token is required" });
+        return res.status(400).json({
+          ok: false,
+          error: "token is required",
+        });
       }
 
       if (!cleanEmail) {
-        return res.status(400).json({ ok: false, error: "email is required" });
+        return res.status(400).json({
+          ok: false,
+          error: "email is required",
+        });
       }
 
       const tokenHash = crypto
@@ -308,9 +314,11 @@ exports.verifyEmailToken = onRequest(
       );
 
       try {
-        await admin.auth().updateUser(uid, { emailVerified: true });
+        await admin.auth().updateUser(uid, {
+          emailVerified: true,
+        });
       } catch (e) {
-        console.warn("admin auth update failed:", e?.message || e);
+        console.warn("admin.auth update failed:", e?.message || e);
       }
 
       await docSnap.ref.set(
