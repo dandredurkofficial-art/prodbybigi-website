@@ -1085,7 +1085,6 @@ exports.sendVerificationEmail = onRequest(
 exports.verifyEmailToken = onRequest(
   {
     region: "us-central1",
-    secrets: [APP_BASE_URL],
   },
   async (req, res) => {
     const stop = handleCorsPreflight(req, res);
@@ -1101,10 +1100,18 @@ exports.verifyEmailToken = onRequest(
       const rawToken = safeStr(token).trim();
       const cleanEmail = safeStr(email).trim().toLowerCase();
 
-      if (!rawToken) return res.status(400).json({ error: "token is required" });
-      if (!cleanEmail) return res.status(400).json({ error: "email is required" });
+      if (!rawToken) {
+        return res.status(400).json({ ok: false, error: "token is required" });
+      }
 
-      const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+      if (!cleanEmail) {
+        return res.status(400).json({ ok: false, error: "email is required" });
+      }
+
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(rawToken)
+        .digest("hex");
 
       const snap = await db
         .collection("emailVerifications")
@@ -1114,7 +1121,10 @@ exports.verifyEmailToken = onRequest(
         .get();
 
       if (snap.empty) {
-        return res.status(400).json({ ok: false, error: "Invalid verification link" });
+        return res.status(400).json({
+          ok: false,
+          error: "Invalid verification link"
+        });
       }
 
       const docSnap = snap.docs[0];
@@ -1122,7 +1132,10 @@ exports.verifyEmailToken = onRequest(
       const uid = safeStr(data.uid).trim();
 
       if (!uid) {
-        return res.status(400).json({ ok: false, error: "Verification record is invalid" });
+        return res.status(400).json({
+          ok: false,
+          error: "Verification record is invalid"
+        });
       }
 
       if (data.used === true) {
@@ -1135,7 +1148,10 @@ exports.verifyEmailToken = onRequest(
       }
 
       if (Number(data.expiresAt || 0) < Date.now()) {
-        return res.status(400).json({ ok: false, error: "Verification link expired" });
+        return res.status(400).json({
+          ok: false,
+          error: "Verification link expired"
+        });
       }
 
       await db.collection("users").doc(uid).set(
@@ -1148,11 +1164,9 @@ exports.verifyEmailToken = onRequest(
       );
 
       try {
-        await admin.auth().updateUser(uid, {
-          emailVerified: true,
-        });
+        await admin.auth().updateUser(uid, { emailVerified: true });
       } catch (e) {
-        console.warn("admin.auth().updateUser emailVerified failed:", e?.message || e);
+        console.warn("admin auth update failed:", e?.message || e);
       }
 
       await docSnap.ref.set(
@@ -1171,8 +1185,11 @@ exports.verifyEmailToken = onRequest(
         email: cleanEmail,
       });
     } catch (e) {
-      console.error("verifyEmailToken error:", e?.message || e);
-      return res.status(500).json({ ok: false, error: e.message });
+      console.error("verifyEmailToken error:", e);
+      return res.status(500).json({
+        ok: false,
+        error: e?.message || "Internal error"
+      });
     }
   }
 );
