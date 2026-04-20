@@ -6,43 +6,51 @@ const crypto = require("crypto");
 
 const db = admin.firestore();
 
+/* =========================================================
+   SECRETS
+========================================================= */
 const RESEND_API_KEY = defineSecret("RESEND_API_KEY");
 const APP_BASE_URL = defineSecret("APP_BASE_URL");
 
-let RESEND_CLIENT = null;
-
+/* =========================================================
+   HELPERS
+========================================================= */
 function safeStr(v) {
-  return String(v || "");
+  return String(v ?? "").trim();
+}
+
+const ALLOWED_ORIGINS = [
+  "https://audiory.site",
+  "https://www.audiory.site",
+  "http://localhost:5000",
+  "http://127.0.0.1:5000",
+  "http://localhost:5500",
+  "http://127.0.0.1:5500",
+];
+
+function applyCors(req, res) {
+  const origin = req.headers.origin || "";
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.set("Access-Control-Allow-Origin", origin);
+  }
+  res.set("Vary", "Origin");
+  res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
 }
 
 function handleCorsPreflight(req, res) {
+  applyCors(req, res);
   if (req.method === "OPTIONS") {
-    applyCors(req, res);
     res.status(204).send("");
     return true;
   }
   return false;
 }
 
-function applyCors(req, res) {
-  const allowed = [
-    "https://audiory.site",
-    "https://www.audiory.site",
-    "http://localhost:5000",
-    "http://127.0.0.1:5000",
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-  ];
-
-  const origin = req.headers.origin || "";
-  if (allowed.includes(origin)) {
-    res.set("Access-Control-Allow-Origin", origin);
-  }
-
-  res.set("Vary", "Origin");
-  res.set("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-  res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
-}
+/* =========================================================
+   RESEND EMAIL HELPERS
+========================================================= */
+let RESEND_CLIENT = null;
 
 function getResendClient() {
   if (RESEND_CLIENT) return RESEND_CLIENT;
@@ -74,6 +82,9 @@ async function sendEmail({ to, subject, text, html }) {
   return result;
 }
 
+/* =========================================================
+   CUSTOM EMAIL VERIFICATION HELPERS
+========================================================= */
 function makeVerifyToken() {
   return crypto.randomBytes(32).toString("hex");
 }
@@ -83,7 +94,7 @@ function verifyEmailExpiryMs() {
 }
 
 function getAppBaseUrl() {
-  const url = safeStr(APP_BASE_URL.value() || "https://audiory.site").trim();
+  const url = safeStr(APP_BASE_URL.value() || "https://audiory.site");
   return url || "https://audiory.site";
 }
 
@@ -91,7 +102,7 @@ function verifyEmailLink(token, email) {
   const base = getAppBaseUrl();
   const qs = new URLSearchParams({
     token: safeStr(token),
-    email: safeStr(email || ""),
+    email: safeStr(email || "").toLowerCase(),
   });
   return `${base}/verify-email/?${qs.toString()}`;
 }
@@ -175,7 +186,7 @@ function verifyEmailText({ name, verifyUrl, email }) {
 }
 
 async function createAndSendVerificationEmail({ uid, email, name }) {
-  const cleanEmail = safeStr(email).trim().toLowerCase();
+  const cleanEmail = safeStr(email).toLowerCase();
   if (!cleanEmail) throw new Error("Email is required");
 
   const token = makeVerifyToken();
@@ -205,9 +216,15 @@ async function createAndSendVerificationEmail({ uid, email, name }) {
     html: verifyEmailHtml({ name, verifyUrl: url, email: cleanEmail }),
   });
 
-  return { ok: true, expiresAt };
+  return {
+    ok: true,
+    expiresAt,
+  };
 }
 
+/* =========================================================
+   FUNCTIONS
+========================================================= */
 exports.sendVerificationEmail = onRequest(
   {
     region: "us-central1",
@@ -224,9 +241,10 @@ exports.sendVerificationEmail = onRequest(
       }
 
       const { uid, email, name } = req.body || {};
-      const cleanUid = safeStr(uid).trim();
-      const cleanEmail = safeStr(email).trim().toLowerCase();
-      const cleanName = safeStr(name || "there").trim();
+
+      const cleanUid = safeStr(uid);
+      const cleanEmail = safeStr(email).toLowerCase();
+      const cleanName = safeStr(name || "there");
 
       if (!cleanUid) return res.status(400).json({ error: "uid is required" });
       if (!cleanEmail) return res.status(400).json({ error: "email is required" });
@@ -237,7 +255,7 @@ exports.sendVerificationEmail = onRequest(
       }
 
       const userData = userSnap.data() || {};
-      const savedEmail = safeStr(userData.email).trim().toLowerCase();
+      const savedEmail = safeStr(userData.email).toLowerCase();
 
       if (savedEmail && savedEmail !== cleanEmail) {
         return res.status(400).json({ error: "Email does not match user record" });
@@ -285,11 +303,16 @@ exports.verifyEmailToken = onRequest(
       }
 
       const { token, email } = req.body || {};
-      const rawToken = safeStr(token).trim();
-      const cleanEmail = safeStr(email).trim().toLowerCase();
+      const rawToken = safeStr(token);
+      const cleanEmail = safeStr(email).toLowerCase();
 
-      if (!rawToken) return res.status(400).json({ ok: false, error: "token is required" });
-      if (!cleanEmail) return res.status(400).json({ ok: false, error: "email is required" });
+      if (!rawToken) {
+        return res.status(400).json({ ok: false, error: "token is required" });
+      }
+
+      if (!cleanEmail) {
+        return res.status(400).json({ ok: false, error: "email is required" });
+      }
 
       const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
 
@@ -301,15 +324,21 @@ exports.verifyEmailToken = onRequest(
         .get();
 
       if (snap.empty) {
-        return res.status(400).json({ ok: false, error: "Invalid verification link" });
+        return res.status(400).json({
+          ok: false,
+          error: "Invalid verification link",
+        });
       }
 
       const docSnap = snap.docs[0];
       const data = docSnap.data() || {};
-      const uid = safeStr(data.uid).trim();
+      const uid = safeStr(data.uid);
 
       if (!uid) {
-        return res.status(400).json({ ok: false, error: "Verification record is invalid" });
+        return res.status(400).json({
+          ok: false,
+          error: "Verification record is invalid",
+        });
       }
 
       if (data.used === true) {
@@ -322,7 +351,10 @@ exports.verifyEmailToken = onRequest(
       }
 
       if (Number(data.expiresAt || 0) < Date.now()) {
-        return res.status(400).json({ ok: false, error: "Verification link expired" });
+        return res.status(400).json({
+          ok: false,
+          error: "Verification link expired",
+        });
       }
 
       await db.collection("users").doc(uid).set(
@@ -335,9 +367,11 @@ exports.verifyEmailToken = onRequest(
       );
 
       try {
-        await admin.auth().updateUser(uid, { emailVerified: true });
+        await admin.auth().updateUser(uid, {
+          emailVerified: true,
+        });
       } catch (e) {
-        console.warn("admin auth update failed:", e?.message || e);
+        console.warn("admin.auth().updateUser emailVerified failed:", e?.message || e);
       }
 
       await docSnap.ref.set(
@@ -357,7 +391,10 @@ exports.verifyEmailToken = onRequest(
       });
     } catch (e) {
       console.error("verifyEmailToken error:", e?.message || e);
-      return res.status(500).json({ ok: false, error: e?.message || "Internal error" });
+      return res.status(500).json({
+        ok: false,
+        error: e?.message || "Internal error",
+      });
     }
   }
 );
@@ -378,7 +415,8 @@ exports.resendVerificationEmail = onRequest(
       }
 
       const { uid } = req.body || {};
-      const cleanUid = safeStr(uid).trim();
+      const cleanUid = safeStr(uid);
+
       if (!cleanUid) return res.status(400).json({ error: "uid is required" });
 
       const userSnap = await db.collection("users").doc(cleanUid).get();
@@ -387,10 +425,12 @@ exports.resendVerificationEmail = onRequest(
       }
 
       const userData = userSnap.data() || {};
-      const email = safeStr(userData.email).trim().toLowerCase();
+      const email = safeStr(userData.email).toLowerCase();
       const name = safeStr(userData.displayName || userData.name || "there");
 
-      if (!email) return res.status(400).json({ error: "User email missing" });
+      if (!email) {
+        return res.status(400).json({ error: "User email missing" });
+      }
 
       if (userData.emailVerified === true) {
         return res.json({ ok: true, alreadyVerified: true });
