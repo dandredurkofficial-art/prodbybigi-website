@@ -13,28 +13,20 @@ const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
-exports.generateTags = require("./generateTags").generateTags;
-
-// ✅ Safe fetch: Node 20 has global fetch, fallback to node-fetch v2 (CommonJS)
-let fetchFn = global.fetch;
-if (!fetchFn) {
-  // node-fetch v2 => require
-  fetchFn = require("node-fetch");
-}
-// ✅ Firebase Storage
-const { getStorage } = require("firebase-admin/storage");
-
-// ✅ Firestore triggers (v2)
 const {
   onDocumentCreated,
   onDocumentUpdated,
   onDocumentWritten,
 } = require("firebase-functions/v2/firestore");
+const { getStorage } = require("firebase-admin/storage");
 
-// ✅ Resend
-const { Resend } = require("resend");
-const crypto = require("crypto");
-const { error } = require("console");
+exports.generateTags = require("./generateTags").generateTags;
+
+// safe fetch
+let fetchFn = global.fetch;
+if (!fetchFn) {
+  fetchFn = require("node-fetch");
+}
 
 admin.initializeApp({
   storageBucket: "audiory-beat-store.firebasestorage.app",
@@ -42,6 +34,13 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const bucket = getStorage().bucket("audiory-beat-store.firebasestorage.app");
+
+// email verification functions moved to separate file
+const emailVerification = require("./emailVerification");
+
+exports.sendVerificationEmail = emailVerification.sendVerificationEmail;
+exports.verifyEmailToken = emailVerification.verifyEmailToken;
+exports.resendVerificationEmail = emailVerification.resendVerificationEmail;
 
 /* =========================================================
 ✅ SECRETS
