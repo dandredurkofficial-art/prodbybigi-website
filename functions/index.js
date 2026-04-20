@@ -44,10 +44,9 @@ exports.resendVerificationEmail = emailVerification.resendVerificationEmail;
 
 const emailTriggers = require("./emailTriggers");
 
-exports.onProducerSignup = emailTriggers.onProducerSignup;
-exports.onUserBecameProducer = emailTriggers.onUserBecameProducer;
-exports.onPayoutRequest = emailTriggers.onPayoutRequest;
-exports.onOrderPaid = emailTriggers.onOrderPaid;
+exports.onProducerSignupWelcome = emailTriggers.onProducerSignupWelcome;
+exports.onPayoutProcessed = emailTriggers.onPayoutProcessed;
+exports.onBuyerOrderPaidInvoice = emailTriggers.onBuyerOrderPaidInvoice;
 
 /* =========================================================
 ✅ SECRETS
