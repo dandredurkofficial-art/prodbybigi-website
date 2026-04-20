@@ -6,23 +6,47 @@ const { sendEmail, safeStr, RESEND_API_KEY, RESEND_FROM } = require("./emailUtil
 const db = admin.firestore();
 const ADMIN_NOTIFY_EMAIL = defineSecret("ADMIN_NOTIFY_EMAIL");
 
-function money(v) {
+function moneyUsd(v) {
   const n = Number(v || 0);
   return `$${n.toFixed(2)}`;
 }
 
-function fmtDate(v) {
-  const ms = Number(v || Date.now());
-  if (!ms) return new Date().toLocaleString();
-  return new Date(ms).toLocaleString();
+function moneyKes(v) {
+  const n = Number(v || 0);
+  return `${n} KES`;
+}
+
+function formatDate(value) {
+  try {
+    if (!value) return new Date().toLocaleString();
+    if (typeof value?.toDate === "function") return value.toDate().toLocaleString();
+    if (typeof value === "number") return new Date(value).toLocaleString();
+    return new Date(value).toLocaleString();
+  } catch {
+    return new Date().toLocaleString();
+  }
 }
 
 function isProducerProfile(data) {
   return String(data?.role || "").toLowerCase() === "producer";
 }
 
+function getResultParametersArray(after) {
+  return after?.rawResult?.Result?.ResultParameters?.ResultParameter || [];
+}
+
+function getResultParameterValue(after, keyName) {
+  const arr = getResultParametersArray(after);
+  for (const item of arr) {
+    if (safeStr(item?.Key) === keyName) {
+      return item?.Value;
+    }
+  }
+  return "";
+}
+
 /* =========================================================
-✅ 1) WELCOME EMAIL FOR PRODUCER SIGNUP
+✅ 1) WELCOME EMAIL FOR NEW PRODUCER
 ========================================================= */
 exports.onProducerSignupWelcome = onDocumentCreated(
   {
@@ -36,7 +60,7 @@ exports.onProducerSignupWelcome = onDocumentCreated(
       if (!isProducerProfile(data)) return;
 
       const uid = event.params.uid;
-      const email = safeStr(data.email);
+      const email = safeStr(data.email).toLowerCase();
       const name = safeStr(data.displayName || data.name || "Producer");
 
       if (!email) return;
@@ -47,7 +71,7 @@ exports.onProducerSignupWelcome = onDocumentCreated(
         text:
           `Dear ${name},\n\n` +
           `Welcome to Audiory.\n\n` +
-          `Your producer account is now ready. You can upload beats, set prices, build your store, and start selling.\n\n` +
+          `Your producer account is now ready. You can upload beats, set prices, customize your store, and start selling.\n\n` +
           `If you have any questions, please contact support@audiory.site\n\n` +
           `Best Regards,\n` +
           `The Audiory Team`,
@@ -61,11 +85,11 @@ exports.onProducerSignupWelcome = onDocumentCreated(
                   Your producer account is now ready.
                 </p>
                 <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
-                  You can now upload beats, set prices, build your store, and start selling on Audiory.
+                  You can now upload beats, set prices, customize your store, and start selling on Audiory.
                 </p>
                 <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
                   If you have any questions, please contact
-                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>.
+                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>
                 </p>
                 <p style="margin:18px 0 0;color:#9ca3af;line-height:1.7;">
                   Best Regards,<br>
@@ -95,6 +119,8 @@ exports.onProducerSignupWelcome = onDocumentCreated(
           `,
         });
       }
+
+      console.log("Producer welcome email sent:", uid, email);
     } catch (e) {
       console.error("onProducerSignupWelcome error:", e);
     }
@@ -103,7 +129,7 @@ exports.onProducerSignupWelcome = onDocumentCreated(
 
 /* =========================================================
 ✅ 2) PAYOUT PROCESSED EMAIL TO PRODUCER
-   Trigger when payout status becomes "paid" or "completed"
+   Watches payoutsRequests and sends only when M-Pesa result is successful
 ========================================================= */
 exports.onPayoutProcessed = onDocumentUpdated(
   {
@@ -120,48 +146,50 @@ exports.onPayoutProcessed = onDocumentUpdated(
       const beforeCode = Number(before?.rawResult?.Result?.ResultCode);
       const afterCode = Number(after?.rawResult?.Result?.ResultCode);
 
-      // only send when result becomes successful
+      // only fire when it becomes successful
       if (afterCode !== 0) return;
       if (beforeCode === 0) return;
 
       const producerId = safeStr(after.producerId);
-      if (!producerId) return;
+      if (!producerId) {
+        console.warn("onPayoutProcessed skipped: missing producerId on payout doc", payoutId);
+        return;
+      }
 
       const userSnap = await db.collection("users").doc(producerId).get();
-      if (!userSnap.exists) return;
+      if (!userSnap.exists) {
+        console.warn("onPayoutProcessed skipped: producer user not found", producerId);
+        return;
+      }
 
       const userData = userSnap.data() || {};
       const producerName = safeStr(userData.displayName || userData.name || "Producer");
       const producerEmail = safeStr(userData.email).toLowerCase();
 
-      if (!producerEmail) return;
-
-      const paymentType = safeStr(after.method || "mpesa").toUpperCase();
-      const amount =
-        Number(after.amountUsd || after.amount || 0) > 0
-          ? `$${Number(after.amountUsd || after.amount || 0).toFixed(2)}`
-          : `${Number(after.amountKes || 0)} KES`;
-
-      const dateText = new Date(Number(after.createdAt || Date.now())).toLocaleString();
-
-      let invoice = payoutId;
-      let transactionReceipt = "";
-
-      const resultParams =
-        after?.rawResult?.Result?.ResultParameters?.ResultParameter || [];
-
-      for (const item of resultParams) {
-        const key = safeStr(item?.Key);
-        const value = safeStr(item?.Value);
-
-        if (key === "TransactionReceipt") {
-          transactionReceipt = value;
-        }
+      if (!producerEmail) {
+        console.warn("onPayoutProcessed skipped: producer email missing", producerId);
+        return;
       }
 
-      if (transactionReceipt) {
-        invoice = transactionReceipt;
+      const methodRaw = safeStr(after.method || "mpesa").toLowerCase();
+      const paymentType = methodRaw === "mpesa" ? "M-Pesa" : methodRaw === "paypal" ? "PayPal" : safeStr(after.method || "Payment");
+
+      let amountText = "";
+      if (Number(after.amountUsd || 0) > 0) {
+        amountText = moneyUsd(after.amountUsd);
+      } else if (Number(after.amount || 0) > 0 && safeStr(after.currency).toUpperCase() === "USD") {
+        amountText = moneyUsd(after.amount);
+      } else if (Number(after.amountKes || 0) > 0) {
+        amountText = moneyKes(after.amountKes);
+      } else {
+        amountText = `${Number(after.amount || 0)}`;
       }
+
+      const receipt = safeStr(getResultParameterValue(after, "TransactionReceipt") || after.receipt || payoutId);
+      const dateText =
+        formatDate(after.paidAt) ||
+        formatDate(after.updatedAt) ||
+        formatDate(after.createdAt);
 
       await sendEmail({
         to: producerEmail,
@@ -170,8 +198,8 @@ exports.onPayoutProcessed = onDocumentUpdated(
           `Dear ${producerName},\n\n` +
           `A payment was sent to you by Audiory.\n\n` +
           `Payment Type: ${paymentType}\n` +
-          `Amount: ${amount}\n` +
-          `Invoice: ${invoice}\n` +
+          `Amount: ${amountText}\n` +
+          `Invoice: ${receipt}\n` +
           `Date: ${dateText}\n\n` +
           `If you have any questions, please contact support@audiory.site\n\n` +
           `Best Regards,\n` +
@@ -192,8 +220,8 @@ exports.onPayoutProcessed = onDocumentUpdated(
 
                 <div style="background:#0f1219;border:1px solid #1d2230;border-radius:14px;padding:16px;margin:18px 0;">
                   <p style="margin:0 0 8px;color:#ffffff;"><b>Payment Type:</b> ${paymentType}</p>
-                  <p style="margin:0 0 8px;color:#ffffff;"><b>Amount:</b> ${amount}</p>
-                  <p style="margin:0 0 8px;color:#ffffff;"><b>Invoice:</b> ${invoice}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Amount:</b> ${amountText}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Invoice:</b> ${receipt}</p>
                   <p style="margin:0;color:#ffffff;"><b>Date:</b> ${dateText}</p>
                 </div>
 
@@ -211,6 +239,15 @@ exports.onPayoutProcessed = onDocumentUpdated(
           </div>
         `,
       });
+
+      // optional but recommended: mark email sent
+      await db.collection("payoutsRequests").doc(payoutId).set(
+        {
+          payoutEmailSent: true,
+          payoutEmailSentAt: Date.now(),
+        },
+        { merge: true }
+      );
 
       console.log("Payout processed email sent:", payoutId, producerEmail);
     } catch (e) {
@@ -240,41 +277,25 @@ exports.onBuyerOrderPaidInvoice = onDocumentUpdated(
       if (beforeStatus === afterStatus) return;
       if (afterStatus !== "PAID") return;
 
-      const buyerId = safeStr(after.buyerId);
-      let buyerName = "Buyer";
-      let buyerEmail = safeStr(after.buyerEmail || after.email);
-
-      if (buyerId) {
-        try {
-          const buyerSnap = await db.collection("users").doc(buyerId).get();
-          if (buyerSnap.exists) {
-            const b = buyerSnap.data() || {};
-            buyerName = safeStr(b.displayName || b.name || "Buyer");
-            if (!buyerEmail) buyerEmail = safeStr(b.email);
-          }
-        } catch (_) {}
-      }
-
+      const buyerEmail = safeStr(after.buyerEmail).toLowerCase();
       if (!buyerEmail) return;
 
-      let beatTitle = safeStr(after.itemTitle || after.beatTitle || "Beat");
-      let producerName = safeStr(after.producerName || "Producer");
+      const buyerName = safeStr(after.buyerName || "Buyer");
+      const beatTitle = safeStr(after.beatTitle || "Beat");
+      const producerName = safeStr(after.producerName || "Producer");
+      const licenseKey = safeStr(after.licenseKey || "basic").toUpperCase();
+      const provider = safeStr(after.provider || "Payment");
+      const receipt = safeStr(after.receipt || orderId);
 
-      const beatId = safeStr(after.beatId);
-      if (beatId) {
-        try {
-          const beatSnap = await db.collection("beats").doc(beatId).get();
-          if (beatSnap.exists) {
-            const beat = beatSnap.data() || {};
-            beatTitle = safeStr(beat.title || beat.beatTitle || beatTitle);
-            producerName = safeStr(beat.producerName || producerName);
-          }
-        } catch (_) {}
-      }
+      const amountUsd = Number(after.amountUsd || 0);
+      const amountKes = Number(after.amountKesPaid || after.amountKes || 0);
 
-      const amount = money(after.amount);
-      const licenseKey = safeStr(after.licenseKey || after.license || "basic");
-      const dateText = fmtDate(after.updatedAt || after.createdAt || Date.now());
+      const amountText =
+        amountUsd > 0
+          ? moneyUsd(amountUsd)
+          : moneyKes(amountKes);
+
+      const dateText = formatDate(after.paidAt || after.updatedAt || after.createdAt);
 
       await sendEmail({
         to: buyerEmail,
@@ -283,10 +304,12 @@ exports.onBuyerOrderPaidInvoice = onDocumentUpdated(
           `Dear ${buyerName},\n\n` +
           `Thank you for your purchase on Audiory.\n\n` +
           `Beat: ${beatTitle}\n` +
-          `Producer: ${producerName || "—"}\n` +
+          `Producer: ${producerName}\n` +
           `License: ${licenseKey}\n` +
-          `Amount: ${amount}\n` +
+          `Payment Method: ${provider}\n` +
+          `Amount: ${amountText}\n` +
           `Invoice: ${orderId}\n` +
+          `Receipt: ${receipt}\n` +
           `Date: ${dateText}\n\n` +
           `If you have any questions, please contact support@audiory.site\n\n` +
           `Best Regards,\n` +
@@ -296,23 +319,29 @@ exports.onBuyerOrderPaidInvoice = onDocumentUpdated(
             <div style="max-width:560px;margin:0 auto;padding:40px 16px;">
               <div style="background:#121726;border:1px solid #1d2230;border-radius:20px;padding:32px;">
                 <h2 style="margin:0 0 16px;font-size:28px;color:#ffffff;">Your Audiory invoice</h2>
-                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">Dear ${buyerName},</p>
+
+                <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
+                  Dear ${buyerName},
+                </p>
+
                 <p style="margin:0 0 18px;color:#b6bfd6;line-height:1.7;">
                   Thank you for your purchase on Audiory.
                 </p>
 
                 <div style="background:#0f1219;border:1px solid #1d2230;border-radius:14px;padding:16px;margin:18px 0;">
                   <p style="margin:0 0 8px;color:#ffffff;"><b>Beat:</b> ${beatTitle}</p>
-                  <p style="margin:0 0 8px;color:#ffffff;"><b>Producer:</b> ${producerName || "—"}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Producer:</b> ${producerName}</p>
                   <p style="margin:0 0 8px;color:#ffffff;"><b>License:</b> ${licenseKey}</p>
-                  <p style="margin:0 0 8px;color:#ffffff;"><b>Amount:</b> ${amount}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Payment Method:</b> ${provider}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Amount:</b> ${amountText}</p>
                   <p style="margin:0 0 8px;color:#ffffff;"><b>Invoice:</b> ${orderId}</p>
+                  <p style="margin:0 0 8px;color:#ffffff;"><b>Receipt:</b> ${receipt}</p>
                   <p style="margin:0;color:#ffffff;"><b>Date:</b> ${dateText}</p>
                 </div>
 
                 <p style="margin:0 0 12px;color:#b6bfd6;line-height:1.7;">
                   If you have any questions, please contact
-                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>.
+                  <a href="mailto:support@audiory.site" style="color:#6cf;text-decoration:none;">support@audiory.site</a>
                 </p>
 
                 <p style="margin:18px 0 0;color:#9ca3af;line-height:1.7;">
@@ -324,6 +353,16 @@ exports.onBuyerOrderPaidInvoice = onDocumentUpdated(
           </div>
         `,
       });
+
+      await db.collection("orders").doc(orderId).set(
+        {
+          invoiceEmailSent: true,
+          invoiceEmailSentAt: Date.now(),
+        },
+        { merge: true }
+      );
+
+      console.log("Buyer invoice email sent:", orderId, buyerEmail);
     } catch (e) {
       console.error("onBuyerOrderPaidInvoice error:", e);
     }
