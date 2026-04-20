@@ -262,45 +262,45 @@
 
   <script>
     document.getElementById("loginBtn")?.addEventListener("click", async () => {
-  const btn = document.getElementById("loginBtn");
-  const status = document.getElementById("status");
+      const btn = document.getElementById("loginBtn");
+      const status = document.getElementById("status");
 
-  try{
-    if (status) status.textContent = "";
-    if (btn){
-      btn.disabled = true;
-      btn.textContent = "Logging in...";
-    }
+      try{
+        if (status) status.textContent = "";
+        if (btn){
+          btn.disabled = true;
+          btn.textContent = "Logging in...";
+        }
 
-    await window.loginUser?.();
-  } catch (e){
-    console.error(e);
-  } finally {
-    if (btn){
-      btn.disabled = false;
-      btn.textContent = "Login";
-    }
-  }
-});
+        await window.loginUser?.();
+      } catch (e){
+        console.error(e);
+      } finally {
+        if (btn){
+          btn.disabled = false;
+          btn.textContent = "Login";
+        }
+      }
+    });
     document.getElementById("resetBtn")?.addEventListener("click", async () => {
-  const btn = document.getElementById("resetBtn");
+      const btn = document.getElementById("resetBtn");
 
-  try{
-    if (btn){
-      btn.disabled = true;
-      btn.textContent = "Sending reset email...";
-    }
+      try{
+        if (btn){
+          btn.disabled = true;
+          btn.textContent = "Sending reset email...";
+        }
 
-    await window.resetPassword?.();
-  } catch (e){
-    console.error(e);
-  } finally {
-    if (btn){
-      btn.disabled = false;
-      btn.textContent = "Forgot password?";
-    }
-  }
-});
+        await window.resetPassword?.();
+      } catch (e){
+        console.error(e);
+      } finally {
+        if (btn){
+          btn.disabled = false;
+          btn.textContent = "Forgot password?";
+        }
+      }
+    });
 
     (function(){
       const pw = document.getElementById("password");
