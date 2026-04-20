@@ -44,7 +44,7 @@ function verifyEmailExpiryMs() {
 }
 
 function getAppBaseUrl() {
-  const url = safeStr(APP_BASE_URL.value() || "https://audiory.site");
+  const url = safeStr(APP_BASE_URL.value() || "https://audiory.site").trim();
   return url || "https://audiory.site";
 }
 
@@ -52,7 +52,7 @@ function verifyEmailLink(token, email) {
   const base = getAppBaseUrl();
   const qs = new URLSearchParams({
     token: safeStr(token),
-    email: safeStr(email || "").toLowerCase(),
+    email: safeStr(email || "").trim().toLowerCase(),
   });
   return `${base}/verify-email/?${qs.toString()}`;
 }
@@ -136,7 +136,7 @@ function verifyEmailText({ name, verifyUrl, email }) {
 }
 
 async function createAndSendVerificationEmail({ uid, email, name }) {
-  const cleanEmail = safeStr(email).toLowerCase();
+  const cleanEmail = safeStr(email).trim().toLowerCase();
   if (!cleanEmail) throw new Error("Email is required");
 
   const token = makeVerifyToken();
@@ -175,9 +175,13 @@ exports.sendVerificationEmail = onRequest(
     secrets: [RESEND_API_KEY, APP_BASE_URL],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+        return res.status(405).json({ ok: false, error: "Use POST" });
       }
 
       const { uid, email, name } = req.body || {};
@@ -243,9 +247,13 @@ exports.verifyEmailToken = onRequest(
     region: "us-central1",
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+        return res.status(405).json({ ok: false, error: "Use POST" });
       }
 
       const { token, email } = req.body || {};
@@ -360,9 +368,13 @@ exports.resendVerificationEmail = onRequest(
     secrets: [RESEND_API_KEY, APP_BASE_URL],
   },
   async (req, res) => {
+    const stop = handleCorsPreflight(req, res);
+    if (stop) return;
+    applyCors(req, res);
+
     try {
       if (req.method !== "POST") {
-        return res.status(405).json({ error: "Use POST" });
+        return res.status(405).json({ ok: false, error: "Use POST" });
       }
 
       const { uid } = req.body || {};
