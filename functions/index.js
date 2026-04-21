@@ -3555,37 +3555,48 @@ exports.b2cResult = onRequest(
         }
 
         // ✅ If success: settle wallet once
-        const producerId = String(data.producerId || "").trim();
-        const amountUsd = Number(data.amountUsd ?? data.amount ?? 0);
+const producerId = String(data.producerId || "").trim();
+const amountUsd = Number(data.amountUsd ?? data.amount ?? 0);
 
-        if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) {
-          tx.set(ref, { ...patch, status: "failed", failReason: "Invalid producerId/amountUsd", updatedAt: Date.now() }, { merge: true });
-          return;
-        }
+if (!producerId || !Number.isFinite(amountUsd) || amountUsd <= 0) {
+  tx.set(ref, {
+    ...patch,
+    status: "failed",
+    failReason: "Invalid producerId/amountUsd",
+    updatedAt: Date.now(),
+  }, { merge: true });
+  return;
+}
 
-        // Idempotency guard (avoid double wallet deduction if callback retries)
-        if (data.walletSettled === true) {
-          tx.set(ref, patch, { merge: true });
-          return;
-        }
+// Idempotency guard
+if (data.walletSettled === true) {
+  tx.set(ref, patch, { merge: true });
+  return;
+}
 
-        const walletRef = db.doc(`wallets/${producerId}`);
-        const wSnap = await tx.get(walletRef);
-        const w = wSnap.exists ? (wSnap.data() || {}) : {};
+const walletRef = db.doc(`wallets/${producerId}`);
+const wSnap = await tx.get(walletRef);
+const w = wSnap.exists ? (wSnap.data() || {}) : {};
 
-        const available = Number(w.availableUsd || 0);
-        const newAvailable = Math.max(0, available - amountUsd);
+const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+const paidOutUsd = Number(w.paidOutUsd || 0);
 
-        tx.set(walletRef, {
-          availableUsd: newAvailable,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
-        }, { merge: true });
+// ✅ IMPORTANT: do NOT touch availableUsd here
+const newPending = Math.max(0, +(pendingPayoutUsd - amountUsd).toFixed(2));
+const newPaidOut = +(paidOutUsd + amountUsd).toFixed(2);
 
-        tx.set(ref, {
-          ...patch,
-          walletSettled: true,
-          walletSettledAt: Date.now(),
-        }, { merge: true });
+tx.set(walletRef, {
+  pendingPayoutUsd: newPending,
+  paidOutUsd: newPaidOut,
+  updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+}, { merge: true });
+
+tx.set(ref, {
+  ...patch,
+  status: "success",
+  walletSettled: true,
+  walletSettledAt: Date.now(),
+}, { merge: true });
       });
 
       return res.status(200).json({ ResultCode: 0, ResultDesc: "Accepted" });
