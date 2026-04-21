@@ -3655,14 +3655,54 @@ exports.b2cTimeout = onRequest(
           .get();
 
         if (!q.empty) {
-          await q.docs[0].ref.set(
-            {
-              status: "timeout",
-              updatedAt: Date.now(),
-              mpesa: { rawTimeout: body },
-            },
-            { merge: true }
-          );
+          const ref = q.docs[0].ref;
+
+          await db.runTransaction(async (tx) => {
+            const snap = await tx.get(ref);
+            if (!snap.exists) return;
+
+            const data = snap.data() || {};
+            if (data.walletRefunded === true) {
+              tx.set(ref, {
+                status: "timeout",
+                updatedAt: Date.now(),
+                mpesa: { ...(data.mpesa || {}), rawTimeout: body },
+              }, { merge: true });
+              return;
+            }
+
+            const producerId = String(data.producerId || "").trim();
+            const amountUsd = Number(data.amountUsd ?? data.amount ?? 0);
+
+            if (producerId && Number.isFinite(amountUsd) && amountUsd > 0) {
+              const walletRef = db.doc(`wallets/${producerId}`);
+              const wSnap = await tx.get(walletRef);
+              const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+              const availableUsd = Number(w.availableUsd || 0);
+              const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+
+              tx.set(walletRef, {
+                availableUsd: +(availableUsd + amountUsd).toFixed(2),
+                pendingPayoutUsd: Math.max(0, +(pendingPayoutUsd - amountUsd).toFixed(2)),
+                updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+              }, { merge: true });
+
+              tx.set(ref, {
+                status: "timeout",
+                updatedAt: Date.now(),
+                walletRefunded: true,
+                walletRefundedAt: Date.now(),
+                mpesa: { ...(data.mpesa || {}), rawTimeout: body },
+              }, { merge: true });
+            } else {
+              tx.set(ref, {
+                status: "timeout",
+                updatedAt: Date.now(),
+                mpesa: { ...(data.mpesa || {}), rawTimeout: body },
+              }, { merge: true });
+            }
+          });
         }
       }
 
@@ -3804,18 +3844,55 @@ exports.processPayoutRequest = onDocumentCreated(
         { merge: true }
       );
     } catch (e) {
-      console.error("processPayoutRequest error:", e);
-      await ref.set(
-        {
-          status: "failed",
-          failReason: e?.message || String(e),
-          updatedAt: Date.now(),
-        },
-        { merge: true }
-      );
+  console.error("processPayoutRequest error:", e);
+
+  await db.runTransaction(async (tx) => {
+    const snap2 = await tx.get(ref);
+    if (!snap2.exists) return;
+
+    const data2 = snap2.data() || {};
+    if (data2.walletRefunded === true) {
+      tx.set(ref, {
+        status: "failed",
+        failReason: e?.message || String(e),
+        updatedAt: Date.now(),
+      }, { merge: true });
+      return;
     }
-  }
-);
+
+    const producerId = String(data2.producerId || "").trim();
+    const amountUsd = Number(data2.amountUsd ?? data2.amount ?? 0);
+
+    if (producerId && Number.isFinite(amountUsd) && amountUsd > 0) {
+      const walletRef = db.doc(`wallets/${producerId}`);
+      const wSnap = await tx.get(walletRef);
+      const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+      const availableUsd = Number(w.availableUsd || 0);
+      const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+
+      tx.set(walletRef, {
+        availableUsd: +(availableUsd + amountUsd).toFixed(2),
+        pendingPayoutUsd: Math.max(0, +(pendingPayoutUsd - amountUsd).toFixed(2)),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      }, { merge: true });
+
+      tx.set(ref, {
+        status: "failed",
+        failReason: e?.message || String(e),
+        walletRefunded: true,
+        walletRefundedAt: Date.now(),
+        updatedAt: Date.now(),
+      }, { merge: true });
+    } else {
+      tx.set(ref, {
+        status: "failed",
+        failReason: e?.message || String(e),
+        updatedAt: Date.now(),
+      }, { merge: true });
+    }
+  });
+}
 
 /* =========================================================
    STK PUSH BOOST PAYMENT
