@@ -3550,9 +3550,38 @@ exports.b2cResult = onRequest(
 
         // ✅ If failed: just write status and exit
         if (!ok) {
-          tx.set(ref, patch, { merge: true });
-          return;
-        }
+  const producerId = String(data.producerId || "").trim();
+  const amountUsd = Number(data.amountUsd ?? data.amount ?? 0);
+
+  if (producerId && Number.isFinite(amountUsd) && amountUsd > 0 && data.walletRefunded !== true) {
+    const walletRef = db.doc(`wallets/${producerId}`);
+    const wSnap = await tx.get(walletRef);
+    const w = wSnap.exists ? (wSnap.data() || {}) : {};
+
+    const availableUsd = Number(w.availableUsd || 0);
+    const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+
+    tx.set(walletRef, {
+      availableUsd: +(availableUsd + amountUsd).toFixed(2),
+      pendingPayoutUsd: Math.max(0, +(pendingPayoutUsd - amountUsd).toFixed(2)),
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    tx.set(ref, {
+      ...patch,
+      status: "failed",
+      walletRefunded: true,
+      walletRefundedAt: Date.now(),
+    }, { merge: true });
+    return;
+  }
+
+  tx.set(ref, {
+    ...patch,
+    status: "failed",
+  }, { merge: true });
+  return;
+}
 
         // ✅ If success: settle wallet once
         const producerId = String(data.producerId || "").trim();
