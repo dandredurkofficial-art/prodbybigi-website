@@ -3891,9 +3891,10 @@ exports.processPayoutRequest = onDocumentCreated(
             updatedAt: Date.now(),
           }, { merge: true });
         }
-      )  
+      });  
+    }
   });
-}
+
 
 /* =========================================================
    STK PUSH BOOST PAYMENT
