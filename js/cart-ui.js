@@ -231,8 +231,15 @@
       }
 
       // Save ids for success page if you want
-      if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
-      if (data.cartId) localStorage.setItem("pb_last_cart_id", data.cartId);
+      if (data.orderId) {
+        localStorage.setItem("pb_last_order_id", data.orderId);
+        sessionStorage.setItem("pb_last_order_id", data.orderId);
+      }
+
+      if (data.cartId) {
+        localStorage.setItem("pb_last_cart_id", data.cartId);
+        sessionStorage.setItem("pb_last_cart_id", data.cartId);
+      }
 
       // accept either approveUrl OR approveLinks array
       const approveUrl =
