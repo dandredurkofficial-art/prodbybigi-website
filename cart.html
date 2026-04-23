@@ -468,60 +468,60 @@
     }
 
     async function createOrder(items){
-  const payload = {
-    items: items.map(it => ({
-      beatId: it.beatId,
-      licenseKey: it.licenseKey,
-      qty: Math.max(1, Number(it.qty || 1))
-    }))
-  };
+      const payload = {
+        items: items.map(it => ({
+          beatId: it.beatId,
+          licenseKey: it.licenseKey,
+          qty: Math.max(1, Number(it.qty || 1))
+        }))
+      };
 
-  const res = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-    method:"POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify(payload)
-  });
+      const res = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(payload)
+      });
 
-  const text = await safeReadText(res);
-  let data = {};
-  try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
+      const text = await safeReadText(res);
+      let data = {};
+      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
 
-  if (!res.ok){
-    throw new Error(
-      (data && (data.message || data.error))
-        ? (data.message || data.error)
-        : ("Create order failed: " + text)
-    );
-  }
+      if (!res.ok){
+        throw new Error(
+          (data && (data.message || data.error))
+            ? (data.message || data.error)
+            : ("Create order failed: " + text)
+        );
+      }
 
-  const approveUrl =
-    data.approveUrl ||
-    data.approval_url ||
-    (Array.isArray(data.approveLinks)
-      ? (data.approveLinks.find(l => l.rel === "approve" || l.rel === "payer-action")?.href)
-      : null);
+      const approveUrl =
+        data.approveUrl ||
+        data.approval_url ||
+        (Array.isArray(data.approveLinks)
+          ? (data.approveLinks.find(l => l.rel === "approve" || l.rel === "payer-action")?.href)
+          : null);
 
-  if (!approveUrl){
-    throw new Error("Create order succeeded but no approval URL returned.");
-  }
+      if (!approveUrl){
+        throw new Error("Create order succeeded but no approval URL returned.");
+      }
 
-  // ✅ save both for success.html
-  if (data.orderId) {
-    localStorage.setItem("pb_last_order_id", data.orderId);
-    sessionStorage.setItem("pb_last_order_id", data.orderId);
-  }
+      // ✅ save both for success.html
+      if (data.orderId) {
+        localStorage.setItem("pb_last_order_id", data.orderId);
+        sessionStorage.setItem("pb_last_order_id", data.orderId);
+      }
 
-  if (data.cartId) {
-    localStorage.setItem("pb_last_cart_id", data.cartId);
-    sessionStorage.setItem("pb_last_cart_id", data.cartId);
-  }
+      if (data.cartId) {
+        localStorage.setItem("pb_last_cart_id", data.cartId);
+        sessionStorage.setItem("pb_last_cart_id", data.cartId);
+      }
 
-  return {
-    approveUrl,
-    orderId: data.orderId || null,
-    cartId: data.cartId || null
-  };
-}
+      return {
+        approveUrl,
+        orderId: data.orderId || null,
+        cartId: data.cartId || null
+      };
+    }
 
     async function createMpesaOrder(items, phone){
       const url = String(window.PB_MPESA_CART_ORDER_URL || "").trim();
