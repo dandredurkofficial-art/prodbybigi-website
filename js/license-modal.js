@@ -152,7 +152,13 @@
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || data.message || "Create order failed");
 
-    if (data.orderId) localStorage.setItem("pb_last_order_id", data.orderId);
+    if (data.orderId) {
+      localStorage.setItem("pb_last_order_id", data.orderId);
+    }
+
+    if (data.cartId) {
+      localStorage.setItem("pb_last_cart_id", data.cartId);
+    }
 
     const links = data.approveLinks || data.links || [];
     const approve =
