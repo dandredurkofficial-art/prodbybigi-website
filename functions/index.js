@@ -819,29 +819,38 @@ async function creditProducerWallet({
   grossAmount,
   currency,
   source,
-  revenueId, // ✅ optional: unique revenue doc id per cart item
+  revenueId,
 }) {
   const gross = Number(grossAmount || 0);
   const fee = Math.round(gross * 0.10 * 100) / 100;
   const net = Math.round((gross - fee) * 100) / 100;
 
-  const producerRef = db.collection("users").doc(producerId);
+  const walletRef = db.collection("wallets").doc(producerId);
 
   await db.runTransaction(async (tx) => {
-    const snap = await tx.get(producerRef);
-    if (!snap.exists) throw new Error("Producer profile missing");
+    const snap = await tx.get(walletRef);
+    const w = snap.exists ? (snap.data() || {}) : {};
+
+    const lifetimeUsd = Number(w.lifetimeUsd || 0);
+    const availableUsd = Number(w.availableUsd || 0);
+    const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+    const paidOutUsd = Number(w.paidOutUsd || 0);
 
     tx.set(
-      producerRef,
+      walletRef,
       {
-        availableBalance: admin.firestore.FieldValue.increment(net),
-        walletUpdatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        lifetimeUsd: +(lifetimeUsd + net).toFixed(2),
+        availableUsd: +(availableUsd + net).toFixed(2),
+        pendingPayoutUsd: +pendingPayoutUsd.toFixed(2),
+        paidOutUsd: +paidOutUsd.toFixed(2),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
 
     const revDocId = safeStr(revenueId || orderId);
     const revRef = db.collection("platformRevenue").doc(revDocId);
+
     tx.set(
       revRef,
       {
