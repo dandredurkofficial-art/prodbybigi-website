@@ -68,7 +68,7 @@
     const auth = getAuth(app);
 
     function setStatus(msg){
-      if (statusText) statusText.textContent = msg;
+      if (statusText) statusText.textContent = msg || "";
     }
 
     function qs(name){
@@ -163,7 +163,7 @@
 
       const data = await r.json().catch(() => ({}));
 
-      if (!r.ok) {
+      if (!r.ok || data?.ok !== true) {
         console.error("Capture failed:", data);
         window.location.href = getErrorRedirect("capture_failed");
         return;
