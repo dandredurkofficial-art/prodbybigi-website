@@ -2072,7 +2072,7 @@ exports.paypalWebhook = onRequest(
        * ✅ SALES EVENTS (YOUR ORIGINAL)
        * ============================
        */
-      if (eventType !== "PAYMENT.CAPTURE.COMPLETED" && eventType !== "CHECKOUT.ORDER.APPROVED") {
+      if (eventType !== "PAYMENT.CAPTURE.COMPLETED") {
         return res.status(200).json({ received: true, ignored: eventType });
       }
 
@@ -2161,10 +2161,21 @@ exports.paypalWebhook = onRequest(
       const orderRef = db.collection("orders").doc(orderId);
       const existing = await orderRef.get();
 
-      const buyerEmail = safeStr(resource?.payer?.email_address || "");
+      const payer =
+        event?.payer ||
+        resource?.payer ||
+        {};
+
+      const buyerEmail = safeStr(
+        payer?.email_address ||
+        resource?.payer_email ||
+        ""
+      );
+
       const payerName =
-        safeStr(resource?.payer?.name?.given_name || "") +
-        (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
+        safeStr(payer?.name?.given_name || "") +
+        (payer?.name?.surname ? " " + safeStr(payer?.name?.surname) : "");
+
       const buyerName = safeStr(payerName).trim();
 
       let beatTitle = "";
