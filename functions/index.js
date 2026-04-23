@@ -780,15 +780,35 @@ async function verifyPayPalWebhookSignature(req) {
 }
 
 function parseAmountFromPayPalEvent(event) {
-  const resource = event?.resource || {};
-  const amt = resource?.amount?.value;
-  const cur = resource?.amount?.currency_code;
-  if (amt && cur) return { value: Number(amt), currency: String(cur) };
+  const resource = event?.resource || null;
 
-  const pu = resource?.purchase_units?.[0];
-  const orderAmt = pu?.amount?.value;
-  const orderCur = pu?.amount?.currency_code;
-  if (orderAmt && orderCur) return { value: Number(orderAmt), currency: String(orderCur) };
+  // Webhook: PAYMENT.CAPTURE.COMPLETED
+  if (resource?.amount?.value && resource?.amount?.currency_code) {
+    return {
+      value: Number(resource.amount.value),
+      currency: String(resource.amount.currency_code),
+    };
+  }
+
+  // Direct capture response: /v2/checkout/orders/{id}/capture
+  const capture =
+    event?.purchase_units?.[0]?.payments?.captures?.[0];
+
+  if (capture?.amount?.value && capture?.amount?.currency_code) {
+    return {
+      value: Number(capture.amount.value),
+      currency: String(capture.amount.currency_code),
+    };
+  }
+
+  // Fallback: order-level amount
+  const pu = event?.purchase_units?.[0] || resource?.purchase_units?.[0];
+  if (pu?.amount?.value && pu?.amount?.currency_code) {
+    return {
+      value: Number(pu.amount.value),
+      currency: String(pu.amount.currency_code),
+    };
+  }
 
   return { value: 0, currency: "USD" };
 }
@@ -1463,11 +1483,19 @@ exports.captureOrder = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST")
+      if (req.method !== "POST") {
         return res.status(405).json({ error: "Use POST" });
+      }
 
       const { orderId, cartId } = req.body || {};
-      if (!orderId) return res.status(400).json({ error: "orderId is required" });
+
+      if (!orderId) {
+        return res.status(400).json({ error: "orderId is required" });
+      }
+
+      if (!cartId) {
+        return res.status(400).json({ error: "cartId is required" });
+      }
 
       const accessToken = await getPayPalAccessToken();
 
@@ -1485,31 +1513,34 @@ exports.captureOrder = onRequest(
       const data = await r.json().catch(() => ({}));
 
       if (!r.ok) {
-        return res
-          .status(400)
-          .json({ error: data?.message || "Capture failed", details: data });
+        return res.status(400).json({
+          error: data?.message || "Capture failed",
+          details: data,
+        });
       }
 
-      /**
-       * ✅ IMPORTANT:
-       * After capture, we process Firestore writes (orders + unlocks).
-       * We need cartId to do that (paypalOrders/{cartId}).
-       *
-       * If your front-end DOES NOT send cartId to captureOrder yet,
-       * then processCartCapture will throw "Cart not found".
-       *
-       * Make sure your capture call includes { orderId, cartId }.
-       */
-      if (cartId) {
-        await processCartCapture({ cartId: String(cartId), captureEvent: data, orderId });
-      } else {
-        console.warn("[captureOrder] cartId missing in request body. Skipping processCartCapture.");
+      if (safeStr(data?.status).toUpperCase() !== "COMPLETED") {
+        return res.status(400).json({
+          error: "PayPal payment was not completed",
+          details: data,
+        });
       }
 
-      return res.json({ ok: true, data });
+      await processCartCapture({
+        cartId: String(cartId),
+        captureEvent: data,
+        orderId,
+      });
+
+      return res.json({
+        ok: true,
+        status: data.status,
+        orderId,
+        cartId,
+      });
     } catch (e) {
       console.error("captureOrder error:", e);
-      applyCors(req, res);
+      try { applyCors(req, res); } catch (_) {}
       return res.status(500).json({ error: e.message });
     }
   }
@@ -1526,8 +1557,23 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
 
   const buyerId = safeStr(cart.buyerId || "");
 
-  const resource = captureEvent?.resource || {};
-  const payerEmail = safeStr(resource?.payer?.email_address || "");
+  // ✅ support both direct capture response and webhook payload
+  const root = captureEvent || {};
+  const resource = root?.resource || root;
+  const payer = root?.payer || resource?.payer || {};
+
+  const payerEmail = safeStr(
+    payer?.email_address ||
+    resource?.payer?.email_address ||
+    ""
+  );
+
+  const payerName =
+    safeStr(payer?.name?.given_name || "") +
+    (payer?.name?.surname ? " " + safeStr(payer?.name?.surname) : "");
+
+  const buyerEmail = payerEmail || null;
+  const buyerName = safeStr(payerName).trim() || null;
 
   // Idempotency: only process once per orderId
   const processedRef = db.collection("paypalOrderCaptures").doc(orderId);
@@ -1536,15 +1582,16 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
 
   const { value, currency } = parseAmountFromPayPalEvent(captureEvent);
 
-  // buyer details (from paypal capture)
-  const buyerEmail = payerEmail || null;
+  const providerCaptureId =
+    safeStr(resource?.id) ||
+    safeStr(root?.purchase_units?.[0]?.payments?.captures?.[0]?.id) ||
+    "";
 
-  const payerName =
-    safeStr(resource?.payer?.name?.given_name || "") +
-    (resource?.payer?.name?.surname ? " " + safeStr(resource?.payer?.name?.surname) : "");
-  const buyerName = safeStr(payerName).trim() || null;
+  const providerStatus =
+    safeStr(resource?.status) ||
+    safeStr(root?.status) ||
+    "";
 
-  // Save main order doc
   const orderRef = db.collection("orders").doc(orderId);
 
   await orderRef.set(
@@ -1555,15 +1602,13 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
       provider: "paypal",
       type: "cart",
       cartId,
-      providerEventId: safeStr(captureEvent?.id),
-      providerCaptureId: safeStr(resource?.id),
-      providerStatus: safeStr(resource?.status),
+      providerEventId: safeStr(root?.id),
+      providerCaptureId,
+      providerStatus,
       amount: Number(value || cart.total || 0),
       currency: currency || cart.currency || "USD",
-
       buyerId: buyerId || null,
       status: "PAID",
-
       payerEmail,
       items,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -1572,14 +1617,12 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     { merge: true }
   );
 
-  // mark capture processed first (prevents double-processing on retries)
   await processedRef.set({
     orderId,
     cartId,
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // unlock + credit per item
   for (let i = 0; i < items.length; i++) {
     const it = items[i] || {};
     const type = safeStr(it.type);
@@ -1592,7 +1635,6 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     const unlockId = `${orderId}__${type}__${id}__${licenseKey}__${i}`;
     const unlockRef = db.collection("unlocks").doc(unlockId);
 
-    // For beats, load beat data for title + paths
     let beatData = null;
     if (type === "beat" && id) {
       const beatSnap = await db.collection("beats").doc(String(id)).get();
@@ -1632,38 +1674,30 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
         cartId,
         provider: "paypal",
         type,
-
         buyerId: buyerId || null,
         buyerName,
         buyerEmail,
-
         producerId: producerId || null,
         producerName,
-
         beatId: type === "beat" ? id : null,
         beatTitle: beatTitle || null,
-
         kitId: type === "soundkit" ? id : null,
         licenseKey: licenseKey || null,
-
         downloadPath,
         audioUrl,
-
         qty,
         amount: lineTotal,
-        receipt: safeStr(resource?.id),
+        receipt: providerCaptureId,
         payerEmail,
         transactionDate: Date.now(),
         status: "unlocked",
         paid: true,
-
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
 
-    // credit producer (idempotent per unlock)
     if (producerId) {
       const creditMarkerRef = db.collection("walletCredits").doc(unlockId);
       const marker = await creditMarkerRef.get();
@@ -1676,6 +1710,7 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
           source: "paypal",
           revenueId: unlockId,
         });
+
         await creditMarkerRef.set({
           unlockId,
           orderId,
@@ -1688,7 +1723,6 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
     }
   }
 
-  // update cart doc status
   await cartRef.set(
     {
       status: "paid",
