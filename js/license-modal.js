@@ -154,10 +154,12 @@
 
     if (data.orderId) {
       localStorage.setItem("pb_last_order_id", data.orderId);
+      sessionStorage.setItem("pb_last_order_id", data.orderId);
     }
 
     if (data.cartId) {
       localStorage.setItem("pb_last_cart_id", data.cartId);
+      sessionStorage.setItem("pb_last_cart_id", data.cartId);
     }
 
     const links = data.approveLinks || data.links || [];
