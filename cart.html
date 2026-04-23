@@ -565,50 +565,6 @@
       return data;
     }
 
-    async function capture(orderID){
-      const res = await fetch(window.PB_PAYPAL_CAPTURE_ORDER_URL, {
-        method:"POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({ orderID })
-      });
-
-      const text = await safeReadText(res);
-      let data = {};
-      try { data = text ? JSON.parse(text) : {}; } catch { data = { raw: text }; }
-
-      if (!res.ok){
-        throw new Error(
-          (data && (data.message || data.error))
-            ? (data.message || data.error)
-            : ("Capture failed: " + text)
-        );
-      }
-
-      return data;
-    }
-
-    async function handleReturn(){
-      const qs = new URLSearchParams(location.search);
-      const token = qs.get("token") || qs.get("orderID") || qs.get("orderId");
-      if (!token) return;
-
-      setCheckoutBusy(true);
-      setStatus("Finalizing payment…");
-
-      try{
-        await capture(token);
-        window.PB_CART.clear();
-        setStatus("Payment complete ✅", "ok");
-        history.replaceState({}, "", location.pathname);
-        render();
-      }catch(err){
-        console.error(err);
-        setStatus("Payment capture failed:\n" + (err?.message || err), "bad");
-      }finally{
-        setCheckoutBusy(false);
-      }
-    }
-
     clearBtn.onclick = () => {
       if (isProcessingCheckout) return;
       window.PB_CART.clear();
@@ -695,7 +651,6 @@
       }
 
       render();
-      handleReturn();
       window.addEventListener("pb-cart-updated", render);
     })();
   </script>
