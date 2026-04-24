@@ -1,580 +1,1121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Audiory Session | Record On Beats</title>
+<title>Audiory Session | Record Over Beats</title>
 
-<meta name="description" content="Record vocals over beats inside Audiory Session. Create demos, add vocal effects, and save your idea before licensing the beat.">
-<meta name="robots" content="index,follow">
+<meta name="description" content="Audiory Session lets artists record vocals over beats, build demos, mix ideas, and prepare songs before licensing beats.">
+<meta name="keywords" content="Audiory Session, record over beats, online recording studio, vocal recording, beat marketplace, record vocals">
+<meta name="author" content="Audiory">
+<meta name="robots" content="index, follow">
 <link rel="canonical" href="https://audiory.site/sessions/">
 
 <link rel="icon" href="/audioryfavicon.webp">
+<link rel="shortcut icon" href="/audioryfavicon.webp">
+<link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
-<meta property="og:title" content="Audiory Session">
-<meta property="og:description" content="Record over beats and build demos directly inside Audiory.">
-<meta property="og:type" content="website">
+<meta property="og:title" content="Audiory Session – Record Over Beats">
+<meta property="og:description" content="Open a premium browser studio and record vocals over Audiory beats.">
 <meta property="og:url" content="https://audiory.site/sessions/">
+<meta property="og:type" content="website">
 <meta property="og:image" content="https://audiory.site/og-image.jpg">
+<meta property="og:site_name" content="Audiory">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Audiory Session – Record Over Beats">
+<meta name="twitter:description" content="Record vocals over beats and create demos inside Audiory.">
+<meta name="twitter:image" content="https://audiory.site/og-image.jpg">
 
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/cart.css">
+<link rel="stylesheet" href="/css/mobile-fix.css">
 
 <style>
-
 :root{
---bg:#070a12;
---card:#0b1220;
---line:#1f2937;
---text:#ffffff;
---muted:#94a3b8;
---blue:#3b82f6;
---blue2:#2563eb;
+  --bg:#05070c;
+  --panel:#0b1220;
+  --panel2:#080f1d;
+  --line:#1f2937;
+  --line2:#26364f;
+  --text:#fff;
+  --muted:#94a3b8;
+  --blue:#3b82f6;
+  --green:#22c55e;
+  --red:#ef4444;
+  --yellow:#f59e0b;
 }
 
 *{box-sizing:border-box}
 
 body{
-margin:0;
-background:var(--bg);
-color:var(--text);
-font-family:Inter,system-ui;
+  margin:0;
+  background:
+    radial-gradient(circle at top right, rgba(59,130,246,.16), transparent 28%),
+    var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 a{text-decoration:none;color:inherit}
 
-.topbar{
-height:72px;
-border-bottom:1px solid var(--line);
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 18px;
-position:sticky;
-top:0;
-background:rgba(7,10,18,.96);
-backdrop-filter:blur(8px);
-z-index:100;
+.session-topbar{
+  height:72px;
+  border-bottom:1px solid var(--line);
+  background:rgba(5,7,12,.94);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 20px;
+  position:sticky;
+  top:0;
+  z-index:50;
 }
 
-.brand{
-display:flex;
-align-items:center;
-gap:12px;
-font-size:34px;
-font-weight:950;
+.session-brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-width:0;
 }
 
 .icon-btn{
-width:48px;
-height:48px;
-border-radius:14px;
-border:1px solid var(--line);
-background:#111827;
-color:#fff;
-font-size:22px;
-cursor:pointer;
+  width:50px;
+  height:50px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:#0b1220;
+  color:#fff;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.session-logo{
+  font-size:34px;
+  line-height:1;
+  font-weight:950;
+  letter-spacing:-.05em;
+  white-space:nowrap;
+}
+
+.top-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.top-btn{
+  min-height:50px;
+  padding:0 18px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  background:#0b1220;
+  color:#fff;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.top-btn.primary{
+  background:linear-gradient(180deg,#4b86ff,#2457f5);
+  border-color:#315cff;
 }
 
 .wrap{
-max-width:1220px;
-margin:auto;
-padding:28px 18px 80px;
+  width:min(1220px,100%);
+  margin:0 auto;
+  padding:28px 18px 80px;
 }
 
-.hero{
-background:
-radial-gradient(circle at top right, rgba(59,130,246,.15), transparent 30%),
-linear-gradient(180deg,#091225,#08101e);
-border:1px solid #1d2940;
-border-radius:28px;
-padding:30px;
-margin-bottom:24px;
+.hero-card{
+  border:1px solid #20314f;
+  border-radius:34px;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(59,130,246,.22), transparent 28%),
+    linear-gradient(180deg,#0b152a,#07101d);
+  padding:40px;
+  overflow:hidden;
+  position:relative;
 }
 
-.kicker{
-display:inline-flex;
-padding:10px 16px;
-border-radius:999px;
-background:rgba(255,255,255,.05);
-border:1px solid rgba(255,255,255,.10);
-font-weight:800;
+.hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 18px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  font-size:16px;
+  font-weight:950;
+  color:#f8fafc;
 }
 
-.hero h1{
-font-size:62px;
-line-height:1;
-margin:18px 0;
-font-weight:950;
-max-width:650px;
+.hero-title{
+  margin:24px 0 0;
+  max-width:760px;
+  font-size:clamp(48px,9vw,90px);
+  line-height:.94;
+  letter-spacing:-.07em;
+  font-weight:950;
 }
 
-.hero p{
-font-size:20px;
-line-height:1.6;
-color:#cbd5e1;
-max-width:760px;
+.hero-lead{
+  max-width:760px;
+  margin:24px 0 0;
+  color:#cbd5e1;
+  font-size:clamp(18px,3vw,25px);
+  line-height:1.65;
 }
 
-.grid{
-display:grid;
-grid-template-columns:1.2fr .8fr;
-gap:18px;
+.hero-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  margin-top:28px;
 }
 
-.card{
-background:var(--card);
-border:1px solid var(--line);
-border-radius:24px;
-padding:22px;
+.big-btn{
+  min-height:58px;
+  padding:0 22px;
+  border-radius:18px;
+  border:1px solid var(--line2);
+  background:#0b1220;
+  color:#fff;
+  font-size:16px;
+  font-weight:950;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
 }
 
-.section-title{
-font-size:26px;
-font-weight:900;
-margin-bottom:18px;
+.big-btn.primary{
+  background:linear-gradient(180deg,#4b86ff,#2457f5);
+  border-color:#315cff;
+  box-shadow:0 18px 40px rgba(37,99,235,.25);
 }
 
-.beat-cover{
-width:100%;
-aspect-ratio:1/1;
-border-radius:20px;
-overflow:hidden;
-background:#0f172a;
-border:1px solid var(--line);
-margin-bottom:18px;
-display:grid;
-place-items:center;
-font-size:70px;
+.info-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+  margin-top:20px;
 }
 
-.player{
-margin-top:15px;
+.info-card{
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:22px;
+  padding:20px;
 }
 
-.wave{
-height:120px;
-border-radius:18px;
-background:
-linear-gradient(90deg,
-#111827 10%,
-#3b82f6 10% 14%,
-#111827 14% 18%,
-#3b82f6 18% 22%,
-#111827 22% 30%,
-#3b82f6 30% 36%,
-#111827 36%);
-border:1px solid var(--line);
+.info-card strong{
+  display:block;
+  font-size:18px;
+  font-weight:950;
+  margin-bottom:8px;
 }
 
-.controls{
-display:flex;
-flex-wrap:wrap;
-gap:12px;
-margin-top:16px;
+.info-card span{
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.6;
 }
 
-.btn{
-border:none;
-background:#111827;
-border:1px solid var(--line);
-color:#fff;
-padding:14px 18px;
-border-radius:14px;
-font-weight:900;
-cursor:pointer;
+/* DAW */
+.daw-shell{
+  display:none;
+  margin-top:24px;
+  border:1px solid #26364f;
+  border-radius:30px;
+  background:#060b14;
+  overflow:hidden;
+  box-shadow:0 30px 90px rgba(0,0,0,.45);
 }
 
-.btn.primary{
-background:linear-gradient(180deg,var(--blue),var(--blue2));
-border:none;
+.daw-shell.open{
+  display:block;
 }
 
-.record-btn.recording{
-background:#ef4444;
+.daw-top{
+  min-height:76px;
+  background:linear-gradient(180deg,#111a2b,#0b1220);
+  border-bottom:1px solid #26364f;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  flex-wrap:wrap;
 }
 
-.mixer{
-display:grid;
-gap:16px;
-margin-top:18px;
+.daw-title{
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
 
-.fx{
-padding:14px;
-border-radius:16px;
-background:#091122;
-border:1px solid var(--line);
+.daw-logo-mark{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  background:linear-gradient(180deg,#2563eb,#172554);
+  display:grid;
+  place-items:center;
+  font-size:22px;
+  border:1px solid rgba(255,255,255,.12);
 }
 
-label{
-display:block;
-font-weight:800;
-margin-bottom:10px;
+.daw-title h2{
+  margin:0;
+  font-size:20px;
+  font-weight:950;
+  letter-spacing:-.025em;
 }
 
-input[type=range]{
-width:100%;
+.daw-title p{
+  margin:2px 0 0;
+  color:var(--muted);
+  font-size:12px;
 }
 
-.meter{
-height:16px;
-background:#111827;
-border-radius:999px;
-overflow:hidden;
-margin-top:10px;
+.transport{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
 }
 
-.meter-fill{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#3b82f6,#22c55e);
-transition:.08s linear;
+.transport button{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  border:1px solid #26364f;
+  background:#091122;
+  color:#fff;
+  cursor:pointer;
+  font-weight:950;
 }
 
-.note{
-margin-top:18px;
-padding:14px;
-border-radius:14px;
-background:rgba(59,130,246,.08);
-border:1px solid rgba(59,130,246,.24);
-color:#bfdbfe;
-font-size:14px;
+.transport button.rec{
+  background:rgba(239,68,68,.12);
+  border-color:rgba(239,68,68,.45);
+  color:#fecaca;
+}
+
+.transport button.rec.active{
+  background:#ef4444;
+  color:#fff;
+}
+
+.time-display{
+  min-width:116px;
+  height:44px;
+  border-radius:14px;
+  background:#05070c;
+  border:1px solid #26364f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-variant-numeric:tabular-nums;
+  font-weight:950;
+  color:#bfdbfe;
+}
+
+.daw-body{
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr) 280px;
+  min-height:620px;
+}
+
+.browser-panel,
+.mixer-panel{
+  background:#070d18;
+  border-right:1px solid #26364f;
+  padding:14px;
+}
+
+.mixer-panel{
+  border-right:none;
+  border-left:1px solid #26364f;
+}
+
+.panel-title{
+  font-size:12px;
+  color:#94a3b8;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  font-weight:950;
+  margin-bottom:12px;
+}
+
+.beat-card-mini{
+  border:1px solid #26364f;
+  background:#0b1220;
+  border-radius:18px;
+  padding:12px;
+}
+
+.beat-art{
+  aspect-ratio:1/1;
+  border-radius:14px;
+  background:
+    radial-gradient(circle at center, rgba(59,130,246,.30), transparent 45%),
+    #111827;
+  border:1px solid #26364f;
+  display:grid;
+  place-items:center;
+  font-size:46px;
+  overflow:hidden;
+}
+
+.beat-art img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+
+.beat-name{
+  margin-top:12px;
+  font-weight:950;
+  font-size:15px;
+  line-height:1.3;
+}
+
+.beat-meta{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.studio-btn{
+  width:100%;
+  margin-top:10px;
+  min-height:42px;
+  border-radius:14px;
+  border:1px solid #26364f;
+  background:#091122;
+  color:#fff;
+  font-weight:950;
+  cursor:pointer;
+}
+
+.studio-btn.primary{
+  background:#2563eb;
+  border-color:#2563eb;
+}
+
+.arrange{
+  min-width:0;
+  background:#05070c;
+  display:grid;
+  grid-template-rows:54px 1fr;
+}
+
+.timeline-top{
+  display:grid;
+  grid-template-columns:90px repeat(8,1fr);
+  border-bottom:1px solid #26364f;
+  background:#07101d;
+}
+
+.bar-label,
+.bar-num{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#94a3b8;
+  font-size:12px;
+  font-weight:900;
+  border-right:1px solid rgba(255,255,255,.06);
+}
+
+.tracks{
+  position:relative;
+  overflow:auto;
+}
+
+.track-row{
+  display:grid;
+  grid-template-columns:90px minmax(760px,1fr);
+  min-height:158px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+.track-head{
+  background:#07101d;
+  border-right:1px solid #26364f;
+  padding:12px 10px;
+}
+
+.track-name{
+  font-size:13px;
+  font-weight:950;
+}
+
+.track-tools{
+  display:flex;
+  gap:6px;
+  margin-top:10px;
+}
+
+.track-pill{
+  width:28px;
+  height:28px;
+  border-radius:9px;
+  border:1px solid #26364f;
+  background:#0b1220;
+  color:#fff;
+  font-size:11px;
+  display:grid;
+  place-items:center;
+  font-weight:950;
+}
+
+.track-pill.red{
+  background:rgba(239,68,68,.14);
+  border-color:rgba(239,68,68,.38);
+  color:#fecaca;
+}
+
+.track-lane{
+  position:relative;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 12.5%),
+    #06101f;
+  padding:18px 16px;
+}
+
+.clip{
+  height:86px;
+  border-radius:16px;
+  border:1px solid rgba(59,130,246,.38);
+  background:linear-gradient(180deg,rgba(59,130,246,.28),rgba(37,99,235,.12));
+  position:relative;
+  overflow:hidden;
+}
+
+.clip.vocal{
+  border-color:rgba(34,197,94,.35);
+  background:linear-gradient(180deg,rgba(34,197,94,.22),rgba(21,128,61,.10));
+  display:none;
+}
+
+.clip.vocal.show{
+  display:block;
+}
+
+.wavebars{
+  position:absolute;
+  inset:12px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.wavebars span{
+  width:8px;
+  border-radius:999px;
+  background:#60a5fa;
+  opacity:.9;
+}
+
+.clip.vocal .wavebars span{
+  background:#4ade80;
+}
+
+.clip-label{
+  position:absolute;
+  left:14px;
+  top:10px;
+  font-size:12px;
+  font-weight:950;
+  color:#e0f2fe;
+}
+
+.mixer-channel{
+  background:#0b1220;
+  border:1px solid #26364f;
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:12px;
+}
+
+.channel-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+
+.channel-name{
+  font-weight:950;
+}
+
+.channel-meter{
+  height:90px;
+  border-radius:12px;
+  background:#05070c;
+  border:1px solid #26364f;
+  overflow:hidden;
+  display:flex;
+  align-items:end;
+  padding:5px;
+}
+
+.channel-meter div{
+  width:100%;
+  height:18%;
+  border-radius:9px;
+  background:linear-gradient(180deg,#22c55e,#3b82f6);
+  transition:.08s linear;
+}
+
+.knob-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:12px;
+}
+
+.knob{
+  background:#07101d;
+  border:1px solid #26364f;
+  border-radius:14px;
+  padding:10px;
+}
+
+.knob label{
+  display:block;
+  color:#94a3b8;
+  font-size:11px;
+  font-weight:950;
+  margin-bottom:8px;
+}
+
+.knob input{
+  width:100%;
+}
+
+.status-box{
+  margin-top:12px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(59,130,246,.08);
+  border:1px solid rgba(59,130,246,.24);
+  color:#bfdbfe;
+  font-size:13px;
+  line-height:1.5;
 }
 
 .export-box{
-margin-top:20px;
-padding:16px;
-border-radius:16px;
-background:#07101d;
-border:1px solid var(--line);
-display:none;
+  display:none;
+  margin-top:12px;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(34,197,94,.08);
+  border:1px solid rgba(34,197,94,.24);
+  color:#bbf7d0;
 }
 
 .export-box.show{
-display:block;
+  display:block;
 }
 
-.download-link{
-display:inline-block;
-margin-top:14px;
-padding:12px 18px;
-border-radius:12px;
-background:#16a34a;
-font-weight:900;
+.export-box a{
+  display:inline-flex;
+  margin-top:10px;
+  min-height:40px;
+  padding:0 12px;
+  border-radius:12px;
+  align-items:center;
+  justify-content:center;
+  background:#16a34a;
+  color:#fff;
+  font-weight:950;
 }
 
-.buy-box{
-margin-top:22px;
-padding:16px;
-border-radius:16px;
-background:#0a1326;
-border:1px solid #27406d;
+@media(max-width:1050px){
+  .daw-body{
+    grid-template-columns:1fr;
+  }
+  .browser-panel,
+  .mixer-panel{
+    border:0;
+    border-bottom:1px solid #26364f;
+  }
 }
 
-.buy-btn{
-width:100%;
-margin-top:14px;
+@media(max-width:720px){
+  .session-logo{
+    font-size:28px;
+  }
+  .top-btn{
+    padding:0 14px;
+  }
+  .hero-card{
+    padding:28px 20px;
+    border-radius:28px;
+  }
+  .hero-title{
+    font-size:48px;
+  }
+  .info-grid{
+    grid-template-columns:1fr;
+  }
+  .daw-top{
+    align-items:flex-start;
+  }
+  .transport{
+    width:100%;
+  }
 }
-
-@media(max-width:900px){
-.grid{
-grid-template-columns:1fr;
-}
-.hero h1{
-font-size:48px;
-}
-}
-
-@media(max-width:640px){
-.hero h1{
-font-size:40px;
-}
-}
-
 </style>
 </head>
+
 <body>
 
-<header class="topbar">
-<div class="brand">
-<button class="icon-btn" onclick="history.back()">☰</button>
-<div>Audiory Session</div>
-</div>
+<header class="session-topbar">
+  <div class="session-brand">
+    <button class="icon-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
+    <div class="session-logo">Audiory</div>
+  </div>
 
-<a href="/marketplace/" class="btn">
-Browse Beats
-</a>
+  <div class="top-actions">
+    <a class="top-btn" href="/marketplace/">Browse Beats</a>
+  </div>
 </header>
 
+<main class="wrap">
 
-<div class="wrap">
+  <section class="hero-card" id="landing">
+    <div class="hero-badge">🎙 Audiory Session</div>
 
-<section class="hero">
-<div class="kicker">🎙 Audiory Session</div>
-<h1>Record over beats and build demos.</h1>
-<p>
-Test melodies, write hooks, record rough vocals and save your idea before licensing the beat.
-</p>
-</section>
+    <h1 class="hero-title">Record over beats and build demos.</h1>
 
+    <p class="hero-lead">
+      Open a professional browser studio, record vocals over Audiory beats, shape your sound, and export a rough demo before licensing the beat.
+    </p>
 
-<div class="grid">
+    <div class="hero-actions">
+      <button class="big-btn primary" id="openSessionBtn" type="button">Open Session</button>
+      <a class="big-btn" href="/marketplace/">Choose a Beat</a>
+    </div>
 
-<div class="card">
+    <div class="info-grid">
+      <div class="info-card">
+        <strong>Real session layout</strong>
+        <span>Timeline, tracks, mixer channels, transport controls, and vocal recording.</span>
+      </div>
+      <div class="info-card">
+        <strong>Record ideas fast</strong>
+        <span>Capture hooks, verses, melodies, freestyles, and rough song demos.</span>
+      </div>
+      <div class="info-card">
+        <strong>Built for Audiory</strong>
+        <span>Later connect it directly to unlocked beats, licenses, projects, and producer collabs.</span>
+      </div>
+    </div>
+  </section>
 
-<div class="section-title">
-Current Beat
-</div>
+  <section class="daw-shell" id="dawShell">
 
-<div class="beat-cover">
-🎵
-</div>
+    <div class="daw-top">
+      <div class="daw-title">
+        <div class="daw-logo-mark">🎙</div>
+        <div>
+          <h2>Audiory Session DAW</h2>
+          <p id="sessionSub">Untitled Session • 120 BPM • 4/4</p>
+        </div>
+      </div>
 
-<div id="beatTitle" style="font-weight:900;font-size:22px">
-Loaded Beat
-</div>
+      <div class="transport">
+        <button id="rewindBtn" type="button">⏮</button>
+        <button id="playBtn" type="button">▶</button>
+        <button id="recordBtn" class="rec" type="button">●</button>
+        <button id="stopBtn" type="button">■</button>
+        <div class="time-display" id="timeDisplay">00:00.0</div>
+      </div>
+    </div>
 
-<div style="margin-top:6px;color:var(--muted)">
-Use your mic to record over playback.
-</div>
+    <div class="daw-body">
 
-<div class="player">
-<div class="wave"></div>
+      <aside class="browser-panel">
+        <div class="panel-title">Beat Source</div>
 
-<div class="controls">
-<button class="btn" id="playBeatBtn">
-▶ Play Beat
-</button>
+        <div class="beat-card-mini">
+          <div class="beat-art" id="beatArt">🎧</div>
+          <div class="beat-name" id="beatName">Loaded Beat</div>
+          <div class="beat-meta" id="beatMeta">Preview mode • Connect beatId later</div>
 
-<button class="btn record-btn" id="recordBtn">
-🎙 Record
-</button>
+          <button class="studio-btn primary" id="loadBeatBtn" type="button">Load Beat Preview</button>
+          <button class="studio-btn" type="button" onclick="location.href='/marketplace/'">Browse More Beats</button>
+        </div>
 
-<button class="btn" id="stopBtn">
-■ Stop
-</button>
-</div>
-</div>
+        <div class="status-box">
+          Tip: click the red record button to ask for microphone access and create a vocal take.
+        </div>
 
-<div class="mixer">
+        <div class="export-box" id="exportBox">
+          <strong>Vocal take ready.</strong><br>
+          Download your recorded demo take.
+          <br>
+          <a id="downloadLink" href="#" download="audiory-session-vocal.webm">Download Take</a>
+        </div>
+      </aside>
 
-<div class="fx">
-<label>Reverb</label>
-<input id="reverbKnob" type="range" min="0" max="100" value="20">
-</div>
+      <section class="arrange">
+        <div class="timeline-top">
+          <div class="bar-label">Bars</div>
+          <div class="bar-num">1</div>
+          <div class="bar-num">2</div>
+          <div class="bar-num">3</div>
+          <div class="bar-num">4</div>
+          <div class="bar-num">5</div>
+          <div class="bar-num">6</div>
+          <div class="bar-num">7</div>
+          <div class="bar-num">8</div>
+        </div>
 
-<div class="fx">
-<label>Delay</label>
-<input id="delayKnob" type="range" min="0" max="100" value="10">
-</div>
+        <div class="tracks">
 
-<div class="fx">
-<label>Pitch Style</label>
-<input id="pitchKnob" type="range" min="0" max="100" value="30">
-</div>
+          <div class="track-row">
+            <div class="track-head">
+              <div class="track-name">Beat</div>
+              <div class="track-tools">
+                <div class="track-pill">M</div>
+                <div class="track-pill">S</div>
+              </div>
+            </div>
 
-<div class="fx">
-<label>Input Level</label>
+            <div class="track-lane">
+              <div class="clip">
+                <div class="clip-label">Beat Preview</div>
+                <div class="wavebars" id="beatWave"></div>
+              </div>
+            </div>
+          </div>
 
-<div class="meter">
-<div class="meter-fill" id="meterFill"></div>
-</div>
-</div>
+          <div class="track-row">
+            <div class="track-head">
+              <div class="track-name">Vocal 1</div>
+              <div class="track-tools">
+                <div class="track-pill red">R</div>
+                <div class="track-pill">M</div>
+                <div class="track-pill">S</div>
+              </div>
+            </div>
 
-</div>
+            <div class="track-lane">
+              <div class="clip vocal" id="vocalClip">
+                <div class="clip-label">Recorded Vocal Take</div>
+                <div class="wavebars" id="vocalWave"></div>
+              </div>
+            </div>
+          </div>
 
-<div class="note">
-MVP version saves a vocal demo recording from your browser mic.
-Later we can add Auto-Tune-style pitch correction.
-</div>
+          <div class="track-row">
+            <div class="track-head">
+              <div class="track-name">Adlibs</div>
+              <div class="track-tools">
+                <div class="track-pill red">R</div>
+                <div class="track-pill">M</div>
+              </div>
+            </div>
 
-<div class="export-box" id="exportBox">
-<div style="font-weight:900;font-size:18px">
-Demo Ready
-</div>
+            <div class="track-lane">
+              <div style="height:86px;border-radius:16px;border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;padding:0 16px;color:#64748b;font-weight:900;">
+                Empty Track
+              </div>
+            </div>
+          </div>
 
-<a id="downloadLink" class="download-link" download="audiory-session-demo.webm">
-Download Demo
-</a>
-</div>
+        </div>
+      </section>
 
-</div>
+      <aside class="mixer-panel">
+        <div class="panel-title">Mixer</div>
 
+        <div class="mixer-channel">
+          <div class="channel-head">
+            <div class="channel-name">Beat</div>
+            <span style="color:#93c5fd;font-size:12px;font-weight:950;">STEREO</span>
+          </div>
 
-<div class="card">
+          <div class="channel-meter">
+            <div id="beatMeter"></div>
+          </div>
 
-<div class="section-title">
-License This Beat
-</div>
+          <div class="knob-row">
+            <div class="knob">
+              <label>Volume</label>
+              <input id="beatVol" type="range" min="0" max="100" value="80">
+            </div>
+            <div class="knob">
+              <label>Pan</label>
+              <input type="range" min="0" max="100" value="50">
+            </div>
+          </div>
+        </div>
 
-<div class="buy-box">
-Basic License • Demo use
-<button class="btn primary buy-btn">
-Buy License
-</button>
-</div>
+        <div class="mixer-channel">
+          <div class="channel-head">
+            <div class="channel-name">Vocal</div>
+            <span style="color:#86efac;font-size:12px;font-weight:950;">REC</span>
+          </div>
 
-<div class="buy-box">
-Premium License • Streaming release
-<button class="btn primary buy-btn">
-Buy Premium
-</button>
-</div>
+          <div class="channel-meter">
+            <div id="vocalMeter"></div>
+          </div>
 
-<div class="buy-box">
-Exclusive Rights
-<button class="btn primary buy-btn">
-Buy Exclusive
-</button>
-</div>
+          <div class="knob-row">
+            <div class="knob">
+              <label>Volume</label>
+              <input id="vocalVol" type="range" min="0" max="100" value="85">
+            </div>
+            <div class="knob">
+              <label>Reverb</label>
+              <input id="reverb" type="range" min="0" max="100" value="28">
+            </div>
+            <div class="knob">
+              <label>Delay</label>
+              <input id="delay" type="range" min="0" max="100" value="14">
+            </div>
+            <div class="knob">
+              <label>Pitch Style</label>
+              <input id="pitch" type="range" min="0" max="100" value="35">
+            </div>
+          </div>
+        </div>
 
-</div>
+        <button class="studio-btn primary" id="saveProjectBtn" type="button">Save Session</button>
+        <button class="studio-btn" id="exportBtn" type="button">Export Demo</button>
 
-</div>
+        <div class="status-box" id="studioStatus">
+          Studio ready. Press record to create your first take.
+        </div>
+      </aside>
 
-</div>
+    </div>
+  </section>
 
+</main>
 
 <script>
+let mediaRecorder = null;
+let micStream = null;
+let chunks = [];
+let audioCtx = null;
+let analyser = null;
+let meterTimer = null;
+let timerInterval = null;
+let startedAt = 0;
+let elapsed = 0;
+let isPlaying = false;
 
-let mediaRecorder;
-let chunks=[];
-let stream;
-let audioCtx;
-let analyser;
-let meterInterval;
+const $ = (id) => document.getElementById(id);
 
-const recordBtn=document.getElementById("recordBtn");
-const stopBtn=document.getElementById("stopBtn");
-const exportBox=document.getElementById("exportBox");
-const downloadLink=document.getElementById("downloadLink");
-const meterFill=document.getElementById("meterFill");
+function makeWave(id, count, min, max){
+  const el = $(id);
+  if (!el) return;
+  el.innerHTML = "";
+  for(let i=0;i<count;i++){
+    const s = document.createElement("span");
+    const h = Math.floor(min + Math.random() * (max - min));
+    s.style.height = h + "%";
+    el.appendChild(s);
+  }
+}
 
+function fmtTime(ms){
+  const total = Math.max(0, ms || 0);
+  const sec = Math.floor(total / 1000);
+  const m = String(Math.floor(sec / 60)).padStart(2,"0");
+  const s = String(sec % 60).padStart(2,"0");
+  const tenth = Math.floor((total % 1000) / 100);
+  return `${m}:${s}.${tenth}`;
+}
+
+function startClock(){
+  startedAt = Date.now() - elapsed;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=>{
+    elapsed = Date.now() - startedAt;
+    $("timeDisplay").textContent = fmtTime(elapsed);
+  },100);
+}
+
+function stopClock(reset=false){
+  clearInterval(timerInterval);
+  if (reset){
+    elapsed = 0;
+    $("timeDisplay").textContent = "00:00.0";
+  }
+}
+
+function setStatus(msg){
+  const el = $("studioStatus");
+  if (el) el.textContent = msg;
+}
+
+function animateBeatMeter(active){
+  if (!active){
+    $("beatMeter").style.height = "18%";
+    return;
+  }
+  const loop = setInterval(()=>{
+    if (!isPlaying){
+      clearInterval(loop);
+      $("beatMeter").style.height = "18%";
+      return;
+    }
+    $("beatMeter").style.height = (25 + Math.random()*65) + "%";
+  },130);
+}
 
 async function initMic(){
+  micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
 
-stream=await navigator.mediaDevices.getUserMedia({
-audio:true
-});
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const source = audioCtx.createMediaStreamSource(micStream);
 
-audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  analyser = audioCtx.createAnalyser();
+  analyser.fftSize = 256;
+  source.connect(analyser);
 
-const source=audioCtx.createMediaStreamSource(stream);
+  mediaRecorder = new MediaRecorder(micStream);
 
-analyser=audioCtx.createAnalyser();
+  mediaRecorder.ondataavailable = (e) => {
+    if (e.data && e.data.size) chunks.push(e.data);
+  };
 
-source.connect(analyser);
+  mediaRecorder.onstop = () => {
+    const blob = new Blob(chunks, { type:"audio/webm" });
+    const url = URL.createObjectURL(blob);
 
-analyser.fftSize=256;
+    $("downloadLink").href = url;
+    $("exportBox").classList.add("show");
+    $("vocalClip").classList.add("show");
 
-mediaRecorder=new MediaRecorder(stream);
+    makeWave("vocalWave", 80, 18, 88);
 
-mediaRecorder.ondataavailable=e=>{
-chunks.push(e.data);
-};
+    chunks = [];
+    setStatus("Vocal take recorded. You can download it or record another take.");
+  };
 
-mediaRecorder.onstop=()=>{
-
-const blob=new Blob(chunks,{
-type:"audio/webm"
-});
-
-const url=URL.createObjectURL(blob);
-
-downloadLink.href=url;
-
-exportBox.classList.add("show");
-
-chunks=[];
-
-};
-
-startMeter();
-
+  startMicMeter();
 }
 
+function startMicMeter(){
+  const data = new Uint8Array(analyser.frequencyBinCount);
 
-function startMeter(){
-
-const dataArray=new Uint8Array(analyser.frequencyBinCount);
-
-meterInterval=setInterval(()=>{
-
-analyser.getByteFrequencyData(dataArray);
-
-let avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
-
-let pct=Math.min(avg/2,100);
-
-meterFill.style.width=pct+"%";
-
-},80);
-
+  clearInterval(meterTimer);
+  meterTimer = setInterval(()=>{
+    analyser.getByteFrequencyData(data);
+    const avg = data.reduce((a,b)=>a+b,0) / data.length;
+    const h = Math.min(100, Math.max(8, avg / 2));
+    $("vocalMeter").style.height = h + "%";
+  },80);
 }
 
+async function startRecording(){
+  try{
+    if (!mediaRecorder) await initMic();
 
-recordBtn.addEventListener("click",async()=>{
-
-try{
-
-if(!mediaRecorder){
-await initMic();
+    if (mediaRecorder.state !== "recording"){
+      chunks = [];
+      mediaRecorder.start();
+      $("recordBtn").classList.add("active");
+      setStatus("Recording vocal take...");
+      if (!isPlaying){
+        isPlaying = true;
+        startClock();
+        animateBeatMeter(true);
+      }
+    }
+  }catch(e){
+    console.error(e);
+    alert("Microphone permission is required to record.");
+  }
 }
 
-mediaRecorder.start();
+function stopRecording(){
+  if (mediaRecorder && mediaRecorder.state === "recording"){
+    mediaRecorder.stop();
+  }
 
-recordBtn.classList.add("recording");
-recordBtn.innerHTML="● Recording";
-
-}catch(e){
-alert("Microphone permission needed.");
-console.error(e);
+  $("recordBtn").classList.remove("active");
+  isPlaying = false;
+  stopClock(false);
+  animateBeatMeter(false);
 }
 
-});
-
-
-stopBtn.addEventListener("click",()=>{
-
-if(mediaRecorder && mediaRecorder.state==="recording"){
-mediaRecorder.stop();
+function stopAll(){
+  stopRecording();
+  isPlaying = false;
+  stopClock(true);
+  animateBeatMeter(false);
+  setStatus("Stopped.");
 }
 
-recordBtn.classList.remove("recording");
-recordBtn.innerHTML="🎙 Record";
+document.addEventListener("DOMContentLoaded", () => {
+  makeWave("beatWave", 100, 18, 92);
 
-if(meterInterval){
-clearInterval(meterInterval);
-}
+  $("openSessionBtn")?.addEventListener("click", () => {
+    $("dawShell").classList.add("open");
+    $("dawShell").scrollIntoView({ behavior:"smooth", block:"start" });
+  });
 
+  $("recordBtn")?.addEventListener("click", startRecording);
+
+  $("stopBtn")?.addEventListener("click", stopAll);
+
+  $("playBtn")?.addEventListener("click", () => {
+    isPlaying = !isPlaying;
+    $("playBtn").textContent = isPlaying ? "⏸" : "▶";
+
+    if (isPlaying){
+      startClock();
+      animateBeatMeter(true);
+      setStatus("Playing session timeline.");
+    }else{
+      stopClock(false);
+      animateBeatMeter(false);
+      setStatus("Paused.");
+    }
+  });
+
+  $("rewindBtn")?.addEventListener("click", () => {
+    elapsed = 0;
+    $("timeDisplay").textContent = "00:00.0";
+    setStatus("Returned to start.");
+  });
+
+  $("loadBeatBtn")?.addEventListener("click", () => {
+    setStatus("Next step: connect this button to Firebase beat preview using ?beatId=...");
+  });
+
+  $("saveProjectBtn")?.addEventListener("click", () => {
+    setStatus("Session saved locally for MVP. Later we will save projects to Firebase.");
+  });
+
+  $("exportBtn")?.addEventListener("click", () => {
+    const box = $("exportBox");
+    if (!box.classList.contains("show")){
+      setStatus("Record a vocal take first, then export/download it.");
+    } else {
+      setStatus("Export ready. Use the download button on the left panel.");
+    }
+  });
 });
-
-
-document.getElementById("playBeatBtn").addEventListener("click",()=>{
-
-alert(
-"Next step: connect this page to Audiory beat previews using beatId from URL."
-);
-
-});
-
-
-document.querySelectorAll(".buy-btn").forEach(btn=>{
-btn.addEventListener("click",()=>{
-alert("Later this can open your existing license modal.");
-});
-});
-
-
-/* Future:
-load beat from:
-sessions/?beatId=123
-
-const beatId = new URL(location.href).searchParams.get('beatId');
-*/
-
 </script>
 
 </body>
