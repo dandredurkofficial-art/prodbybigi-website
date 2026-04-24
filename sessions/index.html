@@ -1165,6 +1165,25 @@ a{
   border-color:#ef4444;
 }
 
+.mixer-level{
+  height:74px;
+  display:flex;
+  gap:5px;
+  align-items:flex-end;
+  padding:6px;
+  border-radius:12px;
+  background:#05070c;
+  border:1px solid #26364f;
+}
+
+.mixer-level span{
+  flex:1;
+  height:4%;
+  border-radius:999px;
+  background:linear-gradient(180deg,#facc15,#22c55e);
+  transition:height .06s linear;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */
@@ -1676,9 +1695,19 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   $("zoomInput")?.addEventListener("input", () => {
-    state.zoom = Number($("zoomInput").value || 80);
-    document.documentElement.style.setProperty("--barWidth", state.zoom + "px");
+    const val = Number($("zoomInput").value || 80);
+    const max = Number($("zoomInput").max || 190);
 
+    const beatEnd = Math.max(1, ...state.clips.map(c => (c.startTime || 0) + (c.duration || 0)));
+    const wrapWidth = $("tracksWrap")?.clientWidth || 900;
+
+    if (val >= max - 2) {
+      state.zoom = Math.max(10, (wrapWidth - 120) / Math.ceil(beatEnd / secondsPerBar()));
+    } else {
+      state.zoom = val;
+    }
+
+    document.documentElement.style.setProperty("--barWidth", state.zoom + "px");
     autoExtendBarsToClips();
     renderRuler();
     renderTracks();
@@ -2473,6 +2502,7 @@ function startTicker(){
     updatePlayhead();
     updateTimeDisplay();
     updateMeters();
+    renderLiveMixerMeters();
   }, 40);
 }
 
@@ -2493,12 +2523,42 @@ function updateTimeDisplay(){
 
 function updateMeters(){
   state.mixer.forEach(ch => {
-    ch.meter = Math.random() * 0.75 + 0.1;
+    const hasPlayingClip = state.clips.some(clip => {
+      const track = state.tracks.find(t => t.id === clip.trackId);
+      if (!track || track.mixerId !== ch.id) return false;
+
+      const start = clip.startTime || 0;
+      const end = start + (clip.duration || 0);
+
+      return state.currentTime >= start && state.currentTime <= end;
+    });
+
+    ch.meter = hasPlayingClip && state.isPlaying
+      ? Math.random() * 0.75 + 0.22
+      : Math.random() * 0.03;
   });
 
-  document.querySelectorAll("[data-meter-id]").forEach(el => {
-    const ch = state.mixer.find(m => m.id === el.dataset.meterId);
-    if (ch) el.style.height = Math.round(ch.meter * 100) + "%";
+  document.querySelectorAll("[data-mixer-level]").forEach(box => {
+    const ch = state.mixer.find(m => m.id === box.dataset.mixerLevel);
+    if (!ch) return;
+
+    box.querySelectorAll("span").forEach((bar, i) => {
+      const power = Math.max(0.03, ch.meter - (i * 0.055));
+      bar.style.height = Math.round(power * 100) + "%";
+      bar.style.opacity = state.isPlaying ? "1" : ".35";
+    });
+  });
+}
+
+function renderLiveMixerMeters(){
+  document.querySelectorAll("[data-mixer-level]").forEach(box => {
+    const ch = state.mixer.find(m => m.id === box.dataset.mixerLevel);
+    if (!ch) return;
+
+    box.querySelectorAll("span").forEach((bar, i) => {
+      const power = Math.max(0.04, ch.meter - (i * 0.05));
+      bar.style.height = Math.round(power * 100) + "%";
+    });
   });
 }
 
@@ -2887,7 +2947,9 @@ function renderMixer(){
 
       <div class="channel-wave live-wave">${waveBars("beat")}</div>
 
-      <div class="meter"><div data-meter-id="${ch.id}"></div></div>
+      <div class="mixer-level" data-mixer-level="${ch.id}">
+        ${Array.from({length:10}).map(()=>`<span></span>`).join("")}
+      </div>
       <input class="fader volume" type="range" min="0" max="1" step=".01" value="${ch.volume}">
 
       ${ch.isMaster ? "" : `<button class="delete-channel" type="button">Delete Channel</button>`}
