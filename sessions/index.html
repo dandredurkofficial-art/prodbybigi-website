@@ -3,30 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
 <title>Audiory Session | Record Over Beats</title>
 
-<meta name="description" content="Audiory Session lets artists record vocals over beats, build demos, mix ideas, and prepare songs before licensing beats.">
-<meta name="keywords" content="Audiory Session, record over beats, online recording studio, vocal recording, beat marketplace, record vocals">
-<meta name="author" content="Audiory">
+<meta name="description" content="Audiory Session lets artists record vocals over beats, import stems, mix tracks, add effects, and export demos.">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://audiory.site/sessions/">
-
 <link rel="icon" href="/audioryfavicon.webp">
-<link rel="shortcut icon" href="/audioryfavicon.webp">
-<link rel="apple-touch-icon" href="/audioryfavicon.webp">
-
-<meta property="og:title" content="Audiory Session – Record Over Beats">
-<meta property="og:description" content="Open a premium browser studio and record vocals over Audiory beats.">
-<meta property="og:url" content="https://audiory.site/sessions/">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://audiory.site/og-image.jpg">
-<meta property="og:site_name" content="Audiory">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Audiory Session – Record Over Beats">
-<meta name="twitter:description" content="Record vocals over beats and create demos inside Audiory.">
-<meta name="twitter:image" content="https://audiory.site/og-image.jpg">
 
 <link rel="stylesheet" href="/css/global.css">
 <link rel="stylesheet" href="/css/cart.css">
@@ -34,1088 +16,703 @@
 
 <style>
 :root{
-  --bg:#05070c;
-  --panel:#0b1220;
-  --panel2:#080f1d;
-  --line:#1f2937;
-  --line2:#26364f;
-  --text:#fff;
-  --muted:#94a3b8;
-  --blue:#3b82f6;
-  --green:#22c55e;
-  --red:#ef4444;
-  --yellow:#f59e0b;
+  --bg:#05070c;--panel:#0b1220;--panel2:#07101d;--line:#1f2937;--line2:#26364f;
+  --text:#fff;--muted:#94a3b8;--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--gold:#f59e0b;
 }
-
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  background:
-    radial-gradient(circle at top right, rgba(59,130,246,.16), transparent 28%),
-    var(--bg);
-  color:var(--text);
-  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-
+body{margin:0;background:radial-gradient(circle at top right,rgba(59,130,246,.14),transparent 30%),var(--bg);color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font-family:inherit}
 a{text-decoration:none;color:inherit}
 
-.session-topbar{
-  height:72px;
-  border-bottom:1px solid var(--line);
-  background:rgba(5,7,12,.94);
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 20px;
-  position:sticky;
-  top:0;
-  z-index:50;
-}
-
-.session-brand{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  min-width:0;
-}
-
-.icon-btn{
-  width:50px;
-  height:50px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:#0b1220;
-  color:#fff;
-  font-size:22px;
-  cursor:pointer;
-}
-
-.session-logo{
-  font-size:34px;
-  line-height:1;
-  font-weight:950;
-  letter-spacing:-.05em;
-  white-space:nowrap;
-}
-
-.top-actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.top-btn{
-  min-height:50px;
-  padding:0 18px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  background:#0b1220;
-  color:#fff;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:950;
-  cursor:pointer;
-}
-
-.top-btn.primary{
-  background:linear-gradient(180deg,#4b86ff,#2457f5);
-  border-color:#315cff;
-}
-
-.wrap{
-  width:min(1220px,100%);
-  margin:0 auto;
-  padding:28px 18px 80px;
-}
-
-.hero-card{
-  border:1px solid #20314f;
-  border-radius:34px;
-  background:
-    radial-gradient(circle at 82% 18%, rgba(59,130,246,.22), transparent 28%),
-    linear-gradient(180deg,#0b152a,#07101d);
-  padding:40px;
-  overflow:hidden;
-  position:relative;
-}
-
-.hero-badge{
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  padding:13px 18px;
-  border-radius:999px;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  font-size:16px;
-  font-weight:950;
-  color:#f8fafc;
-}
-
-.hero-title{
-  margin:24px 0 0;
-  max-width:760px;
-  font-size:clamp(48px,9vw,90px);
-  line-height:.94;
-  letter-spacing:-.07em;
-  font-weight:950;
-}
-
-.hero-lead{
-  max-width:760px;
-  margin:24px 0 0;
-  color:#cbd5e1;
-  font-size:clamp(18px,3vw,25px);
-  line-height:1.65;
-}
-
-.hero-actions{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  margin-top:28px;
-}
-
-.big-btn{
-  min-height:58px;
-  padding:0 22px;
-  border-radius:18px;
-  border:1px solid var(--line2);
-  background:#0b1220;
-  color:#fff;
-  font-size:16px;
-  font-weight:950;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-}
-
-.big-btn.primary{
-  background:linear-gradient(180deg,#4b86ff,#2457f5);
-  border-color:#315cff;
-  box-shadow:0 18px 40px rgba(37,99,235,.25);
-}
-
-.info-grid{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:14px;
-  margin-top:20px;
-}
-
-.info-card{
-  background:rgba(255,255,255,.045);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:22px;
-  padding:20px;
-}
-
-.info-card strong{
-  display:block;
-  font-size:18px;
-  font-weight:950;
-  margin-bottom:8px;
-}
-
-.info-card span{
-  color:var(--muted);
-  font-size:14px;
-  line-height:1.6;
-}
-
-/* DAW */
-.daw-shell{
-  display:none;
-  margin-top:24px;
-  border:1px solid #26364f;
-  border-radius:30px;
-  background:#060b14;
-  overflow:hidden;
-  box-shadow:0 30px 90px rgba(0,0,0,.45);
-}
-
-.daw-shell.open{
-  display:block;
-}
-
-.daw-top{
-  min-height:76px;
-  background:linear-gradient(180deg,#111a2b,#0b1220);
-  border-bottom:1px solid #26364f;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding:14px 16px;
-  flex-wrap:wrap;
-}
-
-.daw-title{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
-.daw-logo-mark{
-  width:46px;
-  height:46px;
-  border-radius:16px;
-  background:linear-gradient(180deg,#2563eb,#172554);
-  display:grid;
-  place-items:center;
-  font-size:22px;
-  border:1px solid rgba(255,255,255,.12);
-}
-
-.daw-title h2{
-  margin:0;
-  font-size:20px;
-  font-weight:950;
-  letter-spacing:-.025em;
-}
-
-.daw-title p{
-  margin:2px 0 0;
-  color:var(--muted);
-  font-size:12px;
-}
-
-.transport{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  flex-wrap:wrap;
-}
-
-.transport button{
-  width:44px;
-  height:44px;
-  border-radius:14px;
-  border:1px solid #26364f;
-  background:#091122;
-  color:#fff;
-  cursor:pointer;
-  font-weight:950;
-}
-
-.transport button.rec{
-  background:rgba(239,68,68,.12);
-  border-color:rgba(239,68,68,.45);
-  color:#fecaca;
-}
-
-.transport button.rec.active{
-  background:#ef4444;
-  color:#fff;
-}
-
-.time-display{
-  min-width:116px;
-  height:44px;
-  border-radius:14px;
-  background:#05070c;
-  border:1px solid #26364f;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-variant-numeric:tabular-nums;
-  font-weight:950;
-  color:#bfdbfe;
-}
-
-.daw-body{
-  display:grid;
-  grid-template-columns:250px minmax(0,1fr) 280px;
-  min-height:620px;
-}
-
-.browser-panel,
-.mixer-panel{
-  background:#070d18;
-  border-right:1px solid #26364f;
-  padding:14px;
-}
-
-.mixer-panel{
-  border-right:none;
-  border-left:1px solid #26364f;
-}
-
-.panel-title{
-  font-size:12px;
-  color:#94a3b8;
-  text-transform:uppercase;
-  letter-spacing:.12em;
-  font-weight:950;
-  margin-bottom:12px;
-}
-
-.beat-card-mini{
-  border:1px solid #26364f;
-  background:#0b1220;
-  border-radius:18px;
-  padding:12px;
-}
-
-.beat-art{
-  aspect-ratio:1/1;
-  border-radius:14px;
-  background:
-    radial-gradient(circle at center, rgba(59,130,246,.30), transparent 45%),
-    #111827;
-  border:1px solid #26364f;
-  display:grid;
-  place-items:center;
-  font-size:46px;
-  overflow:hidden;
-}
-
-.beat-art img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-
-.beat-name{
-  margin-top:12px;
-  font-weight:950;
-  font-size:15px;
-  line-height:1.3;
-}
-
-.beat-meta{
-  margin-top:5px;
-  color:var(--muted);
-  font-size:12px;
-}
-
-.studio-btn{
-  width:100%;
-  margin-top:10px;
-  min-height:42px;
-  border-radius:14px;
-  border:1px solid #26364f;
-  background:#091122;
-  color:#fff;
-  font-weight:950;
-  cursor:pointer;
-}
-
-.studio-btn.primary{
-  background:#2563eb;
-  border-color:#2563eb;
-}
-
-.arrange{
-  min-width:0;
-  background:#05070c;
-  display:grid;
-  grid-template-rows:54px 1fr;
-}
-
-.timeline-top{
-  display:grid;
-  grid-template-columns:90px repeat(8,1fr);
-  border-bottom:1px solid #26364f;
-  background:#07101d;
-}
-
-.bar-label,
-.bar-num{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#94a3b8;
-  font-size:12px;
-  font-weight:900;
-  border-right:1px solid rgba(255,255,255,.06);
-}
-
-.tracks{
-  position:relative;
-  overflow:auto;
-}
-
-.track-row{
-  display:grid;
-  grid-template-columns:90px minmax(760px,1fr);
-  min-height:158px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-
-.track-head{
-  background:#07101d;
-  border-right:1px solid #26364f;
-  padding:12px 10px;
-}
-
-.track-name{
-  font-size:13px;
-  font-weight:950;
-}
-
-.track-tools{
-  display:flex;
-  gap:6px;
-  margin-top:10px;
-}
-
-.track-pill{
-  width:28px;
-  height:28px;
-  border-radius:9px;
-  border:1px solid #26364f;
-  background:#0b1220;
-  color:#fff;
-  font-size:11px;
-  display:grid;
-  place-items:center;
-  font-weight:950;
-}
-
-.track-pill.red{
-  background:rgba(239,68,68,.14);
-  border-color:rgba(239,68,68,.38);
-  color:#fecaca;
-}
-
-.track-lane{
-  position:relative;
-  background:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 12.5%),
-    #06101f;
-  padding:18px 16px;
-}
-
-.clip{
-  height:86px;
-  border-radius:16px;
-  border:1px solid rgba(59,130,246,.38);
-  background:linear-gradient(180deg,rgba(59,130,246,.28),rgba(37,99,235,.12));
-  position:relative;
-  overflow:hidden;
-}
-
-.clip.vocal{
-  border-color:rgba(34,197,94,.35);
-  background:linear-gradient(180deg,rgba(34,197,94,.22),rgba(21,128,61,.10));
-  display:none;
-}
-
-.clip.vocal.show{
-  display:block;
-}
-
-.wavebars{
-  position:absolute;
-  inset:12px;
-  display:flex;
-  align-items:center;
-  gap:5px;
-}
-
-.wavebars span{
-  width:8px;
-  border-radius:999px;
-  background:#60a5fa;
-  opacity:.9;
-}
-
-.clip.vocal .wavebars span{
-  background:#4ade80;
-}
-
-.clip-label{
-  position:absolute;
-  left:14px;
-  top:10px;
-  font-size:12px;
-  font-weight:950;
-  color:#e0f2fe;
-}
-
-.mixer-channel{
-  background:#0b1220;
-  border:1px solid #26364f;
-  border-radius:18px;
-  padding:14px;
-  margin-bottom:12px;
-}
-
-.channel-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:12px;
-}
-
-.channel-name{
-  font-weight:950;
-}
-
-.channel-meter{
-  height:90px;
-  border-radius:12px;
-  background:#05070c;
-  border:1px solid #26364f;
-  overflow:hidden;
-  display:flex;
-  align-items:end;
-  padding:5px;
-}
-
-.channel-meter div{
-  width:100%;
-  height:18%;
-  border-radius:9px;
-  background:linear-gradient(180deg,#22c55e,#3b82f6);
-  transition:.08s linear;
-}
-
-.knob-row{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:12px;
-}
-
-.knob{
-  background:#07101d;
-  border:1px solid #26364f;
-  border-radius:14px;
-  padding:10px;
-}
-
-.knob label{
-  display:block;
-  color:#94a3b8;
-  font-size:11px;
-  font-weight:950;
-  margin-bottom:8px;
-}
-
-.knob input{
-  width:100%;
-}
-
-.status-box{
-  margin-top:12px;
-  padding:12px;
-  border-radius:14px;
-  background:rgba(59,130,246,.08);
-  border:1px solid rgba(59,130,246,.24);
-  color:#bfdbfe;
-  font-size:13px;
-  line-height:1.5;
-}
-
-.export-box{
-  display:none;
-  margin-top:12px;
-  padding:12px;
-  border-radius:14px;
-  background:rgba(34,197,94,.08);
-  border:1px solid rgba(34,197,94,.24);
-  color:#bbf7d0;
-}
-
-.export-box.show{
-  display:block;
-}
-
-.export-box a{
-  display:inline-flex;
-  margin-top:10px;
-  min-height:40px;
-  padding:0 12px;
-  border-radius:12px;
-  align-items:center;
-  justify-content:center;
-  background:#16a34a;
-  color:#fff;
-  font-weight:950;
-}
-
-@media(max-width:1050px){
-  .daw-body{
-    grid-template-columns:1fr;
-  }
-  .browser-panel,
-  .mixer-panel{
-    border:0;
-    border-bottom:1px solid #26364f;
-  }
-}
-
-@media(max-width:720px){
-  .session-logo{
-    font-size:28px;
-  }
-  .top-btn{
-    padding:0 14px;
-  }
-  .hero-card{
-    padding:28px 20px;
-    border-radius:28px;
-  }
-  .hero-title{
-    font-size:48px;
-  }
-  .info-grid{
-    grid-template-columns:1fr;
-  }
-  .daw-top{
-    align-items:flex-start;
-  }
-  .transport{
-    width:100%;
-  }
-}
+.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:rgba(5,7,12,.95);position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:14px}
+.icon-btn{width:50px;height:50px;border-radius:16px;border:1px solid var(--line);background:#0b1220;color:#fff;font-size:22px;cursor:pointer}
+.logo{font-size:34px;font-weight:950;letter-spacing:-.05em}
+.top-btn{min-height:50px;padding:0 18px;border-radius:16px;border:1px solid var(--line);background:#0b1220;color:#fff;font-weight:950;display:inline-flex;align-items:center}
+
+.wrap{width:min(1280px,100%);margin:auto;padding:28px 18px 80px}
+.hero{border:1px solid #20314f;border-radius:34px;background:radial-gradient(circle at 80% 10%,rgba(59,130,246,.22),transparent 30%),linear-gradient(180deg,#0b152a,#07101d);padding:38px;margin-bottom:22px}
+.badge{display:inline-flex;align-items:center;gap:10px;padding:12px 17px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-weight:950}
+.hero h1{font-size:clamp(44px,8vw,84px);line-height:.95;margin:24px 0 0;font-weight:950;letter-spacing:-.07em;max-width:850px}
+.hero p{font-size:clamp(17px,2.5vw,23px);line-height:1.65;color:#cbd5e1;max-width:780px}
+.big-btn{min-height:58px;padding:0 22px;border-radius:18px;border:1px solid var(--line2);background:#0b1220;color:#fff;font-weight:950;cursor:pointer}
+.big-btn.primary{background:linear-gradient(180deg,#4b86ff,#2457f5);border-color:#315cff}
+
+.daw{display:none;border:1px solid #26364f;border-radius:30px;background:#060b14;overflow:hidden;box-shadow:0 30px 90px rgba(0,0,0,.45)}
+.daw.open{display:block}
+.menu{height:42px;display:flex;gap:4px;align-items:center;padding:0 12px;border-bottom:1px solid #26364f;background:#080d16;overflow:auto}
+.menu button{height:30px;padding:0 12px;border:none;background:transparent;color:#cbd5e1;font-weight:800;border-radius:8px;cursor:pointer;white-space:nowrap}
+.menu button:hover{background:rgba(255,255,255,.06);color:#fff}
+.daw-top{min-height:76px;background:linear-gradient(180deg,#111a2b,#0b1220);border-bottom:1px solid #26364f;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;flex-wrap:wrap}
+.daw-title{display:flex;gap:12px;align-items:center}
+.mark{width:46px;height:46px;border-radius:16px;background:linear-gradient(180deg,#2563eb,#172554);display:grid;place-items:center;font-size:22px}
+#sessionTitle{margin:0;font-size:20px;font-weight:950;outline:none}
+#sessionSub{margin:3px 0 0;color:var(--muted);font-size:12px}
+.transport{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.transport button{width:44px;height:44px;border-radius:14px;border:1px solid #26364f;background:#091122;color:#fff;font-weight:950;cursor:pointer}
+.transport .rec{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.45);color:#fecaca}
+.transport .active{background:#ef4444!important;color:#fff!important}
+.time{min-width:120px;height:44px;border-radius:14px;background:#05070c;border:1px solid #26364f;display:flex;align-items:center;justify-content:center;color:#bfdbfe;font-weight:950;font-variant-numeric:tabular-nums}
+
+.daw-body{display:grid;grid-template-columns:250px minmax(0,1fr) 330px;min-height:680px}
+.left,.right{background:#070d18;padding:14px}
+.left{border-right:1px solid #26364f}
+.right{border-left:1px solid #26364f}
+.panel-title{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.12em;font-weight:950;margin-bottom:12px}
+.beat-box,.rack,.channel{background:#0b1220;border:1px solid #26364f;border-radius:18px;padding:12px;margin-bottom:12px}
+.art{aspect-ratio:1/1;border-radius:14px;background:radial-gradient(circle at center,rgba(59,130,246,.30),transparent 45%),#111827;border:1px solid #26364f;display:grid;place-items:center;font-size:46px;overflow:hidden}
+.art img{width:100%;height:100%;object-fit:cover}
+.beat-name{font-weight:950;margin-top:10px}
+.meta{color:var(--muted);font-size:12px;margin-top:4px}
+.studio-btn{width:100%;min-height:42px;border-radius:14px;border:1px solid #26364f;background:#091122;color:#fff;font-weight:950;cursor:pointer;margin-top:10px}
+.studio-btn.primary{background:#2563eb;border-color:#2563eb}
+.status{padding:12px;border-radius:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.24);color:#bfdbfe;font-size:13px;line-height:1.5;margin-top:12px}
+
+.arrange{background:#05070c;display:grid;grid-template-rows:54px 1fr;min-width:0}
+.ruler{display:grid;grid-template-columns:90px repeat(12,1fr);border-bottom:1px solid #26364f;background:#07101d}
+.ruler div{display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:12px;font-weight:900;border-right:1px solid rgba(255,255,255,.06)}
+.tracks{overflow:auto}
+.track-row{display:grid;grid-template-columns:90px minmax(1050px,1fr);min-height:135px;border-bottom:1px solid rgba(255,255,255,.08)}
+.track-head{background:#07101d;border-right:1px solid #26364f;padding:12px 10px}
+.track-name{font-size:13px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-tools{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.pill{width:28px;height:28px;border-radius:9px;border:1px solid #26364f;background:#0b1220;color:#fff;font-size:11px;display:grid;place-items:center;font-weight:950;cursor:pointer}
+.pill.red{background:rgba(239,68,68,.14);border-color:rgba(239,68,68,.38);color:#fecaca}
+.pill.active{background:#2563eb;border-color:#2563eb}
+.assign{margin-top:8px;width:100%;background:#05070c;border:1px solid #26364f;color:#fff;border-radius:10px;padding:7px;font-size:12px}
+.lane{position:relative;background:repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 8.333%),#06101f;padding:18px 16px}
+.clip{height:78px;border-radius:16px;border:1px solid rgba(59,130,246,.38);background:linear-gradient(180deg,rgba(59,130,246,.28),rgba(37,99,235,.12));position:relative;overflow:hidden;min-width:140px}
+.clip.vocal{border-color:rgba(34,197,94,.35);background:linear-gradient(180deg,rgba(34,197,94,.22),rgba(21,128,61,.10))}
+.clip.stem{border-color:rgba(245,158,11,.35);background:linear-gradient(180deg,rgba(245,158,11,.22),rgba(180,83,9,.10))}
+.clip-label{position:absolute;left:12px;top:9px;font-size:12px;font-weight:950}
+.wave{position:absolute;inset:28px 12px 10px;display:flex;align-items:center;gap:4px}
+.wave span{width:6px;border-radius:999px;background:#60a5fa}
+.clip.vocal .wave span{background:#4ade80}
+.clip.stem .wave span{background:#fbbf24}
+
+.channel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.channel-name{font-weight:950}
+.meter{height:80px;border-radius:12px;background:#05070c;border:1px solid #26364f;overflow:hidden;display:flex;align-items:end;padding:5px}
+.meter div{width:100%;height:18%;border-radius:9px;background:linear-gradient(180deg,#22c55e,#3b82f6);transition:.08s}
+.knobs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.knob{background:#07101d;border:1px solid #26364f;border-radius:14px;padding:9px}
+.knob label{display:block;color:#94a3b8;font-size:11px;font-weight:950;margin-bottom:7px}
+.knob input{width:100%}
+.plugin-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.plugin{min-height:38px;border-radius:12px;border:1px solid #26364f;background:#07101d;color:#fff;font-weight:850;font-size:12px;cursor:pointer}
+.plugin.active{background:rgba(59,130,246,.18);border-color:#3b82f6}
+.plugin-note{color:#94a3b8;font-size:12px;line-height:1.5;margin-top:10px}
+.export-box{display:none;padding:12px;border-radius:14px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.24);color:#bbf7d0;margin-top:12px}
+.export-box.show{display:block}
+.export-box a{display:inline-flex;margin-top:10px;min-height:40px;padding:0 12px;border-radius:12px;align-items:center;background:#16a34a;color:#fff;font-weight:950}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:9999;padding:18px}
+.modal-backdrop.open{display:flex}
+.modal{width:min(960px,100%);max-height:85vh;overflow:auto;background:#07101d;border:1px solid #26364f;border-radius:24px;padding:18px}
+.modal-head{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #26364f;padding-bottom:14px;margin-bottom:14px}
+.modal-head h3{margin:0;font-size:24px}
+.modal-head p{margin:5px 0 0;color:#94a3b8}
+.close{width:42px;height:42px;border-radius:12px;border:1px solid #26364f;background:#0b1220;color:#fff}
+.beat-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.beat-option{background:#0b1220;border:1px solid #26364f;border-radius:18px;padding:12px;cursor:pointer}
+.beat-option:hover{border-color:#3b82f6}
+.beat-option img,.beat-ph{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;background:#111827;display:grid;place-items:center;font-size:40px}
+.beat-option strong{display:block;margin-top:10px;font-size:14px}
+.beat-option span{display:block;margin-top:4px;color:#94a3b8;font-size:12px}
+
+@media(max-width:1100px){.daw-body{grid-template-columns:1fr}.left,.right{border:0;border-bottom:1px solid #26364f}.beat-list{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.logo{font-size:28px}.hero{padding:26px 20px}.hero h1{font-size:46px}.beat-list{grid-template-columns:1fr}.transport{width:100%}}
 </style>
 </head>
 
 <body>
 
-<header class="session-topbar">
-  <div class="session-brand">
-    <button class="icon-btn" id="hamburgerBtn" type="button" aria-label="Menu">☰</button>
-    <div class="session-logo">Audiory</div>
+<header class="topbar">
+  <div class="brand">
+    <button class="icon-btn" type="button">☰</button>
+    <div class="logo">Audiory</div>
   </div>
-
-  <div class="top-actions">
-    <a class="top-btn" href="/marketplace/">Browse Beats</a>
-  </div>
+  <a class="top-btn" href="/marketplace/">Browse Beats</a>
 </header>
 
 <main class="wrap">
-
-  <section class="hero-card" id="landing">
-    <div class="hero-badge">🎙 Audiory Session</div>
-
-    <h1 class="hero-title">Record over beats and build demos.</h1>
-
-    <p class="hero-lead">
-      Open a professional browser studio, record vocals over Audiory beats, shape your sound, and export a rough demo before licensing the beat.
-    </p>
-
-    <div class="hero-actions">
-      <button class="big-btn primary" id="openSessionBtn" type="button">Open Session</button>
-      <a class="big-btn" href="/marketplace/">Choose a Beat</a>
-    </div>
-
-    <div class="info-grid">
-      <div class="info-card">
-        <strong>Real session layout</strong>
-        <span>Timeline, tracks, mixer channels, transport controls, and vocal recording.</span>
-      </div>
-      <div class="info-card">
-        <strong>Record ideas fast</strong>
-        <span>Capture hooks, verses, melodies, freestyles, and rough song demos.</span>
-      </div>
-      <div class="info-card">
-        <strong>Built for Audiory</strong>
-        <span>Later connect it directly to unlocked beats, licenses, projects, and producer collabs.</span>
-      </div>
-    </div>
+  <section class="hero">
+    <div class="badge">🎙 Audiory Session</div>
+    <h1>Record over beats and build demos.</h1>
+    <p>Open a professional Audiory DAW, load beats, import stems, record synced vocals, add effects, mix channels, save your session, and export your idea.</p>
+    <button class="big-btn primary" id="openSessionBtn" type="button">Open Session</button>
   </section>
 
-  <section class="daw-shell" id="dawShell">
+  <section class="daw" id="daw">
+    <div class="menu">
+      <button onclick="newSession()">File</button>
+      <button onclick="renameSession()">Edit</button>
+      <button onclick="addTrack()">Add Track</button>
+      <button onclick="importAudio()">Import</button>
+      <button onclick="exportProject()">Export</button>
+      <button onclick="toggleMetronome()">Metronome</button>
+      <button onclick="saveSession()">Save</button>
+      <button onclick="showPluginInfo()">Plugins</button>
+      <button onclick="alert('Help coming soon')">Help</button>
+    </div>
 
     <div class="daw-top">
       <div class="daw-title">
-        <div class="daw-logo-mark">🎙</div>
+        <div class="mark">🎙</div>
         <div>
-          <h2>Audiory Session DAW</h2>
-          <p id="sessionSub">Untitled Session • 120 BPM • 4/4</p>
+          <h2 id="sessionTitle" contenteditable="true">Untitled Session</h2>
+          <p id="sessionSub">120 BPM • 4/4</p>
         </div>
       </div>
 
       <div class="transport">
-        <button id="rewindBtn" type="button">⏮</button>
-        <button id="playBtn" type="button">▶</button>
-        <button id="recordBtn" class="rec" type="button">●</button>
-        <button id="stopBtn" type="button">■</button>
-        <div class="time-display" id="timeDisplay">00:00.0</div>
+        <button id="rewindBtn">⏮</button>
+        <button id="playBtn">▶</button>
+        <button id="recordBtn" class="rec">●</button>
+        <button id="stopBtn">■</button>
+        <div class="time" id="timeDisplay">00:00.0</div>
       </div>
     </div>
 
     <div class="daw-body">
-
-      <aside class="browser-panel">
+      <aside class="left">
         <div class="panel-title">Beat Source</div>
-
-        <div class="beat-card-mini">
-          <div class="beat-art" id="beatArt">🎧</div>
-          <div class="beat-name" id="beatName">Loaded Beat</div>
-          <div class="beat-meta" id="beatMeta">Preview mode • Connect beatId later</div>
-
-          <button class="studio-btn primary" id="loadBeatBtn" type="button">Load Beat Preview</button>
-          <button class="studio-btn" type="button" onclick="location.href='/marketplace/'">Browse More Beats</button>
-        </div>
-
-        <div class="status-box">
-          Tip: click the red record button to ask for microphone access and create a vocal take.
+        <div class="beat-box">
+          <div class="art" id="beatArt">🎧</div>
+          <div class="beat-name" id="beatName">No Beat Loaded</div>
+          <div class="meta" id="beatMeta">Choose a beat or import your own beat.</div>
+          <button class="studio-btn primary" onclick="openBeatPicker()">Load Beat Preview</button>
+          <button class="studio-btn" onclick="importAudio('beat')">Import Your Beat</button>
+          <button class="studio-btn" onclick="location.href='/marketplace/'">Browse More Beats</button>
         </div>
 
         <div class="export-box" id="exportBox">
-          <strong>Vocal take ready.</strong><br>
-          Download your recorded demo take.
-          <br>
-          <a id="downloadLink" href="#" download="audiory-session-vocal.webm">Download Take</a>
+          <strong>Export ready.</strong><br>
+          <a id="downloadLink" href="#" download="audiory-session-take.webm">Download Recording</a>
         </div>
+
+        <div class="status" id="studioStatus">Studio ready. Load a beat or import audio to begin.</div>
       </aside>
 
       <section class="arrange">
-        <div class="timeline-top">
-          <div class="bar-label">Bars</div>
-          <div class="bar-num">1</div>
-          <div class="bar-num">2</div>
-          <div class="bar-num">3</div>
-          <div class="bar-num">4</div>
-          <div class="bar-num">5</div>
-          <div class="bar-num">6</div>
-          <div class="bar-num">7</div>
-          <div class="bar-num">8</div>
+        <div class="ruler" id="ruler">
+          <div>Bars</div><div>1</div><div>2</div><div>3</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div>
         </div>
-
-        <div class="tracks">
-
-          <div class="track-row">
-            <div class="track-head">
-              <div class="track-name">Beat</div>
-              <div class="track-tools">
-                <div class="track-pill">M</div>
-                <div class="track-pill">S</div>
-              </div>
-            </div>
-
-            <div class="track-lane">
-              <div class="clip">
-                <div class="clip-label">Beat Preview</div>
-                <div class="wavebars" id="beatWave"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="track-row">
-            <div class="track-head">
-              <div class="track-name">Vocal 1</div>
-              <div class="track-tools">
-                <div class="track-pill red">R</div>
-                <div class="track-pill">M</div>
-                <div class="track-pill">S</div>
-              </div>
-            </div>
-
-            <div class="track-lane">
-              <div class="clip vocal" id="vocalClip">
-                <div class="clip-label">Recorded Vocal Take</div>
-                <div class="wavebars" id="vocalWave"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="track-row">
-            <div class="track-head">
-              <div class="track-name">Adlibs</div>
-              <div class="track-tools">
-                <div class="track-pill red">R</div>
-                <div class="track-pill">M</div>
-              </div>
-            </div>
-
-            <div class="track-lane">
-              <div style="height:86px;border-radius:16px;border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;padding:0 16px;color:#64748b;font-weight:900;">
-                Empty Track
-              </div>
-            </div>
-          </div>
-
-        </div>
+        <div class="tracks" id="tracks"></div>
       </section>
 
-      <aside class="mixer-panel">
+      <aside class="right">
         <div class="panel-title">Mixer</div>
+        <div id="mixer"></div>
 
-        <div class="mixer-channel">
-          <div class="channel-head">
-            <div class="channel-name">Beat</div>
-            <span style="color:#93c5fd;font-size:12px;font-weight:950;">STEREO</span>
-          </div>
-
-          <div class="channel-meter">
-            <div id="beatMeter"></div>
-          </div>
-
-          <div class="knob-row">
-            <div class="knob">
-              <label>Volume</label>
-              <input id="beatVol" type="range" min="0" max="100" value="80">
-            </div>
-            <div class="knob">
-              <label>Pan</label>
-              <input type="range" min="0" max="100" value="50">
-            </div>
+        <div class="rack">
+          <div class="panel-title">Plugin Rack</div>
+          <select id="pluginTarget" class="assign"></select>
+          <div class="plugin-list" id="pluginList"></div>
+          <div class="plugin-note">
+            Browser version supports Audiory built-in web plugins. Native VST/AU third-party installs are not supported in normal browsers, but web plugin modules can be added later.
           </div>
         </div>
 
-        <div class="mixer-channel">
-          <div class="channel-head">
-            <div class="channel-name">Vocal</div>
-            <span style="color:#86efac;font-size:12px;font-weight:950;">REC</span>
-          </div>
-
-          <div class="channel-meter">
-            <div id="vocalMeter"></div>
-          </div>
-
-          <div class="knob-row">
-            <div class="knob">
-              <label>Volume</label>
-              <input id="vocalVol" type="range" min="0" max="100" value="85">
-            </div>
-            <div class="knob">
-              <label>Reverb</label>
-              <input id="reverb" type="range" min="0" max="100" value="28">
-            </div>
-            <div class="knob">
-              <label>Delay</label>
-              <input id="delay" type="range" min="0" max="100" value="14">
-            </div>
-            <div class="knob">
-              <label>Pitch Style</label>
-              <input id="pitch" type="range" min="0" max="100" value="35">
-            </div>
-          </div>
-        </div>
-
-        <button class="studio-btn primary" id="saveProjectBtn" type="button">Save Session</button>
-        <button class="studio-btn" id="exportBtn" type="button">Export Demo</button>
-
-        <div class="status-box" id="studioStatus">
-          Studio ready. Press record to create your first take.
-        </div>
+        <button class="studio-btn primary" onclick="saveSession()">Save Session</button>
+        <button class="studio-btn" onclick="exportProject()">Export Demo</button>
       </aside>
-
     </div>
   </section>
-
 </main>
 
+<div class="modal-backdrop" id="beatPicker">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3>Choose Beat</h3>
+        <p>Select a beat preview to load into the session timeline.</p>
+      </div>
+      <button class="close" onclick="closeBeatPicker()">✕</button>
+    </div>
+    <div id="beatPickerList" class="beat-list">Loading…</div>
+  </div>
+</div>
+
+<input id="fileImport" type="file" accept="audio/*" multiple style="display:none">
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
+
 <script>
+const $ = id => document.getElementById(id);
+
+let audioCtx, masterGain, beatGain, vocalGain, analyser;
+let beatAudio = null;
 let mediaRecorder = null;
 let micStream = null;
 let chunks = [];
-let audioCtx = null;
-let analyser = null;
+let recordingStartMs = 0;
+let transportStartMs = 0;
+let transportOffsetMs = 0;
+let playing = false;
+let timer = null;
 let meterTimer = null;
-let timerInterval = null;
-let startedAt = 0;
-let elapsed = 0;
-let isPlaying = false;
+let sessionBeat = null;
+let sessionTracks = [];
+let mixerChannels = [];
+let currentRecordTrackId = null;
+let currentImportMode = "stem";
+let metronomeOn = false;
+let metroTimer = null;
 
-const $ = (id) => document.getElementById(id);
+const PLUGINS = ["Compressor","AutoTune","Reverb","EQ","Saturator","Limiter","Clipper","Chorus","Flanger","Panomatic","Stereo Shaper","Spreader","Delay"];
 
-function makeWave(id, count, min, max){
-  const el = $(id);
-  if (!el) return;
-  el.innerHTML = "";
+function fmt(ms){
+  const sec = Math.floor(ms/1000);
+  return `${String(Math.floor(sec/60)).padStart(2,"0")}:${String(sec%60).padStart(2,"0")}.${Math.floor((ms%1000)/100)}`;
+}
+
+function setStatus(t){ $("studioStatus").textContent = t; }
+
+function ensureAudio(){
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    beatGain = audioCtx.createGain();
+    vocalGain = audioCtx.createGain();
+    analyser = audioCtx.createAnalyser();
+    masterGain.connect(audioCtx.destination);
+    beatGain.connect(masterGain);
+    vocalGain.connect(masterGain);
+  }
+}
+
+function makeWaveHTML(count=80, color="blue"){
+  let html = "";
   for(let i=0;i<count;i++){
-    const s = document.createElement("span");
-    const h = Math.floor(min + Math.random() * (max - min));
-    s.style.height = h + "%";
-    el.appendChild(s);
+    const h = Math.floor(18 + Math.random()*75);
+    html += `<span style="height:${h}%"></span>`;
   }
+  return html;
 }
 
-function fmtTime(ms){
-  const total = Math.max(0, ms || 0);
-  const sec = Math.floor(total / 1000);
-  const m = String(Math.floor(sec / 60)).padStart(2,"0");
-  const s = String(sec % 60).padStart(2,"0");
-  const tenth = Math.floor((total % 1000) / 100);
-  return `${m}:${s}.${tenth}`;
+function addMixerChannel(name){
+  const id = "mix_" + Date.now() + "_" + Math.random().toString(36).slice(2,7);
+  mixerChannels.push({ id, name, volume:80, pan:50, plugins:[] });
+  renderMixer();
+  renderPluginTarget();
+  renderTracks();
+  return id;
 }
 
-function startClock(){
-  startedAt = Date.now() - elapsed;
-  clearInterval(timerInterval);
-  timerInterval = setInterval(()=>{
-    elapsed = Date.now() - startedAt;
-    $("timeDisplay").textContent = fmtTime(elapsed);
-  },100);
+function addTrack(type="vocal", name=null, clip=null){
+  if (sessionTracks.length >= 50) return alert("Maximum 50 tracks reached.");
+
+  const id = "trk_" + Date.now() + "_" + Math.random().toString(36).slice(2,7);
+  const mixId = mixerChannels[0]?.id || addMixerChannel("Main");
+  sessionTracks.push({
+    id,
+    name: name || (type === "beat" ? "Beat" : `Track ${sessionTracks.length + 1}`),
+    type,
+    mixerId: mixId,
+    armed: type === "vocal",
+    muted:false,
+    solo:false,
+    clip
+  });
+  renderTracks();
+  setStatus(`${name || "Track"} added.`);
+  return id;
 }
 
-function stopClock(reset=false){
-  clearInterval(timerInterval);
-  if (reset){
-    elapsed = 0;
-    $("timeDisplay").textContent = "00:00.0";
+function renderTracks(){
+  const el = $("tracks");
+  el.innerHTML = "";
+
+  sessionTracks.forEach(t=>{
+    const row = document.createElement("div");
+    row.className = "track-row";
+    row.innerHTML = `
+      <div class="track-head">
+        <div class="track-name">${t.name}</div>
+        <div class="track-tools">
+          <button class="pill red ${t.armed ? "active":""}" onclick="armTrack('${t.id}')">R</button>
+          <button class="pill ${t.muted ? "active":""}" onclick="toggleTrack('${t.id}','muted')">M</button>
+          <button class="pill ${t.solo ? "active":""}" onclick="toggleTrack('${t.id}','solo')">S</button>
+        </div>
+        <select class="assign" onchange="assignMixer('${t.id}', this.value)">
+          ${mixerChannels.map(m=>`<option value="${m.id}" ${m.id===t.mixerId?"selected":""}>${m.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="lane">
+        ${t.clip ? `
+          <div class="clip ${t.type === "vocal" ? "vocal" : t.type === "stem" ? "stem" : ""}">
+            <div class="clip-label">${t.clip.label || t.name}</div>
+            <div class="wave">${makeWaveHTML(100)}</div>
+          </div>
+        ` : `
+          <div style="height:78px;border-radius:16px;border:1px dashed rgba(255,255,255,.14);display:flex;align-items:center;padding:0 16px;color:#64748b;font-weight:900;">
+            Empty Track
+          </div>
+        `}
+      </div>
+    `;
+    el.appendChild(row);
+  });
+}
+
+function renderMixer(){
+  const el = $("mixer");
+  el.innerHTML = mixerChannels.map(m=>`
+    <div class="channel">
+      <div class="channel-head">
+        <div class="channel-name">${m.name}</div>
+        <span style="color:#93c5fd;font-size:12px;font-weight:950;">${m.plugins.length} FX</span>
+      </div>
+      <div class="meter"><div id="meter_${m.id}" style="height:18%"></div></div>
+      <div class="knobs">
+        <div class="knob"><label>Volume</label><input type="range" min="0" max="100" value="${m.volume}" oninput="setMix('${m.id}','volume',this.value)"></div>
+        <div class="knob"><label>Pan</label><input type="range" min="0" max="100" value="${m.pan}" oninput="setMix('${m.id}','pan',this.value)"></div>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderPluginTarget(){
+  $("pluginTarget").innerHTML = mixerChannels.map(m=>`<option value="${m.id}">${m.name}</option>`).join("");
+}
+
+function renderPlugins(){
+  $("pluginList").innerHTML = PLUGINS.map(p=>`<button class="plugin" onclick="togglePlugin('${p}')">${p}</button>`).join("");
+}
+
+function armTrack(id){
+  sessionTracks.forEach(t=> t.armed = false);
+  const t = sessionTracks.find(x=>x.id===id);
+  if (t) {
+    t.armed = true;
+    currentRecordTrackId = id;
   }
+  renderTracks();
 }
 
-function setStatus(msg){
-  const el = $("studioStatus");
-  if (el) el.textContent = msg;
+function toggleTrack(id,key){
+  const t = sessionTracks.find(x=>x.id===id);
+  if (t) t[key] = !t[key];
+  renderTracks();
 }
 
-function animateBeatMeter(active){
-  if (!active){
-    $("beatMeter").style.height = "18%";
-    return;
-  }
-  const loop = setInterval(()=>{
-    if (!isPlaying){
-      clearInterval(loop);
-      $("beatMeter").style.height = "18%";
+function assignMixer(id,mixId){
+  const t = sessionTracks.find(x=>x.id===id);
+  if (t) t.mixerId = mixId;
+}
+
+function setMix(id,key,val){
+  const m = mixerChannels.find(x=>x.id===id);
+  if (!m) return;
+  m[key] = Number(val);
+}
+
+function togglePlugin(name){
+  const mixId = $("pluginTarget").value;
+  const ch = mixerChannels.find(x=>x.id===mixId);
+  if (!ch) return;
+  if (ch.plugins.includes(name)) ch.plugins = ch.plugins.filter(x=>x!==name);
+  else ch.plugins.push(name);
+  renderMixer();
+  setStatus(`${name} ${ch.plugins.includes(name) ? "added to" : "removed from"} ${ch.name}.`);
+}
+
+function openBeatPicker(){
+  $("beatPicker").classList.add("open");
+  loadBeatPicker();
+}
+
+function closeBeatPicker(){ $("beatPicker").classList.remove("open"); }
+
+async function loadBeatPicker(){
+  const list = $("beatPickerList");
+  list.innerHTML = "Loading beats…";
+  try{
+    if (!window.FB?.fetchBeats) {
+      list.innerHTML = "Firebase beat helper not ready.";
       return;
     }
-    $("beatMeter").style.height = (25 + Math.random()*65) + "%";
-  },130);
+    const beats = await window.FB.fetchBeats({ max:80 });
+    window.__SESSION_BEATS__ = beats;
+    list.innerHTML = beats.map(b=>`
+      <div class="beat-option" onclick="selectBeat('${b.id}')">
+        ${b.artwork ? `<img src="${b.artwork}">` : `<div class="beat-ph">🎧</div>`}
+        <strong>${b.title || "Untitled Beat"}</strong>
+        <span>${b.producerName || "Producer"} • ${b.genre || "Beat"} • ${b.bpm || 120} BPM</span>
+      </div>
+    `).join("");
+  }catch(e){
+    console.error(e);
+    list.innerHTML = "Could not load beats.";
+  }
 }
 
-async function initMic(){
-  micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+function selectBeat(id){
+  const b = (window.__SESSION_BEATS__ || []).find(x=>String(x.id)===String(id));
+  if (!b) return;
 
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const source = audioCtx.createMediaStreamSource(micStream);
+  sessionBeat = b;
+  $("beatName").textContent = b.title || "Loaded Beat";
+  $("beatMeta").textContent = `${b.producerName || "Producer"} • ${b.genre || "Beat"} • ${b.bpm || 120} BPM`;
+  $("sessionSub").textContent = `${b.bpm || 120} BPM • ${b.key || "Key"} • 4/4`;
+  $("beatArt").innerHTML = b.artwork ? `<img src="${b.artwork}">` : "🎧";
 
-  analyser = audioCtx.createAnalyser();
-  analyser.fftSize = 256;
-  source.connect(analyser);
+  const audioUrl = b.previewAudio || b.audio || b.fullAudio || "";
+  if (audioUrl) {
+    beatAudio = new Audio(audioUrl);
+    beatAudio.crossOrigin = "anonymous";
+    beatAudio.loop = false;
+  }
 
-  mediaRecorder = new MediaRecorder(micStream);
+  const beatTrack = sessionTracks.find(t=>t.type==="beat");
+  if (beatTrack) beatTrack.clip = { label:b.title || "Beat Preview", url:audioUrl, startMs:0 };
+  renderTracks();
+  closeBeatPicker();
+  setStatus("Beat loaded into Beat Track.");
+}
 
-  mediaRecorder.ondataavailable = (e) => {
-    if (e.data && e.data.size) chunks.push(e.data);
-  };
+function importAudio(mode="stem"){
+  currentImportMode = mode;
+  $("fileImport").click();
+}
 
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(chunks, { type:"audio/webm" });
-    const url = URL.createObjectURL(blob);
+$("fileImport").addEventListener("change", e=>{
+  const files = Array.from(e.target.files || []);
+  files.forEach(file=>{
+    const url = URL.createObjectURL(file);
+    if (currentImportMode === "beat"){
+      beatAudio = new Audio(url);
+      $("beatName").textContent = file.name;
+      $("beatMeta").textContent = "Imported beat";
+      const bt = sessionTracks.find(t=>t.type==="beat");
+      if (bt) bt.clip = { label:file.name, url, startMs:0 };
+    } else {
+      addTrack("stem", file.name, { label:file.name, url, startMs:0 });
+    }
+  });
+  renderTracks();
+  e.target.value = "";
+});
 
-    $("downloadLink").href = url;
-    $("exportBox").classList.add("show");
-    $("vocalClip").classList.add("show");
+function play(){
+  ensureAudio();
+  if (beatAudio && sessionBeat !== null || beatAudio) {
+    beatAudio.currentTime = transportOffsetMs/1000;
+    beatAudio.volume = .8;
+    beatAudio.play().catch(()=>{});
+  }
+  playing = true;
+  transportStartMs = Date.now() - transportOffsetMs;
+  clearInterval(timer);
+  timer = setInterval(()=>{
+    transportOffsetMs = Date.now() - transportStartMs;
+    $("timeDisplay").textContent = fmt(transportOffsetMs);
+    animateMeters();
+  },100);
+  $("playBtn").textContent = "⏸";
+}
 
-    makeWave("vocalWave", 80, 18, 88);
+function pause(){
+  if (beatAudio) beatAudio.pause();
+  playing = false;
+  clearInterval(timer);
+  $("playBtn").textContent = "▶";
+}
 
+function stop(){
+  pause();
+  if (beatAudio) beatAudio.currentTime = 0;
+  transportOffsetMs = 0;
+  $("timeDisplay").textContent = "00:00.0";
+  if (mediaRecorder?.state === "recording") mediaRecorder.stop();
+  $("recordBtn").classList.remove("active");
+}
+
+function rewind(){
+  transportOffsetMs = 0;
+  if (beatAudio) beatAudio.currentTime = 0;
+  $("timeDisplay").textContent = "00:00.0";
+}
+
+async function startRecord(){
+  try{
+    ensureAudio();
+    if (!micStream) {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      mediaRecorder = new MediaRecorder(micStream);
+      mediaRecorder.ondataavailable = e => { if(e.data?.size) chunks.push(e.data); };
+      mediaRecorder.onstop = onRecorded;
+      analyser = audioCtx.createAnalyser();
+      audioCtx.createMediaStreamSource(micStream).connect(analyser);
+      startMicMeter();
+    }
     chunks = [];
-    setStatus("Vocal take recorded. You can download it or record another take.");
-  };
+    recordingStartMs = transportOffsetMs;
+    mediaRecorder.start();
+    $("recordBtn").classList.add("active");
+    if (!playing) play();
+    setStatus("Recording synced vocal take...");
+  }catch(e){
+    console.error(e);
+    alert("Microphone permission is required.");
+  }
+}
 
-  startMicMeter();
+function onRecorded(){
+  const blob = new Blob(chunks,{type:"audio/webm"});
+  const url = URL.createObjectURL(blob);
+  $("downloadLink").href = url;
+  $("exportBox").classList.add("show");
+
+  let target = sessionTracks.find(t=>t.armed) || sessionTracks.find(t=>t.type==="vocal");
+  if (!target) {
+    const id = addTrack("vocal","Vocal Take");
+    target = sessionTracks.find(t=>t.id===id);
+  }
+  target.clip = { label:"Recorded Vocal Take", url, startMs:recordingStartMs };
+  renderTracks();
+  chunks = [];
+  setStatus("Vocal recording added to timeline.");
 }
 
 function startMicMeter(){
   const data = new Uint8Array(analyser.frequencyBinCount);
-
   clearInterval(meterTimer);
   meterTimer = setInterval(()=>{
     analyser.getByteFrequencyData(data);
-    const avg = data.reduce((a,b)=>a+b,0) / data.length;
-    const h = Math.min(100, Math.max(8, avg / 2));
-    $("vocalMeter").style.height = h + "%";
+    const avg = data.reduce((a,b)=>a+b,0)/data.length;
+    const h = Math.min(100,Math.max(8,avg/2));
+    const armed = sessionTracks.find(t=>t.armed);
+    if (armed) {
+      const meter = $("meter_"+armed.mixerId);
+      if (meter) meter.style.height = h+"%";
+    }
   },80);
 }
 
-async function startRecording(){
-  try{
-    if (!mediaRecorder) await initMic();
+function animateMeters(){
+  mixerChannels.forEach(m=>{
+    const el = $("meter_"+m.id);
+    if (el) el.style.height = (20 + Math.random()*65) + "%";
+  });
+}
 
-    if (mediaRecorder.state !== "recording"){
-      chunks = [];
-      mediaRecorder.start();
-      $("recordBtn").classList.add("active");
-      setStatus("Recording vocal take...");
-      if (!isPlaying){
-        isPlaying = true;
-        startClock();
-        animateBeatMeter(true);
-      }
-    }
+function toggleMetronome(){
+  metronomeOn = !metronomeOn;
+  if (metronomeOn){
+    setStatus("Metronome enabled.");
+    let c=0;
+    metroTimer = setInterval(()=>{
+      ensureAudio();
+      c++;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.frequency.value = c%4===1 ? 1400 : 850;
+      gain.gain.value = .08;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime+.05);
+    },500);
+  } else {
+    clearInterval(metroTimer);
+    setStatus("Metronome disabled.");
+  }
+}
+
+function renameSession(){
+  const t = prompt("Session title:", $("sessionTitle").textContent.trim());
+  if (t) $("sessionTitle").textContent = t.trim();
+}
+
+function newSession(){
+  if (!confirm("Start a new session?")) return;
+  sessionBeat = null;
+  beatAudio = null;
+  sessionTracks = [];
+  mixerChannels = [];
+  initSession();
+  setStatus("New session created.");
+}
+
+async function saveSession(){
+  const user = window.FB?.auth?.currentUser;
+  if (!user){
+    alert("Login required to save sessions.");
+    location.href = "/login/?return="+encodeURIComponent(location.pathname+location.search);
+    return;
+  }
+  try{
+    await window.FB.addDoc(window.FB.collection(window.FB.db,"sessions"),{
+      ownerId:user.uid,
+      title:$("sessionTitle").textContent.trim() || "Untitled Session",
+      beatId:sessionBeat?.id || null,
+      beatTitle:sessionBeat?.title || null,
+      tracks:sessionTracks.map(t=>({name:t.name,type:t.type,mixerId:t.mixerId,hasClip:!!t.clip,clipLabel:t.clip?.label||null})),
+      mixer:mixerChannels,
+      metronomeOn,
+      createdAt:Date.now(),
+      updatedAt:Date.now()
+    });
+    setStatus("Session saved ✅");
   }catch(e){
     console.error(e);
-    alert("Microphone permission is required to record.");
+    alert("Could not save session: "+(e?.message||e));
   }
 }
 
-function stopRecording(){
-  if (mediaRecorder && mediaRecorder.state === "recording"){
-    mediaRecorder.stop();
+function exportProject(){
+  if (!$("exportBox").classList.contains("show")){
+    setStatus("Record or import audio first. Current MVP exports recorded vocal take.");
+  }else{
+    setStatus("Export ready. Use download link on left.");
   }
-
-  $("recordBtn").classList.remove("active");
-  isPlaying = false;
-  stopClock(false);
-  animateBeatMeter(false);
 }
 
-function stopAll(){
-  stopRecording();
-  isPlaying = false;
-  stopClock(true);
-  animateBeatMeter(false);
-  setStatus("Stopped.");
+function showPluginInfo(){
+  alert("Browser DAW supports built-in Audiory web plugins. Native VST/AU installs are not possible in normal browsers, but web plugin modules can be supported later.");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  makeWave("beatWave", 100, 18, 92);
+function initSession(){
+  addMixerChannel("Beat");
+  addMixerChannel("Vocal Bus");
+  sessionTracks.push({id:"beat_track",name:"Beat",type:"beat",mixerId:mixerChannels[0].id,armed:false,muted:false,solo:false,clip:null});
+  sessionTracks.push({id:"vocal_1",name:"Vocal 1",type:"vocal",mixerId:mixerChannels[1].id,armed:true,muted:false,solo:false,clip:null});
+  currentRecordTrackId = "vocal_1";
+  renderTracks();
+  renderMixer();
+  renderPluginTarget();
+  renderPlugins();
+}
 
-  $("openSessionBtn")?.addEventListener("click", () => {
-    $("dawShell").classList.add("open");
-    $("dawShell").scrollIntoView({ behavior:"smooth", block:"start" });
-  });
+$("openSessionBtn").onclick = () => {
+  $("daw").classList.add("open");
+  $("daw").scrollIntoView({behavior:"smooth",block:"start"});
+};
 
-  $("recordBtn")?.addEventListener("click", startRecording);
+$("playBtn").onclick = () => playing ? pause() : play();
+$("stopBtn").onclick = stop;
+$("rewindBtn").onclick = rewind;
+$("recordBtn").onclick = startRecord;
 
-  $("stopBtn")?.addEventListener("click", stopAll);
+window.openBeatPicker=openBeatPicker;
+window.closeBeatPicker=closeBeatPicker;
+window.selectBeat=selectBeat;
+window.addTrack=()=>addTrack("vocal",`Track ${sessionTracks.length+1}`);
+window.importAudio=importAudio;
+window.saveSession=saveSession;
+window.renameSession=renameSession;
+window.newSession=newSession;
+window.exportProject=exportProject;
+window.toggleMetronome=toggleMetronome;
+window.showPluginInfo=showPluginInfo;
+window.armTrack=armTrack;
+window.toggleTrack=toggleTrack;
+window.assignMixer=assignMixer;
+window.setMix=setMix;
+window.togglePlugin=togglePlugin;
 
-  $("playBtn")?.addEventListener("click", () => {
-    isPlaying = !isPlaying;
-    $("playBtn").textContent = isPlaying ? "⏸" : "▶";
-
-    if (isPlaying){
-      startClock();
-      animateBeatMeter(true);
-      setStatus("Playing session timeline.");
-    }else{
-      stopClock(false);
-      animateBeatMeter(false);
-      setStatus("Paused.");
-    }
-  });
-
-  $("rewindBtn")?.addEventListener("click", () => {
-    elapsed = 0;
-    $("timeDisplay").textContent = "00:00.0";
-    setStatus("Returned to start.");
-  });
-
-  $("loadBeatBtn")?.addEventListener("click", () => {
-    setStatus("Next step: connect this button to Firebase beat preview using ?beatId=...");
-  });
-
-  $("saveProjectBtn")?.addEventListener("click", () => {
-    setStatus("Session saved locally for MVP. Later we will save projects to Firebase.");
-  });
-
-  $("exportBtn")?.addEventListener("click", () => {
-    const box = $("exportBox");
-    if (!box.classList.contains("show")){
-      setStatus("Record a vocal take first, then export/download it.");
-    } else {
-      setStatus("Export ready. Use the download button on the left panel.");
-    }
-  });
-});
+document.addEventListener("DOMContentLoaded", initSession);
 </script>
 
 </body>
