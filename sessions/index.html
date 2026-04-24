@@ -1187,6 +1187,37 @@ a{
   }
 }
 
+.clip{
+  height:82px;
+  border-radius:10px;
+  border:1px solid rgba(59,130,246,.45);
+  background:linear-gradient(180deg,rgba(59,130,246,.34),rgba(37,99,235,.16));
+  position:absolute;
+  top:18px;
+  overflow:hidden;
+  min-width:120px;
+  resize:horizontal;
+}
+
+.wave.stretch-wave{
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:28px;
+  bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:3px;
+  overflow:hidden;
+}
+
+.wave.stretch-wave span{
+  flex:1 0 4px;
+  max-width:7px;
+  border-radius:999px;
+  background:#60a5fa;
+}
+
 @media(max-width:760px){
   .session-logo{
     font-size:28px;
@@ -1647,6 +1678,8 @@ document.addEventListener("DOMContentLoaded", () => {
   $("zoomInput")?.addEventListener("input", () => {
     state.zoom = Number($("zoomInput").value || 80);
     document.documentElement.style.setProperty("--barWidth", state.zoom + "px");
+
+    autoExtendBarsToClips();
     renderRuler();
     renderTracks();
     updatePlayhead();
@@ -1871,14 +1904,16 @@ function renderClip(clip){
   el.draggable = true;
 
   const left = (clip.startTime / secondsPerBar()) * state.zoom;
-  const width = Math.max(90, (clip.duration / secondsPerBar()) * state.zoom);
+  const width = Math.max(120, (clip.duration / secondsPerBar()) * state.zoom);
 
   el.style.left = left + "px";
   el.style.width = width + "px";
 
+  const waveCount = Math.max(30, Math.floor(width / 7));
+
   el.innerHTML = `
     <div class="clip-label">${safeText(clip.name)}</div>
-    <div class="wave">${waveBars(clip.type)}</div>
+    <div class="wave stretch-wave">${waveBars(clip.type, waveCount)}</div>
   `;
 
   el.addEventListener("click", (e) => {
@@ -1895,26 +1930,35 @@ function renderClip(clip){
   el.addEventListener("dblclick", () => renameClip(clip.id));
 
   el.addEventListener("mouseup", () => {
-    const newWidthPx = parseFloat(el.style.width || "90");
-    const newDuration = (newWidthPx / state.zoom) * secondsPerBar();
-    clip.duration = Math.max(1, newDuration);
-    if (clip.type === "beat") setEndMarkerFromBeat();
-    renderMarkers();
+    const newWidthPx = parseFloat(el.style.width || "120");
+    clip.duration = Math.max(1, (newWidthPx / state.zoom) * secondsPerBar());
+
+    if (clip.type === "beat") {
+      state.beat.duration = clip.duration;
+      setEndMarkerFromBeat();
+    }
+
+    renderTracks();
   });
 
   return el;
 }
 
-function waveBars(type="beat"){
-  const count = 52;
+function waveBars(type="beat", count=52){
   let html = "";
-  for (let i=0;i<count;i++){
+  for (let i = 0; i < count; i++){
     const h = type === "pattern"
       ? (i % 4 === 0 ? 46 : 18)
-      : Math.round(16 + Math.abs(Math.sin(i * 0.73)) * 44 + (i % 7) * 2);
+      : Math.round(14 + Math.abs(Math.sin(i * 0.65)) * 48 + (i % 5) * 3);
     html += `<span style="height:${h}px"></span>`;
   }
   return html;
+}
+
+function autoExtendBarsToClips(){
+  const endTime = Math.max(0, ...state.clips.map(c => (c.startTime || 0) + (c.duration || 0)));
+  const neededBars = Math.ceil(endTime / secondsPerBar()) + 8;
+  state.bars = Math.max(64, neededBars);
 }
 
 function mixerOptions(selected){
@@ -2170,6 +2214,7 @@ async function chooseBeat(b){
   state.clips.push(clip);
   closeBeatPicker();
   renderTracks();
+  autoExtendBarsToClips();
   setStatus(`Loaded beat: ${state.beat.title}. Drag the clip or resize it to arrange.`);
 }
 
