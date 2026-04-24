@@ -1,1 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 
+<title>Audiory Session | Record On Beats</title>
+
+<meta name="description" content="Record vocals over beats inside Audiory Session. Create demos, add vocal effects, and save your idea before licensing the beat.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://audiory.site/sessions/">
+
+<link rel="icon" href="/audioryfavicon.webp">
+
+<meta property="og:title" content="Audiory Session">
+<meta property="og:description" content="Record over beats and build demos directly inside Audiory.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://audiory.site/sessions/">
+<meta property="og:image" content="https://audiory.site/og-image.jpg">
+
+<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/cart.css">
+
+<style>
+
+:root{
+--bg:#070a12;
+--card:#0b1220;
+--line:#1f2937;
+--text:#ffffff;
+--muted:#94a3b8;
+--blue:#3b82f6;
+--blue2:#2563eb;
+}
+
+*{box-sizing:border-box}
+
+body{
+margin:0;
+background:var(--bg);
+color:var(--text);
+font-family:Inter,system-ui;
+}
+
+a{text-decoration:none;color:inherit}
+
+.topbar{
+height:72px;
+border-bottom:1px solid var(--line);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 18px;
+position:sticky;
+top:0;
+background:rgba(7,10,18,.96);
+backdrop-filter:blur(8px);
+z-index:100;
+}
+
+.brand{
+display:flex;
+align-items:center;
+gap:12px;
+font-size:34px;
+font-weight:950;
+}
+
+.icon-btn{
+width:48px;
+height:48px;
+border-radius:14px;
+border:1px solid var(--line);
+background:#111827;
+color:#fff;
+font-size:22px;
+cursor:pointer;
+}
+
+.wrap{
+max-width:1220px;
+margin:auto;
+padding:28px 18px 80px;
+}
+
+.hero{
+background:
+radial-gradient(circle at top right, rgba(59,130,246,.15), transparent 30%),
+linear-gradient(180deg,#091225,#08101e);
+border:1px solid #1d2940;
+border-radius:28px;
+padding:30px;
+margin-bottom:24px;
+}
+
+.kicker{
+display:inline-flex;
+padding:10px 16px;
+border-radius:999px;
+background:rgba(255,255,255,.05);
+border:1px solid rgba(255,255,255,.10);
+font-weight:800;
+}
+
+.hero h1{
+font-size:62px;
+line-height:1;
+margin:18px 0;
+font-weight:950;
+max-width:650px;
+}
+
+.hero p{
+font-size:20px;
+line-height:1.6;
+color:#cbd5e1;
+max-width:760px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:1.2fr .8fr;
+gap:18px;
+}
+
+.card{
+background:var(--card);
+border:1px solid var(--line);
+border-radius:24px;
+padding:22px;
+}
+
+.section-title{
+font-size:26px;
+font-weight:900;
+margin-bottom:18px;
+}
+
+.beat-cover{
+width:100%;
+aspect-ratio:1/1;
+border-radius:20px;
+overflow:hidden;
+background:#0f172a;
+border:1px solid var(--line);
+margin-bottom:18px;
+display:grid;
+place-items:center;
+font-size:70px;
+}
+
+.player{
+margin-top:15px;
+}
+
+.wave{
+height:120px;
+border-radius:18px;
+background:
+linear-gradient(90deg,
+#111827 10%,
+#3b82f6 10% 14%,
+#111827 14% 18%,
+#3b82f6 18% 22%,
+#111827 22% 30%,
+#3b82f6 30% 36%,
+#111827 36%);
+border:1px solid var(--line);
+}
+
+.controls{
+display:flex;
+flex-wrap:wrap;
+gap:12px;
+margin-top:16px;
+}
+
+.btn{
+border:none;
+background:#111827;
+border:1px solid var(--line);
+color:#fff;
+padding:14px 18px;
+border-radius:14px;
+font-weight:900;
+cursor:pointer;
+}
+
+.btn.primary{
+background:linear-gradient(180deg,var(--blue),var(--blue2));
+border:none;
+}
+
+.record-btn.recording{
+background:#ef4444;
+}
+
+.mixer{
+display:grid;
+gap:16px;
+margin-top:18px;
+}
+
+.fx{
+padding:14px;
+border-radius:16px;
+background:#091122;
+border:1px solid var(--line);
+}
+
+label{
+display:block;
+font-weight:800;
+margin-bottom:10px;
+}
+
+input[type=range]{
+width:100%;
+}
+
+.meter{
+height:16px;
+background:#111827;
+border-radius:999px;
+overflow:hidden;
+margin-top:10px;
+}
+
+.meter-fill{
+height:100%;
+width:0%;
+background:linear-gradient(90deg,#3b82f6,#22c55e);
+transition:.08s linear;
+}
+
+.note{
+margin-top:18px;
+padding:14px;
+border-radius:14px;
+background:rgba(59,130,246,.08);
+border:1px solid rgba(59,130,246,.24);
+color:#bfdbfe;
+font-size:14px;
+}
+
+.export-box{
+margin-top:20px;
+padding:16px;
+border-radius:16px;
+background:#07101d;
+border:1px solid var(--line);
+display:none;
+}
+
+.export-box.show{
+display:block;
+}
+
+.download-link{
+display:inline-block;
+margin-top:14px;
+padding:12px 18px;
+border-radius:12px;
+background:#16a34a;
+font-weight:900;
+}
+
+.buy-box{
+margin-top:22px;
+padding:16px;
+border-radius:16px;
+background:#0a1326;
+border:1px solid #27406d;
+}
+
+.buy-btn{
+width:100%;
+margin-top:14px;
+}
+
+@media(max-width:900px){
+.grid{
+grid-template-columns:1fr;
+}
+.hero h1{
+font-size:48px;
+}
+}
+
+@media(max-width:640px){
+.hero h1{
+font-size:40px;
+}
+}
+
+</style>
+</head>
+<body>
+
+<header class="topbar">
+<div class="brand">
+<button class="icon-btn" onclick="history.back()">☰</button>
+<div>Audiory Session</div>
+</div>
+
+<a href="/marketplace/" class="btn">
+Browse Beats
+</a>
+</header>
+
+
+<div class="wrap">
+
+<section class="hero">
+<div class="kicker">🎙 Audiory Session</div>
+<h1>Record over beats and build demos.</h1>
+<p>
+Test melodies, write hooks, record rough vocals and save your idea before licensing the beat.
+</p>
+</section>
+
+
+<div class="grid">
+
+<div class="card">
+
+<div class="section-title">
+Current Beat
+</div>
+
+<div class="beat-cover">
+🎵
+</div>
+
+<div id="beatTitle" style="font-weight:900;font-size:22px">
+Loaded Beat
+</div>
+
+<div style="margin-top:6px;color:var(--muted)">
+Use your mic to record over playback.
+</div>
+
+<div class="player">
+<div class="wave"></div>
+
+<div class="controls">
+<button class="btn" id="playBeatBtn">
+▶ Play Beat
+</button>
+
+<button class="btn record-btn" id="recordBtn">
+🎙 Record
+</button>
+
+<button class="btn" id="stopBtn">
+■ Stop
+</button>
+</div>
+</div>
+
+<div class="mixer">
+
+<div class="fx">
+<label>Reverb</label>
+<input id="reverbKnob" type="range" min="0" max="100" value="20">
+</div>
+
+<div class="fx">
+<label>Delay</label>
+<input id="delayKnob" type="range" min="0" max="100" value="10">
+</div>
+
+<div class="fx">
+<label>Pitch Style</label>
+<input id="pitchKnob" type="range" min="0" max="100" value="30">
+</div>
+
+<div class="fx">
+<label>Input Level</label>
+
+<div class="meter">
+<div class="meter-fill" id="meterFill"></div>
+</div>
+</div>
+
+</div>
+
+<div class="note">
+MVP version saves a vocal demo recording from your browser mic.
+Later we can add Auto-Tune-style pitch correction.
+</div>
+
+<div class="export-box" id="exportBox">
+<div style="font-weight:900;font-size:18px">
+Demo Ready
+</div>
+
+<a id="downloadLink" class="download-link" download="audiory-session-demo.webm">
+Download Demo
+</a>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="section-title">
+License This Beat
+</div>
+
+<div class="buy-box">
+Basic License • Demo use
+<button class="btn primary buy-btn">
+Buy License
+</button>
+</div>
+
+<div class="buy-box">
+Premium License • Streaming release
+<button class="btn primary buy-btn">
+Buy Premium
+</button>
+</div>
+
+<div class="buy-box">
+Exclusive Rights
+<button class="btn primary buy-btn">
+Buy Exclusive
+</button>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+let mediaRecorder;
+let chunks=[];
+let stream;
+let audioCtx;
+let analyser;
+let meterInterval;
+
+const recordBtn=document.getElementById("recordBtn");
+const stopBtn=document.getElementById("stopBtn");
+const exportBox=document.getElementById("exportBox");
+const downloadLink=document.getElementById("downloadLink");
+const meterFill=document.getElementById("meterFill");
+
+
+async function initMic(){
+
+stream=await navigator.mediaDevices.getUserMedia({
+audio:true
+});
+
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+
+const source=audioCtx.createMediaStreamSource(stream);
+
+analyser=audioCtx.createAnalyser();
+
+source.connect(analyser);
+
+analyser.fftSize=256;
+
+mediaRecorder=new MediaRecorder(stream);
+
+mediaRecorder.ondataavailable=e=>{
+chunks.push(e.data);
+};
+
+mediaRecorder.onstop=()=>{
+
+const blob=new Blob(chunks,{
+type:"audio/webm"
+});
+
+const url=URL.createObjectURL(blob);
+
+downloadLink.href=url;
+
+exportBox.classList.add("show");
+
+chunks=[];
+
+};
+
+startMeter();
+
+}
+
+
+function startMeter(){
+
+const dataArray=new Uint8Array(analyser.frequencyBinCount);
+
+meterInterval=setInterval(()=>{
+
+analyser.getByteFrequencyData(dataArray);
+
+let avg=dataArray.reduce((a,b)=>a+b,0)/dataArray.length;
+
+let pct=Math.min(avg/2,100);
+
+meterFill.style.width=pct+"%";
+
+},80);
+
+}
+
+
+recordBtn.addEventListener("click",async()=>{
+
+try{
+
+if(!mediaRecorder){
+await initMic();
+}
+
+mediaRecorder.start();
+
+recordBtn.classList.add("recording");
+recordBtn.innerHTML="● Recording";
+
+}catch(e){
+alert("Microphone permission needed.");
+console.error(e);
+}
+
+});
+
+
+stopBtn.addEventListener("click",()=>{
+
+if(mediaRecorder && mediaRecorder.state==="recording"){
+mediaRecorder.stop();
+}
+
+recordBtn.classList.remove("recording");
+recordBtn.innerHTML="🎙 Record";
+
+if(meterInterval){
+clearInterval(meterInterval);
+}
+
+});
+
+
+document.getElementById("playBeatBtn").addEventListener("click",()=>{
+
+alert(
+"Next step: connect this page to Audiory beat previews using beatId from URL."
+);
+
+});
+
+
+document.querySelectorAll(".buy-btn").forEach(btn=>{
+btn.addEventListener("click",()=>{
+alert("Later this can open your existing license modal.");
+});
+});
+
+
+/* Future:
+load beat from:
+sessions/?beatId=123
+
+const beatId = new URL(location.href).searchParams.get('beatId');
+*/
+
+</script>
+
+</body>
+</html>
