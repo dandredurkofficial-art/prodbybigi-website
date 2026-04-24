@@ -2641,5 +2641,271 @@ window.closeSaveAsModal = () => $("saveAsBackdrop")?.classList.remove("open");
 window.showRecentProjects = showRecentProjects;
 </script>
 
+<script>
+function renderMixer(){
+  const rack = $("mixerArea");
+  if (!rack) return;
+  rack.innerHTML = "";
+
+  state.mixer.forEach(ch => {
+    const card = document.createElement("div");
+    card.className = "channel" + (ch.isMaster ? " master" : "");
+    card.style.borderColor = ch.color;
+
+    card.innerHTML = `
+      <div class="ch-color" style="background:${ch.color}"></div>
+      <input class="ch-small" value="${safeText(ch.name)}">
+      <input class="ch-small color-input" type="color" value="${ch.color}">
+      <div class="channel-wave">${waveBars("beat")}</div>
+      <div class="meter"><div data-meter-id="${ch.id}"></div></div>
+      <input class="fader" type="range" min="0" max="1" step=".01" value="${ch.volume}">
+      <input class="fader pan" type="range" min="-1" max="1" step=".01" value="${ch.pan}">
+      <select class="ch-small">
+        <option value="">Sidechain Off</option>
+        ${state.mixer.filter(x=>x.id!==ch.id).map(x=>`<option value="${x.id}">${safeText(x.name)}</option>`).join("")}
+      </select>
+      <div class="plugin-list">
+        ${PLUGINS.map(p=>`<button class="plugin ${ch.plugins.includes(p) ? "active" : ""}" type="button">${p}</button>`).join("")}
+      </div>
+      ${ch.isMaster ? "" : `<button class="delete-channel" type="button">Delete Channel</button>`}
+    `;
+
+    card.querySelector(".ch-small").onchange = e => ch.name = e.target.value || ch.name;
+    card.querySelector(".color-input").oninput = e => {
+      ch.color = e.target.value;
+      card.style.borderColor = ch.color;
+      card.querySelector(".ch-color").style.background = ch.color;
+    };
+    card.querySelector(".fader").oninput = e => ch.volume = Number(e.target.value);
+    card.querySelector(".pan").oninput = e => ch.pan = Number(e.target.value);
+
+    card.querySelectorAll(".plugin").forEach(btn=>{
+      btn.onclick = () => {
+        const p = btn.textContent;
+        if (ch.plugins.includes(p)) ch.plugins = ch.plugins.filter(x=>x!==p);
+        else ch.plugins.push(p);
+        btn.classList.toggle("active");
+      };
+    });
+
+    card.querySelector(".delete-channel")?.addEventListener("click", ()=>{
+      if (!confirm("Delete this mixer channel?")) return;
+      state.mixer = state.mixer.filter(x => x.id !== ch.id);
+      renderMixer();
+    });
+
+    rack.appendChild(card);
+  });
+}
+
+function openMixer(){ renderMixer(); $("mixerBackdrop")?.classList.add("open"); }
+function closeMixer(){ $("mixerBackdrop")?.classList.remove("open"); }
+function addMixerChannelPrompt(){
+  const name = prompt("Channel name:", "New Bus") || "New Bus";
+  state.mixer.splice(Math.max(0,state.mixer.length-1),0,makeMixerChannel(name, randomColor()));
+  renderMixer();
+}
+
+function renderChannelRack(){
+  const root = $("stepRack");
+  if (!root) return;
+  root.innerHTML = "";
+
+  state.channelRack.forEach(ch=>{
+    const row = document.createElement("div");
+    row.className = "step-row";
+    row.innerHTML = `
+      <div class="step-name">${safeText(ch.name)}</div>
+      ${ch.steps.map((s,i)=>`<button class="step ${s ? "on" : ""}" data-i="${i}"></button>`).join("")}
+    `;
+    row.querySelectorAll(".step").forEach(btn=>{
+      btn.onclick = ()=>{
+        const i = Number(btn.dataset.i);
+        ch.steps[i] = ch.steps[i] ? 0 : 1;
+        renderChannelRack();
+      };
+    });
+    root.appendChild(row);
+  });
+}
+
+function openChannelRack(){ renderChannelRack(); $("channelRackBackdrop")?.classList.add("open"); }
+function closeChannelRack(){ $("channelRackBackdrop")?.classList.remove("open"); }
+
+function sendPatternToPlaylist(){
+  setupInitialSession();
+  let track = state.tracks.find(t => t.type === "pattern");
+  if (!track) {
+    const ch = makeMixerChannel("Pattern Bus", "#8b5cf6");
+    state.mixer.splice(Math.max(0,state.mixer.length-1),0,ch);
+    track = makeTrack("Pattern 1", "pattern", ch.id);
+    state.tracks.push(track);
+  }
+
+  state.clips.push({
+    id: uid("clip"),
+    trackId: track.id,
+    type:"pattern",
+    name:"Beat Pattern",
+    url:"",
+    startTime: state.currentTime || 0,
+    duration: secondsPerBar() * 4
+  });
+
+  closeChannelRack();
+  renderTracks();
+}
+
+function saveSession(saveAs=false){
+  if (!state.savedOnce || saveAs) {
+    $("saveAsName").value = state.title;
+    $("saveAsBackdrop")?.classList.add("open");
+    return;
+  }
+  writeSessionToLocal();
+  alert("Session saved.");
+}
+
+function saveAsNow(){
+  state.title = $("saveAsName")?.value.trim() || "Untitled Session";
+  $("sessionTitle").textContent = state.title;
+  state.savedOnce = true;
+
+  const type = $("saveAsType")?.value || "cloud";
+  writeSessionToLocal();
+
+  if (type === "zip") exportProject("zip");
+  if (type === "wav") renderOffline("wav");
+
+  $("saveAsBackdrop")?.classList.remove("open");
+  alert("Session saved.");
+}
+
+function writeSessionToLocal(){
+  state.sessionId = state.sessionId || uid("session");
+  const data = {
+    sessionId: state.sessionId,
+    title: state.title,
+    bpm: state.bpm,
+    tracks: state.tracks,
+    mixer: state.mixer,
+    clips: state.clips.map(c=>({...c, blob:null, file:null})),
+    beat: state.beat,
+    markerTimes: state.markerTimes,
+    savedAt: Date.now()
+  };
+
+  localStorage.setItem("audiorySession_" + state.sessionId, JSON.stringify(data));
+
+  const recent = JSON.parse(localStorage.getItem("audioryRecentSessions") || "[]")
+    .filter(x => x.sessionId !== state.sessionId);
+  recent.unshift({ sessionId: state.sessionId, title: state.title, savedAt: Date.now() });
+  localStorage.setItem("audioryRecentSessions", JSON.stringify(recent.slice(0,10)));
+}
+
+async function exportProject(forceType){
+  const type = forceType || $("exportFormat")?.value || "wav";
+  const name = ($("exportName")?.value || state.title || "audiory-session-demo").replace(/\s+/g,"_");
+
+  if (type === "zip") {
+    const blob = new Blob([JSON.stringify({
+      title: state.title,
+      bpm: state.bpm,
+      tracks: state.tracks,
+      mixer: state.mixer,
+      clips: state.clips.map(c=>({...c, blob:null, file:null})),
+      beat: state.beat,
+      markerTimes: state.markerTimes
+    }, null, 2)], { type:"application/json" });
+
+    downloadBlob(blob, `${name}.audiory-session.json`);
+    closeExportModal();
+    return;
+  }
+
+  await renderOffline(type, name);
+  closeExportModal();
+}
+
+async function renderOffline(type="wav", name){
+  const duration = Math.max(5, ...state.clips.map(c => (c.startTime||0)+(c.duration||0)));
+  const sampleRate = 44100;
+  const offline = new OfflineAudioContext(2, Math.ceil(duration * sampleRate), sampleRate);
+
+  for (const clip of state.clips) {
+    if (!clip.url) continue;
+    try {
+      const res = await fetch(clip.url);
+      const arr = await res.arrayBuffer();
+      const buffer = await offline.decodeAudioData(arr);
+      const src = offline.createBufferSource();
+      src.buffer = buffer;
+
+      const gain = offline.createGain();
+      const ch = getMixerChannelForClip(clip);
+      gain.gain.value = Number(ch?.volume ?? .85);
+
+      src.connect(gain).connect(offline.destination);
+      src.start(clip.startTime || 0);
+    } catch(e) {
+      console.warn("Export skipped clip:", e);
+    }
+  }
+
+  const rendered = await offline.startRendering();
+  const wav = audioBufferToWav(rendered);
+  downloadBlob(new Blob([wav], {type:"audio/wav"}), `${name || "audiory-session-demo"}.wav`);
+  alert(type === "mp3" ? "Exported WAV for now. MP3 can be added later." : "WAV exported.");
+}
+
+function audioBufferToWav(buffer){
+  const numCh = buffer.numberOfChannels;
+  const len = buffer.length * numCh * 2 + 44;
+  const ab = new ArrayBuffer(len);
+  const view = new DataView(ab);
+  let offset = 0;
+
+  function writeStr(s){ for(let i=0;i<s.length;i++) view.setUint8(offset++, s.charCodeAt(i)); }
+
+  writeStr("RIFF"); view.setUint32(offset, len-8, true); offset+=4;
+  writeStr("WAVE"); writeStr("fmt "); view.setUint32(offset,16,true); offset+=4;
+  view.setUint16(offset,1,true); offset+=2;
+  view.setUint16(offset,numCh,true); offset+=2;
+  view.setUint32(offset,buffer.sampleRate,true); offset+=4;
+  view.setUint32(offset,buffer.sampleRate*numCh*2,true); offset+=4;
+  view.setUint16(offset,numCh*2,true); offset+=2;
+  view.setUint16(offset,16,true); offset+=2;
+  writeStr("data"); view.setUint32(offset,len-offset-4,true); offset+=4;
+
+  for(let i=0;i<buffer.length;i++){
+    for(let ch=0;ch<numCh;ch++){
+      let s = Math.max(-1, Math.min(1, buffer.getChannelData(ch)[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      offset += 2;
+    }
+  }
+  return ab;
+}
+
+function downloadBlob(blob, filename){
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+
+window.openMixer = openMixer;
+window.closeMixer = closeMixer;
+window.addMixerChannelPrompt = addMixerChannelPrompt;
+window.openChannelRack = openChannelRack;
+window.closeChannelRack = closeChannelRack;
+window.sendPatternToPlaylist = sendPatternToPlaylist;
+window.saveSession = saveSession;
+window.saveAsNow = saveAsNow;
+window.exportProject = exportProject;
+window.renderMixer = renderMixer;
+window.renderChannelRack = renderChannelRack;
+</script>
+
 </body>
 </html>
