@@ -1113,6 +1113,58 @@ a{
   margin-top:14px;
 }
 
+.insert-box,
+.send-box{
+  border:1px solid #26364f;
+  background:#05070c;
+  border-radius:12px;
+  padding:8px;
+}
+
+.insert-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:12px;
+  font-weight:950;
+  color:#cbd5e1;
+  margin-bottom:6px;
+}
+
+.insert-head button{
+  width:24px;
+  height:24px;
+  border-radius:7px;
+  border:1px solid #26364f;
+  background:#0b1220;
+  color:#fff;
+  font-weight:950;
+}
+
+.insert-plugin,
+.insert-empty{
+  min-height:26px;
+  border-radius:7px;
+  border:1px solid #26364f;
+  padding:6px 8px;
+  font-size:11px;
+  margin-bottom:5px;
+}
+
+.insert-plugin{
+  background:rgba(59,130,246,.16);
+  color:#bfdbfe;
+}
+
+.insert-empty{
+  color:#64748b;
+}
+
+.ch-btns button.active{
+  background:#ef4444;
+  border-color:#ef4444;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */
@@ -1224,8 +1276,8 @@ a{
           <div class="drop-row" onclick="importAudio('stem')">
             <span>Import Stems</span><span>›</span>
           </div>
-          <div class="drop-row" onclick="openExportModal()">
-            <span>Export Demo</span><span>›</span>
+          <div class="drop-row" onclick="openExportMenu()">
+            <span>Export</span><span>›</span>
           </div>
           <div class="drop-row" onclick="showRecentProjects()">
             <span>Recent Projects</span><span>›</span>
@@ -2607,8 +2659,68 @@ function newSession(){
 
 function showRecentProjects(){
   const items = JSON.parse(localStorage.getItem("audioryRecentSessions") || "[]");
-  if (!items.length) return alert("No recent sessions yet.");
-  alert("Recent sessions:\n\n" + items.slice(0,8).map((x,i)=>`${i+1}. ${x.title}`).join("\n"));
+
+  let html = `
+    <div class="dropdown open recent-menu" style="left:0;top:38px;min-width:360px;">
+      <div class="drop-row" onclick="newSession()"><span>New Session</span><span>Ctrl+N</span></div>
+      <div class="drop-row" onclick="openBeatPicker()"><span>Open...</span><span>Ctrl+O</span></div>
+      <div class="drop-row" onclick="saveSession(false)"><span>Save</span><span>Ctrl+S</span></div>
+      <div class="drop-row" onclick="openSaveAsModal()"><span>Save As...</span><span>Shift+Ctrl+S</span></div>
+      <div class="drop-row" onclick="importAudio('stem')"><span>Import</span><span>›</span></div>
+      <div class="drop-row" onclick="openExportModal()"><span>Export</span><span>›</span></div>
+      <div class="drop-muted" style="padding:10px 12px;">Recent Projects</div>
+  `;
+
+  if (!items.length) {
+    html += `<div class="drop-row"><span>No recent projects</span><span></span></div>`;
+  } else {
+    items.slice(0,8).forEach((x, i) => {
+      html += `
+        <div class="drop-row" onclick="openRecentProject('${x.sessionId}')">
+          <span>${i + 1}. ${safeText(x.title)}</span>
+          <span>Open</span>
+        </div>
+      `;
+    });
+  }
+
+  html += `</div>`;
+
+  const fileMenu = $("fileMenu");
+  fileMenu.innerHTML = html;
+  fileMenu.classList.add("open");
+}
+
+function openRecentProject(sessionId){
+  if (state.clips.length && !confirm("Save this project first? Press OK to save, Cancel to open without saving.")) {
+    // continue without saving
+  } else if (state.clips.length) {
+    saveSession(false);
+  }
+
+  const raw = localStorage.getItem("audiorySession_" + sessionId);
+  if (!raw) return alert("Project file not found.");
+
+  const data = JSON.parse(raw);
+
+  state.sessionId = data.sessionId || sessionId;
+  state.savedOnce = true;
+  state.title = data.title || "Untitled Session";
+  state.bpm = data.bpm || 120;
+  state.tracks = data.tracks || [];
+  state.mixer = data.mixer || [];
+  state.clips = data.clips || [];
+  state.beat = data.beat || null;
+  state.markerTimes = data.markerTimes || [];
+
+  $("sessionTitle").textContent = state.title;
+  $("tempoInput").value = state.bpm;
+  updateSessionSub();
+
+  renderRuler();
+  renderTracks();
+  renderMixer();
+  closeFileMenu();
 }
 
 function toggleFileMenu(){
@@ -2618,6 +2730,42 @@ function toggleFileMenu(){
 function closeFileMenu(){
   $("fileMenu")?.classList.remove("open");
 }
+
+function openExportMenu(){
+  const fileMenu = $("fileMenu");
+  fileMenu.innerHTML = `
+    <div class="dropdown open" style="left:0;top:38px;min-width:330px;">
+      <div class="drop-muted" style="padding:10px 12px;">Audio</div>
+      <div class="drop-row" onclick="exportQuick('wav')"><span>Wave file...</span><span>Ctrl+R</span></div>
+      <div class="drop-row" onclick="exportQuick('mp3')"><span>MP3 file...</span><span>Shift+Ctrl+R</span></div>
+      <div class="drop-row" onclick="exportQuick('ogg')"><span>OGG file...</span><span></span></div>
+      <div class="drop-row" onclick="exportQuick('flac')"><span>FLAC file...</span><span></span></div>
+      <div class="drop-row" onclick="exportQuick('midi')"><span>MIDI file...</span><span></span></div>
+
+      <div class="drop-muted" style="padding:10px 12px;">Project</div>
+      <div class="drop-row" onclick="exportQuick('zip')"><span>Zipped session package...</span><span></span></div>
+      <div class="drop-row" onclick="exportQuick('json')"><span>Project data file...</span><span></span></div>
+    </div>
+  `;
+  fileMenu.classList.add("open");
+}
+
+function exportQuick(type){
+  closeFileMenu();
+
+  if (type === "json" || type === "zip") {
+    exportProject("zip");
+    return;
+  }
+
+  if (["wav","mp3","ogg","flac","midi"].includes(type)) {
+    $("exportFormat").value = type === "mp3" ? "mp3" : "wav";
+    openExportModal();
+  }
+}
+
+window.openExportMenu = openExportMenu;
+window.exportQuick = exportQuick;
 
 /* =========================
    GLOBAL EXPORTS
@@ -2647,56 +2795,133 @@ function renderMixer(){
   if (!rack) return;
   rack.innerHTML = "";
 
-  state.mixer.forEach(ch => {
+  state.mixer.forEach((ch, index) => {
     const card = document.createElement("div");
     card.className = "channel" + (ch.isMaster ? " master" : "");
     card.style.borderColor = ch.color;
+    card.style.background = `linear-gradient(180deg, ${hexToRgba(ch.color,.24)}, #0b1220 42%)`;
 
     card.innerHTML = `
       <div class="ch-color" style="background:${ch.color}"></div>
-      <input class="ch-small" value="${safeText(ch.name)}">
-      <input class="ch-small color-input" type="color" value="${ch.color}">
-      <div class="channel-wave">${waveBars("beat")}</div>
-      <div class="meter"><div data-meter-id="${ch.id}"></div></div>
-      <input class="fader" type="range" min="0" max="1" step=".01" value="${ch.volume}">
-      <input class="fader pan" type="range" min="-1" max="1" step=".01" value="${ch.pan}">
-      <select class="ch-small">
-        <option value="">Sidechain Off</option>
-        ${state.mixer.filter(x=>x.id!==ch.id).map(x=>`<option value="${x.id}">${safeText(x.name)}</option>`).join("")}
-      </select>
-      <div class="plugin-list">
-        ${PLUGINS.map(p=>`<button class="plugin ${ch.plugins.includes(p) ? "active" : ""}" type="button">${p}</button>`).join("")}
+
+      <div style="display:flex;justify-content:space-between;font-weight:950;">
+        <span>${ch.isMaster ? "Master" : index + 1}</span>
+        <span>${safeText(ch.name)}</span>
       </div>
+
+      <input class="ch-small mix-name" value="${safeText(ch.name)}">
+      <input class="ch-small color-input" type="color" value="${ch.color}">
+
+      <div class="insert-box">
+        <div class="insert-head">Inserts <button type="button" class="add-plugin">+</button></div>
+        <div class="insert-list">
+          ${(ch.plugins || []).length ? ch.plugins.map(p => `<div class="insert-plugin">${safeText(p)}</div>`).join("") : `<div class="insert-empty">No plugins</div>`}
+        </div>
+      </div>
+
+      <div class="send-box">
+        <div class="insert-head">Sends <button type="button" class="route-btn">+</button></div>
+        <select class="ch-small sidechain-select">
+          <option value="">Sidechain Off</option>
+          ${state.mixer.filter(x=>x.id!==ch.id).map(x=>`<option value="${x.id}" ${ch.sidechain===x.id?"selected":""}>${safeText(x.name)}</option>`).join("")}
+        </select>
+      </div>
+
+      <select class="ch-small route-select">
+        <option value="master">Main</option>
+        ${state.mixer.filter(x=>x.id!==ch.id && !x.isMaster).map(x=>`<option value="${x.id}" ${ch.routeTo===x.id?"selected":""}>${safeText(x.name)}</option>`).join("")}
+      </select>
+
+      <input class="ch-small pan-value" value="<C>" readonly>
+      <input class="fader pan" title="Pan Left / Right" type="range" min="-1" max="1" step=".01" value="${ch.pan}">
+
+      <div class="ch-btns">
+        <button type="button" class="${ch.muted ? "active" : ""}">M</button>
+        <button type="button" class="${ch.solo ? "active" : ""}">S</button>
+      </div>
+
+      <div class="channel-wave live-wave">${waveBars("beat")}</div>
+
+      <div class="meter"><div data-meter-id="${ch.id}"></div></div>
+      <input class="fader volume" type="range" min="0" max="1" step=".01" value="${ch.volume}">
+
       ${ch.isMaster ? "" : `<button class="delete-channel" type="button">Delete Channel</button>`}
     `;
 
-    card.querySelector(".ch-small").onchange = e => ch.name = e.target.value || ch.name;
+    card.querySelector(".mix-name").onchange = e => {
+      ch.name = e.target.value || ch.name;
+      renderMixer();
+      renderTracks();
+    };
+
     card.querySelector(".color-input").oninput = e => {
       ch.color = e.target.value;
-      card.style.borderColor = ch.color;
-      card.querySelector(".ch-color").style.background = ch.color;
+      renderMixer();
     };
-    card.querySelector(".fader").oninput = e => ch.volume = Number(e.target.value);
-    card.querySelector(".pan").oninput = e => ch.pan = Number(e.target.value);
 
-    card.querySelectorAll(".plugin").forEach(btn=>{
-      btn.onclick = () => {
-        const p = btn.textContent;
-        if (ch.plugins.includes(p)) ch.plugins = ch.plugins.filter(x=>x!==p);
-        else ch.plugins.push(p);
-        btn.classList.toggle("active");
-      };
-    });
+    card.querySelector(".volume").oninput = e => ch.volume = Number(e.target.value);
+
+    card.querySelector(".pan").oninput = e => {
+      ch.pan = Number(e.target.value);
+      const v = ch.pan;
+      card.querySelector(".pan-value").value = v < -0.05 ? `<L ${Math.abs(v).toFixed(2)}>` : v > 0.05 ? `<R ${v.toFixed(2)}>` : "<C>";
+    };
+
+    card.querySelector(".sidechain-select").onchange = e => ch.sidechain = e.target.value;
+    card.querySelector(".route-select").onchange = e => ch.routeTo = e.target.value;
+
+    card.querySelector(".add-plugin").onclick = () => openPluginPicker(ch.id);
+
+    const muteSolo = card.querySelectorAll(".ch-btns button");
+    muteSolo[0].onclick = () => { ch.muted = !ch.muted; renderMixer(); };
+    muteSolo[1].onclick = () => { ch.solo = !ch.solo; renderMixer(); };
 
     card.querySelector(".delete-channel")?.addEventListener("click", ()=>{
       if (!confirm("Delete this mixer channel?")) return;
       state.mixer = state.mixer.filter(x => x.id !== ch.id);
+      state.tracks.forEach(t => {
+        if (t.mixerId === ch.id) t.mixerId = state.mixer.find(m => m.isMaster)?.id || "";
+      });
       renderMixer();
+      renderTracks();
     });
 
     rack.appendChild(card);
   });
 }
+
+function hexToRgba(hex, alpha){
+  const h = hex.replace("#","");
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function openPluginPicker(channelId){
+  const ch = state.mixer.find(x => x.id === channelId);
+  if (!ch) return;
+
+  const pick = prompt(
+    "Choose plugin:\n\n" + PLUGINS.map((p,i)=>`${i+1}. ${p}`).join("\n"),
+    "Reverb"
+  );
+
+  if (!pick) return;
+
+  let plugin = PLUGINS.find(p => p.toLowerCase() === pick.toLowerCase());
+  if (!plugin) {
+    const num = Number(pick);
+    plugin = PLUGINS[num - 1];
+  }
+
+  if (!plugin) return alert("Plugin not found.");
+
+  if (!ch.plugins.includes(plugin)) ch.plugins.push(plugin);
+  renderMixer();
+}
+
+window.openPluginPicker = openPluginPicker;
 
 function openMixer(){ renderMixer(); $("mixerBackdrop")?.classList.add("open"); }
 function closeMixer(){ $("mixerBackdrop")?.classList.remove("open"); }
