@@ -604,8 +604,6 @@ a{
   box-shadow:0 0 12px rgba(239,68,68,.85);
 }
 
-}
-
 .tracks{
   min-width:calc(100px + var(--bars,64) * var(--barWidth,80px));
 }
@@ -2496,7 +2494,6 @@ async function startPlayback(offset=0){
       const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
       if (pan) pan.pan.value = Number(ch?.pan || 0);
 
-      const ch = getMixerChannelForClip(clip);
       if (!ch || !ch.gainNode) continue;
 
       // connect source into mixer channel
