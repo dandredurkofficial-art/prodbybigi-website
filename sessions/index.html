@@ -1827,35 +1827,37 @@ function updateSessionSub(){
 function initMixerAudio(){
   const ctx = ensureAudioCtx();
 
+  // reset old graph
   state.mixer.forEach(ch => {
-
-    // create nodes once
-    ch.gainNode = ctx.createGain();
-    ch.gainNode.gain.value = ch.volume;
-
-    ch.panNode = ctx.createStereoPanner();
-    ch.panNode.pan.value = ch.pan;
-
-    ch.analyser = ctx.createAnalyser();
-    ch.analyser.fftSize = 256;
-    ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
-
-    // connect chain
-    ch.gainNode.connect(ch.panNode);
-    ch.panNode.connect(ch.analyser);
-
-    // master routing
-    if (ch.isMaster) {
-      ch.analyser.connect(ctx.destination);
-    }
+    try { ch.gainNode?.disconnect(); } catch {}
+    try { ch.panNode?.disconnect(); } catch {}
+    try { ch.analyser?.disconnect(); } catch {}
   });
 
-  // route all channels → master
   const master = state.mixer.find(m => m.isMaster);
 
   state.mixer.forEach(ch => {
-    if (!ch.isMaster && master) {
-      ch.analyser.connect(master.gainNode || master.analyser);
+    // create nodes
+    ch.gainNode = ctx.createGain();
+    ch.panNode = ctx.createStereoPanner();
+    ch.analyser = ctx.createAnalyser();
+
+    ch.analyser.fftSize = 256;
+    ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
+
+    // apply values
+    ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
+    ch.panNode.pan.value = ch.pan;
+
+    // chain
+    ch.gainNode.connect(ch.panNode);
+    ch.panNode.connect(ch.analyser);
+
+    // routing
+    if (ch.isMaster) {
+      ch.analyser.connect(ctx.destination);
+    } else if (master) {
+      ch.analyser.connect(master.gainNode);
     }
   });
 }
@@ -2084,6 +2086,7 @@ function deleteTrack(trackId){
 
 function addTrack(){
   setupInitialSession();
+  initMixerAudio(); // ✅ ensures new channel works
 
   if (state.tracks.length >= 50) {
     alert("Maximum 50 tracks reached.");
@@ -2450,6 +2453,9 @@ async function togglePlay(){
 
 async function startPlayback(offset=0){
   setupInitialSession();
+
+  initMixerAudio(); // ✅ CRITICAL FIX
+
   const ctx = ensureAudioCtx();
   if (ctx.state === "suspended") await ctx.resume();
 
@@ -2462,8 +2468,6 @@ async function startPlayback(offset=0){
   state.currentTime = offset;
 
   $("playBtn").textContent = "⏸";
-  $("playBtn").classList.add("active");
-  $("playhead").classList.add("show");
 
   const soloed = state.tracks.some(t => t.solo);
 
@@ -2472,47 +2476,40 @@ async function startPlayback(offset=0){
     if (!track || track.muted) continue;
     if (soloed && !track.solo) continue;
 
-    const clipStart = Number(clip.startTime || 0);
-    const clipEnd = clipStart + Number(clip.duration || 0);
+    if (!clip.url) continue;
+
+    const clipStart = clip.startTime || 0;
+    const clipEnd = clipStart + (clip.duration || 0);
 
     if (offset > clipEnd) continue;
 
     const when = Math.max(0, clipStart - offset);
     const startInClip = Math.max(0, offset - clipStart);
 
-    if (!clip.url) continue;
-
     try {
-      const audioBuffer = await loadAudioBuffer(clip.url);
+      const buffer = await loadAudioBuffer(clip.url);
       const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
+      source.buffer = buffer;
 
       const ch = getMixerChannelForClip(clip);
-      const gain = ctx.createGain();
-      gain.gain.value = ch?.muted ? 0 : Number(ch?.volume ?? 0.85);
-
-      const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-      if (pan) pan.pan.value = Number(ch?.pan || 0);
-
       if (!ch || !ch.gainNode) continue;
 
-      // connect source into mixer channel
+      // ✅ CONNECT DIRECTLY TO MIXER
       source.connect(ch.gainNode);
 
-      // live updates
-      ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
-      ch.panNode.pan.value = ch.pan;
-
+      // playback rate
       const rate = clip.originalBpm && clip.currentBpm
-        ? Number(clip.currentBpm) / Number(clip.originalBpm)
+        ? clip.currentBpm / clip.originalBpm
         : 1;
 
-      source.playbackRate.value = Number.isFinite(rate) && rate > 0 ? rate : 1;
+      source.playbackRate.value = rate > 0 ? rate : 1;
+
       source.start(ctx.currentTime + when, startInClip);
 
       state.activeSources.push(source);
+
     } catch (err) {
-      console.warn("Playback clip failed", err);
+      console.warn("Playback failed:", err);
     }
   }
 
@@ -2686,7 +2683,6 @@ function tickMetronome(){
 
   const ctx = ensureAudioCtx();
   const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
   osc.frequency.value = beatIndex % 4 === 0 ? 1200 : 800;
   gain.gain.value = beatIndex % 4 === 0 ? 0.15 : 0.08;
   osc.connect(gain);
@@ -3072,12 +3068,25 @@ function renderMixer(){
       renderMixer();
     };
 
-    card.querySelector(".volume").oninput = e => ch.volume = Number(e.target.value);
+    card.querySelector(".volume").oninput = e => {
+      ch.volume = Number(e.target.value);
+
+      if (ch.gainNode) {
+        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
+      }
+    };
 
     card.querySelector(".pan").oninput = e => {
       ch.pan = Number(e.target.value);
+
+      if (ch.panNode) {
+        ch.panNode.pan.value = ch.pan;
+      }
+
       const v = ch.pan;
-      card.querySelector(".pan-value").value = v < -0.05 ? `<L ${Math.abs(v).toFixed(2)}>` : v > 0.05 ? `<R ${v.toFixed(2)}>` : "<C>";
+      card.querySelector(".pan-value").value =
+        v < -0.05 ? `<L ${Math.abs(v).toFixed(2)}>` :
+        v > 0.05 ? `<R ${v.toFixed(2)}>` : "<C>";
     };
 
     card.querySelector(".sidechain-select").onchange = e => ch.sidechain = e.target.value;
@@ -3086,8 +3095,32 @@ function renderMixer(){
     card.querySelector(".add-plugin").onclick = () => openPluginPicker(ch.id);
 
     const muteSolo = card.querySelectorAll(".ch-btns button");
-    muteSolo[0].onclick = () => { ch.muted = !ch.muted; renderMixer(); };
-    muteSolo[1].onclick = () => { ch.solo = !ch.solo; renderMixer(); };
+    muteSolo[0].onclick = () => {
+      ch.muted = !ch.muted;
+
+      if (ch.gainNode) {
+        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
+      }
+
+      renderMixer();
+    };
+    muteSolo[1].onclick = () => {
+      ch.solo = !ch.solo;
+
+      const anySolo = state.mixer.some(m => m.solo);
+
+      state.mixer.forEach(m => {
+        if (!m.gainNode) return;
+
+        if (anySolo) {
+          m.gainNode.gain.value = m.solo ? m.volume : 0;
+        } else {
+          m.gainNode.gain.value = m.muted ? 0 : m.volume;
+        }
+      });
+
+      renderMixer();
+    };
 
     card.querySelector(".delete-channel")?.addEventListener("click", ()=>{
       if (!confirm("Delete this mixer channel?")) return;
