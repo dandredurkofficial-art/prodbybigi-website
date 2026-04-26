@@ -535,7 +535,7 @@ a{
 
 .ruler{
   display:grid;
-  grid-template-columns:100px repeat(64,var(--barWidth,80px));
+  grid-template-columns:100px repeat(var(--bars,64),var(--barWidth,80px));
   border-bottom:1px solid #26364f;
   background:#07101d;
   position:sticky;
@@ -604,8 +604,10 @@ a{
   box-shadow:0 0 12px rgba(239,68,68,.85);
 }
 
+}
+
 .tracks{
-  min-width:calc(100px + 64 * var(--barWidth,80px));
+  min-width:calc(100px + var(--bars,64) * var(--barWidth,80px));
 }
 
 .track-row{
@@ -2003,6 +2005,8 @@ function autoExtendBarsToClips(){
   const endTime = Math.max(0, ...state.clips.map(c => (c.startTime || 0) + (c.duration || 0)));
   const neededBars = Math.ceil(endTime / secondsPerBar()) + 8;
   state.bars = Math.max(64, neededBars);
+
+  document.documentElement.style.setProperty("--bars", state.bars);
 }
 
 function mixerOptions(selected){
@@ -2123,8 +2127,11 @@ function fitProjectToScreen(){
 
   const visibleWidth = wrap.clientWidth - 120;
   state.zoom = Math.max(8, visibleWidth / state.bars);
+  renderRuler();
+  applyTimelineWidth();
 
   document.documentElement.style.setProperty("--barWidth", state.zoom + "px");
+  document.documentElement.style.setProperty("--bars", state.bars);
 }
 
 function applyTimelineWidth(){
@@ -2289,10 +2296,16 @@ async function chooseBeat(b){
   };
 
   state.clips.push(clip);
-  closeBeatPicker();
-  renderTracks();
+
+  // ✅ FIRST calculate size
   autoExtendBarsToClips();
+
+  // ✅ THEN fit screen
   fitProjectToScreen();
+
+  // ✅ THEN render
+  renderRuler();
+  renderTracks();
   setStatus(`Loaded beat: ${state.beat.title}. Drag the clip or resize it to arrange.`);
 }
 
@@ -2572,36 +2585,35 @@ function updateTimeDisplay(){
 
 function updateMeters(){
   state.mixer.forEach(ch => {
-    let active = false;
 
-    if (ch.isMaster) {
-      active = state.clips.some(clip => {
-        const start = clip.startTime || 0;
-        const end = start + (clip.duration || 0);
-        return state.isPlaying && state.currentTime >= start && state.currentTime <= end;
-      });
-    } else {
-      active = state.clips.some(clip => {
-        const track = state.tracks.find(t => t.id === clip.trackId);
-        if (!track || track.mixerId !== ch.id) return false;
+    let level = 0;
 
-        const start = clip.startTime || 0;
-        const end = start + (clip.duration || 0);
+    state.clips.forEach(clip => {
+      const track = state.tracks.find(t => t.id === clip.trackId);
+      if (!track) return;
 
-        return state.isPlaying && state.currentTime >= start && state.currentTime <= end;
-      });
-    }
+      if (!ch.isMaster && track.mixerId !== ch.id) return;
 
-    ch.meter = active ? Math.random() * 0.75 + 0.2 : 0.02;
+      const start = clip.startTime || 0;
+      const end = start + (clip.duration || 0);
+
+      // 🔥 relaxed detection (THIS FIXES IT)
+      if (state.isPlaying && state.currentTime >= start - 0.05 && state.currentTime <= end + 0.05) {
+        level += 0.3;
+      }
+    });
+
+    ch.meter = Math.min(1, level || 0.02);
   });
 
+  // render
   document.querySelectorAll("[data-mixer-level]").forEach(box => {
     const ch = state.mixer.find(m => m.id === box.dataset.mixerLevel);
     if (!ch) return;
 
     box.querySelectorAll("span").forEach((bar, i) => {
-      const level = Math.max(0.03, ch.meter - i * 0.045);
-      bar.style.height = Math.round(level * 100) + "%";
+      const v = Math.max(0.05, ch.meter - i * 0.06);
+      bar.style.height = (v * 100) + "%";
     });
   });
 }
