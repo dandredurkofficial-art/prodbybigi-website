@@ -1819,6 +1819,7 @@ function makeMixerChannel(name, color="#3b82f6", isBeat=false, isMaster=false){
     routeTo: "master",
     sidechain: "",
     plugins: [],
+    pluginNodes: [],
     meter: 0,
 
     // ✅ REAL AUDIO NODES
@@ -1869,14 +1870,63 @@ function initMixerAudio(){
     ch.panNode.pan.value = ch.pan ?? 0;
 
     // CLEAN CHAIN (NO DUPLICATES)
-    ch.input
-      .connect(ch.gainNode)
-      .connect(ch.panNode)
-      .connect(ch.analyser)
-      .connect(master.input);
+    // ❌ REMOVE DIRECT CHAIN
+    // handled by buildAudioChain()
 
     ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
   });
+}
+
+function buildAudioChain(ch){
+  const ctx = ensureAudioCtx();
+  const master = state.mixer.find(m => m.isMaster);
+
+  if (!ch.input || !master?.input) return;
+
+  // 🔥 disconnect everything first
+  try { ch.input.disconnect(); } catch {}
+
+  let current = ch.input;
+
+  // 🎛️ BUILD PLUGIN CHAIN
+  ch.pluginNodes = [];
+
+  (ch.plugins || []).forEach(pluginName => {
+    let node;
+
+    if (pluginName === "EQ") {
+      node = ctx.createBiquadFilter();
+      node.type = "peaking";
+      node.frequency.value = 1000;
+    }
+
+    if (pluginName === "Compressor") {
+      node = ctx.createDynamicsCompressor();
+    }
+
+    if (pluginName === "Delay") {
+      node = ctx.createDelay();
+      node.delayTime.value = 0.3;
+    }
+
+    if (pluginName === "Reverb") {
+      node = ctx.createConvolver(); // simple placeholder
+    }
+
+    if (!node) return;
+
+    current.connect(node);
+    current = node;
+
+    ch.pluginNodes.push(node);
+  });
+
+  // 🔊 FINAL CHAIN
+  current
+    .connect(ch.gainNode)
+    .connect(ch.panNode)
+    .connect(ch.analyser)
+    .connect(master.input);
 }
 
 /* =========================
@@ -2626,6 +2676,7 @@ function startTicker(){
     updatePlayhead();
     updateTimeDisplay();
     updateMeters();
+    drawChannelWaveforms(); // 🔥 ADD THIS
 
     requestAnimationFrame(tick);
   }
@@ -2680,6 +2731,38 @@ function updateMeters(){
       const level = Math.max(0.02, ch.meter - i * 0.05);
       bar.style.height = (level * 100) + "%";
     });
+  });
+}
+
+function drawChannelWaveforms(){
+  state.mixer.forEach((ch, i) => {
+    const canvas = document.querySelectorAll(".channel-wave-canvas")[i];
+    if (!canvas || !ch.analyser) return;
+
+    const ctx = canvas.getContext("2d");
+    const data = new Uint8Array(ch.analyser.frequencyBinCount);
+
+    ch.analyser.getByteTimeDomainData(data);
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    ctx.beginPath();
+
+    let x = 0;
+    const slice = canvas.width / data.length;
+
+    for (let i = 0; i < data.length; i++) {
+      const v = data[i] / 128.0;
+      const y = v * canvas.height / 2;
+
+      if (i === 0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+
+      x += slice;
+    }
+
+    ctx.strokeStyle = "#00d4ff";
+    ctx.stroke();
   });
 }
 
