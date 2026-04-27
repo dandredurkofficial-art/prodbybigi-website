@@ -1827,17 +1827,33 @@ function updateSessionSub(){
 function initMixerAudio(){
   const ctx = ensureAudioCtx();
 
-  // reset old graph
-  state.mixer.forEach(ch => {
-    try { ch.gainNode?.disconnect(); } catch {}
-    try { ch.panNode?.disconnect(); } catch {}
-    try { ch.analyser?.disconnect(); } catch {}
-  });
-
+  // ✅ find master FIRST
   const master = state.mixer.find(m => m.isMaster);
 
+  // ❌ if no master → STOP
+  if (!master) {
+    console.warn("No master channel found");
+    return;
+  }
+
+  // ✅ create master FIRST
+  master.gainNode = ctx.createGain();
+  master.panNode = ctx.createStereoPanner();
+  master.analyser = ctx.createAnalyser();
+  master.analyser.fftSize = 256;
+  master.dataArray = new Uint8Array(master.analyser.frequencyBinCount);
+
+  master.gainNode.gain.value = master.volume ?? 0.85;
+  master.panNode.pan.value = master.pan ?? 0;
+
+  master.gainNode.connect(master.panNode);
+  master.panNode.connect(master.analyser);
+  master.analyser.connect(ctx.destination);
+
+  // ✅ NOW create other channels
   state.mixer.forEach(ch => {
-    // create nodes
+    if (ch.isMaster) return;
+
     ch.gainNode = ctx.createGain();
     ch.panNode = ctx.createStereoPanner();
     ch.analyser = ctx.createAnalyser();
@@ -1845,19 +1861,17 @@ function initMixerAudio(){
     ch.analyser.fftSize = 256;
     ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
 
-    // apply values
-    ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
-    ch.panNode.pan.value = ch.pan;
+    ch.gainNode.gain.value = ch.muted ? 0 : (ch.volume ?? 0.85);
+    ch.panNode.pan.value = ch.pan ?? 0;
 
-    // chain
+    // ✅ SAFE CONNECT
     ch.gainNode.connect(ch.panNode);
     ch.panNode.connect(ch.analyser);
 
-    // routing
-    if (ch.isMaster) {
-      ch.analyser.connect(ctx.destination);
-    } else if (master) {
+    if (master.gainNode) {
       ch.analyser.connect(master.gainNode);
+    } else {
+      console.warn("Master gainNode missing");
     }
   });
 }
