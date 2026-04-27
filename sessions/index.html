@@ -2742,34 +2742,33 @@ function drawChannelWaveforms(){
   const canvases = document.querySelectorAll(".channel-wave-canvas");
 
   state.mixer.forEach((ch, index) => {
+    if (ch.isMaster) return;
+
     const canvas = canvases[index];
     if (!canvas || !ch.analyser) return;
 
     const ctx = canvas.getContext("2d");
     const data = new Uint8Array(ch.analyser.frequencyBinCount);
 
-    ch.analyser.getByteTimeDomainData(data);
+    ch.analyser.getByteFrequencyData(data); // 🔥 THIS IS THE MAGIC (NOT timeDomain)
 
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    ctx.beginPath();
-
+    const barWidth = 3;
+    const gap = 2;
     let x = 0;
-    const slice = canvas.width / data.length;
 
-    for (let i = 0; i < data.length; i++) {
-      const v = data[i] / 128.0;
-      const y = v * canvas.height / 2;
+    for (let i = 0; i < data.length; i += 8) {
+      const value = data[i] / 255;
+      const height = value * canvas.height;
 
-      if (i === 0) ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
+      ctx.fillStyle = "#00d4ff";
+      ctx.fillRect(x, canvas.height - height, barWidth, height);
 
-      x += slice;
+      x += barWidth + gap;
+
+      if (x > canvas.width) break;
     }
-
-    ctx.strokeStyle = "#00d4ff";
-    ctx.lineWidth = 2;
-    ctx.stroke();
   });
 }
 
@@ -3197,9 +3196,11 @@ function renderMixer(){
         <button type="button" class="${ch.solo ? "active" : ""}">S</button>
       </div>
 
+      ${ch.isMaster ? "" : `
       <div class="channel-wave">
         <canvas class="channel-wave-canvas" width="140" height="60"></canvas>
       </div>
+      `}
 
       <div class="live-meter" data-mixer-level="${ch.id}">
         ${Array.from({length:12}).map(()=>`<span></span>`).join("")}
@@ -3417,6 +3418,7 @@ function removePlugin(channelId, plugin){
 
   ch.plugins = ch.plugins.filter(p => p !== plugin);
   renderMixer();
+  buildAudioChain(ch);
 }
 
 function openMixer(){ renderMixer(); $("mixerBackdrop")?.classList.add("open"); }
