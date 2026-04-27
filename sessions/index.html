@@ -1837,98 +1837,45 @@ function updateSessionSub(){
 function initMixerAudio(){
   const ctx = ensureAudioCtx();
 
+  // MASTER
   const master = state.mixer.find(m => m.isMaster);
   if (!master) return;
 
-  // MASTER
+  master.input = ctx.createGain();
   master.gainNode = ctx.createGain();
   master.panNode = ctx.createStereoPanner();
   master.analyser = ctx.createAnalyser();
 
   master.gainNode.gain.value = master.volume ?? 0.9;
-  master.panNode.pan.value = 0;
 
-  master.gainNode.connect(master.panNode);
-  master.panNode.connect(master.analyser);
-  master.analyser.connect(ctx.destination);
+  master.input
+    .connect(master.gainNode)
+    .connect(master.panNode)
+    .connect(master.analyser)
+    .connect(ctx.destination);
+
+  master.dataArray = new Uint8Array(master.analyser.frequencyBinCount);
 
   // CHANNELS
   state.mixer.forEach(ch=>{
     if (ch.isMaster) return;
 
-    // CORE
     ch.input = ctx.createGain();
     ch.gainNode = ctx.createGain();
     ch.panNode = ctx.createStereoPanner();
     ch.analyser = ctx.createAnalyser();
 
-    // EQ (REAL)
-    ch.eqLow = ctx.createBiquadFilter();
-    ch.eqMid = ctx.createBiquadFilter();
-    ch.eqHigh = ctx.createBiquadFilter();
-
-    ch.eqLow.type = "lowshelf";
-    ch.eqLow.frequency.value = 120;
-
-    ch.eqMid.type = "peaking";
-    ch.eqMid.frequency.value = 1000;
-    ch.eqMid.Q.value = 1;
-
-    ch.eqHigh.type = "highshelf";
-    ch.eqHigh.frequency.value = 8000;
-
-    // COMPRESSOR (REAL)
-    ch.comp = ctx.createDynamicsCompressor();
-    ch.comp.threshold.value = -24;
-    ch.comp.ratio.value = 10;
-    ch.comp.attack.value = 0.003;
-    ch.comp.release.value = 0.25;
-
-    // DELAY
-    ch.delay = ctx.createDelay(5.0);
-    ch.delay.delayTime.value = 0.25;
-
-    ch.delayGain = ctx.createGain();
-    ch.delayGain.gain.value = 0.2;
-
-    // REVERB (simple IR)
-    ch.reverb = ctx.createConvolver();
-    ch.reverbGain = ctx.createGain();
-    ch.reverbGain.gain.value = 0.2;
-
-    // FAKE IR impulse
-    const ir = ctx.createBuffer(2, 44100, 44100);
-    for (let c=0;c<2;c++){
-      const d = ir.getChannelData(c);
-      for(let i=0;i<d.length;i++){
-        d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 2);
-      }
-    }
-    ch.reverb.buffer = ir;
-
-    // LEVELS
     ch.gainNode.gain.value = ch.volume ?? 0.8;
     ch.panNode.pan.value = ch.pan ?? 0;
 
-    // ROUTING (PRO CHAIN)
+    // CLEAN CHAIN (NO DUPLICATES)
     ch.input
-      .connect(ch.eqLow)
-      .connect(ch.eqMid)
-      .connect(ch.eqHigh)
-      .connect(ch.comp)
       .connect(ch.gainNode)
       .connect(ch.panNode)
-      .connect(ch.analyser);
+      .connect(ch.analyser)
+      .connect(master.input);
 
-    // FX SENDS
-    ch.gainNode.connect(ch.delay);
-    ch.delay.connect(ch.delayGain).connect(ch.panNode);
-
-    ch.gainNode.connect(ch.reverb);
-    ch.reverb.connect(ch.reverbGain).connect(ch.panNode);
-
-    // TO MASTER
-    ch.analyser.connect(master.gainNode);
+    ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
   });
 }
 
@@ -2147,7 +2094,10 @@ function addTrack(){
 
   const name = prompt("Track name:", `Vocal ${state.tracks.length}`) || `Track ${state.tracks.length + 1}`;
   const channel = makeMixerChannel(name, randomColor());
-  state.mixer.splice(Math.max(0, state.mixer.length - 1), 0, channel);
+  state.mixer.splice(state.mixer.length - 1, 0, channel);
+
+  // 🔥 CRITICAL
+  initMixerAudio();
 
   state.tracks.push(makeTrack(name, "vocal", channel.id));
   renderTracks();
@@ -2539,7 +2489,7 @@ async function startPlayback(offset = 0){
   const ctx = ensureAudioCtx();
   if (ctx.state === "suspended") await ctx.resume();
 
-  await preloadAllClips(); // ✅ KEY FIX
+  await preloadAllClips();
 
   stopActiveSources();
 
@@ -2550,7 +2500,7 @@ async function startPlayback(offset = 0){
 
   $("playBtn").textContent = "⏸";
 
-  for (const clip of state.clips) {
+  for (const clip of state.clips){
     if (!clip.url) continue;
 
     const track = state.tracks.find(t => t.id === clip.trackId);
@@ -2565,38 +2515,12 @@ async function startPlayback(offset = 0){
     source.buffer = buffer;
 
     const when = Math.max(0, clip.startTime - offset);
-    const startInClip = Math.max(0, offset - clip.startTime);
+    const startOffset = Math.max(0, offset - clip.startTime);
 
-    // 🎛 ROUTING CHAIN (REAL)
+    // ✅ ONLY CONNECT ONCE
     source.connect(ch.input);
 
-    if (ch.plugins.includes("EQ")) {
-      ch.input.connect(ch.eqLow);
-      ch.eqLow.connect(ch.eqMid);
-      ch.eqMid.connect(ch.eqHigh);
-    } else {
-      ch.input.connect(ch.gainNode);
-    }
-
-    if (ch.plugins.includes("Compressor")) {
-      ch.eqHigh.connect(ch.comp);
-      ch.comp.connect(ch.gainNode);
-    }
-
-    if (ch.plugins.includes("Reverb")) {
-      ch.gainNode.connect(ch.reverb);
-      ch.reverb.connect(ch.reverbGain).connect(ch.panNode);
-    }
-
-    if (ch.plugins.includes("Delay")) {
-      ch.gainNode.connect(ch.delay);
-      ch.delay.connect(ch.delayGain).connect(ch.panNode);
-    }
-
-    ch.panNode.connect(ch.analyser);
-    ch.analyser.connect(state.mixer.find(m=>m.isMaster).gainNode);
-
-    source.start(ctx.currentTime + when, startInClip);
+    source.start(ctx.currentTime + when, startOffset);
 
     state.activeSources.push(source);
   }
@@ -2729,31 +2653,30 @@ function updateTimeDisplay(){
 }
 
 function updateMeters(){
-  state.mixer.forEach(ch => {
-
+  state.mixer.forEach(ch=>{
     if (!ch.analyser || !ch.dataArray) {
       ch.meter = 0;
       return;
     }
 
-    ch.analyser.getByteFrequencyData(ch.dataArray);
+    ch.analyser.getByteTimeDomainData(ch.dataArray);
 
     let sum = 0;
-    for (let i = 0; i < ch.dataArray.length; i++) {
-      sum += ch.dataArray[i];
+    for (let i = 0; i < ch.dataArray.length; i++){
+      const v = (ch.dataArray[i] - 128) / 128;
+      sum += v * v;
     }
 
-    const avg = sum / ch.dataArray.length / 255;
+    const rms = Math.sqrt(sum / ch.dataArray.length);
 
-    // smooth (VERY IMPORTANT)
-    ch.meter = ch.meter * 0.75 + avg * 0.25;
+    ch.meter = ch.meter * 0.7 + rms * 0.3;
   });
 
-  document.querySelectorAll("[data-mixer-level]").forEach(box => {
-    const ch = state.mixer.find(m => m.id === box.dataset.mixerLevel);
+  document.querySelectorAll("[data-mixer-level]").forEach(box=>{
+    const ch = state.mixer.find(m=>m.id === box.dataset.mixerLevel);
     if (!ch) return;
 
-    box.querySelectorAll("span").forEach((bar, i) => {
+    box.querySelectorAll("span").forEach((bar, i)=>{
       const level = Math.max(0.02, ch.meter - i * 0.05);
       bar.style.height = (level * 100) + "%";
     });
@@ -3207,7 +3130,6 @@ function renderMixer(){
 
     card.querySelector(".volume").oninput = e => {
       ch.volume = Number(e.target.value);
-
       if (ch.gainNode) {
         ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
       }
@@ -3234,11 +3156,9 @@ function renderMixer(){
     const muteSolo = card.querySelectorAll(".ch-btns button");
     muteSolo[0].onclick = () => {
       ch.muted = !ch.muted;
-
       if (ch.gainNode) {
-        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
+        ch.gainNode.gain.value = ch.muted ? 0 :  
       }
-
       renderMixer();
     };
     muteSolo[1].onclick = () => {
