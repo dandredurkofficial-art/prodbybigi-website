@@ -1038,6 +1038,7 @@ a{
   color:#fecaca;
   font-weight:950;
   font-size:11px;
+  margin-top:auto;
 }
 
 /* =========================
@@ -3190,7 +3191,9 @@ function renderMixer(){
         <button type="button" class="${ch.solo ? "active" : ""}">S</button>
       </div>
 
-      <div class="channel-wave live-wave">${waveBars("beat")}</div>
+      <div class="channel-wave">
+        <canvas class="channel-wave-canvas" width="140" height="60"></canvas>
+      </div>
 
       <div class="live-meter" data-mixer-level="${ch.id}">
         ${Array.from({length:12}).map(()=>`<span></span>`).join("")}
