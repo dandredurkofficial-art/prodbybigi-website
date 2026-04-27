@@ -1202,6 +1202,56 @@ a{
   background:linear-gradient(180deg,#facc15,#22c55e);
 }
 
+/* 🔥 PLUGIN BROWSER FIX */
+.plugin-browser{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
+}
+
+/* actual window */
+.plugin-window{
+  width:320px;
+  max-height:70vh;
+  overflow:auto;
+  background:#0b1220;
+  border:1px solid #26364f;
+  border-radius:16px;
+  padding:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+}
+
+/* header */
+.plugin-header{
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+/* category */
+.plugin-cat-title{
+  font-size:12px;
+  color:#94a3b8;
+  margin-top:10px;
+  margin-bottom:4px;
+}
+
+/* each plugin */
+.plugin-item{
+  padding:8px 10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.plugin-item:hover{
+  background:#2563eb;
+  color:#fff;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */
@@ -1301,56 +1351,7 @@ a{
     background:#b8ff00;
     z-index:1000;
   }
-
-  /* 🔥 PLUGIN BROWSER FIX */
-  .plugin-browser{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,0.7);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:99999;
-  }
-
-  /* actual window */
-  .plugin-window{
-    width:320px;
-    max-height:70vh;
-    overflow:auto;
-    background:#0b1220;
-    border:1px solid #26364f;
-    border-radius:16px;
-    padding:14px;
-    box-shadow:0 20px 60px rgba(0,0,0,0.6);
-  }
-
-  /* header */
-  .plugin-header{
-    font-weight:900;
-    margin-bottom:10px;
-  }
-
-  /* category */
-  .plugin-cat-title{
-    font-size:12px;
-    color:#94a3b8;
-    margin-top:10px;
-    margin-bottom:4px;
-  }
-
-  /* each plugin */
-  .plugin-item{
-    padding:8px 10px;
-    border-radius:8px;
-    cursor:pointer;
-    font-weight:700;
-  }
-
-  .plugin-item:hover{
-    background:#2563eb;
-    color:#fff;
-  }
+}
 </style>
 </head>
 
