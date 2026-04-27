@@ -1837,52 +1837,98 @@ function updateSessionSub(){
 function initMixerAudio(){
   const ctx = ensureAudioCtx();
 
-  // ✅ find master FIRST
   const master = state.mixer.find(m => m.isMaster);
+  if (!master) return;
 
-  // ❌ if no master → STOP
-  if (!master) {
-    console.warn("No master channel found");
-    return;
-  }
-
-  // ✅ create master FIRST
+  // MASTER
   master.gainNode = ctx.createGain();
   master.panNode = ctx.createStereoPanner();
   master.analyser = ctx.createAnalyser();
-  master.analyser.fftSize = 256;
-  master.dataArray = new Uint8Array(master.analyser.frequencyBinCount);
 
-  master.gainNode.gain.value = master.volume ?? 0.85;
-  master.panNode.pan.value = master.pan ?? 0;
+  master.gainNode.gain.value = master.volume ?? 0.9;
+  master.panNode.pan.value = 0;
 
   master.gainNode.connect(master.panNode);
   master.panNode.connect(master.analyser);
   master.analyser.connect(ctx.destination);
 
-  // ✅ NOW create other channels
-  state.mixer.forEach(ch => {
+  // CHANNELS
+  state.mixer.forEach(ch=>{
     if (ch.isMaster) return;
 
+    // CORE
+    ch.input = ctx.createGain();
     ch.gainNode = ctx.createGain();
     ch.panNode = ctx.createStereoPanner();
     ch.analyser = ctx.createAnalyser();
 
-    ch.analyser.fftSize = 256;
-    ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
+    // EQ (REAL)
+    ch.eqLow = ctx.createBiquadFilter();
+    ch.eqMid = ctx.createBiquadFilter();
+    ch.eqHigh = ctx.createBiquadFilter();
 
-    ch.gainNode.gain.value = ch.muted ? 0 : (ch.volume ?? 0.85);
+    ch.eqLow.type = "lowshelf";
+    ch.eqLow.frequency.value = 120;
+
+    ch.eqMid.type = "peaking";
+    ch.eqMid.frequency.value = 1000;
+    ch.eqMid.Q.value = 1;
+
+    ch.eqHigh.type = "highshelf";
+    ch.eqHigh.frequency.value = 8000;
+
+    // COMPRESSOR (REAL)
+    ch.comp = ctx.createDynamicsCompressor();
+    ch.comp.threshold.value = -24;
+    ch.comp.ratio.value = 10;
+    ch.comp.attack.value = 0.003;
+    ch.comp.release.value = 0.25;
+
+    // DELAY
+    ch.delay = ctx.createDelay(5.0);
+    ch.delay.delayTime.value = 0.25;
+
+    ch.delayGain = ctx.createGain();
+    ch.delayGain.gain.value = 0.2;
+
+    // REVERB (simple IR)
+    ch.reverb = ctx.createConvolver();
+    ch.reverbGain = ctx.createGain();
+    ch.reverbGain.gain.value = 0.2;
+
+    // FAKE IR impulse
+    const ir = ctx.createBuffer(2, 44100, 44100);
+    for (let c=0;c<2;c++){
+      const d = ir.getChannelData(c);
+      for(let i=0;i<d.length;i++){
+        d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 2);
+      }
+    }
+    ch.reverb.buffer = ir;
+
+    // LEVELS
+    ch.gainNode.gain.value = ch.volume ?? 0.8;
     ch.panNode.pan.value = ch.pan ?? 0;
 
-    // ✅ SAFE CONNECT
-    ch.gainNode.connect(ch.panNode);
-    ch.panNode.connect(ch.analyser);
+    // ROUTING (PRO CHAIN)
+    ch.input
+      .connect(ch.eqLow)
+      .connect(ch.eqMid)
+      .connect(ch.eqHigh)
+      .connect(ch.comp)
+      .connect(ch.gainNode)
+      .connect(ch.panNode)
+      .connect(ch.analyser);
 
-    if (master.gainNode) {
-      ch.analyser.connect(master.gainNode);
-    } else {
-      console.warn("Master gainNode missing");
-    }
+    // FX SENDS
+    ch.gainNode.connect(ch.delay);
+    ch.delay.connect(ch.delayGain).connect(ch.panNode);
+
+    ch.gainNode.connect(ch.reverb);
+    ch.reverb.connect(ch.reverbGain).connect(ch.panNode);
+
+    // TO MASTER
+    ch.analyser.connect(master.gainNode);
   });
 }
 
@@ -2522,11 +2568,12 @@ async function startPlayback(offset = 0){
 
       const ch = getMixerChannelForClip(clip);
 
-      // ✅ CRITICAL SAFETY CHECK (prevents your crash)
-      if (!ch || !ch.gainNode) {
-        console.warn("Missing mixer node for clip:", clip);
+      if (!ch || !ch.input){
+        console.warn("Missing mixer channel:", clip);
         continue;
       }
+
+      source.connect(ch.input);
 
       // ✅ connect to mixer
       source.connect(ch.gainNode);
@@ -2613,31 +2660,36 @@ function getMixerChannelForClip(clip){
 }
 
 function startTicker(){
-  stopTicker();
-  state.schedulerTimer = setInterval(() => {
+  function tick(){
     if (!state.isPlaying) return;
 
     const ctx = ensureAudioCtx();
-    state.currentTime = state.playStartOffset + (ctx.currentTime - state.playStartTime);
 
-    if (state.isLooping && state.currentTime >= state.loopEnd * secondsPerBar()) {
+    // PERFECT audio sync (no drift)
+    state.currentTime =
+      state.playStartOffset + (ctx.currentTime - state.playStartTime);
+
+    // LOOP
+    if (state.isLooping && state.currentTime >= state.loopEnd * secondsPerBar()){
       startPlayback(state.loopStart * secondsPerBar());
       return;
     }
 
-    const maxClipEnd = Math.max(0, ...state.clips.map(c => (c.startTime || 0) + (c.duration || 0)));
-    if (maxClipEnd && state.currentTime >= maxClipEnd + 0.2) {
+    // STOP AT END
+    const maxEnd = Math.max(0, ...state.clips.map(c => (c.startTime||0)+(c.duration||0)));
+    if (maxEnd && state.currentTime >= maxEnd){
       stopPlayback();
       return;
     }
 
-    if (state.metronome) tickMetronome();
-
     updatePlayhead();
     updateTimeDisplay();
     updateMeters();
-    renderLiveMixerMeters();
-  }, 40);
+
+    requestAnimationFrame(tick);
+  }
+
+  tick();
 }
 
 function stopTicker(){
@@ -2646,9 +2698,13 @@ function stopTicker(){
 }
 
 function updatePlayhead(){
-  const ph = $("playhead");
+  const ph = document.getElementById("playhead");
   if (!ph) return;
-  ph.style.left = timeToPx(state.currentTime || 0) + "px";
+
+  const x = timeToPx(state.currentTime || 0);
+
+  ph.style.display = "block";
+  ph.style.left = x + "px";
 }
 
 function updateTimeDisplay(){
@@ -2697,6 +2753,25 @@ function renderLiveMixerMeters(){
       bar.style.height = Math.round(power * 100) + "%";
     });
   });
+}
+
+function applySidechain(triggerId, targetId){
+  const trigger = state.mixer.find(m=>m.id===triggerId);
+  const target = state.mixer.find(m=>m.id===targetId);
+
+  if (!trigger || !target) return;
+
+  const analyser = trigger.analyser;
+
+  setInterval(()=>{
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    analyser.getByteFrequencyData(data);
+
+    const level = data[0] / 255;
+
+    target.gainNode.gain.value =
+      target.volume * (1 - (level * 0.8));
+  }, 16);
 }
 
 /* =========================
