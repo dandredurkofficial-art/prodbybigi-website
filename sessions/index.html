@@ -1252,6 +1252,94 @@ a{
   color:#fff;
 }
 
+/* FULLSCREEN BACKDROP */
+.plugin-browser{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  z-index:999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* MAIN WINDOW */
+.plugin-pro{
+  width:700px;
+  height:420px;
+  background:#0b1220;
+  border:1px solid #26364f;
+  border-radius:18px;
+  display:flex;
+  overflow:hidden;
+}
+
+/* SIDEBAR */
+.plugin-sidebar{
+  width:160px;
+  background:#05070c;
+  border-right:1px solid #26364f;
+  padding:10px;
+}
+
+.plugin-cat{
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:800;
+}
+
+.plugin-cat:hover{
+  background:#2563eb;
+}
+
+/* MAIN */
+.plugin-main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* TOP BAR */
+.plugin-top{
+  display:flex;
+  padding:10px;
+  border-bottom:1px solid #26364f;
+  gap:10px;
+}
+
+.plugin-top input{
+  flex:1;
+  background:#05070c;
+  border:1px solid #26364f;
+  border-radius:8px;
+  padding:8px;
+  color:#fff;
+}
+
+/* LIST */
+.plugin-list-pro{
+  padding:12px;
+  overflow:auto;
+}
+
+.plugin-group-title{
+  font-size:12px;
+  color:#94a3b8;
+  margin-bottom:6px;
+}
+
+.plugin-item-pro{
+  padding:8px;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:700;
+}
+
+.plugin-item-pro:hover{
+  background:#2563eb;
+}
+
 /* =========================
    RESPONSIVE
 ========================= */
@@ -3344,40 +3432,71 @@ function addPlugin(channelId) {
   openPluginBrowser(channelId);
 }
 
-function openPluginBrowser(channelId) {
+function openPluginBrowser(channelId){
 
-  // 🔥 prevent duplicates
+  // remove old
   document.querySelector(".plugin-browser")?.remove();
 
-  const plugins = [
-    { category: "Dynamics", items: ["Compressor", "Limiter"] },
-    { category: "EQ", items: ["EQ"] },
-    { category: "Reverb/Delay", items: ["Reverb", "Delay"] }
-  ];
+  const plugins = {
+    "Dynamics": ["Compressor","Limiter"],
+    "EQ": ["EQ"],
+    "Reverb/Delay": ["Reverb","Delay"],
+    "Creative": ["Chorus","Flanger"]
+  };
 
   const modal = document.createElement("div");
   modal.className = "plugin-browser";
 
   modal.innerHTML = `
-    <div class="plugin-window">
-      <div class="plugin-header">Select Plugin</div>
+    <div class="plugin-pro">
 
-      ${plugins.map(cat => `
-        <div class="plugin-category">
-          <div class="plugin-cat-title">${cat.category}</div>
-          ${cat.items.map(p => `
-            <div class="plugin-item" onclick="selectPlugin('${channelId}', '${p}')">
-              ${p}
+      <div class="plugin-sidebar">
+        ${Object.keys(plugins).map(cat => `
+          <div class="plugin-cat" onclick="filterPlugins('${cat}')">${cat}</div>
+        `).join("")}
+      </div>
+
+      <div class="plugin-main">
+        <div class="plugin-top">
+          <input id="pluginSearch" placeholder="Search plugins...">
+          <button onclick="this.closest('.plugin-browser').remove()">✖</button>
+        </div>
+
+        <div class="plugin-list-pro">
+          ${Object.entries(plugins).map(([cat,items]) => `
+            <div class="plugin-group" data-cat="${cat}">
+              <div class="plugin-group-title">${cat}</div>
+              ${items.map(p => `
+                <div class="plugin-item-pro" onclick="selectPlugin('${channelId}','${p}')">
+                  ${p}
+                </div>
+              `).join("")}
             </div>
           `).join("")}
         </div>
-      `).join("")}
+      </div>
 
-      <button onclick="this.closest('.plugin-browser').remove()">Close</button>
     </div>
   `;
 
   document.body.appendChild(modal);
+
+  // 🔍 SEARCH
+  setTimeout(()=>{
+    document.getElementById("pluginSearch").oninput = (e)=>{
+      const val = e.target.value.toLowerCase();
+
+      document.querySelectorAll(".plugin-item-pro").forEach(el=>{
+        el.style.display = el.textContent.toLowerCase().includes(val) ? "block" : "none";
+      });
+    };
+  },100);
+}
+
+function filterPlugins(cat){
+  document.querySelectorAll(".plugin-group").forEach(g=>{
+    g.style.display = g.dataset.cat === cat ? "block" : "none";
+  });
 }
 
 function selectPlugin(channelId, pluginName) {
