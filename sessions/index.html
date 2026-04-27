@@ -3153,11 +3153,13 @@ function renderMixer(){
       <div class="insert-box">
         <div class="insert-head">Inserts <button type="button" class="add-plugin">+</button></div>
         <div class="insert-list">
-          ${(ch.plugins || []).length ? ch.plugins.map(p => `
-            <div class="insert-plugin" onclick="removePlugin('${ch.id}','${p}')">
-              ${safeText(p)} ❌
+          ${(ch.plugins || []).map(p => `
+            <div class="insert-plugin"
+                 onclick="openPluginUI('${ch.id}','${p}')"
+                 oncontextmenu="openPluginMenu(event,'${ch.id}','${p}')">
+              ${p}
             </div>
-          `).join("") : `<div class="insert-empty">No plugins</div>`}
+          `).join("")}
         </div>
       </div>
 
@@ -3279,27 +3281,127 @@ function hexToRgba(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-function openPluginPicker(channelId){
-  const ch = state.mixer.find(x => x.id === channelId);
-  if (!ch) return;
-
-  const pick = prompt(
-    "Add Plugin:\n\n1. EQ\n2. Compressor\n3. Reverb\n4. Delay",
-    "EQ"
-  );
-
-  let plugin = ["EQ","Compressor","Reverb","Delay"][Number(pick)-1] || pick;
-
-  if (!plugin) return;
-
-  if (!ch.plugins.includes(plugin)) {
-    ch.plugins.push(plugin);
-  }
-
-  renderMixer();
+function addPlugin(channelId) {
+  openPluginBrowser(channelId);
 }
 
-window.openPluginPicker = openPluginPicker;
+function openPluginBrowser(channelId) {
+  const plugins = [
+    { category: "Dynamics", items: ["Compressor", "Limiter"] },
+    { category: "EQ", items: ["EQ"] },
+    { category: "Reverb/Delay", items: ["Reverb", "Delay"] }
+  ];
+
+  const modal = document.createElement("div");
+  modal.className = "plugin-browser";
+
+  modal.innerHTML = `
+    <div class="plugin-window">
+      <div class="plugin-header">Select Plugin</div>
+      <div class="plugin-list">
+        ${plugins.map(cat => `
+          <div class="plugin-category">
+            <div class="plugin-cat-title">${cat.category}</div>
+            ${cat.items.map(p => `
+              <div class="plugin-item" onclick="selectPlugin('${channelId}', '${p}')">
+                ${p}
+              </div>
+            `).join("")}
+          </div>
+        `).join("")}
+      </div>
+      <button onclick="this.closest('.plugin-browser').remove()">Close</button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function selectPlugin(channelId, pluginName) {
+  const ch = channels.find(c => c.id === channelId);
+  if (!ch.plugins) ch.plugins = [];
+
+  ch.plugins.push(pluginName);
+
+  buildAudioChain(ch); // 🔥 IMPORTANT FIX FOR SOUND
+  renderMixer();
+
+  document.querySelector(".plugin-browser")?.remove();
+
+  openPluginUI(channelId, pluginName);
+}
+
+function openPluginUI(channelId, pluginName) {
+  const modal = document.createElement("div");
+  modal.className = "plugin-ui";
+
+  modal.innerHTML = `
+    <div class="plugin-ui-window">
+      <div class="plugin-ui-header">
+        ${pluginName}
+        <span onclick="this.closest('.plugin-ui').remove()">✖</span>
+      </div>
+
+      <div class="plugin-ui-body">
+        ${renderPluginControls(pluginName)}
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+  
+function renderPluginControls(plugin) {
+  if (plugin === "EQ") {
+    return `
+      <label>Frequency</label>
+      <input type="range" min="100" max="5000">
+    `;
+  }
+
+  if (plugin === "Compressor") {
+    return `
+      <label>Threshold</label>
+      <input type="range" min="-100" max="0">
+    `;
+  }
+
+  if (plugin === "Reverb") {
+    return `
+      <label>Mix</label>
+      <input type="range" min="0" max="1" step="0.01">
+    `;
+  }
+
+  if (plugin === "Delay") {
+    return `
+      <label>Time</label>
+      <input type="range" min="0" max="1" step="0.01">
+    `;
+  }
+
+  return `<div>No controls</div>`;
+}
+
+function openPluginMenu(e, channelId, pluginName) {
+  e.preventDefault();
+
+  const menu = document.createElement("div");
+  menu.className = "plugin-menu";
+
+  menu.innerHTML = `
+    <div onclick="replacePlugin('${channelId}','${pluginName}')">Replace</div>
+    <div onclick="removePlugin('${channelId}','${pluginName}')">Delete</div>
+    <div>Presets</div>
+    <div>Save preset as</div>
+    <div>Add to favorites</div>
+  `;
+
+  document.body.appendChild(menu);
+
+  menu.style.top = e.pageY + "px";
+  menu.style.left = e.pageX + "px";
+}
 
 function removePlugin(channelId, plugin){
   const ch = state.mixer.find(x => x.id === channelId);
