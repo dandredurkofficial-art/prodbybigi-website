@@ -3153,7 +3153,11 @@ function renderMixer(){
       <div class="insert-box">
         <div class="insert-head">Inserts <button type="button" class="add-plugin">+</button></div>
         <div class="insert-list">
-          ${(ch.plugins || []).length ? ch.plugins.map(p => `<div class="insert-plugin">${safeText(p)}</div>`).join("") : `<div class="insert-empty">No plugins</div>`}
+          ${(ch.plugins || []).length ? ch.plugins.map(p => `
+            <div class="insert-plugin" onclick="removePlugin('${ch.id}','${p}')">
+              ${safeText(p)} ❌
+            </div>
+          `).join("") : `<div class="insert-empty">No plugins</div>`}
         </div>
       </div>
 
