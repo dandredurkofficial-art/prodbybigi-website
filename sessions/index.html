@@ -1870,11 +1870,14 @@ function initMixerAudio(){
     ch.gainNode.gain.value = ch.volume ?? 0.8;
     ch.panNode.pan.value = ch.pan ?? 0;
 
-    // CLEAN CHAIN (NO DUPLICATES)
-    // ❌ REMOVE DIRECT CHAIN
-    // handled by buildAudioChain()
-
     ch.dataArray = new Uint8Array(ch.analyser.frequencyBinCount);
+  });
+
+  // 🔥 CRITICAL: CONNECT EVERYTHING
+  state.mixer.forEach(ch => {
+    if (!ch.isMaster) {
+      buildAudioChain(ch);
+    }
   });
 }
 
@@ -2736,8 +2739,10 @@ function updateMeters(){
 }
 
 function drawChannelWaveforms(){
-  state.mixer.forEach((ch, i) => {
-    const canvas = document.querySelectorAll(".channel-wave-canvas")[i];
+  const canvases = document.querySelectorAll(".channel-wave-canvas");
+
+  state.mixer.forEach((ch, index) => {
+    const canvas = canvases[index];
     if (!canvas || !ch.analyser) return;
 
     const ctx = canvas.getContext("2d");
@@ -2763,6 +2768,7 @@ function drawChannelWaveforms(){
     }
 
     ctx.strokeStyle = "#00d4ff";
+    ctx.lineWidth = 2;
     ctx.stroke();
   });
 }
@@ -3171,7 +3177,7 @@ function renderMixer(){
       </div>
 
       <div class="send-box">
-        <div class="insert-head">Sends <button type="button" class="route-btn">+</button></div>
+        <div class="insert-head">Sends</div>
         <select class="ch-small sidechain-select">
           <option value="">Sidechain Off</option>
           ${state.mixer.filter(x=>x.id!==ch.id).map(x=>`<option value="${x.id}" ${ch.sidechain===x.id?"selected":""}>${safeText(x.name)}</option>`).join("")}
@@ -3184,7 +3190,7 @@ function renderMixer(){
       </select>
 
       <input class="ch-small pan-value" value="<C>" readonly>
-      <input class="fader pan" title="Pan Left / Right" type="range" min="-1" max="1" step=".01" value="${ch.pan}">
+      <input class="fader pan" type="range" min="-1" max="1" step=".01" value="${ch.pan}">
 
       <div class="ch-btns">
         <button type="button" class="${ch.muted ? "active" : ""}">M</button>
@@ -3198,86 +3204,80 @@ function renderMixer(){
       <div class="live-meter" data-mixer-level="${ch.id}">
         ${Array.from({length:12}).map(()=>`<span></span>`).join("")}
       </div>
+
       <input class="fader volume" type="range" min="0" max="1" step=".01" value="${ch.volume}">
 
       ${ch.isMaster ? "" : `<button class="delete-channel" type="button">Delete Channel</button>`}
     `;
 
+    // NAME
     card.querySelector(".mix-name").onchange = e => {
       ch.name = e.target.value || ch.name;
       renderMixer();
       renderTracks();
     };
 
+    // COLOR
     card.querySelector(".color-input").oninput = e => {
       ch.color = e.target.value;
       renderMixer();
     };
 
+    // VOLUME
     card.querySelector(".volume").oninput = e => {
       ch.volume = Number(e.target.value);
-      if (ch.gainNode) {
-        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
-      }
+      if (ch.gainNode) ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
     };
 
+    // PAN
     card.querySelector(".pan").oninput = e => {
       ch.pan = Number(e.target.value);
-
-      if (ch.panNode) {
-        ch.panNode.pan.value = ch.pan;
-      }
-
-      const v = ch.pan;
-      card.querySelector(".pan-value").value =
-        v < -0.05 ? `<L ${Math.abs(v).toFixed(2)}>` :
-        v > 0.05 ? `<R ${v.toFixed(2)}>` : "<C>";
+      if (ch.panNode) ch.panNode.pan.value = ch.pan;
     };
 
-    card.querySelector(".sidechain-select").onchange = e => ch.sidechain = e.target.value;
-    card.querySelector(".route-select").onchange = e => ch.routeTo = e.target.value;
+    // PLUGIN ADD
+    card.querySelector(".add-plugin").onclick = () => openPluginBrowser(ch.id);
 
-    card.querySelector(".add-plugin").onclick = () => openPluginPicker(ch.id);
+    // MUTE / SOLO
+    const btns = card.querySelectorAll(".ch-btns button");
 
-    const muteSolo = card.querySelectorAll(".ch-btns button");
-    muteSolo[0].onclick = () => {
+    btns[0].onclick = () => {
       ch.muted = !ch.muted;
-
-      if (ch.gainNode) {
-        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
-      }
-
+      if (ch.gainNode) ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
       renderMixer();
     };
-    muteSolo[1].onclick = () => {
+
+    btns[1].onclick = () => {
       ch.solo = !ch.solo;
 
       const anySolo = state.mixer.some(m => m.solo);
 
       state.mixer.forEach(m => {
         if (!m.gainNode) return;
-
-        if (anySolo) {
-          m.gainNode.gain.value = m.solo ? m.volume : 0;
-        } else {
-          m.gainNode.gain.value = m.muted ? 0 : m.volume;
-        }
+        m.gainNode.gain.value = anySolo
+          ? (m.solo ? m.volume : 0)
+          : (m.muted ? 0 : m.volume);
       });
 
       renderMixer();
     };
 
+    // DELETE
     card.querySelector(".delete-channel")?.addEventListener("click", ()=>{
       if (!confirm("Delete this mixer channel?")) return;
+
       state.mixer = state.mixer.filter(x => x.id !== ch.id);
-      state.tracks.forEach(t => {
-        if (t.mixerId === ch.id) t.mixerId = state.mixer.find(m => m.isMaster)?.id || "";
-      });
+
       renderMixer();
       renderTracks();
     });
 
     rack.appendChild(card);
+  });
+
+  // 🔥 CRITICAL: KEEP AUDIO WORKING AFTER UI REFRESH
+  state.mixer.forEach(ch => {
+    if (!ch.isMaster) buildAudioChain(ch);
   });
 }
 
