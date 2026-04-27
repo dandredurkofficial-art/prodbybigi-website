@@ -2058,9 +2058,8 @@ function renderTracks(){
 
 function renderClip(clip){
   const el = document.createElement("div");
-  el.className = `clip ${clip.type || ""} ${state.selectedClipId === clip.id ? "selected" : ""}`;
+  el.className = "clip";
   el.dataset.clipId = clip.id;
-  el.draggable = true;
 
   const left = (clip.startTime / secondsPerBar()) * state.zoom;
   const width = Math.max(120, (clip.duration / secondsPerBar()) * state.zoom);
@@ -2068,37 +2067,20 @@ function renderClip(clip){
   el.style.left = left + "px";
   el.style.width = width + "px";
 
-  const waveCount = Math.max(30, Math.floor(width / 7));
-
   el.innerHTML = `
     <div class="clip-label">${safeText(clip.name)}</div>
-    <div class="wave stretch-wave">${waveBars(clip.type, waveCount)}</div>
+    <canvas class="wave-canvas"></canvas>
   `;
 
-  el.addEventListener("click", (e) => {
-    e.stopPropagation();
-    state.selectedClipId = clip.id;
-    state.selectedTrackId = clip.trackId;
-    renderTracks();
-  });
-
-  el.addEventListener("dragstart", (e) => {
-    e.dataTransfer.setData("text/clip-id", clip.id);
-  });
-
-  el.addEventListener("dblclick", () => renameClip(clip.id));
-
-  el.addEventListener("mouseup", () => {
-    const newWidthPx = parseFloat(el.style.width || "120");
-    clip.duration = Math.max(1, (newWidthPx / state.zoom) * secondsPerBar());
-
-    if (clip.type === "beat") {
-      state.beat.duration = clip.duration;
-      setEndMarkerFromBeat();
+  // 🎨 DRAW REAL WAVEFORM
+  setTimeout(() => {
+    const canvas = el.querySelector("canvas");
+    if (canvas && clip.url) {
+      canvas.width = el.clientWidth;
+      canvas.height = 60;
+      drawWaveform(clip.url, canvas);
     }
-
-    renderTracks();
-  });
+  }, 50);
 
   return el;
 }
@@ -2259,6 +2241,32 @@ function applyTimelineWidth(){
   document.querySelectorAll(".lane").forEach(lane => {
     lane.style.minWidth = (state.bars * state.zoom) + "px";
   });
+}
+
+async function drawWaveform(url, canvas){
+  const ctx = ensureAudioCtx();
+  const buffer = await loadAudioBuffer(url);
+
+  const data = buffer.getChannelData(0);
+  const step = Math.ceil(data.length / canvas.width);
+  const amp = canvas.height / 2;
+
+  const c = canvas.getContext("2d");
+  c.clearRect(0,0,canvas.width,canvas.height);
+
+  for(let i=0;i<canvas.width;i++){
+    let min = 1;
+    let max = -1;
+
+    for(let j=0;j<step;j++){
+      const val = data[(i * step) + j];
+      if(val < min) min = val;
+      if(val > max) max = val;
+    }
+
+    c.fillStyle = "#60a5fa";
+    c.fillRect(i, (1+min)*amp, 1, Math.max(1,(max-min)*amp));
+  }
 }
 
 
@@ -2512,6 +2520,10 @@ function getAudioDuration(url){
 /* =========================
    TRANSPORT PLAYBACK
 ========================= */
+async function preloadAllClips(){
+  const urls = [...new Set(state.clips.map(c => c.url).filter(Boolean))];
+  await Promise.all(urls.map(u => loadAudioBuffer(u)));
+}
 
 async function togglePlay(){
   if (state.isPlaying) {
@@ -2527,71 +2539,66 @@ async function startPlayback(offset = 0){
   const ctx = ensureAudioCtx();
   if (ctx.state === "suspended") await ctx.resume();
 
-  // ✅ IMPORTANT: make sure mixer nodes exist BEFORE playback
-  state.mixer.forEach(ch => {
-    if (!ch.gainNode || !ch.panNode || !ch.analyser) {
-      initMixerAudio();
-    }
-  });
+  await preloadAllClips(); // ✅ KEY FIX
 
   stopActiveSources();
 
   state.isPlaying = true;
-  state.playReturnOffset = offset;
   state.playStartOffset = offset;
   state.playStartTime = ctx.currentTime;
   state.currentTime = offset;
 
   $("playBtn").textContent = "⏸";
 
-  const soloed = state.tracks.some(t => t.solo);
-
   for (const clip of state.clips) {
-    const track = state.tracks.find(t => t.id === clip.trackId);
-    if (!track || track.muted) continue;
-    if (soloed && !track.solo) continue;
-
     if (!clip.url) continue;
 
-    const clipStart = clip.startTime || 0;
-    const clipEnd = clipStart + (clip.duration || 0);
+    const track = state.tracks.find(t => t.id === clip.trackId);
+    if (!track || track.muted) continue;
 
-    if (offset > clipEnd) continue;
+    const ch = getMixerChannelForClip(clip);
+    if (!ch || !ch.input) continue;
 
-    const when = Math.max(0, clipStart - offset);
-    const startInClip = Math.max(0, offset - clipStart);
+    const buffer = await loadAudioBuffer(clip.url);
 
-    try {
-      const buffer = await loadAudioBuffer(clip.url);
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
 
-      const ch = getMixerChannelForClip(clip);
+    const when = Math.max(0, clip.startTime - offset);
+    const startInClip = Math.max(0, offset - clip.startTime);
 
-      if (!ch || !ch.input){
-        console.warn("Missing mixer channel:", clip);
-        continue;
-      }
+    // 🎛 ROUTING CHAIN (REAL)
+    source.connect(ch.input);
 
-      source.connect(ch.input);
-
-      // ✅ connect to mixer
-      source.connect(ch.gainNode);
-
-      // tempo sync
-      const rate = clip.originalBpm && clip.currentBpm
-        ? clip.currentBpm / clip.originalBpm
-        : 1;
-
-      source.playbackRate.value = rate > 0 ? rate : 1;
-
-      source.start(ctx.currentTime + when, startInClip);
-
-      state.activeSources.push(source);
-
-    } catch (err) {
-      console.warn("Playback failed:", err);
+    if (ch.plugins.includes("EQ")) {
+      ch.input.connect(ch.eqLow);
+      ch.eqLow.connect(ch.eqMid);
+      ch.eqMid.connect(ch.eqHigh);
+    } else {
+      ch.input.connect(ch.gainNode);
     }
+
+    if (ch.plugins.includes("Compressor")) {
+      ch.eqHigh.connect(ch.comp);
+      ch.comp.connect(ch.gainNode);
+    }
+
+    if (ch.plugins.includes("Reverb")) {
+      ch.gainNode.connect(ch.reverb);
+      ch.reverb.connect(ch.reverbGain).connect(ch.panNode);
+    }
+
+    if (ch.plugins.includes("Delay")) {
+      ch.gainNode.connect(ch.delay);
+      ch.delay.connect(ch.delayGain).connect(ch.panNode);
+    }
+
+    ch.panNode.connect(ch.analyser);
+    ch.analyser.connect(state.mixer.find(m=>m.isMaster).gainNode);
+
+    source.start(ctx.currentTime + when, startInClip);
+
+    state.activeSources.push(source);
   }
 
   startTicker();
@@ -2649,9 +2656,19 @@ function stopActiveSources(){
 
 async function loadAudioBuffer(url){
   const ctx = ensureAudioCtx();
+
+  state.audioBuffers = state.audioBuffers || {};
+
+  if (state.audioBuffers[url]) {
+    return state.audioBuffers[url];
+  }
+
   const res = await fetch(url);
   const arr = await res.arrayBuffer();
-  return await ctx.decodeAudioData(arr);
+  const buffer = await ctx.decodeAudioData(arr);
+
+  state.audioBuffers[url] = buffer;
+  return buffer;
 }
 
 function getMixerChannelForClip(clip){
@@ -3263,25 +3280,30 @@ function openPluginPicker(channelId){
   if (!ch) return;
 
   const pick = prompt(
-    "Choose plugin:\n\n" + PLUGINS.map((p,i)=>`${i+1}. ${p}`).join("\n"),
-    "Reverb"
+    "Add Plugin:\n\n1. EQ\n2. Compressor\n3. Reverb\n4. Delay",
+    "EQ"
   );
 
-  if (!pick) return;
+  let plugin = ["EQ","Compressor","Reverb","Delay"][Number(pick)-1] || pick;
 
-  let plugin = PLUGINS.find(p => p.toLowerCase() === pick.toLowerCase());
-  if (!plugin) {
-    const num = Number(pick);
-    plugin = PLUGINS[num - 1];
+  if (!plugin) return;
+
+  if (!ch.plugins.includes(plugin)) {
+    ch.plugins.push(plugin);
   }
 
-  if (!plugin) return alert("Plugin not found.");
-
-  if (!ch.plugins.includes(plugin)) ch.plugins.push(plugin);
   renderMixer();
 }
 
 window.openPluginPicker = openPluginPicker;
+
+function removePlugin(channelId, plugin){
+  const ch = state.mixer.find(x => x.id === channelId);
+  if (!ch) return;
+
+  ch.plugins = ch.plugins.filter(p => p !== plugin);
+  renderMixer();
+}
 
 function openMixer(){ renderMixer(); $("mixerBackdrop")?.classList.add("open"); }
 function closeMixer(){ $("mixerBackdrop")?.classList.remove("open"); }
