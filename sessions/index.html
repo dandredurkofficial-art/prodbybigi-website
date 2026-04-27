@@ -3156,9 +3156,11 @@ function renderMixer(){
     const muteSolo = card.querySelectorAll(".ch-btns button");
     muteSolo[0].onclick = () => {
       ch.muted = !ch.muted;
+
       if (ch.gainNode) {
-        ch.gainNode.gain.value = ch.muted ? 0 :  
+        ch.gainNode.gain.value = ch.muted ? 0 : ch.volume;
       }
+
       renderMixer();
     };
     muteSolo[1].onclick = () => {
@@ -3238,7 +3240,7 @@ function openPluginBrowser(channelId) {
 }
 
 function selectPlugin(channelId, pluginName) {
-  const ch = channels.find(c => c.id === channelId);
+  const ch = state.mixer.find(c => c.id === channelId);
   if (!ch.plugins) ch.plugins = [];
 
   ch.plugins.push(pluginName);
