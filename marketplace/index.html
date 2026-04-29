@@ -1398,6 +1398,50 @@
     return true;
   }
 
+  function getBeatPremiereTime(b){
+  return (
+    b?.premiereAt?.toMillis?.() ||
+    (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) ||
+    Number(b?.premiereAt || b?.releaseAt || 0)
+  );
+}
+
+function isUpcomingPremiereBeat(b){
+  const premiereAt = getBeatPremiereTime(b);
+  return (
+    (b?.isPremiere === true || b?.premiere === true || b?.premiereToggle === true) &&
+    premiereAt &&
+    Number.isFinite(premiereAt) &&
+    premiereAt > Date.now()
+  );
+}
+
+function formatPremiereCountdown(b){
+  const premiereAt = getBeatPremiereTime(b);
+  if (!premiereAt) return "Premiere soon";
+
+  const diff = Math.max(0, premiereAt - Date.now());
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+
+  if (days > 0) return `Premieres in ${days}d ${hours}h`;
+  if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
+  return `Premieres in ${mins}m`;
+}
+
+function preSaveHTML(b){
+  return `
+    <div class="presave-wrap">
+      <button class="pb-pill presave-pill" type="button" data-presave="1">
+        <span class="ic">🔔</span>
+        <span>Pre-save</span>
+      </button>
+      <div class="presave-countdown">${formatPremiereCountdown(b)}</div>
+    </div>
+  `;
+}
+
   function pillHTML(b){
     if (isFreeBeat(b)){
       return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
