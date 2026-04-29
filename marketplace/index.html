@@ -2078,6 +2078,16 @@ if (playBtn) {
         FreeDL.open(b);
       });
 
+      card.addEventListener("click", (e)=>{
+        const preBtn = e.target.closest("[data-presave='1']");
+        if (!preBtn) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
+      });
+
       /* BEAT PAGE VIEW */
       card.addEventListener("click", (e)=>{
 
