@@ -870,27 +870,6 @@
           border-color:rgba(59,130,246,.38);
         }
 
-        .presave-wrap{
-          display:flex !important;
-          flex-direction:column !important;
-          width:100% !important;
-          gap:8px !important;
-        }
-
-        .presave-wrap .presave-pill{
-          width:100% !important;
-          min-height:50px !important;
-        }
-
-        .presave-countdown{
-          display:block !important;
-          width:100% !important;
-          color:rgba(255,255,255,.62) !important;
-          font-size:12px !important;
-          text-align:center !important;
-          line-height:1.2 !important;
-        }
-
         @media (max-width:640px){
           .smart-finder-hint{
             font-size:12px;
@@ -899,6 +878,27 @@
           .smart-chip{
             padding:8px 12px;
             font-size:11.5px;
+          }
+
+          .presave-wrap{
+            display:flex !important;
+            flex-direction:column !important;
+            width:100% !important;
+            gap:8px !important;
+          }
+
+          .presave-wrap .presave-pill{
+            width:100% !important;
+            min-height:50px !important;
+          }
+
+          .presave-countdown{
+            display:block !important;
+            width:100% !important;
+            color:rgba(255,255,255,.62) !important;
+            font-size:12px !important;
+            text-align:center !important;
+            line-height:1.2 !important;
           }
        }
       
@@ -1554,19 +1554,19 @@
   }
 
   function preSaveHTML(b){
-  return `
-    <div class="presave-wrap">
-      <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
-        <span class="ic">🔔</span>
-        <span>Pre-save</span>
-      </button>
+    return `
+      <div class="presave-wrap">
+        <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
+          <span class="ic">🔔</span>
+          <span>Pre-save</span>
+        </button>
 
-      <div class="presave-countdown">
-        ${formatPremiereCountdown(b)}
+        <div class="presave-countdown">
+          ${formatPremiereCountdown(b)}
+        </div>
       </div>
-    </div>
-  `;
-}
+    `;
+  }
 
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
