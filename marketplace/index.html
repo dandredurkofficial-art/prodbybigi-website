@@ -671,6 +671,100 @@
          .pb-pill .ic{
            color:rgba(255,255,255,.85);
          }
+
+         .beats-grid{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:16px 14px !important;
+  margin-top:16px !important;
+}
+
+.beat-card{
+  background:#141414 !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-radius:18px !important;
+  overflow:hidden !important;
+  box-shadow:none !important;
+  padding:0 !important;
+}
+
+.beat-cover{
+  position:relative !important;
+  aspect-ratio:1 / 1 !important;
+  overflow:hidden !important;
+  background:#0b0b0b !important;
+  border-radius:0 !important;
+}
+
+.beat-cover img{
+  width:100% !important;
+  height:100% !important;
+  object-fit:cover !important;
+  display:block !important;
+}
+
+.beat-meta{
+  display:flex !important;
+  flex-direction:column !important;
+  gap:0 !important;
+  padding:14px !important;
+}
+
+.beat-title-link h3{
+  margin:0 !important;
+  color:#fff !important;
+  font-size:17px !important;
+  line-height:1.2 !important;
+  font-weight:800 !important;
+  min-height:40px !important;
+}
+
+.beat-meta .producer{
+  display:block !important;
+  margin-top:7px !important;
+  color:rgba(255,255,255,.62) !important;
+  font-size:14px !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+.beat-meta .pb-pill{
+  width:100% !important;
+  margin-top:14px !important;
+  min-height:50px !important;
+  border-radius:14px !important;
+  border:1.5px solid #295dff !important;
+  background:transparent !important;
+  color:#fff !important;
+  font-size:17px !important;
+  font-weight:800 !important;
+  justify-content:center !important;
+  padding:0 14px !important;
+  min-width:0 !important;
+}
+
+@media (max-width:1200px){
+  .beats-grid{grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+}
+
+@media (max-width:980px){
+  .beats-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+}
+
+@media (max-width:768px){
+  .beats-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    gap:14px 12px !important;
+  }
+
+  .beat-meta{padding:12px !important;}
+
+  .beat-meta .pb-pill{
+    min-height:46px !important;
+    font-size:16px !important;
+  }
+}
       }
   </style>
 </head>
