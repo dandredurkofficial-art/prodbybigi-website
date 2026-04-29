@@ -1554,16 +1554,19 @@
   }
 
   function preSaveHTML(b){
-    return `
+  return `
+    <div class="presave-wrap">
       <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
         <span class="ic">🔔</span>
         <span>Pre-save</span>
       </button>
-      <div style="margin-top:8px;color:rgba(255,255,255,.62);font-size:12px;text-align:center;">
+
+      <div class="presave-countdown">
         ${formatPremiereCountdown(b)}
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
