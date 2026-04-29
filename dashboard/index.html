@@ -2510,6 +2510,38 @@
       <input type="checkbox" id="bulkDiscount" />
     </div>
 
+    <div class="card" id="premiereSchedulerCard" style="margin-top:14px;">
+  <h2 style="margin-top:0;">Beat Premiere <span class="chip">Elite</span></h2>
+  <div class="subtle" id="premiereNote">Elite producers can schedule beats to premiere later.</div>
+
+  <div id="premiereLocked" class="lockbox" style="display:none;margin-top:12px;">
+    🔒 Beat Premieres are Elite only.
+    <div style="margin-top:10px;">
+      <button class="btn2" type="button" onclick="showPage('upgrade')">Upgrade to Elite</button>
+    </div>
+  </div>
+
+  <div id="premiereUnlocked" style="display:none;margin-top:12px;">
+    <div class="toggle">
+      <label>Release as Premiere</label>
+      <input type="checkbox" id="isPremiere" />
+    </div>
+
+    <div class="row" style="margin-top:12px;">
+      <div class="col">
+        <label class="subtle" style="display:block;margin-bottom:6px;">Premiere Date</label>
+        <input id="premiereDate" type="date" />
+      </div>
+      <div class="col">
+        <label class="subtle" style="display:block;margin-bottom:6px;">Premiere Time</label>
+        <input id="premiereTime" type="time" />
+      </div>
+    </div>
+
+    <textarea id="premiereMessage" placeholder="Premiere message e.g. New Afro Drill drop this Friday 🔥"></textarea>
+  </div>
+</div>
+
     <button class="primary" id="publishBtn" type="button" onclick="publishBeat()">Publish Beat</button>
   </div>
 </section>
