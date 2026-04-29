@@ -345,7 +345,7 @@ function normalizeBeat(docId, data) {
     releaseType: String(data.releaseType || "").trim(),
     elitePlan: data.elitePlan === true
     
-    searchableText: String(data.searchableText || "").trim()
+    searchableText: String(data.searchableText || "").trim(),
   };
 }
 
