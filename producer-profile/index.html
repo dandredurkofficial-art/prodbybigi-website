@@ -698,6 +698,10 @@
   }
 
   function pillHTML(b){
+    if (isUpcomingPremiereBeat(b)){
+      return preSaveHTML(b);
+    }
+
     return `
       <button class="pb-pill price-pill" type="button" aria-label="Choose license">
         <span class="ic">
@@ -1257,16 +1261,28 @@
           </div>
        `;
 
+     /* pre-save upcoming premiere */
+     card.addEventListener("click", (e)=>{
+       const preBtn = e.target.closest("[data-presave='1']");
+       if (!preBtn) return;
+
+       e.preventDefault();
+       e.stopPropagation();
+
+       alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
+     });
+
      /* open beat page when tapping card */
      card.addEventListener("click", (e)=>{
        if (e.target.closest("[data-play-btn]")) return;
        if (e.target.closest("[data-free-download='1']")) return;
        if (e.target.closest(".price-pill")) return;
+       if (e.target.closest("[data-presave='1']")) return;
        if (e.target.closest(".beat-producer-clamp")) return;
        if (e.target.closest("[data-open-beat='1']")) return;
 
-       window.location.href = beatUrl;
-     });
+        window.location.href = beatUrl;
+      });
 
      /* analytics */
      card.querySelector("[data-play-btn]")?.addEventListener("click", ()=>{
