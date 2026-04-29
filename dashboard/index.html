@@ -3372,6 +3372,19 @@ function refreshProLocks(){
   setPlanChips();
   setSubStatusBadge();
 
+  const premiereLocked = $("premiereLocked");
+  const premiereUnlocked = $("premiereUnlocked");
+  const premiereNote = $("premiereNote");
+
+  if (premiereLocked) premiereLocked.style.display = elite ? "none" : "block";
+  if (premiereUnlocked) premiereUnlocked.style.display = elite ? "block" : "none";
+
+  if (premiereNote) {
+    premiereNote.textContent = elite
+      ? "Unlocked. Schedule this beat as a premiere."
+      : "Upgrade to Elite to schedule beat premieres.";
+  }
+
   const advNote = $("advAnalyticsNote");
   if (advNote) advNote.textContent = pro
     ? "Unlocked"
@@ -3454,19 +3467,6 @@ function refreshProLocks(){
   const storeUnlocked = $("storeUnlocked");
   if (storeLocked) storeLocked.style.display = elite ? "none" : "block";
   if (storeUnlocked) storeUnlocked.style.display = elite ? "block" : "none";
-}
-
-const premiereLocked = $("premiereLocked");
-const premiereUnlocked = $("premiereUnlocked");
-const premiereNote = $("premiereNote");
-
-if (premiereLocked) premiereLocked.style.display = elite ? "none" : "block";
-if (premiereUnlocked) premiereUnlocked.style.display = elite ? "block" : "none";
-
-if (premiereNote) {
-  premiereNote.textContent = elite
-    ? "Unlocked. Schedule this beat as a premiere."
-    : "Upgrade to Elite to schedule beat premieres.";
 }
 window.refreshProLocks = refreshProLocks;
 
