@@ -230,7 +230,7 @@ window.FB.getProducerProfile = async function getProducerProfile(producerId) {
 /* =========================================================
    ✅ BEATS CACHE + FETCH
 ========================================================= */
-const CACHE_KEY = "audiory_cached_beats_v3";
+const CACHE_KEY = "audiory_cached_beats_v4";
 const CACHE_TTL_MS = 1000 * 60 * 30;
 let memCache = null;
 let memCacheAt = 0;
@@ -324,6 +324,27 @@ function normalizeBeat(docId, data) {
     tags: Array.isArray(data.tags) ? data.tags : [],
     mood: Array.isArray(data.mood) ? data.mood : [],
     beatDescription: String(data.beatDescription || "").trim(),
+
+    // ✅ PREMIERE / SCHEDULE FIELDS
+    isPremiere: data.isPremiere === true || data.premiere === true || data.premiereToggle === true,
+    premiere: data.premiere === true || data.isPremiere === true || data.premiereToggle === true,
+    premiereToggle: data.premiereToggle === true || data.isPremiere === true || data.premiere === true,
+    premiereAt: (
+      data?.premiereAt?.toMillis?.() ||
+      (data?.premiereAt?.seconds ? data.premiereAt.seconds * 1000 : null) ||
+      Number(data?.premiereAt || data?.releaseAt || 0)
+    ),
+    releaseAt: (
+      data?.releaseAt?.toMillis?.() ||
+      (data?.releaseAt?.seconds ? data.releaseAt.seconds * 1000 : null) ||
+      Number(data?.releaseAt || data?.premiereAt || 0)
+    ),
+    premiereStatus: String(data.premiereStatus || "").trim(),
+    premiereMessage: String(data.premiereMessage || "").trim(),
+    scheduledRelease: data.scheduledRelease === true,
+    releaseType: String(data.releaseType || "").trim(),
+    elitePlan: data.elitePlan === true
+    
     searchableText: String(data.searchableText || "").trim()
   };
 }
