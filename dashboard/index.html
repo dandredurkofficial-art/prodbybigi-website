@@ -5149,7 +5149,25 @@ async function publishBeat(){
       return;
     }
 
-    const wantsPremiere = $("isPremiere")?.checked === true && isElite();
+    const premiereToggle = $("isPremiere")?.checked === true;
+    const elitePlan = isElite();
+
+    console.log("PREMIERE DEBUG:", {
+      premiereToggle,
+      elitePlan,
+      date: $("premiereDate")?.value,
+      time: $("premiereTime")?.value,
+      premiereAt: premiereCheck.premiereAt
+    });
+
+    if (premiereToggle && !elitePlan) {
+      alert("Beat Premieres are Elite only.");
+      publishBtn.disabled = false;
+      publishBtn.innerText = editingBeatId ? "Update Beat" : "Publish Beat";
+      return;
+    }
+
+    const wantsPremiere = premiereToggle && elitePlan;
     const premiereAt = wantsPremiere ? premiereCheck.premiereAt : null;
 
     const payload = {
