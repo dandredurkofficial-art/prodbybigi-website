@@ -1,1 +1,2017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Audiory Premieres | Upcoming Beat Drops</title>
 
+  <meta name="description" content="Discover upcoming beat premieres on Audiory. Preview scheduled beat drops, follow countdowns, and buy licenses when beats go live." />
+  <meta name="keywords" content="beat premieres, scheduled beats, beat drops, upcoming beats, Audiory, buy beats, sell beats" />
+  <meta name="author" content="Audiory" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://audiory.site/premieres/" />
+
+  <link rel="icon" href="/audioryfavicon.webp" />
+  <link rel="shortcut icon" href="/audioryfavicon.webp" />
+  <link rel="icon" type="image/x-icon" href="/favicon.webp" />
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp" />
+
+  <meta property="og:title" content="Audiory Premieres – Upcoming Beat Drops" />
+  <meta property="og:description" content="Watch upcoming beat drops from producers worldwide. Follow countdowns and discover fresh releases on Audiory." />
+  <meta property="og:url" content="https://audiory.site/premieres/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://audiory.site/og-image.jpg" />
+  <meta property="og:image:alt" content="Audiory Premieres" />
+  <meta property="og:site_name" content="Audiory" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Audiory Premieres – Upcoming Beat Drops" />
+  <meta name="twitter:description" content="Discover scheduled beat premieres and upcoming drops on Audiory." />
+  <meta name="twitter:image" content="https://audiory.site/og-image.jpg" />
+
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/marketplace.css?v=6">
+  <link rel="stylesheet" href="/css/cart.css">
+  <link rel="stylesheet" href="/css/mobile-fix.css">
+
+  <style>
+    .audiory-support-fab{
+      position:fixed; right:18px; bottom:18px; z-index:9999;
+      display:flex; gap:10px; align-items:center;
+      padding:12px 14px; border-radius:999px;
+      background:#0e111a; color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 18px 50px rgba(0,0,0,.45);
+      cursor:pointer; font-family:system-ui;
+    }
+    .audiory-support-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
+    .audiory-support-fab b{font-size:14px}
+    .audiory-support-fab span{font-size:12px;opacity:.8}
+
+    .premiere-hero{
+      margin-top:22px;
+      padding:22px;
+      border-radius:26px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(circle at 18% 18%, rgba(41,93,255,.24), transparent 30%),
+        radial-gradient(circle at 80% 30%, rgba(34,197,94,.14), transparent 30%),
+        linear-gradient(180deg,#08142a,#071122);
+      box-shadow:0 24px 80px rgba(0,0,0,.32);
+    }
+
+    .premiere-kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:9px 13px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      font-weight:900;
+      font-size:13px;
+      margin-bottom:14px;
+    }
+
+    .premiere-title{
+      margin:0;
+      font-size:clamp(38px, 7vw, 76px);
+      line-height:1.02;
+      font-weight:950;
+      letter-spacing:-.035em;
+      color:#fff;
+    }
+
+    .premiere-sub{
+      margin:14px 0 0;
+      max-width:820px;
+      color:rgba(255,255,255,.76);
+      font-size:15px;
+      line-height:1.7;
+    }
+
+    .premiere-tools{
+      margin-top:18px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .premiere-search{
+      flex:1;
+      min-width:220px;
+      display:flex;
+      gap:10px;
+    }
+
+    .premiere-search input{
+      flex:1;
+      min-height:50px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0a0f1e;
+      color:#fff;
+      padding:0 14px;
+      outline:none;
+    }
+
+    .premiere-search button,
+    .premiere-tab,
+    .premiere-filter{
+      min-height:44px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:#fff;
+      padding:0 14px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .premiere-search button{
+      border-radius:16px;
+      background:#295dff;
+      border:none;
+    }
+
+    .premiere-tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .premiere-tab.active,
+    .premiere-filter.active{
+      border-color:#295dff;
+      background:rgba(41,93,255,.22);
+    }
+
+    .premiere-section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:12px;
+      margin:28px 0 14px;
+    }
+
+    .premiere-section-head h2{
+      margin:0;
+      font-size:24px;
+      font-weight:950;
+      color:#fff;
+    }
+
+    .premiere-section-head p{
+      margin:6px 0 0;
+      color:rgba(255,255,255,.65);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .premieres-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:16px 14px;
+    }
+
+    .premiere-card{
+      position:relative;
+      background:#141414 !important;
+      border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:20px !important;
+      overflow:hidden;
+      box-shadow:none !important;
+      padding:0 !important;
+    }
+
+    .premiere-cover{
+      position:relative;
+      aspect-ratio:1 / 1;
+      background:#0b0b0b;
+      overflow:hidden;
+    }
+
+    .premiere-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .premiere-cover::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg,transparent 35%,rgba(0,0,0,.78));
+      pointer-events:none;
+    }
+
+    .premiere-badge{
+      position:absolute;
+      left:12px;
+      top:12px;
+      z-index:2;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:950;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.48);
+      backdrop-filter:blur(8px);
+    }
+
+    .premiere-badge.live{
+      background:rgba(34,197,94,.88);
+      color:#03140a;
+    }
+
+    .premiere-badge.upcoming{
+      background:rgba(41,93,255,.86);
+    }
+
+    .premiere-badge.recent{
+      background:rgba(255,255,255,.14);
+    }
+
+    .countdown-box{
+      position:absolute;
+      left:12px;
+      right:12px;
+      bottom:12px;
+      z-index:2;
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:6px;
+    }
+
+    .count-item{
+      text-align:center;
+      padding:7px 4px;
+      border-radius:12px;
+      background:rgba(0,0,0,.52);
+      border:1px solid rgba(255,255,255,.10);
+      backdrop-filter:blur(8px);
+    }
+
+    .count-num{
+      font-size:14px;
+      font-weight:950;
+      color:#fff;
+      line-height:1;
+    }
+
+    .count-label{
+      margin-top:4px;
+      font-size:9px;
+      font-weight:800;
+      color:rgba(255,255,255,.62);
+      text-transform:uppercase;
+    }
+
+    .premiere-body{
+      padding:14px;
+    }
+
+    .premiere-body h3{
+      margin:0;
+      color:#fff;
+      font-size:17px;
+      line-height:1.2;
+      font-weight:900;
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:2;
+      overflow:hidden;
+      min-height:40px;
+    }
+
+    .premiere-producer{
+      display:block;
+      margin-top:7px;
+      color:rgba(255,255,255,.62) !important;
+      font-size:14px;
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      text-decoration:none;
+    }
+
+    .premiere-meta{
+      margin-top:10px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      line-height:1.5;
+    }
+
+    .premiere-actions{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+      padding:0 14px 14px;
+    }
+
+    .premiere-btn{
+      min-height:48px;
+      border-radius:14px;
+      border:1.5px solid #295dff;
+      background:transparent;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+    }
+
+    .premiere-btn.primary{
+      background:#295dff;
+      border-color:#295dff;
+    }
+
+    .premiere-btn.disabled{
+      opacity:.75;
+      cursor:not-allowed;
+    }
+
+    .loading-box{
+      margin-top:16px;
+    }
+
+    .hidden{display:none!important}
+
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      width:100%;
+      min-height:48px;
+      padding:0 14px;
+      border-radius:14px;
+      font-weight:900;
+      font-size:15px;
+      border:1.5px solid #295dff;
+      background:transparent;
+      color:#fff;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .pb-pill.free{
+      background:rgba(59,130,246,.16);
+      border-color:rgba(59,130,246,.35);
+    }
+
+    .lock-icon{
+      width:16px;
+      height:16px;
+      display:inline-block;
+    }
+
+    .lock-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .pb-free-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      z-index:9998;
+    }
+
+    .pb-free-modal{
+      position:fixed;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 24px));
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 20px 70px rgba(0,0,0,.45);
+      display:none;
+      z-index:9999;
+    }
+
+    .pb-free-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .pb-free-title{
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+    }
+
+    .pb-free-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+    }
+
+    .pb-free-close:hover{background:rgba(255,255,255,.08)}
+
+    .pb-free-sub{
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+      margin:8px 0 14px;
+      line-height:1.4;
+    }
+
+    .pb-free-label{
+      font-size:13px;
+      font-weight:800;
+      margin:10px 0 6px;
+      color:rgba(255,255,255,.85);
+    }
+
+    .pb-free-input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+      box-sizing:border-box;
+    }
+
+    .pb-free-btn{
+      width:100%;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      background:#3b82f6;
+      color:#fff;
+    }
+
+    .pb-free-status{
+      margin-top:10px;
+      font-size:13px;
+      color:#22c55e;
+      min-height:18px;
+    }
+
+    .pb-free-note{
+      margin-top:10px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      line-height:1.35;
+    }
+
+    .pb-pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.68);
+      display:none;
+      z-index:10050;
+    }
+
+    .pb-pay-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(720px, calc(100vw - 18px));
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:26px;
+      padding:0;
+      box-shadow:0 28px 90px rgba(0,0,0,.52);
+      display:none;
+      z-index:10051;
+    }
+
+    .pb-pay-modal *,
+    .pb-pay-modal *::before,
+    .pb-pay-modal *::after{
+      box-sizing:border-box;
+    }
+
+    .pb-pay-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:22px 24px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .pb-pay-title{
+      font-weight:950;
+      font-size:24px;
+      margin:0;
+      color:#fff;
+    }
+
+    .pb-pay-sub{
+      color:rgba(255,255,255,.72);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.5;
+      white-space:pre-line;
+    }
+
+    .pb-pay-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:24px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
+    }
+
+    .pb-pay-body{
+      padding:22px 24px 24px;
+      display:grid;
+      gap:16px;
+    }
+
+    .pb-pay-methods{
+      display:grid;
+      gap:14px;
+    }
+
+    .pb-pay-btn{
+      width:100%;
+      min-height:76px;
+      border-radius:18px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:0 22px;
+      color:#fff;
+      font-size:17px;
+    }
+
+    .pb-pay-btn.primary{background:#4b86ef}
+    .pb-pay-btn.success{background:#24c65a}
+
+    .pb-pay-btn-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .pb-pay-amount{
+      font-size:16px;
+      font-weight:900;
+      opacity:.96;
+    }
+
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:4px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+    }
+
+    .pb-pay-label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.86);
+      margin-bottom:8px;
+    }
+
+    .pb-pay-input{
+      width:100%;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+      font-size:15px;
+    }
+
+    .pb-pay-send{
+      margin-top:14px;
+      min-height:50px;
+      padding:0 20px;
+      border:none;
+      border-radius:14px;
+      background:#24c65a;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .pb-pay-status{
+      min-height:18px;
+      margin-top:10px;
+      font-size:13px;
+      color:rgba(255,255,255,.78);
+      white-space:pre-line;
+    }
+
+    .mpesa-icon{
+      width:20px;
+      height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .mpesa-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+
+    .verify-badge svg{
+      width:16px;
+      height:16px;
+      display:block;
+    }
+
+    .verify-pro svg{color:#1d9bf0}
+    .verify-elite svg{color:#fbbf24}
+
+    @media (max-width:1200px){
+      .premieres-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    }
+
+    @media (max-width:980px){
+      .premieres-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
+    @media (max-width:640px){
+      .premiere-hero{
+        padding:18px;
+        border-radius:24px;
+      }
+
+      .premiere-title{
+        font-size:48px;
+      }
+
+      .premiere-search{
+        min-width:100%;
+        display:grid;
+        grid-template-columns:1fr;
+      }
+
+      .premieres-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+        gap:14px 12px;
+      }
+
+      .premiere-body{
+        padding:12px;
+      }
+
+      .premiere-body h3{
+        font-size:16px;
+        min-height:38px;
+      }
+
+      .premiere-producer{
+        font-size:13px;
+      }
+
+      .premiere-actions{
+        padding:0 12px 12px;
+      }
+
+      .premiere-btn,
+      .pb-pill{
+        min-height:46px;
+        font-size:14px;
+      }
+
+      .countdown-box{
+        gap:4px;
+        left:8px;
+        right:8px;
+        bottom:8px;
+      }
+
+      .count-item{
+        padding:6px 2px;
+        border-radius:10px;
+      }
+
+      .count-num{font-size:12px}
+      .count-label{font-size:8px}
+
+      .pb-pay-modal{
+        width:calc(100vw - 16px);
+        max-height:calc(100vh - 20px);
+        border-radius:24px;
+      }
+
+      .pb-pay-head{
+        padding:18px 18px 12px;
+      }
+
+      .pb-pay-title{
+        font-size:20px;
+      }
+
+      .pb-pay-body{
+        padding:16px 18px 18px;
+      }
+
+      .pb-pay-btn{
+        min-height:72px;
+        border-radius:18px;
+        padding:0 18px;
+        font-size:16px;
+      }
+
+      .audiory-support-fab{
+        right:10px;
+        bottom:10px;
+        transform:scale(.88);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="audiory-support-fab" onclick="location.href='/help/'">
+  <div class="audiory-support-dot"></div>
+  <div><b>Support</b><br><span>Get help</span></div>
+</div>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/index.html">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/premieres/">Premieres</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/index.html">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/premieres/" class="cta">Premieres</a>
+
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container">
+
+  <section class="premiere-hero">
+    <div class="premiere-kicker">🚀 Audiory Premieres</div>
+    <h1 class="premiere-title">Upcoming beat drops</h1>
+    <p class="premiere-sub">
+      Discover scheduled beats before they go live. Follow countdowns, preview releases, and be ready when producers drop new sounds on Audiory.
+    </p>
+
+    <div class="premiere-tools">
+      <div class="premiere-search">
+        <input id="premiereSearchInput" placeholder="Search premieres, producers, genres…" />
+        <button id="premiereSearchBtn" type="button">Search</button>
+      </div>
+    </div>
+
+    <div class="premiere-tabs">
+      <button class="premiere-tab active" type="button" data-tab="all">All</button>
+      <button class="premiere-tab" type="button" data-tab="upcoming">Upcoming</button>
+      <button class="premiere-tab" type="button" data-tab="live">Live Now</button>
+      <button class="premiere-tab" type="button" data-tab="recent">Recently Dropped</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="premiere-section-head">
+      <div>
+        <h2 id="premiereSectionTitle">All Premieres</h2>
+        <p id="premiereSectionSub">Upcoming, live, and recently dropped beats.</p>
+      </div>
+    </div>
+
+    <div id="premiereStatus" class="loading-box">Loading premieres…</div>
+    <div id="premieresGrid" class="premieres-grid"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
+        </svg>
+      </a>
+
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- License / Checkout Modal -->
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<!-- Free Download Popup -->
+<div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
+<div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
+  <div class="pb-free-head">
+    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
+    <button class="pb-free-close" id="pbFreeClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-free-sub" id="pbFreeSub">
+    Enter your email address and full name to unlock your free download.
+    We will send your free track to the email address.
+  </div>
+
+  <div class="pb-free-label">Full name</div>
+  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
+
+  <div class="pb-free-label">Email address</div>
+  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
+
+  <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
+  <div class="pb-free-status" id="pbFreeStatus"></div>
+
+  <div class="pb-free-note">
+    By continuing, you agree to our Terms & Privacy Policy.
+  </div>
+</div>
+
+<!-- Payment Method Modal -->
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
+
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
+
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+  window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
+  window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js?v=19"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/performance.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  const PREMIERE_STATE = {
+    tab: "all",
+    q: "",
+    beats: []
+  };
+
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
+  function prettyProducerName(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function beatPageUrl(beat){
+    const id = beat?.id ? String(beat.id) : "";
+    return `/beat/?id=${encodeURIComponent(id)}`;
+  }
+
+  function coverHTML(url, title){
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+    return `
+      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">
+        ${initials}
+      </div>
+    `;
+  }
+
+  function normalizeText(s){
+    return String(s || "").toLowerCase().trim();
+  }
+
+  function getPremiereTime(b){
+    const raw =
+      b.premiereAt ||
+      b.releaseAt ||
+      b.scheduledAt ||
+      b.dropAt ||
+      b.premiereDate ||
+      b.releaseDate ||
+      null;
+
+    if (!raw) return null;
+
+    if (typeof raw?.toMillis === "function") return raw.toMillis();
+    if (raw?.seconds) return raw.seconds * 1000;
+
+    const d = new Date(raw);
+    const t = d.getTime();
+    return Number.isFinite(t) ? t : null;
+  }
+
+  function getPremiereStatus(b){
+    const now = Date.now();
+    const premiereAt = getPremiereTime(b);
+
+    if (!premiereAt) return "live";
+
+    if (premiereAt > now) return "upcoming";
+
+    const age = now - premiereAt;
+    const recentWindow = 1000 * 60 * 60 * 24 * 7;
+
+    if (age <= recentWindow) return "live";
+    return "recent";
+  }
+
+  function isBuyablePremiere(b){
+    return getPremiereStatus(b) !== "upcoming";
+  }
+
+  function formatDateTime(ms){
+    if (!ms) return "Release time not set";
+    try{
+      return new Intl.DateTimeFormat(undefined, {
+        month:"short",
+        day:"numeric",
+        hour:"numeric",
+        minute:"2-digit"
+      }).format(new Date(ms));
+    }catch{
+      return new Date(ms).toLocaleString();
+    }
+  }
+
+  function getCountdownParts(ms){
+    const diff = Math.max(0, ms - Date.now());
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    return { d, h, m, s };
+  }
+
+  function countdownHTML(b){
+    const ms = getPremiereTime(b);
+    const status = getPremiereStatus(b);
+
+    if (!ms || status !== "upcoming") {
+      return `
+        <div class="countdown-box">
+          <div class="count-item"><div class="count-num">LIVE</div><div class="count-label">Now</div></div>
+          <div class="count-item"><div class="count-num">▶</div><div class="count-label">Play</div></div>
+          <div class="count-item"><div class="count-num">BUY</div><div class="count-label">Now</div></div>
+          <div class="count-item"><div class="count-num">🔥</div><div class="count-label">Drop</div></div>
+        </div>
+      `;
+    }
+
+    const c = getCountdownParts(ms);
+
+    return `
+      <div class="countdown-box" data-countdown="${ms}">
+        <div class="count-item"><div class="count-num" data-d>${c.d}</div><div class="count-label">Days</div></div>
+        <div class="count-item"><div class="count-num" data-h>${c.h}</div><div class="count-label">Hrs</div></div>
+        <div class="count-item"><div class="count-num" data-m>${c.m}</div><div class="count-label">Min</div></div>
+        <div class="count-item"><div class="count-num" data-s>${c.s}</div><div class="count-label">Sec</div></div>
+      </div>
+    `;
+  }
+
+  function isFreeBeat(b){
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true) return true;
+
+    if (Number.isFinite(Number(b.price))) {
+      return Number(b.price) <= 0;
+    }
+
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    if (hasPaidLicense) return false;
+    return true;
+  }
+
+  function getBeatPrice(b){
+    if (!b) return 0;
+    if (b.freeDownload === true) return 0;
+    if (Number.isFinite(Number(b.price))) return Number(b.price);
+
+    const lic = b.licenses || {};
+    if (lic?.basic?.enabled && Number.isFinite(Number(lic.basic.price))) return Number(lic.basic.price);
+    if (lic?.premium?.enabled && Number.isFinite(Number(lic.premium.price))) return Number(lic.premium.price);
+    if (lic?.exclusive?.enabled && Number.isFinite(Number(lic.exclusive.price))) return Number(lic.exclusive.price);
+    return 0;
+  }
+
+  function pillHTML(b){
+    if (!isBuyablePremiere(b)) {
+      return `<button class="premiere-btn disabled" type="button" data-remind="1">🔔 Remind Me</button>`;
+    }
+
+    if (isFreeBeat(b)){
+      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
+        <span class="ic">⬇️</span>
+        <span>Free</span>
+      </button>`;
+    }
+
+    return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
+      <span class="ic lock-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </span>
+      <span>${money(getBeatPrice(b))}</span>
+    </button>`;
+  }
+
+  function statusBadgeHTML(status){
+    if (status === "upcoming") return `<div class="premiere-badge upcoming">⏳ Upcoming</div>`;
+    if (status === "live") return `<div class="premiere-badge live">🟢 Live Now</div>`;
+    return `<div class="premiere-badge recent">✅ Dropped</div>`;
+  }
+
+  function matchesSearch(b){
+    const q = normalizeText(PREMIERE_STATE.q);
+    if (!q) return true;
+
+    const text = normalizeText([
+      b.title,
+      b.producerName,
+      b.genre,
+      b.mood,
+      b.typeBeat,
+      b.desc,
+      b.beatDescription,
+      Array.isArray(b.tags) ? b.tags.join(" ") : ""
+    ].join(" "));
+
+    return q.split(/\s+/).every(word => text.includes(word));
+  }
+
+  function filterPremieres(beats){
+    const tab = PREMIERE_STATE.tab;
+
+    return (beats || []).filter(b => {
+      if (!matchesSearch(b)) return false;
+
+      const status = getPremiereStatus(b);
+      if (tab === "all") return true;
+      return status === tab;
+    });
+  }
+
+  function sortPremieres(beats){
+    return [...beats].sort((a,b)=>{
+      const sa = getPremiereStatus(a);
+      const sb = getPremiereStatus(b);
+      const ta = getPremiereTime(a) || 0;
+      const tb = getPremiereTime(b) || 0;
+
+      const order = { live:0, upcoming:1, recent:2 };
+      if (order[sa] !== order[sb]) return order[sa] - order[sb];
+
+      if (sa === "upcoming") return ta - tb;
+      return tb - ta;
+    });
+  }
+
+  function updateHeader(){
+    const title = document.getElementById("premiereSectionTitle");
+    const sub = document.getElementById("premiereSectionSub");
+
+    const labels = {
+      all: ["All Premieres", "Upcoming, live, and recently dropped beats."],
+      upcoming: ["Upcoming Premieres", "Scheduled beats counting down to release."],
+      live: ["Live Now", "Beats that are live and ready to preview or buy."],
+      recent: ["Recently Dropped", "Premieres that dropped recently."]
+    };
+
+    title.textContent = labels[PREMIERE_STATE.tab][0];
+    sub.textContent = labels[PREMIERE_STATE.tab][1];
+  }
+
+  function renderPremieres(){
+    const grid = document.getElementById("premieresGrid");
+    const status = document.getElementById("premiereStatus");
+
+    const filtered = sortPremieres(filterPremieres(PREMIERE_STATE.beats));
+
+    grid.innerHTML = "";
+
+    if (!filtered.length) {
+      status.classList.remove("hidden");
+      status.textContent = "No premieres found.";
+      return;
+    }
+
+    status.classList.add("hidden");
+
+    filtered.forEach(b => {
+      const premiereStatus = getPremiereStatus(b);
+      const premiereAt = getPremiereTime(b);
+      const audioUrl = b.previewAudio || b.audio || "";
+      const pageUrl = beatPageUrl(b);
+
+      const card = document.createElement("div");
+      card.className = "card premiere-card";
+      card.setAttribute("data-beat-id", b.id);
+
+      card.innerHTML = `
+        <div class="premiere-cover">
+          <a href="${pageUrl}" data-open-beat="1">
+            ${coverHTML(b.artwork, b.title)}
+          </a>
+
+          ${statusBadgeHTML(premiereStatus)}
+          ${countdownHTML(b)}
+        </div>
+
+        <div class="premiere-body">
+          <h3>${b.title || "Untitled Beat"}</h3>
+
+          <a class="premiere-producer" href="/producer-profile/?producerId=${encodeURIComponent(b.producerId || "")}">
+            ${prettyProducerName(b)} ${window.AudioryVerify?.badge ? window.AudioryVerify.badge(b.producerPlan) : ""}
+          </a>
+
+          <div class="premiere-meta">
+            ${b.genre ? `${b.genre} • ` : ""}${premiereStatus === "upcoming" ? "Drops" : "Dropped"} ${formatDateTime(premiereAt)}
+          </div>
+        </div>
+
+        <div class="premiere-actions">
+          ${
+            audioUrl
+              ? `<button class="premiere-btn" data-ignore-license="1" data-audio-url="${audioUrl}" type="button">
+                   <span class="playIcon">▶</span> Preview
+                 </button>`
+              : `<button class="premiere-btn disabled" type="button">No Preview</button>`
+          }
+
+          ${pillHTML(b)}
+        </div>
+      `;
+
+      const playBtn = card.querySelector("[data-audio-url]");
+      if (playBtn) {
+        playBtn.addEventListener("click", async (e)=>{
+          e.preventDefault();
+          e.stopPropagation();
+
+          try{
+            if (!window.__premiereAudio) {
+              window.__premiereAudio = new Audio();
+            }
+
+            const audio = window.__premiereAudio;
+            const src = playBtn.getAttribute("data-audio-url") || "";
+            const current = audio.getAttribute("data-current-src") || "";
+            const icon = playBtn.querySelector(".playIcon");
+
+            if (current === src && !audio.paused) {
+              audio.pause();
+              if (icon) icon.textContent = "▶";
+              return;
+            }
+
+            if (current !== src) {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.src = src;
+              audio.setAttribute("data-current-src", src);
+            }
+
+            await audio.play();
+            if (icon) icon.textContent = "❚❚";
+
+            audio.onpause = () => { if (icon) icon.textContent = "▶"; };
+            audio.onended = () => { if (icon) icon.textContent = "▶"; };
+
+          }catch(err){
+            console.error("preview failed", err);
+            alert("Could not play preview.");
+          }
+        });
+      }
+
+      card.addEventListener("click", (e)=>{
+        const freeBtn = e.target.closest("[data-free-download='1']");
+        if (!freeBtn) return;
+        e.preventDefault();
+        e.stopPropagation();
+        FreeDL.open(b);
+      });
+
+      card.addEventListener("click", (e)=>{
+        const remind = e.target.closest("[data-remind='1']");
+        if (!remind) return;
+        e.preventDefault();
+        e.stopPropagation();
+
+        const key = `audiory_remind_${b.id}`;
+        localStorage.setItem(key, "1");
+        remind.textContent = "✅ Reminder Saved";
+      });
+
+      card.addEventListener("click", (e)=>{
+        if (e.target.closest("[data-audio-url]")) return;
+        if (e.target.closest("[data-free-download='1']")) return;
+        if (e.target.closest("[data-remind='1']")) return;
+        if (e.target.closest(".price-pill")) return;
+        if (e.target.closest(".premiere-producer")) return;
+        if (e.target.closest("[data-open-beat='1']")) return;
+        location.href = pageUrl;
+      });
+
+      grid.appendChild(card);
+    });
+
+    updateCountdowns();
+  }
+
+  function updateCountdowns(){
+    document.querySelectorAll("[data-countdown]").forEach(box=>{
+      const ms = Number(box.getAttribute("data-countdown") || 0);
+      if (!ms) return;
+
+      const c = getCountdownParts(ms);
+
+      const d = box.querySelector("[data-d]");
+      const h = box.querySelector("[data-h]");
+      const m = box.querySelector("[data-m]");
+      const s = box.querySelector("[data-s]");
+
+      if (d) d.textContent = c.d;
+      if (h) h.textContent = c.h;
+      if (m) m.textContent = c.m;
+      if (s) s.textContent = c.s;
+    });
+  }
+
+  setInterval(updateCountdowns, 1000);
+
+  const FreeDL = (() => {
+    const $ = (id)=>document.getElementById(id);
+
+    const backdrop = $("pbFreeBackdrop");
+    const modal = $("pbFreeModal");
+    const closeBtn = $("pbFreeClose");
+    const sendBtn = $("pbFreeSend");
+    const nameEl = $("pbFreeName");
+    const emailEl = $("pbFreeEmail");
+    const titleEl = $("pbFreeTitle");
+    const statusEl = $("pbFreeStatus");
+
+    let currentBeat = null;
+
+    function open(beat){
+      currentBeat = beat || null;
+      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
+      statusEl.textContent = "";
+      nameEl.value = "";
+      emailEl.value = "";
+
+      backdrop.style.display = "block";
+      modal.style.display = "block";
+      backdrop.setAttribute("aria-hidden","false");
+      setTimeout(()=>nameEl.focus(), 30);
+    }
+
+    function close(){
+      backdrop.style.display = "none";
+      modal.style.display = "none";
+      backdrop.setAttribute("aria-hidden","true");
+      currentBeat = null;
+    }
+
+    async function send(){
+      const fullName = (nameEl.value || "").trim();
+      const email = (emailEl.value || "").trim().toLowerCase();
+
+      if (!fullName) return alert("Enter your full name");
+      if (!email || !email.includes("@")) return alert("Enter a valid email");
+      if (!currentBeat?.id) return alert("Beat not found");
+
+      const key = `pb_free_${currentBeat.id}_${email}`;
+      if (localStorage.getItem(key) === "1"){
+        statusEl.textContent = "✅ Already sent. Check inbox/spam.";
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending...";
+
+      try{
+        if (window.FB && typeof window.FB.logFreeDownload === "function"){
+          await window.FB.logFreeDownload({
+            beatId: currentBeat.id,
+            beatTitle: currentBeat.title || "",
+            producerId: currentBeat.producerId || "",
+            producerName: currentBeat.producerName || "",
+            fullName,
+            email,
+            createdAt: Date.now()
+          });
+        }
+
+        localStorage.setItem(key, "1");
+        statusEl.textContent = "✅ Sent! Check inbox/spam.";
+        setTimeout(close, 900);
+      }catch(err){
+        console.error(err);
+        alert("Failed: " + (err?.message || err));
+      }
+
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+    }
+
+    backdrop?.addEventListener("click", close);
+    closeBtn?.addEventListener("click", close);
+    sendBtn?.addEventListener("click", send);
+
+    return { open, close };
+  })();
+
+  (function(){
+    const $ = (id)=>document.getElementById(id);
+
+    const payBackdrop = $("pbPayBackdrop");
+    const payModal = $("pbPayModal");
+    const payClose = $("pbPayClose");
+    const payTitle = $("pbPayTitle");
+    const paySub = $("pbPaySub");
+    const payAmountA = $("pbPayAmountA");
+    const payAmountB = $("pbPayAmountB");
+    const btnPaypal = $("pbPayWithPaypal");
+    const btnMpesa = $("pbPayWithMpesa");
+    const mpesaBox = $("pbMpesaBox");
+    const mpesaPhone = $("pbMpesaPhone");
+    const payStatus = $("pbPayStatus");
+    const pbSendStkPush = $("pbSendStkPush");
+
+    function getBeatById(beatId){
+      return (window.__LATEST_BEATS__ || []).find(
+        b => String(b?.id || "") === String(beatId || "")
+      ) || null;
+    }
+
+    function getDefaultLicenseForBeat(beat){
+      if (!beat) return { licenseKey:"basic", amount:0 };
+
+      const lic = beat.licenses || {};
+
+      if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+        return { licenseKey:"basic", amount:Number(lic?.basic?.price ?? beat.price ?? 0) };
+      }
+
+      if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+        return { licenseKey:"premium", amount:Number(lic?.premium?.price ?? beat.price ?? 0) };
+      }
+
+      if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+        return { licenseKey:"exclusive", amount:Number(lic?.exclusive?.price ?? beat.price ?? 0) };
+      }
+
+      return { licenseKey:"basic", amount:Number(beat.price || 0) };
+    }
+
+    function syncSelectionFromModal(){
+      const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+      const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+      const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+      const selectedCard =
+        document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+        document.querySelector('#pbLicensesGrid .selected') ||
+        document.querySelector('#pbLicensesGrid .active') ||
+        document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+      let licenseKey = "";
+      if (selectedCard) {
+        licenseKey =
+          selectedCard.dataset.licenseKey ||
+          selectedCard.dataset.key ||
+          "";
+      }
+
+      if (!licenseKey && selectedCard) {
+        const txt = (selectedCard.textContent || "").toLowerCase();
+        if (txt.includes("exclusive")) licenseKey = "exclusive";
+        else if (txt.includes("premium")) licenseKey = "premium";
+        else if (txt.includes("basic")) licenseKey = "basic";
+      }
+
+      if (!licenseKey) {
+        const existing = window.__PB_SELECTED__ || {};
+        licenseKey = existing.licenseKey || "basic";
+      }
+
+      window.__PB_SELECTED__ = {
+        ...(window.__PB_SELECTED__ || {}),
+        title: title || window.__PB_SELECTED__?.title || "",
+        licenseKey,
+        amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+      };
+    }
+
+    function openPayModal(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) {
+        alert("Select a beat and license first.");
+        return;
+      }
+
+      payTitle.textContent = "Choose payment method";
+      paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
+      payAmountA.textContent = money(sel.amount || 0);
+      payAmountB.textContent = money(sel.amount || 0);
+      payStatus.textContent = "";
+      mpesaBox.style.display = "none";
+      mpesaPhone.value = "";
+
+      payBackdrop.style.display = "block";
+      payModal.style.display = "block";
+      payBackdrop.setAttribute("aria-hidden","false");
+    }
+
+    function closePayModal(){
+      payBackdrop.style.display = "none";
+      payModal.style.display = "none";
+      payBackdrop.setAttribute("aria-hidden","true");
+      mpesaBox.style.display = "none";
+      payStatus.textContent = "";
+    }
+
+    async function payWithPaypal(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat first.");
+
+      btnPaypal.disabled = true;
+      btnMpesa.disabled = true;
+      payStatus.textContent = "Opening PayPal…";
+
+      try{
+        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({
+            beatId: sel.beatId,
+            licenseKey: sel.licenseKey || "basic"
+          })
+        });
+
+        const data = await r.json().catch(()=>({}));
+        if (!r.ok) {
+          alert(data?.error || "PayPal create order failed");
+          payStatus.textContent = "";
+          return;
+        }
+
+        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+        if (!url) {
+          alert("PayPal approval link missing.");
+          payStatus.textContent = "";
+          return;
+        }
+
+        location.href = url;
+      }catch(err){
+        alert("PayPal error: " + (err?.message || err));
+        payStatus.textContent = "";
+      }finally{
+        btnPaypal.disabled = false;
+        btnMpesa.disabled = false;
+      }
+    }
+
+    function showMpesaBox(){
+      mpesaBox.style.display = "block";
+      payStatus.textContent = "";
+      setTimeout(()=>mpesaPhone?.focus(), 50);
+    }
+
+    async function sendMpesaStkPush(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat first.");
+
+      const phone = (mpesaPhone.value || "").trim();
+      const digits = phone.replace(/\D/g,"");
+
+      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+        payStatus.textContent = "Use format: 2547XXXXXXXX";
+        return;
+      }
+
+      const amt = Number(sel.amount || 0);
+      if (!amt || amt <= 0) {
+        payStatus.textContent = "Price not detected. Try selecting the license again.";
+        return;
+      }
+
+      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+      if (!u?.uid){
+        payStatus.textContent = "Please sign in to pay with M-Pesa.";
+        setTimeout(()=> location.href="/login/", 600);
+        return;
+      }
+
+      pbSendStkPush.disabled = true;
+      btnPaypal.disabled = true;
+      btnMpesa.disabled = true;
+      payStatus.textContent = "Sending STK Push… check your phone.";
+
+      const controller = new AbortController();
+      const t = setTimeout(()=>controller.abort(), 25000);
+
+      try{
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body:JSON.stringify({
+            phone: digits,
+            beatId: String(sel.beatId),
+            buyerId: String(u.uid),
+            licenseKey: String(sel.licenseKey || "basic"),
+            amount: Math.round(amt),
+            amountUsd: Number(amt)
+          }),
+          signal: controller.signal
+        });
+
+        const data = await r.json().catch(()=>({}));
+
+        if (!r.ok) {
+          payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+          return;
+        }
+
+        payStatus.textContent =
+          "✅ STK Push sent.\nApprove on your phone." +
+          (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+
+      }catch(err){
+        payStatus.textContent = String(err?.name) === "AbortError"
+          ? "Timed out waiting for server. Check your STK endpoint."
+          : "Error: " + (err?.message || err);
+      }finally{
+        clearTimeout(t);
+        pbSendStkPush.disabled = false;
+        btnPaypal.disabled = false;
+        btnMpesa.disabled = false;
+      }
+    }
+
+    payBackdrop?.addEventListener("click", closePayModal);
+    payClose?.addEventListener("click", closePayModal);
+    btnPaypal?.addEventListener("click", payWithPaypal);
+    btnMpesa?.addEventListener("click", showMpesaBox);
+    pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+
+    document.addEventListener("click", (e)=>{
+      const card = e.target.closest("[data-beat-id]");
+      if (!card) return;
+      if (!e.target.closest(".price-pill")) return;
+
+      const beatId = String(card.getAttribute("data-beat-id") || "");
+      if (!beatId) return;
+
+      const beat = getBeatById(beatId);
+      const fallback = getDefaultLicenseForBeat(beat);
+
+      window.__PB_SELECTED__ = {
+        beatId,
+        title: beat?.title || "",
+        licenseKey: fallback.licenseKey,
+        amount: fallback.amount
+      };
+    }, true);
+
+    document.addEventListener("click", (e)=>{
+      const clickedCard = e.target.closest("#pbLicensesGrid > *");
+      if (!clickedCard) return;
+      setTimeout(syncSelectionFromModal, 0);
+    }, true);
+
+    const buyNowBtn = document.getElementById("pbBuyNow");
+    if (buyNowBtn) {
+      buyNowBtn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+
+        let sel = window.__PB_SELECTED__;
+        if (!sel?.beatId) {
+          alert("Select a beat and license first.");
+          return;
+        }
+
+        syncSelectionFromModal();
+        sel = window.__PB_SELECTED__;
+
+        if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+          const beat = getBeatById(sel.beatId);
+          const fallback = getDefaultLicenseForBeat(beat);
+
+          window.__PB_SELECTED__ = {
+            ...sel,
+            licenseKey: fallback.licenseKey,
+            amount: fallback.amount
+          };
+
+          sel = window.__PB_SELECTED__;
+        }
+
+        if (!sel?.amount || sel.amount <= 0) {
+          alert("Select a license first.");
+          return;
+        }
+
+        openPayModal();
+      }, true);
+    }
+  })();
+
+  async function loadPremieres(){
+    const status = document.getElementById("premiereStatus");
+
+    try{
+      status.textContent = "Loading premieres…";
+      status.classList.remove("hidden");
+
+      let beats = [];
+
+      try{
+        const cached = localStorage.getItem("audiory_cached_premieres");
+        if (cached) {
+          beats = JSON.parse(cached) || [];
+          PREMIERE_STATE.beats = beats;
+          window.__LATEST_BEATS__ = beats;
+          renderPremieres();
+        }
+      }catch{}
+
+      const fresh = await window.FB.fetchBeats({ max:100 });
+
+      beats = (fresh || []).filter(b => {
+        return (
+          b.isPremiere === true ||
+          b.premiere === true ||
+          b.scheduledRelease === true ||
+          b.releaseType === "premiere" ||
+          b.premiereAt ||
+          b.releaseAt ||
+          b.scheduledAt ||
+          b.dropAt
+        );
+      });
+
+      for (const b of beats){
+        try{
+          if (window.FB && typeof window.FB.getProducerProfile === "function" && b.producerId){
+            const prof = await window.FB.getProducerProfile(b.producerId);
+            b.producerPlan = prof?.plan || "";
+          }
+        }catch{}
+      }
+
+      PREMIERE_STATE.beats = beats;
+      window.__LATEST_BEATS__ = beats;
+
+      localStorage.setItem("audiory_cached_premieres", JSON.stringify(beats));
+
+      updateHeader();
+      renderPremieres();
+
+    }catch(err){
+      console.error("[premieres] load error:", err);
+      status.classList.remove("hidden");
+      status.textContent = "Could not load premieres. Check Firestore rules & console.";
+    }
+  }
+
+  function setupPremiereUI(){
+    const tabs = Array.from(document.querySelectorAll("[data-tab]"));
+    const input = document.getElementById("premiereSearchInput");
+    const btn = document.getElementById("premiereSearchBtn");
+
+    tabs.forEach(tab=>{
+      tab.addEventListener("click", ()=>{
+        tabs.forEach(t=>t.classList.remove("active"));
+        tab.classList.add("active");
+        PREMIERE_STATE.tab = tab.getAttribute("data-tab") || "all";
+        updateHeader();
+        renderPremieres();
+      });
+    });
+
+    function goSearch(){
+      PREMIERE_STATE.q = (input.value || "").trim();
+      renderPremieres();
+    }
+
+    btn?.addEventListener("click", goSearch);
+    input?.addEventListener("keydown", e=>{
+      if (e.key === "Enter") goSearch();
+    });
+  }
+
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
+
+      const user = auth?.currentUser;
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
+
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
+
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
+
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
+
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
+
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
+
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
+
+  setupPremiereUI();
+
+  window.addEventListener("firebase-ready", () => {
+    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    if (window.FB && typeof window.FB.fetchBeats === "function") {
+      loadPremieres();
+    }
+  });
+</script>
+
+</body>
+</html>
