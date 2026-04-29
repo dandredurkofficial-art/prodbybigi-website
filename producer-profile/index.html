@@ -1132,7 +1132,7 @@
       status.textContent = "Loading beats…";
       status.classList.remove("hidden");
 
-      const beats = await window.FB.fetchBeats({ max: 200 });
+      const beats = await window.FB.fetchBeats({ max: 200, force: true });
       const mine = beats.filter(b => String(b.producerId||"") === String(pid));
 
       window.__LATEST_BEATS__ = mine;
