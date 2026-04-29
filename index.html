@@ -1501,48 +1501,48 @@
   }
 
   function getBeatPremiereTime(b){
-  return (
-    b?.premiereAt?.toMillis?.() ||
-    (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) ||
-    Number(b?.premiereAt || b?.releaseAt || 0)
-  );
-}
+    return (
+      b?.premiereAt?.toMillis?.() ||
+      (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) ||
+      Number(b?.premiereAt || b?.releaseAt || 0)
+    );
+  }
 
-function isUpcomingPremiereBeat(b){
-  const premiereAt = getBeatPremiereTime(b);
-  return (
-    b?.isPremiere === true &&
-    premiereAt &&
-    Number.isFinite(premiereAt) &&
-    premiereAt > Date.now()
-  );
-}
+  function isUpcomingPremiereBeat(b){
+    const premiereAt = getBeatPremiereTime(b);
+    return (
+      b?.isPremiere === true &&
+      premiereAt &&
+      Number.isFinite(premiereAt) &&
+      premiereAt > Date.now()
+    );
+  }
 
-function formatPremiereCountdown(b){
-  const premiereAt = getBeatPremiereTime(b);
-  if (!premiereAt) return "Premiere soon";
+  function formatPremiereCountdown(b){
+    const premiereAt = getBeatPremiereTime(b);
+    if (!premiereAt) return "Premiere soon";
 
-  const diff = Math.max(0, premiereAt - Date.now());
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
+    const diff = Math.max(0, premiereAt - Date.now());
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
 
-  if (days > 0) return `Premieres in ${days}d ${hours}h`;
-  if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
-  return `Premieres in ${mins}m`;
-}
+    if (days > 0) return `Premieres in ${days}d ${hours}h`;
+    if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
+    return `Premieres in ${mins}m`;
+  }
 
-function preSaveHTML(b){
-  return `
-    <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
-      <span class="ic">🔔</span>
-      <span>Pre-save</span>
-    </button>
-    <div style="margin-top:8px;color:rgba(255,255,255,.62);font-size:12px;text-align:center;">
-      ${formatPremiereCountdown(b)}
-    </div>
-  `;
-}
+  function preSaveHTML(b){
+    return `
+      <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
+        <span class="ic">🔔</span>
+        <span>Pre-save</span>
+      </button>
+      <div style="margin-top:8px;color:rgba(255,255,255,.62);font-size:12px;text-align:center;">
+        ${formatPremiereCountdown(b)}
+      </div>
+    `;
+  }
 
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
@@ -1732,27 +1732,27 @@ window.logBeatPlay = logBeatPlay;
   }
 
   function pillHTML(b){
-  if (isUpcomingPremiereBeat(b)){
-    return preSaveHTML(b);
-  }
+    if (isUpcomingPremiereBeat(b)){
+      return preSaveHTML(b);
+    }
 
-  if (isFreeBeat(b)){
-    return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
-      <span class="ic">⬇️</span>
-      <span>Free</span>
+    if (isFreeBeat(b)){
+      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
+        <span class="ic">⬇️</span>
+        <span>Free</span>
+      </button>`;
+    }
+
+    return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
+      span class="ic lock-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </span>
+      <span>${money(b.price)}</span>
     </button>`;
   }
-
-  return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
-    <span class="ic lock-icon">
-      <svg viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
-        <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
-      </svg>
-    </span>
-    <span>${money(b.price)}</span>
-  </button>`;
-}
 
   function getChartScore(b){
     const plays = Number(b.plays || 0);
