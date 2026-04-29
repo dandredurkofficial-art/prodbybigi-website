@@ -1233,7 +1233,7 @@
         card.className = "card beat-card";
         card.setAttribute("data-beat-id", b.id);
 
-        const audioUrl = b.audio || "";
+        const audioUrl = b.previewAudio || b.audio || "";
         const beatUrl = beatPageUrl(b);
         const prodUrl = producerPageUrl(b);
 
