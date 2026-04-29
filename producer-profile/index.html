@@ -731,11 +731,23 @@
   function isUpcomingPremiereBeat(b){
     const premiereAt = getBeatPremiereTime(b);
 
+    const isPremiere =
+      b?.isPremiere === true ||
+      b?.premiere === true ||
+      b?.scheduledRelease === true ||
+      String(b?.releaseType || "").toLowerCase() === "premiere";
+
+    const statusUpcoming =
+      String(b?.premiereStatus || "").toLowerCase() === "upcoming";
+
     return (
-      b?.isPremiere === true &&
-      premiereAt &&
-      Number.isFinite(premiereAt) &&
-      premiereAt > Date.now()
+      statusUpcoming ||
+      (
+        isPremiere &&
+        premiereAt &&
+        Number.isFinite(premiereAt) &&
+        premiereAt > Date.now()
+      )
     );
   }
 
