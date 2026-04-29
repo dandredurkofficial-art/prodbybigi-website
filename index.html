@@ -1711,9 +1711,19 @@ window.logBeatPlay = logBeatPlay;
     sendBtn?.addEventListener("click", send);
 
     return { open, close };
-  })();
+    })();
 
-  function isFreeBeat(b){
+    document.addEventListener("click", (e)=>{
+      const preBtn = e.target.closest("[data-presave='1']");
+      if (!preBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
+    });
+
+    function isFreeBeat(b){
     if (!b) return true;
     if (b.freeDownload === true || b.isFree === true) return true;
 
