@@ -910,9 +910,9 @@ exports.verifySubscription = onRequest(
 
       // Map PayPal plan_id -> planTier
       const PLAN_MAP = {
-        "P-63584216KE301435LNGUXNUY": "starter",
-        "P-7GK46870AB677124PNGUXMAA": "pro",
-        "P-90F91034BA8512015NGUXKCA": "elite",
+        "P-0DG10730Y03521241NH46SIY": "starter",
+        "P-8DL33053SW9633024NH46UPY": "pro",
+        "P-399462291E201212SNH46VZA": "elite",
       };
 
       const planTier = PLAN_MAP[planId] || "free";
