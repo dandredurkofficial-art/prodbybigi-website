@@ -4627,7 +4627,7 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
 exports.checkSubscriptionExpiry = onSchedule(
   {
     region: "us-central1",
-    schedule: "every 24 hours",
+    schedule: "every 5 minutes",
   },
   async () => {
 
