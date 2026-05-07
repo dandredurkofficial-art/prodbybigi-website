@@ -940,8 +940,7 @@ exports.verifySubscription = onRequest(
 
       // ACTIVE / APPROVAL_PENDING treated as usable
       const isActive =
-        status === "active" ||
-        status === "approval_pending";
+        status === "active";
 
       // ✅ NEXT BILLING DATE
       const nextBillingTime =
