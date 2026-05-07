@@ -3101,23 +3101,6 @@ exports.captureBoostOrder = onRequest(async (req, res) => {
       return;
     }
 
-    const customId =
-      data.purchase_units[0].payments.captures[0].custom_id ||
-      data.purchase_units[0].custom_id;
-
-    const parts = customId.split("|");
-
-    const producerId = parts[1];
-    const beatId = parts[2];
-    const days = Number(parts[3]);
-
-    const featuredUntil = Date.now() + (days * 86400000);
-
-    await db.collection("beats").doc(beatId).update({
-      featured:true,
-      featuredUntil
-    });
-
     res.redirect("https://audiory.site/dashboard/?boost=success#marketing");
 
   } catch(err){
