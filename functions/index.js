@@ -1815,94 +1815,94 @@ exports.paypalWebhook = onRequest(
       if (!ok) return res.status(401).send("Invalid signature");
 
       const event = req.body || {};
-const eventType = safeStr(event.event_type).trim();
-const resource = event.resource || {};
-const resourceId = safeStr(resource.id || event.id);
+      const eventType = safeStr(event.event_type).trim();
+      const resource = event.resource || {};
+      const resourceId = safeStr(resource.id || event.id);
 
-/* ============================
-✅ SUBSCRIPTION EVENTS
-============================ */
+      /* ============================
+      ✅ SUBSCRIPTION EVENTS
+      ============================ */
 
-const subscriptionEvents = new Set([
-  "BILLING.SUBSCRIPTION.ACTIVATED",
-  "BILLING.SUBSCRIPTION.CANCELLED",
-  "BILLING.SUBSCRIPTION.SUSPENDED",
-  "BILLING.SUBSCRIPTION.EXPIRED",
-]);
+      const subscriptionEvents = new Set([
+        "BILLING.SUBSCRIPTION.ACTIVATED",
+        "BILLING.SUBSCRIPTION.CANCELLED",
+        "BILLING.SUBSCRIPTION.SUSPENDED",
+        "BILLING.SUBSCRIPTION.EXPIRED",
+      ]);
 
-if (subscriptionEvents.has(eventType)) {
+      if (subscriptionEvents.has(eventType)) {
 
-  const subscriptionId =
-    safeStr(resource?.id);
+        const subscriptionId =
+          safeStr(resource?.id);
 
-  if (!subscriptionId) {
-    return res.status(200).json({
-      received: true,
-      ignored: "missing subscription id",
-    });
-  }
+        if (!subscriptionId) {
+          return res.status(200).json({
+            received: true,
+            ignored: "missing subscription id",
+          });
+        }
 
-  const q = await db.collection("users")
-    .where("paypalSubscriptionId", "==", subscriptionId)
-    .limit(1)
-    .get();
+        const q = await db.collection("users")
+          .where("paypalSubscriptionId", "==", subscriptionId)
+          .limit(1)
+          .get();
 
-  if (q.empty) {
-    return res.status(200).json({
-      received: true,
-      ignored: "user not found",
-    });
-  }
+        if (q.empty) {
+          return res.status(200).json({
+            received: true,
+            ignored: "user not found",
+          });
+        }
 
-  const userRef = q.docs[0].ref;
+        const userRef = q.docs[0].ref;
 
-  // CANCELLED / EXPIRED / SUSPENDED
-  if (
-    eventType === "BILLING.SUBSCRIPTION.CANCELLED" ||
-    eventType === "BILLING.SUBSCRIPTION.SUSPENDED" ||
-    eventType === "BILLING.SUBSCRIPTION.EXPIRED"
-  ) {
+        // CANCELLED / EXPIRED / SUSPENDED
+        if (
+          eventType === "BILLING.SUBSCRIPTION.CANCELLED" ||
+          eventType === "BILLING.SUBSCRIPTION.SUSPENDED" ||
+          eventType === "BILLING.SUBSCRIPTION.EXPIRED"
+        ) {
 
-    await userRef.set(
-      {
-        plan: "free",
-        planTier: "free",
+          await userRef.set(
+            {
+              plan: "free",
+              planTier: "free",
 
-        subscriptionStatus: eventType
-          .replace("BILLING.SUBSCRIPTION.", "")
-          .toLowerCase(),
+              subscriptionStatus: eventType
+                .replace("BILLING.SUBSCRIPTION.", "")
+                .toLowerCase(),
 
-        subscriptionExpires: null,
+              subscriptionExpires: null,
 
-        planUpdatedAt: Date.now(),
-      },
-      { merge: true }
-    );
+              planUpdatedAt: Date.now(),
+            },
+            { merge: true }
+          );
 
-    return res.status(200).json({
-      received: true,
-      downgraded: true,
-      eventType,
-    });
-  }
+          return res.status(200).json({
+            received: true,
+            downgraded: true,
+            eventType,
+          });
+        }
 
-  // ACTIVATED
-  if (eventType === "BILLING.SUBSCRIPTION.ACTIVATED") {
+        // ACTIVATED
+        if (eventType === "BILLING.SUBSCRIPTION.ACTIVATED") {
 
-    await userRef.set(
-      {
-        subscriptionStatus: "active",
-        planUpdatedAt: Date.now(),
-      },
-      { merge: true }
-    );
+          await userRef.set(
+            {
+              subscriptionStatus: "active",
+              planUpdatedAt: Date.now(),
+            },
+            { merge: true }
+          );
 
-    return res.status(200).json({
-      received: true,
-      activated: true,
-    });
-  }
-}
+          return res.status(200).json({
+            received: true,
+            activated: true,
+          });
+        }
+      }
 
       // store raw webhook for debugging/audit
       await db
