@@ -4383,16 +4383,37 @@ exports.stkpushSubscription = onRequest(
         return res.status(405).json({ error: "Use POST" });
       }
 
-      const { phone, uid, planTier } = req.body || {};
+      // ✅ VERIFY FIREBASE TOKEN
+      const decoded = await verifyFirebaseIdToken(req);
 
-      if (!phone) return res.status(400).json({ error: "phone required" });
-      if (!uid) return res.status(400).json({ error: "uid required" });
-      if (!planTier) return res.status(400).json({ error: "planTier required" });
+      const uid = safeStr(decoded?.uid || "");
+
+      if (!uid) {
+        return res.status(401).json({
+          error: "Unauthorized"
+        });
+      }
+
+      const { phone, planTier } = req.body || {};
+
+      if (!phone) {
+        return res.status(400).json({
+          error: "phone required"
+        });
+      }
+
+      if (!planTier) {
+        return res.status(400).json({
+          error: "planTier required"
+        });
+      }
 
       const cleanPhone = String(phone).replace(/\D/g, "");
 
       if (!cleanPhone.startsWith("254")) {
-        return res.status(400).json({ error: "Phone must start with 254" });
+        return res.status(400).json({
+          error: "Phone must start with 254"
+        });
       }
 
       // -------------------------------
@@ -4425,10 +4446,13 @@ exports.stkpushSubscription = onRequest(
         }
       );
 
-      const tokenData = await tokenRes.json();
+      const tokenData = await tokenRes.json().catch(() => ({}));
 
       if (!tokenRes.ok) {
-        return res.status(400).json({ error: "Failed to get M-Pesa access token" });
+        return res.status(400).json({
+          error: "Failed to get M-Pesa access token",
+          details: tokenData
+        });
       }
 
       const accessToken = tokenData.access_token;
@@ -4469,7 +4493,8 @@ exports.stkpushSubscription = onRequest(
             PartyA: cleanPhone,
             PartyB: MPESA_SHORTCODE.value(),
             PhoneNumber: cleanPhone,
-            CallBackURL: "https://us-central1-audiory-beat-store.cloudfunctions.net/subscriptionCallback",
+            CallBackURL:
+              "https://us-central1-audiory-beat-store.cloudfunctions.net/subscriptionCallback",
             AccountReference: "Audiory Subscription",
             TransactionDesc: `Audiory ${planTier} plan`,
           }),
@@ -4485,15 +4510,21 @@ exports.stkpushSubscription = onRequest(
         });
       }
 
-      // Save pending payment
+      // -------------------------------
+      // SAVE PENDING PAYMENT
+      // -------------------------------
 
       await db.collection("mpesaPending").add({
         uid,
         phone: cleanPhone,
         planTier,
         amount,
+
+        status: "pending",
+
         checkoutRequestId: stkData.CheckoutRequestID,
         merchantRequestId: stkData.MerchantRequestID,
+
         createdAt: Date.now()
       });
 
@@ -4505,12 +4536,14 @@ exports.stkpushSubscription = onRequest(
 
     } catch (e) {
 
-      console.error("stkpushsubscription error:", e);
+      console.error("stkpushSubscription error:", e);
 
-      try { applyCors(req, res); } catch (_) {}
+      try {
+        applyCors(req, res);
+      } catch (_) {}
 
       return res.status(500).json({
-        error: e.message
+        error: e?.message || String(e)
       });
     }
   }
@@ -4520,31 +4553,62 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
 
   try {
 
-    const body = req.body;
+    const body = req.body || {};
 
     const callback = body?.Body?.stkCallback;
 
     if (!callback) {
+
       console.log("Invalid callback body");
-      return res.json({ ok: true });
+
+      return res.json({
+        ok: true
+      });
     }
 
-    const resultCode = callback.ResultCode;
-    const checkoutRequestId = callback.CheckoutRequestID;
+    const resultCode = Number(callback.ResultCode || 0);
 
-    // Payment failed
+    const checkoutRequestId =
+      safeStr(callback.CheckoutRequestID);
+
+    // -------------------------------
+    // PAYMENT FAILED
+    // -------------------------------
+
     if (resultCode !== 0) {
+
       console.log("Payment failed", callback);
-      return res.json({ ok: true });
+
+      await db.collection("mpesaFailed").add({
+
+        checkoutRequestId,
+
+        resultCode,
+
+        resultDesc:
+          safeStr(callback.ResultDesc || ""),
+
+        callback,
+
+        createdAt: Date.now()
+
+      });
+
+      return res.json({
+        ok: true
+      });
     }
 
-    const items = callback.CallbackMetadata?.Item || [];
+    const items =
+      callback.CallbackMetadata?.Item || [];
 
     const amount =
       items.find(i => i.Name === "Amount")?.Value || 0;
 
     const phone =
-      items.find(i => i.Name === "PhoneNumber")?.Value || "";
+      String(
+        items.find(i => i.Name === "PhoneNumber")?.Value || ""
+      );
 
     const receipt =
       items.find(i => i.Name === "MpesaReceiptNumber")?.Value || "";
@@ -4552,7 +4616,10 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
     const paidAt =
       items.find(i => i.Name === "TransactionDate")?.Value || "";
 
-    // Find pending payment
+    // -------------------------------
+    // FIND PENDING PAYMENT
+    // -------------------------------
+
     const snap = await db
       .collection("mpesaPending")
       .where("checkoutRequestId", "==", checkoutRequestId)
@@ -4560,28 +4627,80 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
       .get();
 
     if (snap.empty) {
+
       console.log("No pending payment found");
-      return res.json({ ok: true });
+
+      return res.json({
+        ok: true
+      });
     }
 
     const doc = snap.docs[0];
-    const data = doc.data();
 
-    const uid = data.uid;
-    const planTier = data.planTier;
+    const data = doc.data() || {};
 
-    // Prevent duplicate processing
-    if (data.status === "paid") {
-      console.log("Already processed payment");
-      return res.json({ ok: true });
+    const uid =
+      safeStr(data.uid);
+
+    const planTier =
+      safeStr(data.planTier || "starter");
+
+    // -------------------------------
+    // VERIFY PHONE MATCH
+    // -------------------------------
+
+    if (
+      String(data.phone || "") !== String(phone || "")
+    ) {
+
+      console.log("Phone mismatch");
+
+      return res.json({
+        ok: true
+      });
     }
 
-    const now = Date.now();
-    const expires = now + (30 * 24 * 60 * 60 * 1000); // 30 days
+    // -------------------------------
+    // PREVENT DUPLICATES
+    // -------------------------------
 
-    // Activate subscription
+    if (
+      data.status === "paid" ||
+      data.processedAt
+    ) {
+
+      console.log("Already processed payment");
+
+      return res.json({
+        ok: true
+      });
+    }
+
+    // -------------------------------
+    // PLAN DURATION
+    // -------------------------------
+
+    const PLAN_DURATION_DAYS = {
+      starter: 30,
+      pro: 30,
+      elite: 30
+    };
+
+    const now = Date.now();
+
+    const days =
+      PLAN_DURATION_DAYS[planTier] || 30;
+
+    const expires =
+      now + (days * 24 * 60 * 60 * 1000);
+
+    // -------------------------------
+    // ACTIVATE SUBSCRIPTION
+    // -------------------------------
+
     await db.collection("users").doc(uid).set(
       {
+
         plan: planTier,
         planTier: planTier,
 
@@ -4594,30 +4713,47 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
         mpesaPhone: phone,
         mpesaReceipt: receipt,
 
+        mpesaCheckoutRequestId: checkoutRequestId,
+
+        mpesaMerchantRequestId:
+          safeStr(data.merchantRequestId || ""),
+
         planUpdatedAt: now
+
       },
       { merge: true }
     );
 
-    // Mark payment complete
+    // -------------------------------
+    // MARK PAYMENT COMPLETE
+    // -------------------------------
+
     await doc.ref.update({
+
       status: "paid",
+
       amount,
+
       receipt,
+
       paidAt,
+
       processedAt: now
+
     });
 
     console.log("Subscription activated for", uid);
 
-    return res.json({ ok: true });
+    return res.json({
+      ok: true
+    });
 
   } catch (e) {
 
     console.error("subscriptionCallback error:", e);
 
     return res.status(500).json({
-      error: e.message
+      error: e?.message || String(e)
     });
 
   }
