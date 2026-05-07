@@ -2233,12 +2233,28 @@ exports.paypalWebhook = onRequest(
         const featuredUntil =
           Date.now() + (days * 24 * 60 * 60 * 1000);
 
+        const boostRef =
+          db.collection("boostPayments")
+          .doc(resource.id);
+
+        const existingBoost =
+          await boostRef.get();
+
+        if(existingBoost.exists){
+
+          return res.status(200).json({
+            received:true,
+            duplicate:true
+          });
+
+        }
+
         await db.collection("beats").doc(beatId).set({
           featured: true,
           featuredUntil
         }, { merge: true });
 
-        await db.collection("boostPayments").add({
+        await boostRef.set({
           producerId,
           beatId,
           days,
