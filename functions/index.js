@@ -883,32 +883,53 @@ exports.verifySubscription = onRequest(
     applyCors(req, res);
 
     try {
-      if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
-
-      const { subscriptionId, uid } = req.body || {};
-      if (!subscriptionId) return res.status(400).json({ error: "subscriptionId is required" });
-      if (!uid) return res.status(400).json({ error: "uid is required" });
-
-      // Always verify against PayPal API (LIVE if PAYPAL_MODE=live)
-      const accessToken = await getPayPalAccessToken();
-
-      const r = await fetchFn(`${paypalBaseUrl()}/v1/billing/subscriptions/${subscriptionId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        return res.status(400).json({ error: data?.message || "PayPal verify failed", details: data });
+      if (req.method !== "POST") {
+        return res.status(405).json({ error: "Use POST" });
       }
 
-      const status = String(data.status || "").toLowerCase(); // ACTIVE, SUSPENDED, CANCELLED...
-      const planId = String(data.plan_id || "").trim();
+      // ✅ VERIFY FIREBASE TOKEN INSTEAD OF TRUSTING UID
+      const decoded = await verifyFirebaseIdToken(req);
+      const uid = safeStr(decoded?.uid || "");
 
-      // Map PayPal plan_id -> planTier
+      if (!uid) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      const { subscriptionId } = req.body || {};
+
+      if (!subscriptionId) {
+        return res.status(400).json({
+          error: "subscriptionId is required",
+        });
+      }
+
+      // ✅ VERIFY AGAINST PAYPAL API
+      const accessToken = await getPayPalAccessToken();
+
+      const r = await fetchFn(
+        `${paypalBaseUrl()}/v1/billing/subscriptions/${subscriptionId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = await r.json().catch(() => ({}));
+
+      if (!r.ok) {
+        return res.status(400).json({
+          error: data?.message || "PayPal verify failed",
+          details: data,
+        });
+      }
+
+      const status = safeStr(data.status).toLowerCase().trim();
+      const planId = safeStr(data.plan_id).trim();
+
+      // ✅ MAP PAYPAL PLAN IDS
       const PLAN_MAP = {
         "P-0DG10730Y03521241NH46SIY": "starter",
         "P-8DL33053SW9633024NH46UPY": "pro",
@@ -916,16 +937,36 @@ exports.verifySubscription = onRequest(
       };
 
       const planTier = PLAN_MAP[planId] || "free";
-      const isActive = status === "active";
 
-      // Update Firestore user
+      // ACTIVE / APPROVAL_PENDING treated as usable
+      const isActive =
+        status === "active" ||
+        status === "approval_pending";
+
+      // ✅ NEXT BILLING DATE
+      const nextBillingTime =
+        data?.billing_info?.next_billing_time || null;
+
+      const expiresAt =
+        nextBillingTime
+          ? new Date(nextBillingTime).getTime()
+          : null;
+
+      // ✅ SAVE USER PLAN
       await db.collection("users").doc(uid).set(
         {
           plan: isActive ? planTier : "free",
           planTier: isActive ? planTier : "free",
+
           subscriptionStatus: status || "unknown",
+
           paypalSubscriptionId: subscriptionId,
           paypalPlanId: planId,
+
+          subscriptionProvider: "paypal",
+
+          subscriptionExpires: expiresAt,
+
           planUpdatedAt: Date.now(),
         },
         { merge: true }
@@ -936,11 +977,19 @@ exports.verifySubscription = onRequest(
         status,
         planId,
         planTier: isActive ? planTier : "free",
+        subscriptionExpires: expiresAt,
       });
+
     } catch (e) {
       console.error("verifySubscription error:", e);
-      try { applyCors(req, res); } catch (_) {}
-      return res.status(500).json({ error: e.message });
+
+      try {
+        applyCors(req, res);
+      } catch (_) {}
+
+      return res.status(500).json({
+        error: e?.message || String(e),
+      });
     }
   }
 );
@@ -4492,39 +4541,52 @@ exports.subscriptionCallback = onRequest(async (req, res) => {
 });
 
 exports.checkSubscriptionExpiry = onSchedule(
-{
-  region:"us-central1",
-  schedule:"every 24 hours"
-},
-async () => {
+  {
+    region: "us-central1",
+    schedule: "every 24 hours",
+  },
+  async () => {
 
-  const now = Date.now()
+    const now = Date.now();
 
-  const snap = await db.collection("users")
-    .where("subscriptionExpires","<", now)
-    .get()
+    const snap = await db.collection("users")
+      .where("subscriptionExpires", "<", now)
+      .where("planTier", "!=", "free")
+      .get();
 
-  if(snap.empty) return
+    if (snap.empty) {
+      console.log("No expired subscriptions");
+      return;
+    }
 
-  const batch = db.batch()
+    const batch = db.batch();
 
-  snap.docs.forEach(doc => {
+    snap.docs.forEach((docSnap) => {
 
-    batch.update(doc.ref,{
-      plan:"free",
-      planTier:"free",
-      subscriptionStatus:"expired",
-      subscriptionProvider:null,
-      planUpdatedAt: now
-    })
+      batch.update(docSnap.ref, {
+        plan: "free",
+        planTier: "free",
 
-  })
+        subscriptionStatus: "expired",
 
-  await batch.commit()
+        subscriptionProvider: null,
 
-  console.log("Expired subscriptions downgraded:", snap.size)
+        paypalPlanId: null,
+        paypalSubscriptionId: null,
 
-})
+        subscriptionExpires: null,
+
+        planUpdatedAt: Date.now(),
+      });
+
+    });
+
+    await batch.commit();
+
+    console.log("Expired subscriptions downgraded:", snap.size);
+
+  }
+);
 
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
