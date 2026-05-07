@@ -5739,8 +5739,7 @@ async function startBoostPayment({ beatId, days, producerId }) {
     },
     body: JSON.stringify({
       beatId,
-      days,
-      producerId
+      boostDays: days
     })
   });
 
@@ -5801,8 +5800,7 @@ document.getElementById("boostPayPaypal")?.addEventListener("click", async () =>
 
     await startBoostPayment({
       beatId: sel.beatId,
-      days: sel.days,
-      producerId: window.currentUser.uid
+      days: sel.days
     });
   } catch (err) {
     alert("Boost payment failed: " + (err?.message || err));
@@ -5815,15 +5813,37 @@ document.getElementById("boostPayMpesa")?.addEventListener("click", () => {
 });
 
 document.getElementById("boostMpesaSend")?.addEventListener("click", async () => {
+
+  const btn =
+    document.getElementById("boostMpesaSend");
+
   try {
+
+    if(btn) btn.disabled = true;
+
     const sel = window.__BOOST_SELECTED__;
-    const phone = (document.getElementById("boostMpesaPhone")?.value || "").trim();
-    const status = document.getElementById("boostPayStatus");
 
-    if (!sel?.beatId) return alert("Select beat first");
-    if (!phone) return alert("Enter phone number");
+    const phone =
+      (document.getElementById("boostMpesaPhone")?.value || "")
+      .trim();
 
-    if (status) status.textContent = "Sending STK Push...";
+    const status =
+      document.getElementById("boostPayStatus");
+
+    if (!sel?.beatId) {
+      if(btn) btn.disabled = false;
+      return alert("Select beat first");
+    }
+
+    if (!phone) {
+      if(btn) btn.disabled = false;
+      return alert("Enter phone number");
+    }
+
+    if (status) {
+      status.textContent =
+        "Sending STK Push...";
+    }
 
     const res = await startBoostMpesa({
       beatId: sel.beatId,
@@ -5831,16 +5851,32 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
       phone
     });
 
-    if (status) status.textContent = "STK Push sent. Complete payment on your phone...";
+    if (status) {
+      status.textContent =
+        "STK Push sent. Complete payment on your phone...";
+    }
 
     if (res?.orderId) {
       waitForBoostPayment(res.orderId);
     }
+
+    if(btn) btn.disabled = false;
+
   } catch (err) {
+
     console.error(err);
-    const status = document.getElementById("boostPayStatus");
-    if (status) status.textContent = "Failed: " + (err?.message || err);
+
+    const status =
+      document.getElementById("boostPayStatus");
+
+    if (status) {
+      status.textContent =
+        "Failed: " + (err?.message || err);
+    }
+
+    if(btn) btn.disabled = false;
   }
+
 });
 
 let __boostPollTimer = null;
