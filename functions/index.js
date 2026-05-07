@@ -3029,6 +3029,25 @@ async (req, res) => {
     if(!beatId)
       return res.status(400).json({error:"beatId required"});
 
+    // ✅ VERIFY PRODUCER OWNS BEAT
+    const beatSnap = await db.collection("beats")
+      .doc(beatId)
+      .get();
+
+    if(!beatSnap.exists){
+      return res.status(404).json({
+        error:"Beat not found"
+      });
+    }
+
+    const beat = beatSnap.data() || {};
+
+    if(String(beat.producerId || "") !== producerId){
+      return res.status(403).json({
+        error:"Not your beat"
+      });
+    }
+
     const days = Number(boostDays || 1);
 
     const priceMap = {
@@ -4269,6 +4288,19 @@ exports.boostCallback = onRequest(async (req,res)=>{
       return res.status(200).send("Failed");
     }
 
+    // ✅ MPESA CALLBACK DATA
+    const items =
+      body.CallbackMetadata?.Item || [];
+
+    const receipt =
+      items.find(i => i.Name === "MpesaReceiptNumber")?.Value || "";
+
+    const phone =
+      items.find(i => i.Name === "PhoneNumber")?.Value || "";
+
+    const transactionDate =
+      items.find(i => i.Name === "TransactionDate")?.Value || "";
+
     const featuredUntil =
       Date.now() + (order.boostDays * 24 * 60 * 60 * 1000);
 
@@ -4280,7 +4312,7 @@ exports.boostCallback = onRequest(async (req,res)=>{
         featuredUntil
       }, { merge: true });
 
-    // ✅ 2. Create marketing campaign (ADD HERE)
+    // ✅ 2. Create marketing campaign
     await db.collection("marketingCampaigns").add({
       producerId: order.producerId,
       name: "Boost Campaign",
@@ -4295,6 +4327,9 @@ exports.boostCallback = onRequest(async (req,res)=>{
     // ✅ 3. Mark order as paid
     await doc.ref.update({
       status: "paid",
+      receipt,
+      phone,
+      transactionDate,
       updatedAt: Date.now()
     });
 
