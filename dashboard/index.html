@@ -3307,7 +3307,11 @@ document.addEventListener("DOMContentLoaded", ()=>{
   }
 
   if(boostStatus){
-    window.history.replaceState({}, document.title, "/dashboard/");
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
   }
   /* ===== END BOOST RETURN DETECTOR ===== */
 
@@ -5536,6 +5540,11 @@ function closeBoostPayModal() {
   if (back) back.style.display = "none";
   if (box) box.style.display = "none";
   if (status) status.textContent = "";
+
+  if (__boostPollTimer) {
+    clearInterval(__boostPollTimer);
+    __boostPollTimer = null;
+  }
 }
 
 function dedupeBeats(list) {
@@ -6015,9 +6024,16 @@ async function loadMarketingCampaigns(){
     }
 
     __campaignCountdownTimer = setInterval(() => {
-      if (document.getElementById("marketingTools")?.classList.contains("active")) {
-        loadMarketingCampaigns();
+      const page =
+        document.getElementById("marketingTools");
+
+      if (!page?.classList.contains("active")) {
+        clearInterval(__campaignCountdownTimer);
+        __campaignCountdownTimer = null;
+        return;
       }
+
+      loadMarketingCampaigns();
     }, 60000);
 
   }catch(err){
