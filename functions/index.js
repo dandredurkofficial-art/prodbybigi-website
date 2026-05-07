@@ -4984,7 +4984,7 @@ exports.reservePayoutFunds = onDocumentCreated(
       const w = wSnap.exists ? (wSnap.data() || {}) : {};
 
       const availableUsd = Number(w.availableUsd || 0);
-      const pendingPayoutUsd = Number(w.pendingPayoutUsd || 0);
+      const lockedUsd = Number(w.lockedUsd || 0);
 
       if (availableUsd < amountUsd) {
         tx.set(ref, {
@@ -4998,7 +4998,7 @@ exports.reservePayoutFunds = onDocumentCreated(
       // ✅ reserve the funds
       tx.set(walletRef, {
         availableUsd: +(availableUsd - amountUsd).toFixed(2),
-        pendingPayoutUsd: +(pendingPayoutUsd + amountUsd).toFixed(2),
+        lockedUsd: +(lockedUsd + amountUsd).toFixed(2),
         updatedAt: Date.now(),
       }, { merge: true });
 
