@@ -4316,16 +4316,29 @@ async function setUserPlanLocal({ planTier, subscriptionId, status }){
   loadDashboardStats();
 }
 async function verifySubscriptionBackend(subscriptionId){
+
   const url = window.PB_VERIFY_SUBSCRIPTION_URL || "";
   if (!url) return null;
 
-  const r = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ subscriptionId, uid: window.currentUser?.uid || "" })
+  const token = await window.currentUser.getIdToken();
+
+  const r = await fetch(url,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      subscriptionId
+    })
   });
+
   const j = await r.json().catch(()=> ({}));
-  if (!r.ok) throw new Error(j?.error || "Verify subscription failed");
+
+  if(!r.ok){
+    throw new Error(j?.error || "Verify subscription failed");
+  }
+
   return j;
 }
 async function handlePayPalReturn(){
@@ -4416,14 +4429,16 @@ function renderPayPalButton(tier){
 
       try{
 
+        const token = await window.currentUser.getIdToken();
+
         const r = await fetch("/verifySubscription",{
           method:"POST",
           headers:{
-            "Content-Type":"application/json"
+            "Content-Type":"application/json",
+            "Authorization": `Bearer ${token}`
           },
           body: JSON.stringify({
-            subscriptionId: subscriptionId,
-            uid: auth.currentUser.uid
+            subscriptionId
           })
         });
 
