@@ -3065,11 +3065,26 @@ window.AUDIORY_PLANS = {
   elite:  "P-399462291E201212SNH46VZA",
 };
 
-window.PB_VERIFY_SUBSCRIPTION_URL = "https://verifysubscription-f65rhsquva-uc.a.run.app";
-window.PB_CREATE_DOMAIN_CHALLENGE_URL ="https://createdomainchallenge-f65rhsquva-uc.a.run.app";
-window.PB_VERIFY_DOMAIN_DNS_URL = "https://verifydomaindns-f65rhsquva-uc.a.run.app";
-window.PB_MPESA_STKPUSH_URL = "https://stkpushsubscription-f65rhsquva-uc.a.run.app";
-window.PB_BOOST_STATUS_URL = "https://getboostorderstatus-f65rhsquva-uc.a.run.app";
+window.PB_VERIFY_SUBSCRIPTION_URL =
+"https://verifysubscription-f65rhsquva-uc.a.run.app";
+
+window.PB_CREATE_DOMAIN_CHALLENGE_URL =
+"https://createdomainchallenge-f65rhsquva-uc.a.run.app";
+
+window.PB_VERIFY_DOMAIN_DNS_URL =
+"https://verifydomaindns-f65rhsquva-uc.a.run.app";
+
+window.PB_MPESA_STKPUSH_URL =
+"https://stkpushsubscription-f65rhsquva-uc.a.run.app";
+
+window.PB_BOOST_STATUS_URL =
+"https://getboostorderstatus-f65rhsquva-uc.a.run.app";
+
+window.PB_CREATE_BOOST_ORDER_URL =
+"https://createboostorder-f65rhsquva-uc.a.run.app";
+
+window.PB_STKPUSH_BOOST_URL =
+"https://stkpushboost-f65rhsquva-uc.a.run.app";
 /* ===========================
    GLOBALS
 =========================== */
@@ -5740,7 +5755,7 @@ async function startBoostPayment({ beatId, days, producerId }) {
 
   const token = await user.getIdToken();
 
-  const res = await fetch("https://createboostorder-f65rhsquva-uc.a.run.app", {
+  const res = await fetch(window.PB_CREATE_BOOST_ORDER_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -5777,7 +5792,7 @@ async function startBoostMpesa({beatId, days, phone}){
 
   const token = await user.getIdToken();
 
-  const r = await fetch("https://stkpushboost-f65rhsquva-uc.a.run.app", {
+  const r = await fetch(window.PB_STKPUSH_BOOST_URL, {
     method:"POST",
     headers:{
       "Content-Type":"application/json",
