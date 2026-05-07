@@ -4794,6 +4794,59 @@ exports.checkSubscriptionExpiry = onSchedule(
   }
 );
 
+exports.checkFeaturedBeatExpiry = onSchedule(
+  {
+    region: "us-central1",
+    schedule: "every 5 minutes",
+  },
+  async () => {
+
+    try {
+
+      const now = Date.now();
+
+      const snap = await db.collection("beats")
+        .where("featured", "==", true)
+        .where("featuredUntil", "<=", now)
+        .get();
+
+      if (snap.empty) {
+        console.log("No expired featured beats");
+        return;
+      }
+
+      const batch = db.batch();
+
+      snap.docs.forEach(doc => {
+
+        batch.set(doc.ref, {
+
+          featured: false,
+          featuredUntil: null,
+          updatedAt: now
+
+        }, { merge: true });
+
+      });
+
+      await batch.commit();
+
+      console.log(
+        `Removed featured status from ${snap.size} beats`
+      );
+
+    } catch (e) {
+
+      console.error(
+        "checkFeaturedBeatExpiry error:",
+        e
+      );
+
+    }
+
+  }
+);
+
 exports.onOrderWriteUpdateWallet = onDocumentWritten(
   { region: "us-central1", document: "orders/{orderId}" },
   async (event) => {
