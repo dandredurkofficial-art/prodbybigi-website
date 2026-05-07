@@ -4638,6 +4638,9 @@ exports.checkSubscriptionExpiry = onSchedule(
       .where("planTier", "!=", "free")
       .get();
 
+    console.log("NOW:", now);
+    console.log("Expired users found:", snap.size);
+
     if (snap.empty) {
       console.log("No expired subscriptions");
       return;
