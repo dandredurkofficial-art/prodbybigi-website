@@ -1204,6 +1204,10 @@
 
     const AP = window.__AP;
 
+    AP.backdrop.addEventListener("click", () => {
+      closeAllPanels();
+    });
+
     // stop player clicks from leaking outside
     [
       AP.mini,
