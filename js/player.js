@@ -73,7 +73,6 @@
   cacheDom();
   bindEvents();
   applySkin(currentSkin);
-  renderFxCards();
   renderSkinCards();
   collectQueueFromPage();
   updateUi();
@@ -1548,7 +1547,6 @@
       currentSkin = saved.currentSkin || currentSkin;
 
       applySkin(currentSkin);
-      renderFxCards();
       renderSkinCards();
 
       audio.src = currentTrack.audioUrl;
@@ -1628,7 +1626,6 @@
     const AP = window.__AP;
     AP.backdrop.classList.add("show");
     AP.sheet.classList.add("show");
-    AP.fxPanel.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
   }
@@ -1647,7 +1644,6 @@
 
     AP.backdrop.classList.add("show");
     AP.sheet.classList.remove("show");
-    AP.fxPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
     requestAnimationFrame(() => {
       AP.skinPanel.classList.add("show");
@@ -1661,7 +1657,6 @@
     AP.skinPanel.classList.remove("show");
 
     if (
-      !AP.fxPanel.classList.contains("show") &&
       !AP.queuePanel.classList.contains("show") &&
       !AP.sheet.classList.contains("show")
     ) {
@@ -1674,7 +1669,6 @@
     renderQueue();
     AP.backdrop.classList.add("show");
     AP.sheet.classList.remove("show");
-    AP.fxPanel.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     requestAnimationFrame(() => {
       AP.skinPanel.classList.add("show");
