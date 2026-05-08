@@ -1210,7 +1210,7 @@
             window.__ANA_SENT__.play[anaKey] = 1;
 
             try {
-              logAnalyticsEvent({ producerId: pid, type: "play", beatId: bid });
+              logAnalyticsEvent({ producerId: pid, type: "beat_play", beatId: bid });
             } catch (e) {
               console.warn("analytics event failed", e);
             }
@@ -1270,7 +1270,7 @@
       const viewKey = `${producerId}:${String(beat.id||beatId)}`;
       if (producerId && (beat.id || beatId) && !window.__ANA_SENT__.view[viewKey]){
         window.__ANA_SENT__.view[viewKey] = 1;
-        logAnalyticsEvent({ producerId, type:"view", beatId: String(beat.id||beatId) });
+        logAnalyticsEvent({ producerId, type:"page_view", beatId: String(beat.id||beatId) });
       }
 
     }catch(err){
