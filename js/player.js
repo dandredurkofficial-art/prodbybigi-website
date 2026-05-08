@@ -1064,6 +1064,7 @@
             </div>
           </div>
         </div>
+      </div> 
 
       <div class="ap-panel" id="apSkinPanel">
         <div class="ap-panel-inner">
@@ -1199,7 +1200,7 @@
   }
 
   function bindEvents() {
-    document.addEventListener("click", handleGlobalClick, true);
+    document.addEventListener("click", handleGlobalClick);
 
     const AP = window.__AP;
 
