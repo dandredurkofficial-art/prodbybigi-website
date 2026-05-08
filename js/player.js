@@ -117,7 +117,7 @@
         right:0;
         bottom:0;
         z-index:10040;
-        pointer-events:none;
+        pointer-events:auto;
       }
 
       .ap-hidden{display:none!important}
@@ -1473,6 +1473,14 @@
       }
     });
 
+    audio.addEventListener("error", () => {
+      console.error("[player audio error]", {
+        error: audio.error,
+        src: audio.src,
+        currentTrack
+      });
+    });
+
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) collectQueueFromPage();
     });
@@ -1585,20 +1593,26 @@
     renderQueue();
     updateCardButtons();
 
-    const currentSrc = audio.currentSrc || audio.src || "";
     if (currentSrc !== track.audioUrl) {
       audio.pause();
+
+      audio.removeAttribute("src");
+      audio.load();
+
       audio.src = track.audioUrl;
+      audio.load();
     }
 
     audio.currentTime = 0;
 
-    try {
-      await ensureFxGraph();
-      await resumeAudioCtx();
-      applyFxPreset(currentFx);
-    } catch (e) {
-      console.warn("[player] fx init failed", e);
+    if (!FX_SAFE_MODE) {
+      try {
+        await ensureFxGraph();
+        await resumeAudioCtx();
+        applyFxPreset(currentFx);
+      } catch (e) {
+        console.warn("[player] fx init failed", e);
+      }
     } 
 
     if (autoplay) {
@@ -1735,6 +1749,7 @@
       renderSkinCards();
 
       audio.src = currentTrack.audioUrl;
+      audio.load();
       window.__AP.mini.classList.add("show");
       updateUi();
       renderQueue();
@@ -1830,12 +1845,13 @@
     AP.sheet.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
-    AP.fxPanel.classList.add("show");
+    requestAnimationFrame(() => {
+      AP.skinPanel.classList.add("show");
+    });
   }
 
   function closeFxPanel() {
-    window.__AP.fxPanel.classList.remove("show");
-    window.__AP.backdrop.classList.remove("show");
+    closeAllPanels();
   }
 
   function openSkinPanel() {
@@ -1848,7 +1864,9 @@
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
-    AP.skinPanel.classList.add("show");
+    requestAnimationFrame(() => {
+      AP.skinPanel.classList.add("show");
+    });
   }
 
   function closeSkinPanel() {
@@ -1873,12 +1891,13 @@
     AP.sheet.classList.remove("show");
     AP.fxPanel.classList.remove("show");
     AP.skinPanel.classList.remove("show");
-    AP.queuePanel.classList.add("show");
+    requestAnimationFrame(() => {
+      AP.skinPanel.classList.add("show");
+    });
   }
 
   function closeQueuePanel() {
-    window.__AP.queuePanel.classList.remove("show");
-    window.__AP.backdrop.classList.remove("show");
+    closeAllPanels();
   }
 
   function closeAllPanels() {
