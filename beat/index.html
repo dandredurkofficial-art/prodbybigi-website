@@ -830,20 +830,24 @@
   async function logAnalyticsEvent({ producerId, type, beatId=null }){
     try{
       const FB = window.FB;
-      if (!FB?.auth?.currentUser) return;
+
       if (!producerId || !type) return;
       if (!FB?.db || !FB?.addDoc || !FB?.collection) return;
 
-      const ts = (typeof FB.serverTimestamp === "function") ? FB.serverTimestamp() : Date.now();
+      await FB.addDoc(
+        FB.collection(FB.db,"analyticsEvents"),
+        {
+          producerId: String(producerId),
+          type: String(type),
+          beatId: beatId ? String(beatId) : null,
+          actorUid: FB.auth?.currentUser?.uid || null,
+          createdAt: Date.now()
+        }
+      );
 
-      await FB.addDoc(FB.collection(FB.db,"analyticsEvents"), {
-        producerId: String(producerId),
-        type: String(type),
-        beatId: beatId ? String(beatId) : null,
-        actorUid: FB.auth.currentUser.uid,
-        createdAt: ts
-      });
-    }catch(e){}
+    }catch(e){
+      console.error("analytics event failed", e);
+    }
   }
   window.logAnalyticsEvent = logAnalyticsEvent;
   window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
