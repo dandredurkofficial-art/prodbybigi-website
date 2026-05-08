@@ -17,17 +17,8 @@
   let repeatMode = "off"; // off | all | one
   let isSeeking = false;
 
-  let audioCtx = null;
-  let sourceNode = null;
-  let biquad1 = null;
-  let biquad2 = null;
-  let masterGain = null;
-  let fxReady = false;
-
   let currentSkin = localStorage.getItem("audiory_player_skin") || "brown";
-  let currentFx = localStorage.getItem("audiory_player_fx") || "normal";
-  let fxEnabled = localStorage.getItem("audiory_player_fx_enabled") !== "0";
-
+  
   const playedSession = {};
   const downloadedSkins = ["brown", "graphite", "midnight", "sunset", "ocean"];
 
@@ -51,8 +42,6 @@
         shuffle,
         repeatMode,
         currentSkin,
-        currentFx,
-        fxEnabled,
         currentTime: Number(audio.currentTime || 0),
         paused: audio.paused
       };
@@ -988,7 +977,6 @@
                 <button class="ap-buy-btn" id="apBuyBtn" type="button"></button>
 
                 <div class="ap-row-actions">
-                  <button class="ap-btn" id="apFxBtn" aria-label="Effects"></button>
                   <button class="ap-btn" id="apQueueBtn" aria-label="Queue"></button>
                 </div>
               </div>
@@ -1016,55 +1004,6 @@
           </div>
         </div>
       </div>
-
-      <div class="ap-panel" id="apFxPanel">
-        <div class="ap-panel-inner">
-          <div class="ap-panel-head">
-            <button class="ap-btn" id="apCloseFx"></button>
-            <h3 class="ap-panel-title">Sound Effect</h3>
-            <button class="ap-switch" id="apFxSwitch" aria-label="Toggle sound effect"></button>
-          </div>
-
-          <div class="ap-card">
-            <div style="font-size:14px;margin-bottom:8px;">Current effect:</div>
-            <div style="font-size:34px;font-weight:950;font-style:italic;" id="apCurrentFxLabel">Normal</div>
-          </div>
-
-          <div class="ap-tabs">
-            <button class="ap-tab active" type="button" id="apTabPresets">Presets</button>
-            <button class="ap-tab" type="button" id="apTabEq">Custom(EQ)</button>
-          </div>
-
-          <div id="apPresetSection">
-            <h3 style="font-size:22px;margin:0 0 14px;">Suggested presets</h3>
-            <div class="ap-grid" id="apFxGrid"></div>
-
-            <h3 style="font-size:22px;margin:24px 0 14px;">More presets</h3>
-            <div class="ap-simple-list" id="apFxMore"></div>
-          </div>
-
-          <div id="apEqSection" class="ap-hidden">
-            <div class="ap-card" style="display:grid;gap:14px;">
-              <div>
-                <div style="font-size:13px;margin-bottom:6px;">Bass</div>
-                <input type="range" min="-12" max="12" value="0" id="apEqBass" class="ap-progress">
-              </div>
-
-              <div>
-                <div style="font-size:13px;margin-bottom:6px;">Mid</div>
-                <input type="range" min="-12" max="12" value="0" id="apEqMid" class="ap-progress">
-              </div>
-
-              <div>
-                <div style="font-size:13px;margin-bottom:6px;">Treble</div>
-                <input type="range" min="-12" max="12" value="0" id="apEqTreble" class="ap-progress">
-              </div>
-
-              <button class="ap-simple-btn" type="button" id="apEqReset">Reset EQ</button>
-            </div>
-          </div>
-        </div>
-      </div> 
 
       <div class="ap-panel" id="apSkinPanel">
         <div class="ap-panel-inner">
@@ -1118,7 +1057,6 @@
       trackLink: document.getElementById("apTrackLink"),
       buyBtn: document.getElementById("apBuyBtn"),
 
-      fxBtn: document.getElementById("apFxBtn"),
       queueBtn: document.getElementById("apQueueBtn"),
 
       progress: document.getElementById("apProgress"),
@@ -1130,22 +1068,6 @@
       playBtn: document.getElementById("apPlayBtn"),
       nextBtn: document.getElementById("apNextBtn"),
       repeatBtn: document.getElementById("apRepeatBtn"),
-
-      fxPanel: document.getElementById("apFxPanel"),
-      closeFx: document.getElementById("apCloseFx"),
-      fxSwitch: document.getElementById("apFxSwitch"),
-      currentFxLabel: document.getElementById("apCurrentFxLabel"),
-      fxGrid: document.getElementById("apFxGrid"),
-      fxMore: document.getElementById("apFxMore"),
-
-      tabPresets: document.getElementById("apTabPresets"),
-      tabEq: document.getElementById("apTabEq"),
-      presetSection: document.getElementById("apPresetSection"),
-      eqSection: document.getElementById("apEqSection"),
-      eqBass: document.getElementById("apEqBass"),
-      eqMid: document.getElementById("apEqMid"),
-      eqTreble: document.getElementById("apEqTreble"),
-      eqReset: document.getElementById("apEqReset"),
 
       skinPanel: document.getElementById("apSkinPanel"),
       closeSkin: document.getElementById("apCloseSkin"),
@@ -1171,7 +1093,6 @@
     AP.share.innerHTML = iconShare();
 
     AP.buyBtn.innerHTML = `${iconBagPlus()}<span>Buy License</span>`;
-    AP.fxBtn.innerHTML = iconWave();
     AP.queueBtn.innerHTML = iconQueue();
 
     AP.shuffleBtn.innerHTML = iconShuffle();
@@ -1180,23 +1101,9 @@
     AP.nextBtn.innerHTML = iconNext();
     AP.repeatBtn.innerHTML = iconRepeat();
 
-    AP.closeFx.innerHTML = iconBack();
     AP.closeSkin.innerHTML = iconBack();
     AP.downloadedOpen.innerHTML = iconSettings();
     AP.closeQueue.innerHTML = iconBack();
-  }
-
-  function switchFxTab(tab) {
-    const AP = window.__AP;
-    if (!AP) return;
-
-    const showEq = tab === "eq";
-
-    AP.tabPresets?.classList.toggle("active", !showEq);
-    AP.tabEq?.classList.toggle("active", showEq);
-
-    AP.presetSection?.classList.toggle("ap-hidden", showEq);
-    AP.eqSection?.classList.toggle("ap-hidden", !showEq);
   }
 
   function bindEvents() {
@@ -1212,7 +1119,6 @@
     [
       AP.mini,
       AP.sheet,
-      AP.fxPanel,
       AP.skinPanel,
       AP.queuePanel
     ].forEach((el) => {
@@ -1258,74 +1164,6 @@
       shareCurrentTrack();
     });
 
-    AP.fxBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openFxPanel();
-    });
-
-    AP.tabPresets?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      switchFxTab("presets");
-    });
-
-    AP.tabEq?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      switchFxTab("eq");
-    });
-
-    AP.eqBass?.addEventListener("input", () => {
-      if (FX_SAFE_MODE) return;
-      ensureFxGraph().then(() => {
-        if (biquad1) {
-          biquad1.type = "lowshelf";
-          biquad1.frequency.value = 180;
-          biquad1.gain.value = Number(AP.eqBass.value || 0);
-        }
-      });
-    });
-
-    AP.eqMid?.addEventListener("input", () => {
-      if (FX_SAFE_MODE) return;
-      ensureFxGraph().then(() => {
-        if (biquad2) {
-          biquad2.type = "peaking";
-          biquad2.frequency.value = 1200;
-          biquad2.Q.value = 1;
-          biquad2.gain.value = Number(AP.eqMid.value || 0);
-        }
-      });
-    });
-
-    AP.eqTreble?.addEventListener("input", () => {
-      if (FX_SAFE_MODE) return;
-      ensureFxGraph().then(() => {
-        if (masterGain) {
-          // keep master unchanged, treble can reuse biquad2 if needed later
-        }
-      });
-    });
-
-    AP.eqReset?.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-
-      if (AP.eqBass) AP.eqBass.value = 0;
-      if (AP.eqMid) AP.eqMid.value = 0;
-      if (AP.eqTreble) AP.eqTreble.value = 0;
-
-      currentFx = "normal";
-      localStorage.setItem("audiory_player_fx", currentFx);
-      renderFxCards();
-      updateUi();
-
-      if (!FX_SAFE_MODE) {
-        applyFxPreset("normal");
-      }
-    });
-
     AP.queueBtn.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1336,12 +1174,6 @@
       e.preventDefault();
       e.stopPropagation();
       openCurrentBeatBuy();
-    });
-
-    AP.closeFx.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      closeFxPanel();
     });
 
     AP.closeSkin.addEventListener("click", (e) => {
@@ -1380,23 +1212,6 @@
       e.stopPropagation();
       const href = link.getAttribute("href");
       if (href) location.href = href;
-    });
-
-    AP.fxSwitch.addEventListener("click", async () => {
-      fxEnabled = !fxEnabled;
-      localStorage.setItem("audiory_player_fx_enabled", fxEnabled ? "1" : "0");
-      AP.fxSwitch.classList.toggle("on", fxEnabled);
-
-      if (FX_SAFE_MODE) {
-        console.warn("[player] FX disabled on this device for stable playback");
-        savePlayerState();
-        return;
-      }
-
-      await ensureFxGraph();
-      await resumeAudioCtx();
-      applyFxPreset(currentFx);
-      savePlayerState();
     });
 
     AP.shuffleBtn.addEventListener("click", () => {
@@ -1605,16 +1420,6 @@
 
     audio.currentTime = 0;
 
-    if (!FX_SAFE_MODE) {
-      try {
-        await ensureFxGraph();
-        await resumeAudioCtx();
-        applyFxPreset(currentFx);
-      } catch (e) {
-        console.warn("[player] fx init failed", e);
-      }
-    } 
-
     if (autoplay) {
       try {
         await audio.play();
@@ -1741,8 +1546,6 @@
       shuffle = !!saved.shuffle;
       repeatMode = saved.repeatMode || "off";
       currentSkin = saved.currentSkin || currentSkin;
-      currentFx = saved.currentFx || currentFx;
-      fxEnabled = typeof saved.fxEnabled === "boolean" ? saved.fxEnabled : fxEnabled;
 
       applySkin(currentSkin);
       renderFxCards();
@@ -1783,8 +1586,6 @@
 
     AP.currentTime.textContent = formatTime(audio.currentTime || 0);
     AP.duration.textContent = formatTime(audio.duration || 0);
-    AP.fxSwitch.classList.toggle("on", fxEnabled);
-    AP.currentFxLabel.textContent = prettyFxLabel(currentFx);
 
     if (!currentTrack) {
       AP.fullArtist.textContent = "";
@@ -1836,22 +1637,6 @@
     const AP = window.__AP;
     AP.sheet.classList.remove("show");
     AP.backdrop.classList.remove("show");
-  }
-
-  function openFxPanel() {
-    const AP = window.__AP;
-    switchFxTab("presets");
-    AP.backdrop.classList.add("show");
-    AP.sheet.classList.remove("show");
-    AP.skinPanel.classList.remove("show");
-    AP.queuePanel.classList.remove("show");
-    requestAnimationFrame(() => {
-      AP.skinPanel.classList.add("show");
-    });
-  }
-
-  function closeFxPanel() {
-    closeAllPanels();
   }
 
   function openSkinPanel() {
@@ -1934,50 +1719,6 @@
     });
   }
 
-  function renderFxCards() {
-    const fxCards = [
-      { key: "bass", title: "Bass boost", subtitle: "More low-end", tag: "B" },
-      { key: "vocal", title: "Vocal boost", subtitle: "Clearer vocal range", tag: "V" },
-      { key: "hifi", title: "Hi-Fi", subtitle: "Balanced shine", tag: "H" },
-      { key: "wide", title: "Wide space", subtitle: "More stereo feel", tag: "W" }
-    ];
-
-    const more = ["normal", "classical", "rock", "pop", "acoustic", "live"];
-    const AP = window.__AP;
-
-    AP.fxGrid.innerHTML = fxCards.map((x) => `
-      <button class="ap-fx-card ${currentFx === x.key ? "active" : ""}" data-ap-fx="${x.key}">
-        <div class="ap-fx-icon">${x.tag}</div>
-        <div class="ap-fx-title">${x.title}</div>
-        <div class="ap-fx-sub">${x.subtitle}</div>
-      </button>
-    `).join("");
-
-    AP.fxMore.innerHTML = more.map((x) => `
-      <button class="ap-simple-btn" data-ap-fx="${x}">${prettyFxLabel(x)}</button>
-    `).join("");
-
-    document.querySelectorAll("[data-ap-fx]").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        currentFx = btn.getAttribute("data-ap-fx") || "normal";
-        localStorage.setItem("audiory_player_fx", currentFx);
-        renderFxCards();
-        updateUi();
-
-        if (FX_SAFE_MODE) {
-          console.warn("[player] FX preset saved but not applied on this device");
-          savePlayerState();
-          return;
-        }
-
-        await ensureFxGraph();
-        await resumeAudioCtx();
-        applyFxPreset(currentFx);
-        savePlayerState();
-      });
-    });
-  }
-
   function renderSkinCards() {
     const skins = [
       { key: "brown", title: "Original", cls: "" },
@@ -2048,137 +1789,6 @@
     }
   }
 
-  async function ensureFxGraph() {
-    if (FX_SAFE_MODE) return;
-    if (fxReady) return;
-
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-
-    audioCtx = new Ctx();
-    sourceNode = audioCtx.createMediaElementSource(audio);
-    biquad1 = audioCtx.createBiquadFilter();
-    biquad2 = audioCtx.createBiquadFilter();
-    masterGain = audioCtx.createGain();
-
-    sourceNode.connect(biquad1);
-    biquad1.connect(biquad2);
-    biquad2.connect(masterGain);
-    masterGain.connect(audioCtx.destination);
-
-    masterGain.gain.value = 1;
-    fxReady = true;
-  }
-
-  async function resumeAudioCtx() {
-    if (!audioCtx) return;
-    if (audioCtx.state === "suspended") {
-      try {
-        await audioCtx.resume();
-      } catch (e) {
-        console.warn("[player] audio context resume failed", e);
-      }
-    }
-  }
-
-  function applyFxPreset(name) {
-    if (FX_SAFE_MODE) return;
-    if (!fxReady || !biquad1 || !biquad2 || !masterGain) return;
-
-    if (!fxEnabled) {
-      biquad1.type = "peaking";
-      biquad1.frequency.value = 1000;
-      biquad1.gain.value = 0;
-      biquad1.Q.value = 1;
-
-      biquad2.type = "peaking";
-      biquad2.frequency.value = 3000;
-      biquad2.gain.value = 0;
-      biquad2.Q.value = 1;
-
-      masterGain.gain.value = 1;
-      return;
-    }
-
-    switch (name) {
-      case "bass":
-        biquad1.type = "lowshelf";
-        biquad1.frequency.value = 180;
-        biquad1.gain.value = 8;
-        biquad2.type = "peaking";
-        biquad2.frequency.value = 2800;
-        biquad2.gain.value = -1;
-        biquad2.Q.value = 1;
-        masterGain.gain.value = 1;
-        break;
-
-      case "vocal":
-        biquad1.type = "peaking";
-        biquad1.frequency.value = 1800;
-        biquad1.gain.value = 5;
-        biquad1.Q.value = 1.2;
-        biquad2.type = "highshelf";
-        biquad2.frequency.value = 5000;
-        biquad2.gain.value = 2;
-        masterGain.gain.value = 1;
-        break;
-
-      case "hifi":
-        biquad1.type = "lowshelf";
-        biquad1.frequency.value = 200;
-        biquad1.gain.value = 3;
-        biquad2.type = "highshelf";
-        biquad2.frequency.value = 4200;
-        biquad2.gain.value = 3;
-        masterGain.gain.value = 1;
-        break;
-
-      case "wide":
-        biquad1.type = "peaking";
-        biquad1.frequency.value = 700;
-        biquad1.gain.value = 1.5;
-        biquad1.Q.value = 0.8;
-        biquad2.type = "peaking";
-        biquad2.frequency.value = 4500;
-        biquad2.gain.value = 2.5;
-        biquad2.Q.value = 0.8;
-        masterGain.gain.value = 1;
-        break;
-
-      case "rock":
-        biquad1.type = "lowshelf";
-        biquad1.frequency.value = 160;
-        biquad1.gain.value = 4;
-        biquad2.type = "highshelf";
-        biquad2.frequency.value = 4200;
-        biquad2.gain.value = 4;
-        masterGain.gain.value = 1;
-        break;
-
-      case "classical":
-        biquad1.type = "peaking";
-        biquad1.frequency.value = 900;
-        biquad1.gain.value = 1;
-        biquad2.type = "highshelf";
-        biquad2.frequency.value = 6000;
-        biquad2.gain.value = 2;
-        masterGain.gain.value = 1;
-        break;
-
-      default:
-        biquad1.type = "peaking";
-        biquad1.frequency.value = 1000;
-        biquad1.gain.value = 0;
-        biquad1.Q.value = 1;
-        biquad2.type = "peaking";
-        biquad2.frequency.value = 3000;
-        biquad2.gain.value = 0;
-        biquad2.Q.value = 1;
-        masterGain.gain.value = 1;
-        break;
-    }
-  }
-
   function openCurrentBeatBuy() {
     if (!currentTrack?.id) return;
 
@@ -2240,22 +1850,6 @@
       lic?.exclusive?.enabled === true;
 
     return !hasPaidLicense;
-  }
-
-  function prettyFxLabel(key) {
-    const map = {
-      normal: "Normal",
-      bass: "Bass boost",
-      vocal: "Vocal boost",
-      hifi: "Hi-Fi",
-      wide: "Wide space",
-      classical: "Classical",
-      rock: "Rock",
-      pop: "Pop",
-      acoustic: "Acoustic",
-      live: "Live"
-    };
-    return map[key] || "Normal";
   }
 
   function formatTime(sec) {
