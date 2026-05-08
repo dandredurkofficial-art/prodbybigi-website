@@ -1113,30 +1113,30 @@
     }
 
     /* =====================================
-   ✅ REAL PROFILE VIEW COUNTER (Audiory)
-===================================== */
+       ✅ REAL PROFILE VIEW COUNTER (Audiory)
+    ===================================== */
 
-try{
+    try{
 
-  const user = window.FB?.auth?.currentUser || null;
+      const user = window.FB?.auth?.currentUser || null;
 
-  // don't count self views
-  if(!user || user.uid !== pid){
+      // don't count self views
+      if(!user || user.uid !== pid){
 
-    await window.FB.updateDoc(
-      window.FB.doc(window.FB.db, "users", pid),
-      {
-        profileViews: window.FB.increment(1)
+        await window.FB.updateDoc(
+          window.FB.doc(window.FB.db, "users", pid),
+          {
+            profileViews: window.FB.increment(1)
+          }
+        );
+
+        console.log("profile view counted:", pid);
+
       }
-    );
 
-    console.log("profile view counted:", pid);
-
-  }
-
-}catch(e){
-  console.error("profile view tracking failed", e);
-}
+    }catch(e){
+      console.error("profile view tracking failed", e);
+    }
 
     // buttons
     const followBtn = document.getElementById("followBtn");
