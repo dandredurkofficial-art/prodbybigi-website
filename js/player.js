@@ -1407,7 +1407,7 @@
     renderQueue();
     updateCardButtons();
 
-    if (currentSrc !== track.audioUrl) {
+    if (audio.Src !== track.audioUrl) {
       audio.pause();
 
       audio.removeAttribute("src");
@@ -1671,7 +1671,7 @@
     AP.sheet.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     requestAnimationFrame(() => {
-      AP.skinPanel.classList.add("show");
+      AP.queuePanel.classList.add("show");
     });
   }
 
@@ -1683,7 +1683,6 @@
     const AP = window.__AP;
     AP.backdrop.classList.remove("show");
     AP.sheet.classList.remove("show");
-    AP.fxPanel.classList.remove("show");
     AP.skinPanel.classList.remove("show");
     AP.queuePanel.classList.remove("show");
   }
