@@ -3,7 +3,8 @@
   if (window.__AUDIORY_PLAYER_V2__) return;
   window.__AUDIORY_PLAYER_V2__ = true;
 
-  const audio = new Audio();
+  const audio = window.__AUDIORY_SHARED_AUDIO__ || new Audio();
+  window.__AUDIORY_SHARED_AUDIO__ = audio;
   audio.preload = "metadata";
 
   /* Homepage fix:
