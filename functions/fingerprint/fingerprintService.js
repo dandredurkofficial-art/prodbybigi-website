@@ -2,6 +2,10 @@ const admin = require("firebase-admin");
 const { createFingerprint } = require("./audioryFingerprint");
 const { compareFingerprints } = require("./matchEngine");
 
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
 const db = admin.firestore();
 
 /**
@@ -21,7 +25,7 @@ async function saveFingerprint(beatId, userId, audioBuffer) {
 }
 
 /**
- * Scan all existing beats for matches
+ * Scan all existing beats for matches (MVP version)
  */
 async function scanForMatches(newFingerprint, beatId) {
   const snapshot = await db.collection("fingerprints").get();
