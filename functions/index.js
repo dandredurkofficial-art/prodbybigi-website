@@ -48,9 +48,6 @@ exports.onProducerSignupWelcome = emailTriggers.onProducerSignupWelcome;
 exports.onPayoutProcessed = emailTriggers.onPayoutProcessed;
 exports.onBuyerOrderPaidInvoice = emailTriggers.onBuyerOrderPaidInvoice;
 
-const { createFingerprint } = require("./fingerprint/audioryFingerprint");
-const { compareFingerprints } = require("./fingerprint/matchEngine");
-
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
