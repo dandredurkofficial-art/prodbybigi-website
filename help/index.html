@@ -34,7 +34,6 @@ Audiory Help Center
   rel="stylesheet"
 />
 
-
 <style>
 
 *{
@@ -193,6 +192,73 @@ button{
 }
 
 
+/* MOBILE MENU */
+
+.menuBtn{
+
+  display:none;
+
+  width:58px;
+  height:58px;
+
+  border:none;
+
+  border-radius:16px;
+
+  background:
+  rgba(255,255,255,.05);
+
+  color:white;
+
+  font-size:28px;
+
+  cursor:pointer;
+
+}
+
+.mobileMenu{
+
+  display:none;
+
+  flex-direction:column;
+
+  gap:18px;
+
+  padding:24px;
+
+  background:
+  rgba(3,7,18,.96);
+
+  border-top:
+  1px solid rgba(255,255,255,.06);
+
+}
+
+.mobileMenu a{
+
+  color:#d1d5db;
+
+  font-size:17px;
+
+}
+
+.mobileMainBtn{
+
+  background:#8b5cf6;
+
+  color:white !important;
+
+  padding:16px;
+
+  border-radius:16px;
+
+  text-align:center;
+
+  font-weight:800;
+
+}
+
+
 /* HERO */
 
 .hero{
@@ -278,6 +344,8 @@ button{
 .searchBox{
 
   flex:1;
+
+  min-width:260px;
 
   display:flex;
 
@@ -469,6 +537,8 @@ button{
   justify-content:space-between;
 
   cursor:pointer;
+
+  gap:20px;
 
 }
 
@@ -805,6 +875,8 @@ textarea{
 
   width:360px;
 
+  max-width:calc(100vw - 32px);
+
   background:
   rgba(15,23,42,.95);
 
@@ -892,6 +964,16 @@ footer{
     display:none;
   }
 
+  .menuBtn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .hero{
+    padding-top:90px;
+  }
+
   .hero h1{
     font-size:48px;
   }
@@ -906,6 +988,14 @@ footer{
 
   .chatBox{
     width:calc(100vw - 32px);
+  }
+
+  .searchWrap{
+    flex-direction:column;
+  }
+
+  .searchBtn{
+    width:100%;
   }
 
 }
@@ -929,8 +1019,7 @@ import {
   addDoc,
   serverTimestamp,
   where,
-  onSnapshot,
-  limit
+  onSnapshot
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -941,6 +1030,12 @@ import {
   getDownloadURL
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+import {
+  getAuth,
+  onAuthStateChanged
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
 // FIREBASE
@@ -976,10 +1071,11 @@ const db =
 const storage =
   getStorage(app);
 
+const auth =
+  getAuth(app);
 
-// ===================================
+
 // SESSION
-// ===================================
 
 let sessionId =
   localStorage.getItem(
@@ -1004,9 +1100,44 @@ if(!sessionId){
 }
 
 
-// ===================================
-// AUTO ARTICLES
-// ===================================
+// AUTH BUTTON
+
+onAuthStateChanged(auth,(user)=>{
+
+  const loginBtn =
+    document.getElementById(
+      "loginBtn"
+    );
+
+  const dashboardBtn =
+    document.getElementById(
+      "dashboardBtn"
+    );
+
+  if(user){
+
+    loginBtn.style.display =
+      "none";
+
+    dashboardBtn.style.display =
+      "inline-flex";
+
+  }
+
+  else{
+
+    loginBtn.style.display =
+      "inline-flex";
+
+    dashboardBtn.style.display =
+      "none";
+
+  }
+
+});
+
+
+// ARTICLES
 
 async function loadSupportArticles(){
 
@@ -1095,9 +1226,7 @@ async function loadSupportArticles(){
 loadSupportArticles();
 
 
-// ===================================
 // SEARCH
-// ===================================
 
 window.searchHelp = async function(){
 
@@ -1168,9 +1297,7 @@ window.searchHelp = async function(){
 };
 
 
-// ===================================
-// SEND SUPPORT TICKET
-// ===================================
+// SEND SUPPORT
 
 window.sendSupport = async function(){
 
@@ -1255,6 +1382,9 @@ window.sendSupport = async function(){
         message,
         screenshotURL,
 
+        sender:
+        "user",
+
         sessionId,
 
         source:
@@ -1299,6 +1429,11 @@ window.sendSupport = async function(){
     .innerHTML =
       "No screenshot selected";
 
+    document
+    .getElementById("previewImage")
+    .style.display =
+      "none";
+
   }
 
   catch(error){
@@ -1315,42 +1450,9 @@ window.sendSupport = async function(){
 };
 
 
-// ===================================
 // LIVE CHAT
-// ===================================
 
-const chatToggle =
-  document.getElementById(
-    "chatToggle"
-  );
-
-const chatBox =
-  document.getElementById(
-    "chatBox"
-  );
-
-chatToggle.addEventListener("click",()=>{
-
-  if(
-    chatBox.style.display === "block"
-  ){
-
-    chatBox.style.display =
-      "none";
-
-  }
-
-  else{
-
-    chatBox.style.display =
-      "block";
-
-  }
-
-});
-
-
-async function sendChat(){
+window.sendChat = async function(){
 
   const input =
     document.getElementById(
@@ -1384,13 +1486,10 @@ async function sendChat(){
     }
   );
 
-}
-
-window.sendChat =
-  sendChat;
+};
 
 
-// REALTIME USER + ADMIN
+// REALTIME CHAT
 
 const messagesQuery = query(
   collection(db, "supportMessages"),
@@ -1492,15 +1591,6 @@ onSnapshot(replyQuery,(snapshot)=>{
       wrap.scrollTop =
         wrap.scrollHeight;
 
-      const audio =
-        new Audio(
-          "https://actions.google.com/sounds/v1/cartoon/pop.ogg"
-        );
-
-      audio.volume = .3;
-
-      audio.play();
-
     }
 
   });
@@ -1508,7 +1598,7 @@ onSnapshot(replyQuery,(snapshot)=>{
 });
 
 
-// FAQ
+// DOM
 
 window.addEventListener("DOMContentLoaded",()=>{
 
@@ -1525,12 +1615,80 @@ window.addEventListener("DOMContentLoaded",()=>{
 
   });
 
-});
+  document
+  .getElementById(
+    "sessionIdLabel"
+  )
+  .innerText =
+    sessionId;
 
+  const menuBtn =
+    document.getElementById(
+      "menuBtn"
+    );
 
-// FILE NAME
+  const mobileMenu =
+    document.getElementById(
+      "mobileMenu"
+    );
 
-window.addEventListener("DOMContentLoaded",()=>{
+  menuBtn.addEventListener("click",()=>{
+
+    if(
+      mobileMenu.style.display ===
+      "flex"
+    ){
+
+      mobileMenu.style.display =
+        "none";
+
+      menuBtn.innerHTML =
+        "☰";
+
+    }
+
+    else{
+
+      mobileMenu.style.display =
+        "flex";
+
+      menuBtn.innerHTML =
+        "✕";
+
+    }
+
+  });
+
+  const chatToggle =
+    document.getElementById(
+      "chatToggle"
+    );
+
+  const chatBox =
+    document.getElementById(
+      "chatBox"
+    );
+
+  chatToggle.addEventListener("click",()=>{
+
+    if(
+      chatBox.style.display ===
+      "block"
+    ){
+
+      chatBox.style.display =
+        "none";
+
+    }
+
+    else{
+
+      chatBox.style.display =
+        "block";
+
+    }
+
+  });
 
   const screenshot =
     document.getElementById(
@@ -1542,15 +1700,38 @@ window.addEventListener("DOMContentLoaded",()=>{
       "fileName"
     );
 
+  const previewImage =
+    document.getElementById(
+      "previewImage"
+    );
+
   screenshot.addEventListener("change",()=>{
 
     const file =
       screenshot.files[0];
 
-    fileName.textContent =
-      file
-      ? `Selected: ${file.name}`
-      : "No screenshot selected";
+    if(file){
+
+      fileName.textContent =
+        `Selected: ${file.name}`;
+
+      previewImage.src =
+        URL.createObjectURL(file);
+
+      previewImage.style.display =
+        "block";
+
+    }
+
+    else{
+
+      fileName.textContent =
+        "No screenshot selected";
+
+      previewImage.style.display =
+        "none";
+
+    }
 
   });
 
@@ -1578,6 +1759,7 @@ Audio<span>ry</span>
 
 </a>
 
+
 <div class="navLinks">
 
 <a href="/">
@@ -1599,11 +1781,60 @@ Help
 <a
   href="/login/"
   class="mainBtn"
+  id="loginBtn"
 >
 Login
 </a>
 
+<a
+  href="/dashboard/"
+  class="mainBtn"
+  id="dashboardBtn"
+  style="display:none;"
+>
+Dashboard
+</a>
+
 </div>
+
+
+<button
+  class="menuBtn"
+  id="menuBtn"
+>
+☰
+</button>
+
+</div>
+
+
+<div
+  class="mobileMenu"
+  id="mobileMenu"
+>
+
+<a href="/">
+Home
+</a>
+
+<a href="/marketplace/">
+Marketplace
+</a>
+
+<a href="/pricing/">
+Pricing
+</a>
+
+<a href="/help/">
+Help
+</a>
+
+<a
+  href="/login/"
+  class="mobileMainBtn"
+>
+Login
+</a>
 
 </div>
 
@@ -2025,6 +2256,18 @@ No screenshot selected
 
 </div>
 
+<img
+  id="previewImage"
+  style="
+  width:100%;
+  max-height:260px;
+  object-fit:cover;
+  border-radius:18px;
+  margin-top:16px;
+  display:none;
+  "
+/>
+
 </div>
 
 </div>
@@ -2214,21 +2457,6 @@ All rights reserved.
 </div>
 
 </footer>
-
-
-
-<script>
-
-document
-.getElementById(
-  "sessionIdLabel"
-)
-.innerText =
-  localStorage.getItem(
-    "audiorySupportSession"
-  );
-
-</script>
 
 </body>
 </html>
