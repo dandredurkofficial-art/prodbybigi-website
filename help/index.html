@@ -1595,88 +1595,34 @@ window.sendChat = async function(){
 
 // REALTIME CHAT
 
-const messagesQuery = query(
-  collection(db, "supportMessages"),
-  where(
-    "sessionId",
-    "==",
-    sessionId
-  ),
-  orderBy(
-    "createdAt",
-    "asc"
-  )
-);
+try{
 
-onSnapshot(messagesQuery,(snapshot)=>{
+  const messagesQuery = query(
+    collection(db, "supportMessages"),
+    where(
+      "sessionId",
+      "==",
+      sessionId
+    ),
+    orderBy(
+      "createdAt",
+      "asc"
+    )
+  );
 
-  const wrap =
-    document.getElementById(
-      "chatMessages"
-    );
+  onSnapshot(messagesQuery,(snapshot)=>{
 
-  wrap.innerHTML = "";
+    const wrap =
+      document.getElementById(
+        "chatMessages"
+      );
 
-  snapshot.forEach((docSnap)=>{
+    wrap.innerHTML = "";
 
-    const data =
-      docSnap.data();
-
-    const div =
-      document.createElement("div");
-
-    div.className =
-      "chatMsg";
-
-    div.style.background =
-      data.sender === "admin"
-      ? "rgba(139,92,246,.18)"
-      : "rgba(255,255,255,.05)";
-
-    div.innerHTML =
-      data.sender === "admin"
-      ? `🎧 Support: ${data.message}`
-      : `🧑 You: ${data.message}`;
-
-    wrap.appendChild(div);
-
-  });
-
-  wrap.scrollTop =
-    wrap.scrollHeight;
-
-});
-
-
-// REPLIES
-
-const replyQuery = query(
-  collection(db, "supportReplies"),
-  where(
-    "sessionId",
-    "==",
-    sessionId
-  ),
-  orderBy(
-    "createdAt",
-    "asc"
-  )
-);
-
-onSnapshot(replyQuery,(snapshot)=>{
-
-  const wrap =
-    document.getElementById(
-      "chatMessages"
-    );
-
-  snapshot.docChanges()
-  .forEach((change)=>{
-
-    if(change.type === "added"){
+    snapshot.forEach((docSnap)=>{
 
       const data =
-        change.doc.data();
+        docSnap.data();
 
       const div =
         document.createElement("div");
@@ -1685,21 +1631,99 @@ onSnapshot(replyQuery,(snapshot)=>{
         "chatMsg";
 
       div.style.background =
-        "rgba(139,92,246,.18)";
+        data.sender === "admin"
+        ? "rgba(139,92,246,.18)"
+        : "rgba(255,255,255,.05)";
 
       div.innerHTML =
-        `🎧 Support: ${data.message}`;
+        data.sender === "admin"
+        ? `🎧 Support: ${data.message}`
+        : `🧑 You: ${data.message}`;
 
       wrap.appendChild(div);
 
-      wrap.scrollTop =
-        wrap.scrollHeight;
+    });
 
-    }
+    wrap.scrollTop =
+      wrap.scrollHeight;
 
   });
 
-});
+}
+catch(error){
+
+  console.error(
+    "Messages listener error:",
+    error
+  );
+
+}
+
+
+// REPLIES
+
+try{
+
+  const replyQuery = query(
+    collection(db, "supportReplies"),
+    where(
+      "sessionId",
+      "==",
+      sessionId
+    ),
+    orderBy(
+      "createdAt",
+      "asc"
+    )
+  );
+
+  onSnapshot(replyQuery,(snapshot)=>{
+
+    const wrap =
+      document.getElementById(
+        "chatMessages"
+      );
+
+    snapshot.docChanges()
+    .forEach((change)=>{
+
+      if(change.type === "added"){
+
+        const data =
+          change.doc.data();
+
+        const div =
+          document.createElement("div");
+
+        div.className =
+          "chatMsg";
+
+        div.style.background =
+          "rgba(139,92,246,.18)";
+
+        div.innerHTML =
+          `🎧 Support: ${data.message}`;
+
+        wrap.appendChild(div);
+
+        wrap.scrollTop =
+          wrap.scrollHeight;
+
+      }
+
+    });
+
+  });
+
+}
+catch(error){
+
+  console.error(
+    "Replies listener error:",
+    error
+  );
+
+}
 
 
 // DOM
