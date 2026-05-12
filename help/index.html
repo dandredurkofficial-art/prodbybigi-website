@@ -1587,6 +1587,133 @@ window.sendChat = async function(){
 
 };
 
+<script>
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+  // FAQ
+
+  document
+  .querySelectorAll(".faqTop")
+  .forEach((faq)=>{
+
+    faq.addEventListener("click",()=>{
+
+      faq.parentElement
+      .classList.toggle("open");
+
+    });
+
+  });
+
+  // Helpful buttons
+
+  document
+  .querySelectorAll(".helpfulButtons button")
+  .forEach((button)=>{
+
+    button.addEventListener("click",()=>{
+
+      button.innerHTML = "✅ Thanks!";
+
+    });
+
+  });
+
+  // Mobile menu
+
+  const menuBtn =
+    document.getElementById("menuBtn");
+
+  const mobileMenu =
+    document.getElementById("mobileMenu");
+
+  menuBtn.addEventListener("click",()=>{
+
+    if(mobileMenu.style.display === "flex"){
+
+      mobileMenu.style.display = "none";
+
+      menuBtn.innerHTML = "☰";
+
+    }
+
+    else{
+
+      mobileMenu.style.display = "flex";
+
+      menuBtn.innerHTML = "✕";
+
+    }
+
+  });
+
+  // Chat toggle
+
+  const chatToggle =
+    document.getElementById("chatToggle");
+
+  const chatBox =
+    document.getElementById("chatBox");
+
+  chatToggle.addEventListener("click",()=>{
+
+    if(chatBox.style.display === "block"){
+
+      chatBox.style.display = "none";
+
+    }
+
+    else{
+
+      chatBox.style.display = "block";
+
+    }
+
+  });
+
+  // Screenshot preview
+
+  const screenshot =
+    document.getElementById("screenshot");
+
+  const fileName =
+    document.getElementById("fileName");
+
+  const previewImage =
+    document.getElementById("previewImage");
+
+  screenshot.addEventListener("change",()=>{
+
+    const file = screenshot.files[0];
+
+    if(file){
+
+      fileName.innerHTML =
+        `Selected: ${file.name}`;
+
+      previewImage.src =
+        URL.createObjectURL(file);
+
+      previewImage.style.display =
+        "block";
+
+    }
+
+    else{
+
+      fileName.innerHTML =
+        "No screenshot selected";
+
+      previewImage.style.display =
+        "none";
+
+    }
+
+  });
+
+});
+
 </script>
 
 </head>
