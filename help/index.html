@@ -47,6 +47,8 @@ html{
 }
 
 body{
+  position:relative;
+  z-index:1;
 
   font-family:
   "Inter",
@@ -73,7 +75,6 @@ body{
   );
 
   overflow-x:hidden;
-
 }
 
 body::before{
@@ -90,7 +91,7 @@ body::before{
 
   opacity:.05;
 
-  pointer-events:none;
+  z-index:-1;
 
 }
 
@@ -103,6 +104,14 @@ button{
   font-family:inherit;
 }
 
+.navbar,
+.hero,
+.section,
+footer,
+.liveChat{
+  position:relative;
+  z-index:2;
+}
 
 /* NAVBAR */
 
