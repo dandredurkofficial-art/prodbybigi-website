@@ -34,6 +34,374 @@
   rel="stylesheet"
 />
 
+<script type="module">
+
+import {
+  initializeApp
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  addDoc,
+  serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+
+// FIREBASE
+
+const firebaseConfig = {
+
+  apiKey:
+  "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+
+  authDomain:
+  "audiory-beat-store.firebaseapp.com",
+
+  projectId:
+  "audiory-beat-store",
+
+  storageBucket:
+  "audiory-beat-store.firebasestorage.app",
+
+  messagingSenderId:
+  "688272560511",
+
+  appId:
+  "1:688272560511:web:9031e6ce215d6f08764a4a"
+
+};
+
+const app =
+  initializeApp(firebaseConfig);
+
+const db =
+  getFirestore(app);
+
+const storage =
+  getStorage(app);
+
+
+// ====================================
+// AUTO LOAD ARTICLES
+// ====================================
+
+async function loadSupportArticles(){
+
+  const container =
+    document.getElementById(
+      "articleGrid"
+    );
+
+  try{
+
+    const q = query(
+      collection(db, "blogPosts"),
+      orderBy("createdAt", "desc")
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    container.innerHTML = "";
+
+    let count = 0;
+
+    snapshot.forEach((docSnap)=>{
+
+      if(count >= 6) return;
+
+      const post =
+        docSnap.data();
+
+      const card =
+        document.createElement("a");
+
+      card.href =
+        `https://blog.audiory.site/post.html?slug=${post.slug}`;
+
+      card.className =
+        "articleCard";
+
+      card.innerHTML = `
+
+        <img
+          src="${post.thumbnailURL || ''}"
+          class="articleImage"
+        />
+
+        <div class="articleContent">
+
+          <span>
+
+            ${post.category || 'Support'}
+
+          </span>
+
+          <h3>
+
+            ${post.title}
+
+          </h3>
+
+          <p>
+
+            ${post.excerpt || ''}
+
+          </p>
+
+        </div>
+
+      `;
+
+      container.appendChild(card);
+
+      count++;
+
+    });
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+loadSupportArticles();
+
+
+// ====================================
+// SUPPORT SEARCH
+// ====================================
+
+window.searchHelp = async function(){
+
+  const queryText =
+    document
+    .getElementById("searchInput")
+    .value
+    .toLowerCase()
+    .trim();
+
+  if(!queryText){
+
+    alert(
+      "Enter something to search."
+    );
+
+    return;
+
+  }
+
+  const q = query(
+    collection(db, "blogPosts"),
+    orderBy("createdAt", "desc")
+  );
+
+  const snapshot =
+    await getDocs(q);
+
+  let found = false;
+
+  snapshot.forEach((docSnap)=>{
+
+    const post =
+      docSnap.data();
+
+    const searchable =
+      `
+      ${post.title}
+      ${post.excerpt}
+      ${post.content}
+      ${post.category}
+      `
+      .toLowerCase();
+
+    if(
+      searchable.includes(queryText)
+      &&
+      !found
+    ){
+
+      found = true;
+
+      window.location.href =
+        `https://blog.audiory.site/post.html?slug=${post.slug}`;
+
+    }
+
+  });
+
+  if(!found){
+
+    alert(
+      "No support article found."
+    );
+
+  }
+
+};
+
+
+// ====================================
+// SEND SUPPORT TICKET
+// ====================================
+
+window.sendSupport = async function(){
+
+  const name =
+    document
+    .getElementById("name")
+    .value;
+
+  const email =
+    document
+    .getElementById("email")
+    .value;
+
+  const category =
+    document
+    .getElementById("category")
+    .value;
+
+  const orderId =
+    document
+    .getElementById("orderId")
+    .value;
+
+  const message =
+    document
+    .getElementById("message")
+    .value;
+
+  const screenshot =
+    document
+    .getElementById("screenshot")
+    .files[0];
+
+  if(
+    !name ||
+    !email ||
+    !message
+  ){
+
+    alert(
+      "Please fill required fields."
+    );
+
+    return;
+
+  }
+
+  document
+  .getElementById("contactStatus")
+  .innerHTML =
+    "Sending support ticket...";
+
+  let screenshotURL = "";
+
+  try{
+
+    if(screenshot){
+
+      const imageRef = ref(
+        storage,
+        `support-screenshots/${Date.now()}-${screenshot.name}`
+      );
+
+      await uploadBytes(
+        imageRef,
+        screenshot
+      );
+
+      screenshotURL =
+        await getDownloadURL(imageRef);
+
+    }
+
+    await addDoc(
+      collection(db, "supportTickets"),
+      {
+
+        name,
+        email,
+        category,
+        orderId,
+        message,
+        screenshotURL,
+
+        status:
+        "open",
+
+        createdAt:
+        serverTimestamp()
+
+      }
+    );
+
+    document
+    .getElementById("contactStatus")
+    .innerHTML =
+      "✅ Support ticket sent successfully.";
+
+    document
+    .getElementById("name")
+    .value = "";
+
+    document
+    .getElementById("email")
+    .value = "";
+
+    document
+    .getElementById("message")
+    .value = "";
+
+    document
+    .getElementById("orderId")
+    .value = "";
+
+    document
+    .getElementById("screenshot")
+    .value = "";
+
+    document
+    .getElementById("fileName")
+    .innerHTML =
+      "No screenshot selected";
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    document
+    .getElementById("contactStatus")
+    .innerHTML =
+      "❌ Failed to send ticket.";
+
+  }
+
+};
+
+</script>
+
 
 <style>
 
@@ -58,7 +426,12 @@ body{
   background:
   radial-gradient(
     circle at top,
-    rgba(124,58,237,.28),
+    rgba(124,58,237,.25),
+    transparent 30%
+  ),
+  radial-gradient(
+    circle at bottom right,
+    rgba(59,130,246,.12),
     transparent 28%
   ),
   #050816;
@@ -73,9 +446,7 @@ a{
 }
 
 
-/* =========================
-   NAVBAR
-========================= */
+/* NAVBAR */
 
 .navbar{
 
@@ -117,8 +488,6 @@ a{
 
   font-weight:900;
 
-  letter-spacing:-1px;
-
 }
 
 .logo span{
@@ -139,14 +508,6 @@ a{
 
   color:#94a3b8;
 
-  font-size:15px;
-
-  transition:.2s;
-
-}
-
-.navLinks a:hover{
-  color:white;
 }
 
 .mainBtn{
@@ -164,77 +525,7 @@ a{
 }
 
 
-/* MOBILE MENU */
-
-.menuBtn{
-
-  display:none;
-
-  width:62px;
-  height:62px;
-
-  border:none;
-
-  border-radius:18px;
-
-  background:
-  rgba(255,255,255,.04);
-
-  color:white;
-
-  font-size:30px;
-
-  cursor:pointer;
-
-}
-
-.mobileMenu{
-
-  display:none;
-
-  flex-direction:column;
-
-  gap:22px;
-
-  padding:30px 24px;
-
-  background:#040816;
-
-  border-top:
-  1px solid rgba(255,255,255,.06);
-
-}
-
-.mobileMenu a{
-
-  color:#d1d5db;
-
-  font-size:18px;
-
-}
-
-.mobileMainBtn{
-
-  margin-top:8px;
-
-  background:#8b5cf6;
-
-  color:white !important;
-
-  padding:18px;
-
-  border-radius:18px;
-
-  text-align:center;
-
-  font-weight:800;
-
-}
-
-
-/* =========================
-   HERO
-========================= */
+/* HERO */
 
 .hero{
 
@@ -317,8 +608,6 @@ a{
 
   flex:1;
 
-  min-width:260px;
-
   display:flex;
 
   align-items:center;
@@ -372,9 +661,7 @@ a{
 }
 
 
-/* =========================
-   SECTION
-========================= */
+/* SECTION */
 
 .section{
 
@@ -390,9 +677,9 @@ a{
 
   font-size:44px;
 
-  letter-spacing:-2px;
+  margin-bottom:14px;
 
-  margin-bottom:16px;
+  letter-spacing:-2px;
 
 }
 
@@ -407,9 +694,7 @@ a{
 }
 
 
-/* =========================
-   CATEGORIES
-========================= */
+/* CATEGORY */
 
 .categoryGrid{
 
@@ -423,7 +708,7 @@ a{
 
   gap:24px;
 
-  margin-bottom:90px;
+  margin-bottom:100px;
 
 }
 
@@ -438,18 +723,6 @@ a{
   border-radius:28px;
 
   padding:28px;
-
-  transition:.25s;
-
-}
-
-.categoryCard:hover{
-
-  transform:
-  translateY(-5px);
-
-  border-color:
-  rgba(139,92,246,.35);
 
 }
 
@@ -475,46 +748,8 @@ a{
 
 }
 
-.categoryCard h3{
 
-  font-size:24px;
-
-  margin-bottom:14px;
-
-}
-
-.categoryCard p{
-
-  color:#94a3b8;
-
-  line-height:1.8;
-
-  margin-bottom:18px;
-
-}
-
-.categoryCard ul{
-
-  padding-left:18px;
-
-  color:#cbd5e1;
-
-  line-height:1.9;
-
-  font-size:14px;
-
-}
-
-
-/* =========================
-   FAQ
-========================= */
-
-.faqWrap{
-
-  margin-bottom:90px;
-
-}
+/* FAQ */
 
 .faqItem{
 
@@ -538,15 +773,7 @@ a{
 
   justify-content:space-between;
 
-  gap:20px;
-
   cursor:pointer;
-
-}
-
-.faqTop h3{
-
-  font-size:20px;
 
 }
 
@@ -567,9 +794,7 @@ a{
 }
 
 
-/* =========================
-   ARTICLES
-========================= */
+/* ARTICLES */
 
 .articleGrid{
 
@@ -583,7 +808,7 @@ a{
 
   gap:24px;
 
-  margin-bottom:90px;
+  margin-bottom:100px;
 
 }
 
@@ -648,9 +873,7 @@ a{
 
 .articleContent h3{
 
-  font-size:26px;
-
-  line-height:1.2;
+  font-size:24px;
 
   margin-bottom:14px;
 
@@ -665,9 +888,7 @@ a{
 }
 
 
-/* =========================
-   CONTACT
-========================= */
+/* CONTACT */
 
 .contactBox{
 
@@ -699,20 +920,6 @@ a{
   grid-column:1/-1;
 }
 
-label{
-
-  display:block;
-
-  margin-bottom:10px;
-
-  color:#cbd5e1;
-
-  font-size:14px;
-
-  font-weight:700;
-
-}
-
 input,
 textarea,
 select{
@@ -735,15 +942,13 @@ select{
 
   color:white;
 
-  font-size:15px;
+  margin-top:10px;
 
 }
 
 textarea{
 
   min-height:180px;
-
-  resize:vertical;
 
 }
 
@@ -777,11 +982,11 @@ textarea{
 
   color:#94a3b8;
 
-  font-size:14px;
-
 }
 
 .contactActions{
+
+  margin-top:26px;
 
   display:flex;
 
@@ -792,16 +997,6 @@ textarea{
   flex-wrap:wrap;
 
   gap:14px;
-
-  margin-top:26px;
-
-}
-
-.contactStatus{
-
-  color:#94a3b8;
-
-  font-size:14px;
 
 }
 
@@ -824,9 +1019,89 @@ textarea{
 }
 
 
-/* =========================
-   FOOTER
-========================= */
+/* LIVE CHAT */
+
+.liveChat{
+
+  position:fixed;
+
+  bottom:24px;
+
+  right:24px;
+
+  z-index:9999;
+
+}
+
+.chatButton{
+
+  width:72px;
+  height:72px;
+
+  border:none;
+
+  border-radius:50%;
+
+  background:#8b5cf6;
+
+  color:white;
+
+  font-size:28px;
+
+  cursor:pointer;
+
+  box-shadow:
+  0 20px 60px rgba(139,92,246,.45);
+
+}
+
+.chatBox{
+
+  display:none;
+
+  width:340px;
+
+  background:
+  rgba(15,23,42,.95);
+
+  border:
+  1px solid rgba(255,255,255,.06);
+
+  border-radius:24px;
+
+  padding:24px;
+
+  margin-bottom:16px;
+
+}
+
+.chatMessages{
+
+  max-height:280px;
+
+  overflow:auto;
+
+  margin-bottom:16px;
+
+}
+
+.chatMsg{
+
+  background:
+  rgba(255,255,255,.05);
+
+  padding:14px;
+
+  border-radius:16px;
+
+  margin-bottom:12px;
+
+  color:#d1d5db;
+
+}
+
+
+/* FOOTER */
 
 footer{
 
@@ -838,6 +1113,8 @@ footer{
   background:
   rgba(255,255,255,.02);
 
+  margin-top:80px;
+
 }
 
 .footerInner{
@@ -846,102 +1123,10 @@ footer{
 
   margin:auto;
 
-  display:flex;
-
-  justify-content:space-between;
-
-  gap:60px;
-
-  flex-wrap:wrap;
-
-}
-
-.footerBrand{
-
-  max-width:450px;
-
-}
-
-.footerBrand h3{
-
-  font-size:34px;
-
-  margin-bottom:18px;
-
-}
-
-.footerBrand p{
-
-  color:#94a3b8;
-
-  line-height:1.9;
-
-}
-
-.footerLinks{
-
-  display:flex;
-
-  gap:90px;
-
-  flex-wrap:wrap;
-
-}
-
-.footerColumn{
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:16px;
-
-}
-
-.footerColumn h4{
-
-  margin-bottom:8px;
-
-}
-
-.footerColumn a{
-
-  color:#94a3b8;
-
-}
-
-.footerColumn a:hover{
-  color:white;
-}
-
-.copyright{
-
-  margin-top:70px;
-
-  text-align:center;
-
-  color:#64748b;
-
-  font-size:14px;
-
 }
 
 
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:900px){
-
-  .contactGrid{
-    grid-template-columns:1fr;
-  }
-
-  .hero h1{
-    font-size:54px;
-  }
-
-}
+/* MOBILE */
 
 @media(max-width:700px){
 
@@ -949,22 +1134,12 @@ footer{
     display:none;
   }
 
-  .menuBtn{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .hero{
-    padding-top:90px;
-  }
-
   .hero h1{
-    font-size:42px;
+    font-size:44px;
   }
 
-  .hero p{
-    font-size:16px;
+  .contactGrid{
+    grid-template-columns:1fr;
   }
 
   .sectionTitle{
@@ -979,90 +1154,49 @@ footer{
 <body>
 
 
-
 <!-- NAVBAR -->
 
 <nav class="navbar">
 
-  <div class="navInner">
+<div class="navInner">
 
-    <a
-      href="https://audiory.site"
-      class="logo"
-    >
+<a
+  href="https://audiory.site"
+  class="logo"
+>
 
-      Audio<span>ry</span>
+  Audio<span>ry</span>
 
-    </a>
+</a>
 
+<div class="navLinks">
 
-    <div class="navLinks">
+  <a href="/">
+    Home
+  </a>
 
-      <a href="/">
-        Home
-      </a>
+  <a href="/marketplace/">
+    Marketplace
+  </a>
 
-      <a href="/marketplace/">
-        Marketplace
-      </a>
+  <a href="/pricing/">
+    Pricing
+  </a>
 
-      <a href="/pricing/">
-        Pricing
-      </a>
+  <a href="/help/">
+    Help
+  </a>
 
-      <a href="/help/">
-        Help
-      </a>
-
-      <a
-        href="/login/"
-        class="mainBtn"
-      >
-        Login
-      </a>
-
-    </div>
-
-
-    <button
-      class="menuBtn"
-      id="menuBtn"
-    >
-      ☰
-    </button>
-
-  </div>
-
-
-  <div
-    class="mobileMenu"
-    id="mobileMenu"
+  <a
+    href="/login/"
+    class="mainBtn"
   >
+    Login
+  </a>
 
-    <a href="/">
-      Home
-    </a>
+</div>
 
-    <a href="/marketplace/">
-      Marketplace
-    </a>
-
-    <a href="/pricing/">
-      Pricing
-    </a>
-
-    <a href="/help/">
-      Help
-    </a>
-
-    <a
-      href="/login/"
-      class="mobileMainBtn"
-    >
-      Login
-    </a>
-
-  </div>
+</div>
 
 </nav>
 
@@ -1072,209 +1206,143 @@ footer{
 
 <section class="hero">
 
-  <div class="heroInner">
+<div class="heroInner">
 
-    <div class="heroBadge">
+<div class="heroBadge">
 
-      🎧 Audiory Support Center
+🎧 Audiory Support Center
 
-    </div>
+</div>
 
-    <h1>
+<h1>
 
-      How can we help
-      you today?
+How can we help
+you today?
 
-    </h1>
+</h1>
 
-    <p>
+<p>
 
-      Find answers about uploads,
-      payouts, downloads, copyright,
-      producer accounts, beat sales,
-      withdrawals and marketplace
-      support on Audiory.
+Find answers about uploads,
+payouts, downloads,
+producer verification,
+withdrawals and marketplace support.
 
-    </p>
+</p>
 
+<div class="searchWrap">
 
-    <div class="searchWrap">
+<div class="searchBox">
 
-      <div class="searchBox">
+🔎
 
-        🔎
+<input
+  id="searchInput"
+  placeholder="Search uploads, payouts, downloads..."
+/>
 
-        <input
-          placeholder="Search uploads, payouts, support..."
-        />
+</div>
 
-      </div>
+<button
+  class="searchBtn"
+  onclick="searchHelp()"
+>
 
-      <button class="searchBtn">
+Search
 
-        Search
+</button>
 
-      </button>
+</div>
 
-    </div>
-
-  </div>
+</div>
 
 </section>
 
 
 
-<!-- CATEGORIES -->
+<!-- CATEGORY -->
 
 <section class="section">
 
-  <h2 class="sectionTitle">
+<h2 class="sectionTitle">
 
-    Popular Help Categories
+Popular Help Categories
 
-  </h2>
+</h2>
 
-  <p class="sectionSub">
+<p class="sectionSub">
 
-    Browse support guides for producers,
-    artists and marketplace buyers.
+Browse support guides for creators.
 
-  </p>
+</p>
 
+<div class="categoryGrid">
 
-  <div class="categoryGrid">
+<div class="categoryCard">
 
-    <div class="categoryCard">
+<div class="categoryIcon">
+⬆️
+</div>
 
-      <div class="categoryIcon">
-        ⬆️
-      </div>
+<h3>
+Upload Beats
+</h3>
 
-      <h3>
-        Upload Beats
-      </h3>
+<p>
+Learn how uploads work.
+</p>
 
-      <p>
+</div>
 
-        Learn how to upload beats,
-        thumbnails and licenses.
+<div class="categoryCard">
 
-      </p>
+<div class="categoryIcon">
+💰
+</div>
 
-      <ul>
+<h3>
+Withdraw Earnings
+</h3>
 
-        <li>Uploading MP3 & WAV</li>
+<p>
+Track payouts and earnings.
+</p>
 
-        <li>Adding cover art</li>
+</div>
 
-        <li>Publishing licenses</li>
+<div class="categoryCard">
 
-        <li>Updating beat info</li>
+<div class="categoryIcon">
+🛡️
+</div>
 
-      </ul>
+<h3>
+Producer Verification
+</h3>
 
-    </div>
+<p>
+Learn verification requirements.
+</p>
 
+</div>
 
+<div class="categoryCard">
 
-    <div class="categoryCard">
+<div class="categoryIcon">
+🎫
+</div>
 
-      <div class="categoryIcon">
-        💰
-      </div>
+<h3>
+Support Tickets
+</h3>
 
-      <h3>
-        Withdraw Earnings
-      </h3>
+<p>
+Create and manage tickets.
+</p>
 
-      <p>
+</div>
 
-        Learn how producer payouts
-        work on Audiory.
-
-      </p>
-
-      <ul>
-
-        <li>M-Pesa withdrawals</li>
-
-        <li>PayPal payouts</li>
-
-        <li>Pending balances</li>
-
-        <li>Payout timelines</li>
-
-      </ul>
-
-    </div>
-
-
-
-    <div class="categoryCard">
-
-      <div class="categoryIcon">
-        🛒
-      </div>
-
-      <h3>
-        Downloads & Purchases
-      </h3>
-
-      <p>
-
-        Get help with downloads,
-        payments and purchases.
-
-      </p>
-
-      <ul>
-
-        <li>Missing downloads</li>
-
-        <li>Payment verification</li>
-
-        <li>License delivery</li>
-
-        <li>Refund questions</li>
-
-      </ul>
-
-    </div>
-
-
-
-    <div class="categoryCard">
-
-      <div class="categoryIcon">
-        🛡️
-      </div>
-
-      <h3>
-        Account & Security
-      </h3>
-
-      <p>
-
-        Manage account access,
-        passwords and verification.
-
-      </p>
-
-      <ul>
-
-        <li>Password reset</li>
-
-        <li>Email verification</li>
-
-        <li>Account recovery</li>
-
-        <li>Security protection</li>
-
-      </ul>
-
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -1282,146 +1350,112 @@ footer{
 
 <!-- FAQ -->
 
-<section class="section faqWrap">
+<section class="section">
 
-  <h2 class="sectionTitle">
+<h2 class="sectionTitle">
 
-    Frequently Asked Questions
+Frequently Asked Questions
 
-  </h2>
+</h2>
 
-  <p class="sectionSub">
+<p class="sectionSub">
 
-    Quick answers to common Audiory
-    questions.
+Quick answers for Audiory creators.
 
-  </p>
-
-
-  <div class="faqItem open">
-
-    <div class="faqTop">
-
-      <h3>
-        I paid but the beat did not unlock
-      </h3>
-
-      <span>+</span>
-
-    </div>
-
-    <div class="faqBody">
-
-      Sometimes payment providers
-      take a few minutes to verify.
-      If your beat is still locked,
-      contact support below and
-      include your screenshot
-      or order ID.
-
-    </div>
-
-  </div>
+</p>
 
 
+<div class="faqItem open">
 
-  <div class="faqItem">
+<div class="faqTop">
 
-    <div class="faqTop">
+<h3>
+How do I upload beats?
+</h3>
 
-      <h3>
-        How do I upload beats?
-      </h3>
+<span>+</span>
 
-      <span>+</span>
+</div>
 
-    </div>
+<div class="faqBody">
 
-    <div class="faqBody">
+Go to producer dashboard,
+click upload beat and publish.
 
-      Login to your producer dashboard,
-      click upload beat, add your
-      files, pricing, artwork and
-      licenses then publish.
+<br><br>
 
-    </div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;">
 
-  </div>
+<button class="sendBtn">
+👍 Helpful
+</button>
+
+<button class="sendBtn">
+👎 Not Helpful
+</button>
+
+</div>
+
+</div>
+
+</div>
 
 
 
-  <div class="faqItem">
+<div class="faqItem">
 
-    <div class="faqTop">
+<div class="faqTop">
 
-      <h3>
-        How long do withdrawals take?
-      </h3>
+<h3>
+How long do withdrawals take?
+</h3>
 
-      <span>+</span>
+<span>+</span>
 
-    </div>
+</div>
 
-    <div class="faqBody">
+<div class="faqBody">
 
-      Most M-Pesa withdrawals process
-      within minutes while PayPal
-      payouts may take longer
-      depending on provider delays.
+M-Pesa payouts usually process
+within minutes.
 
-    </div>
+</div>
 
-  </div>
+</div>
 
 
 
-  <div class="faqItem">
+<div class="faqItem">
 
-    <div class="faqTop">
+<div class="faqTop">
 
-      <h3>
-        Can I edit uploaded beats?
-      </h3>
+<h3>
+How do I get verified?
+</h3>
 
-      <span>+</span>
+<span>+</span>
 
-    </div>
+</div>
 
-    <div class="faqBody">
+<div class="faqBody">
 
-      Yes. Producers can edit titles,
-      prices, tags, cover art,
-      descriptions and licenses
-      anytime from dashboard.
+Audiory verification depends on:
 
-    </div>
+<ul style="margin-top:14px;padding-left:18px;line-height:2;">
 
-  </div>
+<li>Consistent uploads</li>
 
+<li>Professional branding</li>
 
+<li>Active sales</li>
 
-  <div class="faqItem">
+<li>Audience engagement</li>
 
-    <div class="faqTop">
+</ul>
 
-      <h3>
-        My download link expired
-      </h3>
+</div>
 
-      <span>+</span>
-
-    </div>
-
-    <div class="faqBody">
-
-      Contact Audiory support with
-      your email and order details.
-      We can resend your download
-      access.
-
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -1431,123 +1465,24 @@ footer{
 
 <section class="section">
 
-  <h2 class="sectionTitle">
+<h2 class="sectionTitle">
 
-    Popular Support Articles
+Popular Support Articles
 
-  </h2>
+</h2>
 
-  <p class="sectionSub">
+<p class="sectionSub">
 
-    Helpful guides for creators
-    using Audiory.
+Auto-loaded from Audiory Blog.
 
-  </p>
+</p>
 
+<div
+  class="articleGrid"
+  id="articleGrid"
+>
 
-  <div class="articleGrid">
-
-    <div class="articleCard">
-
-      <img
-        src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=1200&auto=format&fit=crop"
-        class="articleImage"
-      />
-
-      <div class="articleContent">
-
-        <span>
-          Producer Help
-        </span>
-
-        <h3>
-
-          How To Upload Beats
-          On Audiory
-
-        </h3>
-
-        <p>
-
-          Learn how to upload,
-          optimize and publish
-          beats professionally.
-
-        </p>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="articleCard">
-
-      <img
-        src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200&auto=format&fit=crop"
-        class="articleImage"
-      />
-
-      <div class="articleContent">
-
-        <span>
-          Payouts
-        </span>
-
-        <h3>
-
-          How Producer
-          Withdrawals Work
-
-        </h3>
-
-        <p>
-
-          Understand payout timelines,
-          pending balances and
-          supported methods.
-
-        </p>
-
-      </div>
-
-    </div>
-
-
-
-    <div class="articleCard">
-
-      <img
-        src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=1200&auto=format&fit=crop"
-        class="articleImage"
-      />
-
-      <div class="articleContent">
-
-        <span>
-          Marketplace
-        </span>
-
-        <h3>
-
-          Troubleshooting
-          Downloads & Orders
-
-        </h3>
-
-        <p>
-
-          Fix download issues,
-          expired links and
-          payment verification.
-
-        </p>
-
-      </div>
-
-    </div>
-
-  </div>
+</div>
 
 </section>
 
@@ -1557,174 +1492,212 @@ footer{
 
 <section class="section">
 
-  <div class="contactBox">
+<div class="contactBox">
 
-    <h2 class="sectionTitle">
+<h2 class="sectionTitle">
 
-      Contact Audiory Support
+Create Support Ticket
 
-    </h2>
+</h2>
 
-    <p class="sectionSub">
+<p class="sectionSub">
 
-      Need direct help?
-      Send us a message and
-      attach screenshots.
+Need direct help?
+Send a ticket with screenshots.
 
-    </p>
+</p>
 
+<div class="contactGrid">
 
-    <div class="contactGrid">
+<div>
 
-      <div>
+<label>
+Full Name
+</label>
 
-        <label>
-          Full name
-        </label>
+<input
+  id="name"
+  placeholder="Your name"
+/>
 
-        <input
-          id="name"
-          placeholder="Your name"
-        />
+</div>
 
-      </div>
+<div>
 
+<label>
+Email
+</label>
 
-      <div>
+<input
+  id="email"
+  placeholder="you@email.com"
+/>
 
-        <label>
-          Email address
-        </label>
+</div>
 
-        <input
-          type="email"
-          id="email"
-          placeholder="you@email.com"
-        />
+<div>
 
-      </div>
+<label>
+Category
+</label>
 
+<select id="category">
 
-      <div>
+<option>
+Upload Problem
+</option>
 
-        <label>
-          Category
-        </label>
+<option>
+Withdrawal Problem
+</option>
 
-        <select id="category">
+<option>
+Verification Problem
+</option>
 
-          <option>
-            Upload Problem
-          </option>
+<option>
+Copyright Problem
+</option>
 
-          <option>
-            Payment Problem
-          </option>
+<option>
+Download Problem
+</option>
 
-          <option>
-            Withdrawal Problem
-          </option>
+</select>
 
-          <option>
-            Copyright Issue
-          </option>
+</div>
 
-          <option>
-            Account Support
-          </option>
+<div>
 
-        </select>
+<label>
+Order ID
+</label>
 
-      </div>
+<input
+  id="orderId"
+  placeholder="Optional"
+/>
 
+</div>
 
-      <div>
+<div class="full">
 
-        <label>
-          Order ID
-        </label>
+<label>
+Message
+</label>
 
-        <input
-          id="orderId"
-          placeholder="Optional"
-        />
+<textarea
+  id="message"
+  placeholder="Describe your issue..."
+></textarea>
 
-      </div>
+</div>
 
+<div class="full">
 
-      <div class="full">
+<label
+  class="uploadBtn"
+  for="screenshot"
+>
 
-        <label>
-          Message
-        </label>
+📎 Upload Screenshot
 
-        <textarea
-          id="message"
-          placeholder="Describe your issue..."
-        ></textarea>
+</label>
 
-      </div>
+<input
+  type="file"
+  id="screenshot"
+  accept="image/*"
+  hidden
+/>
 
+<div
+  class="fileName"
+  id="fileName"
+>
 
-      <div class="full">
+No screenshot selected
 
-        <label
-          class="uploadBtn"
-          for="screenshot"
-        >
+</div>
 
-          📎 Upload Screenshot
+</div>
 
-        </label>
+</div>
 
-        <input
-          type="file"
-          id="screenshot"
-          accept="image/*"
-          hidden
-        />
+<div class="contactActions">
 
-        <div
-          class="fileName"
-          id="fileName"
-        >
+<div
+  id="contactStatus"
+>
 
-          No screenshot selected
+Messages are sent to Audiory support.
 
-        </div>
+</div>
 
-      </div>
+<button
+  class="sendBtn"
+  onclick="sendSupport()"
+>
 
-    </div>
+Send Ticket
 
+</button>
 
-    <div class="contactActions">
+</div>
 
-      <div
-        class="contactStatus"
-        id="contactStatus"
-      >
-
-        Messages are sent
-        to Audiory support.
-
-      </div>
-
-
-      <button
-        class="sendBtn"
-        id="sendBtn"
-      >
-
-        Send Message
-
-      </button>
-
-    </div>
-
-  </div>
+</div>
 
 </section>
+
+
+
+<!-- LIVE CHAT -->
+
+<div class="liveChat">
+
+<div
+  class="chatBox"
+  id="chatBox"
+>
+
+<div class="chatMessages">
+
+<div class="chatMsg">
+
+👋 Welcome to Audiory Support.
+How can we help?
+
+</div>
+
+<div class="chatMsg">
+
+Popular topics:
+
+• Upload beats  
+• Withdrawals  
+• Copyright  
+• Verification  
+
+</div>
+
+</div>
+
+<input
+  placeholder="Type message..."
+/>
+
+</div>
+
+<button
+  class="chatButton"
+  id="chatToggle"
+>
+
+💬
+
+</button>
+
+</div>
 
 
 
@@ -1732,118 +1705,54 @@ footer{
 
 <footer>
 
-  <div class="footerInner">
+<div class="footerInner">
 
-    <div class="footerBrand">
+<h2
+  style="
+  font-size:42px;
+  margin-bottom:20px;
+  "
+>
 
-      <h3>
-        Audiory
-      </h3>
+Audiory Support
 
-      <p>
+</h2>
 
-        Audiory powers the next
-        generation of producers,
-        artists and music creators
-        through creator tools,
-        commerce and infrastructure.
+<p
+  style="
+  color:#94a3b8;
+  max-width:700px;
+  line-height:1.9;
+  "
+>
 
-      </p>
+Audiory powers the next generation
+of producers and creators through
+beat commerce, uploads,
+marketplace infrastructure
+and creator tools.
 
-    </div>
+</p>
 
+<div
+  style="
+  margin-top:40px;
+  color:#64748b;
+  "
+>
 
+© 2026 Audiory.
+All rights reserved.
 
-    <div class="footerLinks">
+</div>
 
-      <div class="footerColumn">
-
-        <h4>
-          Product
-        </h4>
-
-        <a href="/">
-          Home
-        </a>
-
-        <a href="/marketplace/">
-          Marketplace
-        </a>
-
-        <a href="/pricing/">
-          Pricing
-        </a>
-
-      </div>
-
-
-
-      <div class="footerColumn">
-
-        <h4>
-          Support
-        </h4>
-
-        <a href="/help/">
-          Help Center
-        </a>
-
-        <a href="/contact/">
-          Contact
-        </a>
-
-        <a href="/privacy/">
-          Privacy
-        </a>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <div class="copyright">
-
-    © 2026 Audiory.
-    All rights reserved.
-
-  </div>
+</div>
 
 </footer>
 
 
 
 <script>
-
-const menuBtn =
-  document.getElementById("menuBtn");
-
-const mobileMenu =
-  document.getElementById("mobileMenu");
-
-menuBtn.addEventListener("click",()=>{
-
-  if(
-    mobileMenu.style.display === "flex"
-  ){
-
-    mobileMenu.style.display = "none";
-
-    menuBtn.innerHTML = "☰";
-
-  }
-
-  else{
-
-    mobileMenu.style.display = "flex";
-
-    menuBtn.innerHTML = "✕";
-
-  }
-
-});
-
 
 // FAQ
 
@@ -1864,10 +1773,14 @@ document
 // FILE NAME
 
 const screenshot =
-  document.getElementById("screenshot");
+  document.getElementById(
+    "screenshot"
+  );
 
 const fileName =
-  document.getElementById("fileName");
+  document.getElementById(
+    "fileName"
+  );
 
 screenshot.addEventListener("change",()=>{
 
@@ -1882,16 +1795,35 @@ screenshot.addEventListener("change",()=>{
 });
 
 
-// SEND
+// LIVE CHAT
 
-document
-.getElementById("sendBtn")
-.addEventListener("click",()=>{
+const chatToggle =
+  document.getElementById(
+    "chatToggle"
+  );
 
-  document
-  .getElementById("contactStatus")
-  .textContent =
-    "✅ Your support request is ready to send.";
+const chatBox =
+  document.getElementById(
+    "chatBox"
+  );
+
+chatToggle.addEventListener("click",()=>{
+
+  if(
+    chatBox.style.display === "block"
+  ){
+
+    chatBox.style.display =
+      "none";
+
+  }
+
+  else{
+
+    chatBox.style.display =
+      "block";
+
+  }
 
 });
 
