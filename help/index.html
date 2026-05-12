@@ -843,7 +843,13 @@ textarea{
 
   bottom:24px;
 
-  z-index:9999;
+  z-index:99999;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:flex-end;
 
 }
 
@@ -1019,7 +1025,9 @@ import {
   addDoc,
   serverTimestamp,
   where,
-  onSnapshot
+  onSnapshot,
+  doc,
+  getDoc
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -1100,9 +1108,9 @@ if(!sessionId){
 }
 
 
-// AUTH BUTTON
+// AUTH BUTTON + ROLE DASHBOARD
 
-onAuthStateChanged(auth,(user)=>{
+onAuthStateChanged(auth, async(user)=>{
 
   const loginBtn =
     document.getElementById(
@@ -1114,6 +1122,11 @@ onAuthStateChanged(auth,(user)=>{
       "dashboardBtn"
     );
 
+  const mobileMenu =
+    document.getElementById(
+      "mobileMenu"
+    );
+
   if(user){
 
     loginBtn.style.display =
@@ -1121,6 +1134,97 @@ onAuthStateChanged(auth,(user)=>{
 
     dashboardBtn.style.display =
       "inline-flex";
+
+    let dashboardURL =
+      "/dashboard/";
+
+    try{
+
+      const userRef =
+        doc(db,"users",user.uid);
+
+      const userSnap =
+        await getDoc(userRef);
+
+      if(userSnap.exists()){
+
+        const userData =
+          userSnap.data();
+
+        if(
+          userData.role ===
+          "buyer"
+        ){
+
+          dashboardURL =
+            "/buyer-dashboard/";
+
+        }
+
+        else if(
+          userData.role ===
+          "admin"
+        ){
+
+          dashboardURL =
+            "/admin-dashboard/";
+
+        }
+
+        else{
+
+          dashboardURL =
+            "/dashboard/";
+
+        }
+
+      }
+
+    }
+
+    catch(error){
+
+      console.error(error);
+
+    }
+
+    dashboardBtn.href =
+      dashboardURL;
+
+    const existingMobileBtn =
+      document.getElementById(
+        "mobileDashboardBtn"
+      );
+
+    if(existingMobileBtn){
+
+      existingMobileBtn.href =
+        dashboardURL;
+
+    }
+
+    else{
+
+      const mobileDash =
+        document.createElement("a");
+
+      mobileDash.href =
+        dashboardURL;
+
+      mobileDash.id =
+        "mobileDashboardBtn";
+
+      mobileDash.className =
+        "mobileMainBtn";
+
+      mobileDash.innerHTML =
+        "Dashboard";
+
+      mobileMenu.appendChild(
+        mobileDash
+      );
+
+    }
 
   }
 
@@ -1616,6 +1720,34 @@ window.addEventListener("DOMContentLoaded",()=>{
   });
 
   document
+  .querySelectorAll(".helpfulButtons button")
+  .forEach((button)=>{
+
+    button.addEventListener("click",()=>{
+
+      if(
+        button.innerText.includes(
+          "Helpful"
+        )
+      ){
+
+        button.innerHTML =
+          "✅ Thanks!";
+
+      }
+
+      else{
+
+        button.innerHTML =
+          "💜 Feedback Saved";
+
+      }
+
+    });
+
+  });
+
+  document
   .getElementById(
     "sessionIdLabel"
   )
@@ -1712,24 +1844,49 @@ window.addEventListener("DOMContentLoaded",()=>{
 
     if(file){
 
-      fileName.textContent =
+      fileName.innerHTML =
         `Selected: ${file.name}`;
 
-      previewImage.src =
+      const imageURL =
         URL.createObjectURL(file);
+
+      previewImage.src =
+        imageURL;
 
       previewImage.style.display =
         "block";
+
+      previewImage.onload = ()=>{
+
+        URL.revokeObjectURL(
+          imageURL
+        );
+
+      };
 
     }
 
     else{
 
-      fileName.textContent =
+      fileName.innerHTML =
         "No screenshot selected";
 
       previewImage.style.display =
         "none";
+
+    }
+
+  });
+
+  document
+  .getElementById(
+    "chatInput"
+  )
+  .addEventListener("keypress",(e)=>{
+
+    if(e.key === "Enter"){
+
+      sendChat();
 
     }
 
@@ -2028,11 +2185,11 @@ click upload beat and publish.
 
 <div class="helpfulButtons">
 
-<button>
+<button type="button">
 👍 Helpful
 </button>
 
-<button>
+<button type="button">
 👎 Not Helpful
 </button>
 
