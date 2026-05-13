@@ -18,6 +18,13 @@ Audiory Help Center
   href="https://fonts.googleapis.com"
 />
 
+<!-- ADD THIS INSIDE YOUR <head> UNDER GOOGLE FONTS -->
+
+<link
+rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+/>
+
 <link
   rel="preconnect"
   href="https://fonts.gstatic.com"
@@ -237,6 +244,43 @@ footer{
   color:#64748b;
 }
 
+.articleCard{
+  background:#111827;
+  border-radius:24px;
+  overflow:hidden;
+  transition:.25s;
+  border:1px solid rgba(255,255,255,.06);
+}
+
+.articleCard:hover{
+  transform:translateY(-6px);
+  border-color:#8b5cf6;
+}
+
+.articleImage{
+  width:100%;
+  height:220px;
+  object-fit:cover;
+}
+
+.articleContent{
+  padding:20px;
+}
+
+.articleContent h3{
+  margin-bottom:12px;
+  font-size:24px;
+}
+
+.articleContent p{
+  color:#94a3b8;
+  line-height:1.7;
+}
+
+footer a:hover{
+  color:#8b5cf6;
+}
+
 @media(max-width:700px){
 
   .hero h1{
@@ -307,41 +351,138 @@ footer{
 
 </section>
 
-
-
 <section class="section">
 
-  <h2>
-    Frequently Asked Questions
-  </h2>
+<h2
+style="
+font-size:40px;
+margin-bottom:10px;
+"
+>
+Frequently Asked Questions
+</h2>
 
-  <div class="faqItem">
+<p
+style="
+color:#94a3b8;
+margin-bottom:30px;
+"
+>
+Quick answers for Audiory users.
+</p>
 
-    <div class="faqTop">
 
-      <h3>
-        How do uploads work?
-      </h3>
 
-      <span>
-        +
-      </span>
+<div class="faqItem">
 
-    </div>
+<div class="faqTop">
 
-    <div class="faqBody">
+<h3>
+How do uploads work?
+</h3>
 
-      Upload beats directly from your dashboard.
+<span>+</span>
 
-      <br><br>
+</div>
 
-      <button class="helpBtn">
-        👍 Helpful
-      </button>
+<div class="faqBody">
 
-    </div>
+Upload beats directly from your producer dashboard.
 
-  </div>
+<br><br>
+
+<button class="helpBtn">
+👍 Helpful
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="faqItem">
+
+<div class="faqTop">
+
+<h3>
+How long do withdrawals take?
+</h3>
+
+<span>+</span>
+
+</div>
+
+<div class="faqBody">
+
+M-Pesa withdrawals usually process within minutes.
+
+<br><br>
+
+<button class="helpBtn">
+👍 Helpful
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="faqItem">
+
+<div class="faqTop">
+
+<h3>
+How do I become verified?
+</h3>
+
+<span>+</span>
+
+</div>
+
+<div class="faqBody">
+
+Verification depends on consistency,
+branding and audience engagement.
+
+<br><br>
+
+<button class="helpBtn">
+👍 Helpful
+</button>
+
+</div>
+
+</div>
+
+
+
+<div class="faqItem">
+
+<div class="faqTop">
+
+<h3>
+Can I sell exclusive licenses?
+</h3>
+
+<span>+</span>
+
+</div>
+
+<div class="faqBody">
+
+Yes. Producers can upload multiple license types including exclusives.
+
+<br><br>
+
+<button class="helpBtn">
+👍 Helpful
+</button>
+
+</div>
+
+</div>
 
 </section>
 
@@ -349,63 +490,112 @@ footer{
 
 <section class="section">
 
-  <div class="contactBox">
+<h2
+style="
+font-size:40px;
+margin-bottom:10px;
+"
+>
+Support Articles
+</h2>
 
-    <h2>
-      Create Support Ticket
-    </h2>
+<p
+style="
+color:#94a3b8;
+margin-bottom:30px;
+"
+>
+Latest guides from Audiory Blog.
+</p>
 
-    <input
-      id="name"
-      placeholder="Your Name"
-    />
+<div
+id="articleGrid"
+style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:24px;
+"
+>
 
-    <input
-      id="email"
-      placeholder="Email"
-    />
+</div>
 
-    <textarea
-      id="message"
-      placeholder="Describe your issue..."
-    ></textarea>
+</section>
 
-    <br><br>
 
-    <label
-      class="uploadBtn"
-      for="screenshot"
-    >
-      Upload Screenshot
-    </label>
 
-    <input
-      type="file"
-      id="screenshot"
-      hidden
-    />
+<section class="section">
 
-    <div id="fileName">
-      No screenshot selected
-    </div>
+<div class="contactBox">
 
-    <img id="previewImage"/>
+<h2
+style="
+font-size:34px;
+margin-bottom:10px;
+"
+>
+Create Support Ticket
+</h2>
 
-    <br>
+<p
+style="
+color:#94a3b8;
+margin-bottom:30px;
+"
+>
+Send screenshots and support details.
+</p>
 
-    <button
-      class="sendBtn"
-      id="sendTicketBtn"
-    >
-      Send Ticket
-    </button>
+<input
+id="name"
+placeholder="Your Name"
+/>
 
-    <div
-      id="status"
-      style="margin-top:20px;"
-    ></div>
+<input
+id="email"
+placeholder="Email"
+/>
 
-  </div>
+<textarea
+id="message"
+placeholder="Describe your issue..."
+></textarea>
+
+<br><br>
+
+<label
+class="uploadBtn"
+for="screenshot"
+>
+Upload Screenshot
+</label>
+
+<input
+type="file"
+id="screenshot"
+hidden
+/>
+
+<div id="fileName">
+No screenshot selected
+</div>
+
+<img id="previewImage"/>
+
+<br>
+
+<button
+class="sendBtn"
+id="sendTicketBtn"
+>
+Send Ticket
+</button>
+
+<div
+id="status"
+style="margin-top:20px;"
+></div>
+
+</div>
 
 </section>
 
@@ -413,49 +603,186 @@ footer{
 
 <div class="liveChat">
 
-  <div
-    class="chatBox"
-    id="chatBox"
-  >
+<div
+class="chatBox"
+id="chatBox"
+>
 
-    <div class="chatMessages">
+<div class="chatMessages">
 
-      <div class="chatMsg">
-        👋 Welcome to Audiory Support
-      </div>
+<div class="chatMsg">
+👋 Welcome to Audiory Support
+</div>
 
-    </div>
+</div>
 
-    <input
-      id="chatInput"
-      placeholder="Type message..."
-    />
+<input
+id="chatInput"
+placeholder="Type message..."
+/>
 
-    <br><br>
+<br><br>
 
-    <button
-      class="sendBtn"
-      id="sendChatBtn"
-    >
-      Send
-    </button>
+<button
+class="sendBtn"
+id="sendChatBtn"
+>
+Send
+</button>
 
-  </div>
+</div>
 
-  <button
-    class="chatButton"
-    id="chatToggle"
-  >
-    💬
-  </button>
+<button
+class="chatButton"
+id="chatToggle"
+>
+💬
+</button>
 
 </div>
 
 
 
-<footer>
+<footer
+style="
+background:#0f172a;
+margin-top:100px;
+border-top:1px solid rgba(255,255,255,.06);
+"
+>
 
-© 2026 Audiory
+<div
+style="
+max-width:1200px;
+margin:auto;
+padding:80px 24px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:40px;
+"
+>
+
+<div>
+
+<div
+style="
+font-size:38px;
+font-weight:900;
+margin-bottom:18px;
+"
+>
+Audio<span style="color:#8b5cf6;">ry</span>
+</div>
+
+<p
+style="
+color:#94a3b8;
+line-height:1.8;
+"
+>
+Audiory powers the next generation
+of music creators and beat commerce.
+</p>
+
+</div>
+
+
+
+<div>
+
+<h3
+style="
+margin-bottom:20px;
+"
+>
+Quick Links
+</h3>
+
+<div
+style="
+display:flex;
+flex-direction:column;
+gap:14px;
+color:#94a3b8;
+"
+>
+
+<a href="/">
+Home
+</a>
+
+<a href="/marketplace/">
+Marketplace
+</a>
+
+<a href="/pricing/">
+Pricing
+</a>
+
+<a href="/help/">
+Help Center
+</a>
+
+</div>
+
+</div>
+
+
+
+<div>
+
+<h3
+style="
+margin-bottom:20px;
+"
+>
+Socials
+</h3>
+
+<div
+style="
+display:flex;
+gap:16px;
+font-size:24px;
+"
+>
+
+<a href="#">
+<i class="fab fa-instagram"></i>
+</a>
+
+<a href="#">
+<i class="fab fa-x-twitter"></i>
+</a>
+
+<a href="#">
+<i class="fab fa-youtube"></i>
+</a>
+
+<a href="#">
+<i class="fab fa-tiktok"></i>
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div
+style="
+padding:24px;
+text-align:center;
+border-top:1px solid rgba(255,255,255,.06);
+color:#64748b;
+"
+>
+
+© 2026 Audiory. All rights reserved.
+
+</div>
 
 </footer>
 
@@ -471,7 +798,10 @@ import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs,
+  query,
+  orderBy
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
@@ -506,7 +836,78 @@ const app =
 const db =
   getFirestore(app);
 
+// LOAD BLOG ARTICLES
 
+async function loadArticles(){
+
+  const articleGrid =
+    document.getElementById("articleGrid");
+
+  try{
+
+    const q = query(
+      collection(db,"blogPosts"),
+      orderBy("createdAt","desc")
+    );
+
+    const snapshot =
+      await getDocs(q);
+
+    articleGrid.innerHTML = "";
+
+    snapshot.forEach((docSnap)=>{
+
+      const post =
+        docSnap.data();
+
+      const card =
+        document.createElement("a");
+
+      card.href =
+        `https://blog.audiory.site/post.html?slug=${post.slug}`;
+
+      card.className =
+        "articleCard";
+
+      card.innerHTML = `
+
+        <img
+        class="articleImage"
+        src="${
+          post.thumbnailURL ||
+          'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=1200&auto=format&fit=crop'
+        }"
+        />
+
+        <div class="articleContent">
+
+          <h3>
+            ${post.title || "Audiory Article"}
+          </h3>
+
+          <p>
+            ${post.excerpt || ""}
+          </p>
+
+        </div>
+
+      `;
+
+      articleGrid.appendChild(card);
+
+    });
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+  }
+
+}
+
+loadArticles();
 
 // MOBILE MENU
 
