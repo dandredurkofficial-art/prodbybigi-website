@@ -637,16 +637,12 @@
 
           ${coverOnly(k.cover, k.title)}
 
-          ${
-            k.previewAudioURL
-            ?
-            `
-            <button
-              class="preview-btn"
-              type="button"
-              aria-label="Play preview"
-              data-preview="${k.previewAudioURL}"
-            ></button>
+          <button
+            class="preview-btn"
+            type="button"
+            aria-label="Play preview"
+            data-preview="${k.previewAudioURL || k.preview || k.audio || ''}"
+          ></button>
             `
             :
             ""
