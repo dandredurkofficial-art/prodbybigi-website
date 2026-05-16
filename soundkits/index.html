@@ -142,9 +142,9 @@
   font-size:28px;
   cursor:pointer;
   z-index:5;
-
-  pointer-events:auto;
-  touch-action:manipulation;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 /* META */
@@ -281,10 +281,6 @@
   font-family:system-ui;
 }
 
-.audiory-support-fab:hover{
-  transform:translateY(-1px);
-}
-
 .audiory-support-dot{
   width:10px;
   height:10px;
@@ -332,13 +328,16 @@
 }
 </style>
 
-  <div class="audiory-support-fab" onclick="location.href='/help/'">
-    <div class="audiory-support-dot"></div>
-    <div><b>Support</b><br><span>Get help</span></div>
-  </div>
-  </style>
 </head>
 <body>
+
+<div class="audiory-support-fab" onclick="location.href='/help/'">
+  <div class="audiory-support-dot"></div>
+  <div>
+    <b>Support</b><br>
+    <span>Get help</span>
+  </div>
+</div>
 
 <header class="topbar">
   <div class="container topbar-inner">
