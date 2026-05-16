@@ -47,69 +47,184 @@
     }
     .tools select{ width: 200px; }
 
-    /* ✅ 5 cols desktop, 2 cols mobile */
-    .kits-grid{
-      display:grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-      gap: 14px;
-      padding-bottom: 22px;
-    }
-    @media (max-width: 1200px){ .kits-grid{ grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-    @media (max-width: 980px){ .kits-grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 720px){ .kits-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    /* ===== SOUND KITS UI ===== */
 
-    .kit-card{ padding: 12px; border-radius: 20px; }
-    .kit-cover{
-      aspect-ratio: 1/1;
-      width: 100%;
-      border-radius: 18px;
-      overflow:hidden;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      display:grid;
-      place-items:center;
-      position:relative;
-      cursor:pointer;
-    }
-    .kit-cover:hover{ border-color: rgba(255,255,255,.16); }
-    .kit-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+.kits-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:24px;
+  padding-bottom:40px;
+}
 
-    .kit-meta{ margin-top: 10px; display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
-    .kit-title{ font-weight: 900; font-size: 14px; line-height:1.2; }
-    .kit-desc{ margin-top:6px; color: var(--muted); font-size: 12px; line-height:1.35; }
+@media(max-width:1200px){
+  .kits-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+  }
+}
 
-    .kit-actions{ margin-top: 12px; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+@media(max-width:760px){
+  .kits-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+  }
+}
 
-    /* ✅ real price pill button */
-    .price-pill-btn{
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 13px;
-      white-space: nowrap;
-      cursor:pointer;
-      color:#fff;
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      user-select:none;
-    }
-    .price-pill-btn:active{ transform: translateY(1px); }
+.kit-card{
+  background:#111111;
+  border-radius:24px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.08);
+  transition:.25s;
+  overflow:hidden;
+}
 
-    .btn{
-      background: rgba(255,255,255,.10);
-      border: 1px solid rgba(255,255,255,.14);
-      color: rgba(255,255,255,.92);
-      padding: 10px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      cursor: pointer;
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-    }
+.kit-card:hover{
+  transform:translateY(-4px);
+  border-color:#2563eb;
+}
+
+.kit-cover{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:18px;
+  overflow:hidden;
+  background:#1a1a1a;
+  cursor:pointer;
+}
+
+.kit-cover img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* PLAY BUTTON PREVIEW */
+
+.kit-cover::after{
+  content:"▶";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:72px;
+  height:72px;
+  border-radius:50%;
+  background:rgba(0,0,0,.45);
+  backdrop-filter:blur(10px);
+  color:#fff;
+  font-size:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:.95;
+}
+
+/* TITLE */
+
+.kit-meta{
+  margin-top:18px;
+}
+
+.kit-title{
+  font-size:18px;
+  font-weight:900;
+  line-height:1.25;
+  color:#fff;
+}
+
+.kit-desc{
+  margin-top:10px;
+  color:#a1a1aa;
+  font-size:15px;
+  line-height:1.55;
+}
+
+/* BUTTONS */
+
+.kit-actions{
+  margin-top:18px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.btn{
+  width:100%;
+  height:52px;
+  border-radius:16px;
+  background:transparent;
+  border:1.5px solid #2563eb;
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:.2s;
+}
+
+.btn:hover{
+  background:#2563eb;
+}
+
+/* PRICE PILL */
+
+.price-pill-btn{
+  width:100%;
+  height:56px;
+  border-radius:16px;
+  background:transparent;
+  border:2px solid #2563eb;
+  color:#fff;
+  font-size:20px;
+  font-weight:900;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  transition:.2s;
+}
+
+.price-pill-btn:hover{
+  background:#2563eb;
+}
+
+.price-pill-btn span:first-child{
+  font-size:22px;
+}
+
+/* MOBILE */
+
+@media(max-width:760px){
+
+  .kit-card{
+    padding:12px;
+    border-radius:20px;
+  }
+
+  .kit-title{
+    font-size:15px;
+  }
+
+  .kit-desc{
+    font-size:13px;
+  }
+
+  .btn,
+  .price-pill-btn{
+    height:48px;
+    font-size:16px;
+  }
+
+  .kit-cover::after{
+    width:62px;
+    height:62px;
+    font-size:24px;
+  }
 
     .loading-box{
       margin: 14px 0;
