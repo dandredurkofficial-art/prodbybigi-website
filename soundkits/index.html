@@ -31,23 +31,44 @@
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    .page-head{ margin: 18px 0 14px; }
-    .page-title{ font-size: 26px; font-weight: 900; letter-spacing: -.02em; }
-    .page-sub{ color: var(--muted); margin-top: 6px; }
+.page-head{
+  margin:18px 0 14px;
+}
 
-    .tools{ display:flex; gap:10px; flex-wrap:wrap; margin: 14px 0 18px; }
-    .tools input, .tools select{
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.10);
-      color: rgba(255,255,255,.92);
-      padding: 12px 12px;
-      border-radius: 14px;
-      outline: none;
-      width: min(360px, 100%);
-    }
-    .tools select{ width: 200px; }
+.page-title{
+  font-size:26px;
+  font-weight:900;
+  letter-spacing:-.02em;
+}
 
-    /* ===== SOUND KITS UI ===== */
+.page-sub{
+  color:var(--muted);
+  margin-top:6px;
+}
+
+.tools{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:14px 0 18px;
+}
+
+.tools input,
+.tools select{
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+  color:rgba(255,255,255,.92);
+  padding:12px;
+  border-radius:14px;
+  outline:none;
+  width:min(360px,100%);
+}
+
+.tools select{
+  width:200px;
+}
+
+/* GRID */
 
 .kits-grid{
   display:grid;
@@ -69,6 +90,8 @@
   }
 }
 
+/* CARD */
+
 .kit-card{
   background:#111111;
   border-radius:24px;
@@ -82,6 +105,8 @@
   transform:translateY(-4px);
   border-color:#2563eb;
 }
+
+/* COVER */
 
 .kit-cover{
   position:relative;
@@ -100,6 +125,8 @@
   display:block;
 }
 
+/* PREVIEW BUTTON */
+
 .preview-btn{
   position:absolute;
   left:50%;
@@ -114,35 +141,13 @@
   color:#fff;
   font-size:28px;
   cursor:pointer;
-  z-index:4;
-
-  .preview-btn{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:74px;
-  height:74px;
-  border-radius:50%;
-  border:none;
-  background:rgba(0,0,0,.45);
-  backdrop-filter:blur(10px);
-  color:#fff;
-  font-size:28px;
-  cursor:pointer;
-  z-index:4;
+  z-index:5;
 
   pointer-events:auto;
   touch-action:manipulation;
 }
 
-.cover-click{
-  position:absolute;
-  inset:0;
-  z-index:1;
-}
-
-/* TITLE */
+/* META */
 
 .kit-meta{
   margin-top:18px;
@@ -162,7 +167,7 @@
   line-height:1.55;
 }
 
-/* BUTTONS */
+/* ACTIONS */
 
 .kit-actions{
   margin-top:18px;
@@ -170,6 +175,8 @@
   flex-direction:column;
   gap:12px;
 }
+
+/* DETAILS BUTTON */
 
 .btn{
   width:100%;
@@ -191,7 +198,7 @@
   background:#2563eb;
 }
 
-/* PRICE PILL */
+/* PRICE BUTTON */
 
 .price-pill-btn{
   width:100%;
@@ -218,6 +225,82 @@
   font-size:22px;
 }
 
+/* LOADING */
+
+.loading-box{
+  margin:14px 0;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  color:rgba(255,255,255,.85);
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+
+.hidden{
+  display:none !important;
+}
+
+/* SOCIAL */
+
+.social a{
+  display:inline-flex;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+}
+
+.social svg{
+  width:18px;
+  height:18px;
+  fill:rgba(255,255,255,.9);
+}
+
+/* SUPPORT FAB */
+
+.audiory-support-fab{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9999;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:12px 14px;
+  border-radius:999px;
+  background:#0e111a;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+  cursor:pointer;
+  font-family:system-ui;
+}
+
+.audiory-support-fab:hover{
+  transform:translateY(-1px);
+}
+
+.audiory-support-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:#22c55e;
+}
+
+.audiory-support-fab b{
+  font-size:14px;
+}
+
+.audiory-support-fab span{
+  font-size:12px;
+  opacity:.8;
+}
+
 /* MOBILE */
 
 @media(max-width:760px){
@@ -241,42 +324,13 @@
     font-size:16px;
   }
 
-  .kit-cover::after{
+  .preview-btn{
     width:62px;
     height:62px;
     font-size:24px;
   }
-
-    .loading-box{
-      margin: 14px 0;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.85);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .hidden{ display:none !important; }
-
-    .social a{ display:inline-flex; width:36px; height:36px; border-radius: 999px; align-items:center; justify-content:center;
-      background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); }
-    .social svg{ width:18px; height:18px; fill: rgba(255,255,255,.9); }
-
-    .audiory-support-fab{
-      position:fixed; right:18px; bottom:18px; z-index:9999;
-      display:flex; gap:10px; align-items:center;
-      padding:12px 14px; border-radius:999px;
-      background:#0e111a; color:#fff;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 18px 50px rgba(0,0,0,.45);
-      cursor:pointer; font-family:system-ui;
-    }
-    .audiory-support-fab:hover{transform:translateY(-1px)}
-    .audiory-support-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
-    .audiory-support-fab b{font-size:14px}
-    .audiory-support-fab span{font-size:12px;opacity:.8}
-  </style>
+}
+</style>
 
   <div class="audiory-support-fab" onclick="location.href='/help/'">
     <div class="audiory-support-dot"></div>
@@ -521,7 +575,10 @@
 
       el.innerHTML = `
         <!-- ✅ COVER CLICKABLE (NO AUDIO PREVIEW) -->
-        <div class="kit-cover">
+        <div
+          class="kit-cover"
+          data-go="${k.id}"
+        >
 
           ${coverOnly(k.cover, k.title)}
 
