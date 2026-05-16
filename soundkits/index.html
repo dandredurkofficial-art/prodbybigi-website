@@ -734,63 +734,63 @@
 
     // AUDIO PREVIEW
 
-if(preview){
+    if(preview){
 
-  e.preventDefault();
-  e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
 
-  const url =
-  preview.getAttribute("data-preview");
+      const url =
+      preview.getAttribute("data-preview");
 
-  if(!url) return;
+      if(!url) return;
 
-  // RESET BUTTONS
+      // RESET BUTTONS
 
-  document
-    .querySelectorAll(".preview-btn")
-    .forEach(btn=>btn.classList.remove("playing"));
+      document
+        .querySelectorAll(".preview-btn")
+        .forEach(btn=>btn.classList.remove("playing"));
 
-  // TOGGLE SAME AUDIO
+      // TOGGLE SAME AUDIO
 
-  if(window.currentPreviewAudio){
+      if(window.currentPreviewAudio){
 
-    if(
-      window.currentPreviewAudio.src === url &&
-      !window.currentPreviewAudio.paused
-    ){
+        if(
+          window.currentPreviewAudio.src === url &&
+          !window.currentPreviewAudio.paused
+        ){
 
-      window.currentPreviewAudio.pause();
+          window.currentPreviewAudio.pause();
 
-      preview.classList.remove("playing");
+          preview.classList.remove("playing");
+
+          return;
+        }
+
+        window.currentPreviewAudio.pause();
+      }
+
+      const audio = new Audio(url);
+
+      window.currentPreviewAudio = audio;
+
+      preview.classList.add("playing");
+
+      audio.play().catch(()=>{
+
+        preview.classList.remove("playing");
+
+        alert("Preview failed");
+
+      });
+
+      audio.onended = ()=>{
+
+        preview.classList.remove("playing");
+
+      };
 
       return;
     }
-
-    window.currentPreviewAudio.pause();
-  }
-
-  const audio = new Audio(url);
-
-  window.currentPreviewAudio = audio;
-
-  preview.classList.add("playing");
-
-  audio.play().catch(()=>{
-
-    preview.classList.remove("playing");
-
-    alert("Preview failed");
-
-  });
-
-  audio.onended = ()=>{
-
-    preview.classList.remove("playing");
-
-  };
-
-  return;
-}
 
     // cover click -> go to kit page
     if (go){
