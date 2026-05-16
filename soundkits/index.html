@@ -100,25 +100,27 @@
   display:block;
 }
 
-/* PLAY BUTTON PREVIEW */
-
-.kit-cover::after{
-  content:"▶";
+.preview-btn{
   position:absolute;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  width:72px;
-  height:72px;
+  width:74px;
+  height:74px;
   border-radius:50%;
+  border:none;
   background:rgba(0,0,0,.45);
   backdrop-filter:blur(10px);
   color:#fff;
   font-size:28px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  opacity:.95;
+  cursor:pointer;
+  z-index:4;
+}
+
+.cover-click{
+  position:absolute;
+  inset:0;
+  z-index:2;
 }
 
 /* TITLE */
@@ -439,7 +441,8 @@
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || ""
+      downloadUrl: data.downloadUrl || data.downloadURL || "",
+      previewAudioURL: data.previewAudioURL || ""
     };
   }
 
@@ -499,8 +502,31 @@
 
       el.innerHTML = `
         <!-- ✅ COVER CLICKABLE (NO AUDIO PREVIEW) -->
-        <div class="kit-cover" data-go="${k.id}">
+        <div class="kit-cover">
+
           ${coverOnly(k.cover, k.title)}
+
+          ${
+            k.previewAudioURL
+            ?
+            `
+            <button
+              class="preview-btn"
+              type="button"
+              data-preview="${k.previewAudioURL}"
+            >
+              ▶
+            </button>
+            `
+            :
+            ""
+          }
+
+          <div
+            class="cover-click"
+            data-go="${k.id}"
+          ></div>
+
         </div>
 
         <div class="kit-meta">
@@ -576,8 +602,49 @@
     const go = e.target.closest("[data-go]");
     const add = e.target.closest("[data-add]");
     const open = e.target.closest("[data-open]");
+    const preview =
+    e.target.closest("[data-preview]");
 
-    if (!go && !add && !open) return;
+    if (!go && !add && !open && !preview) return;
+
+    // AUDIO PREVIEW
+
+    if(preview){
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const url =
+      preview.getAttribute("data-preview");
+
+      if(!url) return;
+
+      if(window.currentPreviewAudio){
+
+        if(
+          window.currentPreviewAudio.src === url &&
+          !window.currentPreviewAudio.paused
+        ){
+
+          window.currentPreviewAudio.pause();
+          return;
+        }
+
+        window.currentPreviewAudio.pause();
+      }
+
+      const audio = new Audio(url);
+
+      window.currentPreviewAudio = audio;
+
+      audio.play().catch(()=>{
+
+        alert("Preview failed");
+
+      });
+
+      return;
+    }
 
     // cover click -> go to kit page
     if (go){
