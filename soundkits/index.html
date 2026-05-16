@@ -415,7 +415,7 @@
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</span></div>
+      <div class="logo">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -586,7 +586,7 @@
       published: data.published !== false,
       createdAt: data.createdAt || 0,
       downloadUrl: data.downloadUrl || data.downloadURL || "",
-      previewAudioURL: data.previewAudioURL || ""
+      previewAudioURL: data.previewAudioURL || "",
 
       producerId: data.producerId || "",
       producerName:
@@ -675,7 +675,7 @@
           </div>
 
           <a
-            href="/producer/?id=${encodeURIComponent(k.producerId || "")}"
+            href="/producer-profile/?id=${encodeURIComponent(k.producerId || "")}"
             class="kit-producer"
             onclick="event.stopPropagation()"
           >
