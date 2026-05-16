@@ -633,51 +633,51 @@
       el.setAttribute("data-kit-id", k.id);
 
       el.innerHTML = `
-  <div
-    class="kit-cover"
-    data-go="${k.id}"
-  >
+        <div
+          class="kit-cover"
+          data-go="${k.id}"
+        >
 
-    ${coverOnly(k.cover, k.title)}
+          ${coverOnly(k.cover, k.title)}
 
-    <button
-      class="preview-btn"
-      type="button"
-      aria-label="Play preview"
-      data-preview="${k.previewAudioURL || k.preview || k.audio || ''}"
-    ></button>
+          <button
+            class="preview-btn"
+            type="button"
+            aria-label="Play preview"
+            data-preview="${k.previewAudioURL || k.preview || k.audio || ''}"
+          ></button>
 
-  </div>
+        </div>
 
-  <div class="kit-meta">
+        <div class="kit-meta">
 
-    <div class="kit-title">
-      ${k.title}
-    </div>
+          <div class="kit-title">
+            ${k.title}
+          </div>
 
-    <a
-      href="/producer/?id=${encodeURIComponent(k.producerId || "")}"
-      class="kit-producer"
-      onclick="event.stopPropagation()"
-    >
-      ${k.producerName || "Audiory"}
-    </a>
+          <a
+            href="/producer/?id=${encodeURIComponent(k.producerId || "")}"
+            class="kit-producer"
+            onclick="event.stopPropagation()"
+          >
+            ${k.producerName || "Audiory"}
+          </a>
 
-  </div>
+        </div>
 
-  <div class="kit-actions">
+        <div class="kit-actions">
 
-    <button
-      class="price-pill-btn"
-      type="button"
-      data-add="${k.id}"
-    >
-      <span>🛒</span>
-      <span>${k.price ? money(k.price) : "Free"}</span>
-    </button>
+          <button
+            class="price-pill-btn"
+            type="button"
+            data-add="${k.id}"
+          >
+            <span>🛒</span>
+            <span>${k.price ? money(k.price) : "Free"}</span>
+          </button>
 
-  </div>
-`;
+        </div>
+      `;
 
       grid.appendChild(el);
     });
