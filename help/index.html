@@ -277,6 +277,10 @@ footer{
   line-height:1.7;
 }
 
+footer a{
+  transition:.2s;
+}
+
 footer a:hover{
   color:#8b5cf6;
 }
@@ -289,6 +293,10 @@ footer a:hover{
 
   .chatBox{
     width:calc(100vw - 40px);
+  }
+
+  footer{
+    text-align:left;
   }
 
 }
@@ -645,9 +653,9 @@ id="chatToggle"
 
 <footer
 style="
-background:#0f172a;
-margin-top:100px;
+background:#020617;
 border-top:1px solid rgba(255,255,255,.06);
+margin-top:120px;
 "
 >
 
@@ -657,18 +665,21 @@ max-width:1200px;
 margin:auto;
 padding:80px 24px;
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:40px;
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+gap:50px;
 "
 >
+
+<!-- LEFT -->
 
 <div>
 
 <div
 style="
-font-size:38px;
+font-size:64px;
 font-weight:900;
-margin-bottom:18px;
+margin-bottom:24px;
+line-height:1;
 "
 >
 Audio<span style="color:#8b5cf6;">ry</span>
@@ -677,50 +688,61 @@ Audio<span style="color:#8b5cf6;">ry</span>
 <p
 style="
 color:#94a3b8;
-line-height:1.8;
+line-height:1.9;
+font-size:18px;
+max-width:520px;
 "
 >
-Audiory powers the next generation
-of music creators and beat commerce.
+Audiory powers the next generation of
+producers, artists and creators through creator
+tools, beat commerce and music infrastructure.
 </p>
 
 </div>
 
 
 
+<!-- LINKS -->
+
+<div
+style="
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:40px;
+"
+>
+
 <div>
 
 <h3
 style="
-margin-bottom:20px;
+margin-bottom:24px;
+font-size:18px;
 "
 >
-Quick Links
+Categories
 </h3>
 
 <div
 style="
 display:flex;
 flex-direction:column;
-gap:14px;
+gap:18px;
 color:#94a3b8;
+font-size:18px;
 "
 >
 
-<a href="/">
-Home
+<a href="#">
+Producer Tips
 </a>
 
-<a href="/marketplace/">
-Marketplace
+<a href="#">
+Marketing
 </a>
 
-<a href="/pricing/">
-Pricing
-</a>
-
-<a href="/help/">
-Help Center
+<a href="#">
+Industry
 </a>
 
 </div>
@@ -733,17 +755,61 @@ Help Center
 
 <h3
 style="
-margin-bottom:20px;
+margin-bottom:24px;
+font-size:18px;
 "
 >
-Socials
+Platform
 </h3>
 
 <div
 style="
 display:flex;
-gap:16px;
-font-size:24px;
+flex-direction:column;
+gap:18px;
+color:#94a3b8;
+font-size:18px;
+"
+>
+
+<a href="/">
+Main Website
+</a>
+
+<a href="/marketplace/">
+Marketplace
+</a>
+
+<a href="/producers/">
+Producers
+</a>
+
+<a href="/help/">
+Help
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- SOCIALS -->
+
+<div
+style="
+max-width:1200px;
+margin:auto;
+padding:0 24px 50px;
+display:flex;
+align-items:center;
+gap:24px;
+font-size:34px;
+color:#94a3b8;
 "
 >
 
@@ -765,18 +831,17 @@ font-size:24px;
 
 </div>
 
-</div>
-
-</div>
 
 
+<!-- COPYRIGHT -->
 
 <div
 style="
-padding:24px;
-text-align:center;
 border-top:1px solid rgba(255,255,255,.06);
+padding:40px 24px;
+text-align:center;
 color:#64748b;
+font-size:18px;
 "
 >
 
