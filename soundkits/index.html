@@ -641,7 +641,7 @@
     window.location.href = `/soundkit/?id=${encodeURIComponent(kitId)}`;
   }
 
-  function renderKits(list){
+  async function renderKits(list){
     const grid = $("kitsGrid");
     const status = $("kitStatus");
     grid.innerHTML = "";
@@ -653,8 +653,36 @@
     }
     status.classList.add("hidden");
 
+    const producerCache = {};
+
     list.forEach(k=>{
       const el = document.createElement("div");
+
+      let verifiedBadge = "";
+
+      try{
+
+        if(k.producerId){
+
+          if(!producerCache[k.producerId]){
+
+            const prof =
+            await window.FB.getProducerProfile(k.producerId);
+
+            producerCache[k.producerId] = prof || {};
+
+          }
+
+          verifiedBadge =
+            AudioryVerify.badge(
+              producerCache[k.producerId]?.plan || ""
+            );
+
+        }
+
+      }catch(e){
+        console.log("verify load failed", e);
+      }
       el.className = "card kit-card";
       el.setAttribute("data-kit-id", k.id);
 
@@ -686,7 +714,7 @@
             class="kit-producer"
             onclick="event.stopPropagation()"
           >
-            ${k.producerName || "Audiory"} ${AudioryVerify.badge(k.producerPlan)}
+            ${k.producerName || "Audiory"} ${verifiedBadge}
           </a>
 
         </div>
@@ -715,7 +743,7 @@
     });
   }
 
-  function applyFilters(){
+  async function applyFilters(){
     const q = ($("kitSearch").value || "").trim().toLowerCase();
     const cat = ($("kitCategory").value || "").trim().toLowerCase();
 
@@ -726,7 +754,7 @@
       return okQ && okC;
     });
 
-    renderKits(filtered);
+    await renderKits(filtered);
   }
 
   function showFirebaseError(err){
@@ -755,7 +783,7 @@
       } else {
         ALL_KITS = await fallbackFetchSoundKits();
       }
-      applyFilters();
+      await applyFilters();
     }catch(err){
       console.error(err);
       showFirebaseError(err);
