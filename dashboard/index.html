@@ -2417,9 +2417,34 @@
     <input id="kitPrice" placeholder="Price (0 for Free)" value="0" />
 
     <div id="kitFileStatus"></div>
-    <button class="primary" type="button" onclick="uploadKitFile()">Upload Kit File (ZIP)</button>
 
-    <input id="kitDownloadUrl" placeholder="Download URL (auto-filled after upload OR paste link)" />
+    <button
+      class="primary"
+      type="button"
+      onclick="uploadKitFile()"
+    >
+      Upload Kit File (ZIP)
+    </button>
+
+    <div id="previewAudioStatus"></div>
+
+    <button
+      class="primary"
+      type="button"
+      onclick="uploadPreviewAudio()"
+    >
+      Upload Preview Audio
+    </button>
+
+    <input
+      id="previewAudioURL"
+      placeholder="Preview Audio URL (auto-filled after upload)"
+    />
+
+    <input
+      id="kitDownloadUrl"
+      placeholder="Download URL (auto-filled after upload OR paste link)"
+    />
 
     <div class="toggle">
       <label>Published</label>
@@ -6594,6 +6619,73 @@ async function uploadKitFile(){
     alert("Kit file upload failed: " + (err?.message || err));
   }
 }
+
+async function uploadPreviewAudio(){
+
+  try{
+
+    const picker =
+      document.createElement("input");
+
+    picker.type = "file";
+
+    picker.accept = "audio/*";
+
+    picker.click();
+
+    picker.onchange = async()=>{
+
+      const file =
+        picker.files[0];
+
+      if(!file) return;
+
+      const status =
+        document.getElementById(
+          "previewAudioStatus"
+        );
+
+      status.innerHTML =
+        "Uploading preview audio...";
+
+      const storageRef =
+        ref(
+          storage,
+          `soundkit-previews/${Date.now()}-${file.name}`
+        );
+
+      await uploadBytes(
+        storageRef,
+        file
+      );
+
+      const url =
+        await getDownloadURL(
+          storageRef
+        );
+
+      document.getElementById(
+        "previewAudioURL"
+      ).value = url;
+
+      status.innerHTML =
+        "✅ Preview uploaded";
+
+    };
+
+  }
+
+  catch(error){
+
+    console.error(error);
+
+    alert(
+      "Preview upload failed"
+    );
+
+  }
+
+}
 async function publishKit(){
   if(!window.currentUser){
     alert("Please login again.");
@@ -6613,6 +6705,7 @@ async function publishKit(){
       category: ($("kitCategory").value || "").trim(),
       price: Number($("kitPrice").value || 0) || 0,
       cover: kitCover || "",
+      previewAudioURL: ($("previewAudioURL").value || "").trim(),
       downloadUrl: ($("kitDownloadUrl").value || kitFile || "").trim(),
       producerId: window.currentUser.uid,
       producerName,
@@ -6625,6 +6718,7 @@ async function publishKit(){
     $("kitCategory").value = "";
     $("kitPrice").value = "0";
     $("kitDownloadUrl").value = "";
+    $("previewAudioURL").value = "";
     kitCover = null;
     kitFile = null;
     $("kitCoverBox").innerHTML = "<span>Cover Preview</span>";
