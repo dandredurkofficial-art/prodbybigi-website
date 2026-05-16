@@ -554,6 +554,7 @@
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
@@ -589,10 +590,16 @@
       previewAudioURL: data.previewAudioURL || "",
 
       producerId: data.producerId || "",
+
       producerName:
         data.producerName ||
         data.displayName ||
         data.username ||
+        "",
+
+      producerPlan:
+        data.producerPlan ||
+        data.plan ||
         "",
     };
   }
@@ -679,7 +686,7 @@
             class="kit-producer"
             onclick="event.stopPropagation()"
           >
-            ${k.producerName || "Audiory"}
+            ${k.producerName || "Audiory"} ${AudioryVerify.badge(k.producerPlan)}
           </a>
 
         </div>
