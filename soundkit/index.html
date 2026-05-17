@@ -412,6 +412,10 @@
       }
     }
 
+    if (lastErr?.code === "permission-denied") {
+      return null;
+    }
+
     if (lastErr) {
       throw lastErr;
     }
