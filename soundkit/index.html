@@ -106,7 +106,7 @@
       margin-left:4px;
     }
     .preview-btn.playing::before{
-      content:"❚";
+      content:"❚❚";
       font-size:18px;
       margin-left:0;
     }
@@ -423,7 +423,7 @@
       if(kit.cover){
         $("kitCover").innerHTML = `
           <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
-          ${kit.previewUrl ? `<button class="preview-btn" id="previewBtn" type="button"></button>` : ""}
+          ${kit.previewAudioURL ? `<button class="preview-btn" id="previewBtn" type="button"></button>` : ""}
         `;
       }
 
@@ -465,9 +465,9 @@
 
       // Preview button
       const previewBtn = $("previewBtn");
-      if(previewBtn && kit.previewUrl){
+      if(previewBtn && kit.previewAudioURL){
         let isPlaying = false;
-        let audio = new Audio(kit.previewUrl);
+        let audio = new Audio(kit.previewAudioURL);
         audio.preload = "metadata";
         
         previewBtn.onclick = async () => {
