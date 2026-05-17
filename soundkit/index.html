@@ -345,7 +345,11 @@
       downloadUrl: data.downloadUrl || data.downloadURL || "",
       previewAudioURL: data.previewAudioURL || "",
 
-      producerId: data.producerId || "",
+      previewAudioURL:
+        data.previewAudioURL ||
+        data.previewUrl ||
+        data.preview ||
+        "",
 
       producerName:
         data.producerName ||
@@ -402,6 +406,7 @@
 
     try{
       const kit = await getKitByIdAnyCollection(kitId);
+      console.log("KIT DATA", kit);
       if (!kit){
         status.textContent = `Sound kit not found: ${kitId}`;
         return;
@@ -429,9 +434,17 @@
 
       // Cover + preview button if previewUrl exists
       if(kit.cover){
+
+        console.log("PREVIEW URL =", kit.previewAudioURL);
+
         $("kitCover").innerHTML = `
           <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
-          ${kit.previewAudioURL ? `<button class="preview-btn" id="previewBtn" type="button"></button>` : ""}
+
+          ${
+            kit.previewAudioURL
+            ? `<button class="preview-btn" id="previewBtn" type="button"></button>`
+            : ""
+          }
         `;
       }
 
