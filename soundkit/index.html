@@ -47,6 +47,92 @@
       word-break: break-word;
     }
     .hidden{display:none!important}
+
+    .producer{
+  margin-top:8px;
+  color:rgba(255,255,255,.72);
+  font-size:15px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.cover{
+  position:relative;
+}
+
+.preview-btn{
+  position:absolute;
+  right:18px;
+  bottom:18px;
+
+  width:74px;
+  height:74px;
+  border-radius:50%;
+
+  border:1px solid rgba(255,255,255,.14);
+
+  background:rgba(0,0,0,.42);
+
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:#fff;
+  cursor:pointer;
+
+  z-index:20;
+}
+
+.preview-btn::before{
+  content:"▶";
+  font-size:24px;
+  margin-left:4px;
+}
+
+.preview-btn.playing::before{
+  content:"❚❚";
+  font-size:18px;
+  margin-left:0;
+}
+
+.price-btn{
+  height:54px;
+  padding:0 22px;
+  border-radius:16px;
+  border:1.5px solid #295dff;
+  background:transparent;
+  color:#fff;
+  font-size:18px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.2s;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+}
+
+.price-btn:hover{
+  background:rgba(255,255,255,.05);
+}
+
+@media(max-width:760px){
+
+  .preview-btn{
+    width:92px;
+    height:92px;
+  }
+
+  .title{
+    font-size:22px;
+  }
+
+}
   </style>
 </head>
 
@@ -117,6 +203,11 @@
         <div class="row">
           <div class="pill"><span class="muted">Category:</span> <span id="kitCategory">—</span></div>
           <div class="pill"><span class="muted">Price:</span> <span id="kitPrice">—</span></div>
+        </div>
+
+        <div class="producer">
+          <span id="kitProducer">Audiory</span>
+          <span id="kitVerified"></span>
         </div>
 
         <div class="desc" id="kitDesc"></div>
