@@ -284,34 +284,28 @@
       };
 
       $("addBtn").onclick = () => {
+
         if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
+
           alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
+
           return;
         }
 
-        $("addBtn").onclick = () => {
+        window.PB_CART.add({
+          beatId: String(kit.id),
+          title: kit.title,
+          artwork: kit.cover,
+          price: Number(kit.price || 0),
+          licenseKey: "soundkit",
+          licenseName: "Sound Kit",
+          producerId: "",
+          producerName: "",
+          downloadUrl: String(kit.downloadUrl || "")
+        });
 
-          if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
-
-            alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
-
-            return;
-          }
-
-          window.PB_CART.add({
-            beatId: String(kit.id),
-            title: kit.title,
-            artwork: kit.cover,
-            price: Number(kit.price || 0),
-            licenseKey: "soundkit",
-            licenseName: "Sound Kit",
-            producerId: "",
-            producerName: "",
-            downloadUrl: String(kit.downloadUrl || "")
-          });
-
-          alert("Added to cart ✅");
-        };
+        alert("Added to cart ✅");
+      };
 
       status.classList.add("hidden");
       card.classList.remove("hidden");
