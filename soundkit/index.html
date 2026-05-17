@@ -350,7 +350,7 @@
       
       producerLink.textContent = kit.producerName;
       if(kit.producerId){
-        producerLink.href = `/producer/?id=${encodeURIComponent(kit.producerId)}`;
+        producerLink.href = `/producer-profile/?producerId=${encodeURIComponent(kit.producerId)}`;
       } else {
         producerLink.href = "/producers/";
         producerLink.style.pointerEvents = "none";
