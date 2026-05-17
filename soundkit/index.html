@@ -109,7 +109,10 @@
       <div class="cover" id="kitCover"></div>
 
       <div>
-        <div class="title" id="kitTitle">—</div>
+        <div class="title">
+          <span id="kitTitle">—</span>
+          <span id="kitVerified"></span>
+        </div>
 
         <div class="row">
           <div class="pill"><span class="muted">Category:</span> <span id="kitCategory">—</span></div>
@@ -164,7 +167,8 @@
     "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
   
-<script type="module" src="/js/firebase.js"></script>
+<script type="module" src="/js/firebase.js"></script>|
+<script src="/js/verify.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
@@ -199,7 +203,8 @@
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || ""
+      downloadUrl: data.downloadUrl || data.downloadURL || "".
+      producerPlan: data.producerPlan || data.plan || ""
     };
   }
 
@@ -259,6 +264,8 @@
 
       // Render UI
       $("kitTitle").textContent = kit.title;
+      $("kitVerified").innerHTML =
+        AudioryVerify.badge(kit.producerPlan || "");
       $("kitCategory").textContent = kit.category || "—";
       $("kitPrice").textContent = kit.price ? money(kit.price) : "Free";
       $("kitDesc").textContent = kit.description || "No description.";
@@ -282,23 +289,29 @@
           return;
         }
 
-        // ✅ Keep kit prefix so backend can detect kits vs beats
-        const cartId = `kit:${String(kit.id)}`;
+        $("addBtn").onclick = () => {
 
-        window.PB_CART.add({
-          beatId: cartId,
-          title: kit.title,
-          artwork: kit.cover,
-          price: Number(kit.price || 0),
-          licenseKey: "soundkit",
-          licenseName: "Sound Kit",
-          producerId: "",
-          producerName: "",
-          downloadUrl: String(kit.downloadUrl || "")
-        });
+          if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
 
-        alert("Added to cart ✅");
-      };
+            alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
+
+            return;
+          }
+
+          window.PB_CART.add({
+            beatId: String(kit.id),
+            title: kit.title,
+            artwork: kit.cover,
+            price: Number(kit.price || 0),
+            licenseKey: "soundkit",
+            licenseName: "Sound Kit",
+            producerId: "",
+            producerName: "",
+            downloadUrl: String(kit.downloadUrl || "")
+          });
+
+          alert("Added to cart ✅");
+        };
 
       status.classList.add("hidden");
       card.classList.remove("hidden");
