@@ -662,23 +662,10 @@
 
       try{
 
-        if(k.producerId){
-
-          if(!producerCache[k.producerId]){
-
-            const prof =
-            await window.FB.getProducerProfile(k.producerId);
-
-            producerCache[k.producerId] = prof || {};
-
-          }
-
-          verifiedBadge =
-            AudioryVerify.badge(
-              producerCache[k.producerId]?.plan || ""
-            );
-
-        }
+        verifiedBadge =
+          AudioryVerify.badge(
+            k.producerPlan || ""
+          );
 
       }catch(e){
         console.log("verify load failed", e);
