@@ -6755,14 +6755,47 @@ async function loadKits(){
     }
 
     kitsData.forEach(k=>{
-      list.innerHTML += `
-        <div class="track">
-          <img src="${k.cover||''}">
-          <div style="flex:1"><strong>${k.title}</strong><br>${k.category||"—"} • ${k.price ? "$"+Number(k.price).toFixed(2) : "Free"}</div>
-          <button onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')">Link</button>
-        </div>
-      `;
-    });
+  list.innerHTML += `
+    <div class="track">
+
+      <img src="${k.cover||''}">
+
+      <div style="flex:1">
+        <strong>${k.title}</strong><br>
+        ${k.category||"—"} • ${
+          k.price
+          ? "$"+Number(k.price).toFixed(2)
+          : "Free"
+        }
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+
+        <button
+          onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')"
+        >
+          Link
+        </button>
+
+        <button
+          onclick="editKit('${k.id}')"
+          style="background:#2563eb;color:#fff;"
+        >
+          Edit
+        </button>
+
+        <button
+          onclick="deleteKit('${k.id}')"
+          style="background:#dc2626;color:#fff;"
+        >
+          Delete
+        </button>
+
+      </div>
+
+    </div>
+  `;
+});
   }catch(err){
     list.innerHTML = `<div style="color:#ef4444;">Could not load kits: ${err?.message||err}</div>`;
   }
@@ -6771,6 +6804,188 @@ function copyKitLink(url){
   if(!url) return alert("No downloadUrl set yet.");
   navigator.clipboard?.writeText(url);
   alert("Link copied");
+}
+
+async function deleteKit(id){
+
+  const yes =
+    confirm(
+      "Delete this sound kit?"
+    );
+
+  if(!yes) return;
+
+  try{
+
+    await window.deleteDoc(
+      window.doc(
+        window.db,
+        "soundkits",
+        id
+      )
+    );
+
+    alert("Sound kit deleted");
+
+    loadKits();
+    loadDashboardStats();
+
+  }catch(err){
+
+    console.error(err);
+
+    alert(
+      "Delete failed: " +
+      (err?.message || err)
+    );
+
+  }
+
+}
+
+async function editKit(id){
+
+  const kit =
+    kitsData.find(
+      x => x.id === id
+    );
+
+  if(!kit){
+    alert("Kit not found");
+    return;
+  }
+
+  // autofill form
+
+  $("kitTitle").value =
+    kit.title || "";
+
+  $("kitDesc").value =
+    kit.description || "";
+
+  $("kitCategory").value =
+    kit.category || "";
+
+  $("kitPrice").value =
+    kit.price || 0;
+
+  $("previewAudioURL").value =
+    kit.previewAudioURL || "";
+
+  $("kitDownloadUrl").value =
+    kit.downloadUrl || "";
+
+  $("kitPublished").checked =
+    kit.published === true;
+
+  kitCover =
+    kit.cover || "";
+
+  if(kit.cover){
+
+    $("kitCoverBox").innerHTML =
+      `<img src="${kit.cover}">`;
+
+  }
+
+  const publishBtn =
+    $("publishKitBtn");
+
+  publishBtn.textContent =
+    "Update Sound Kit";
+
+  publishBtn.onclick =
+    async function(){
+
+      publishBtn.disabled = true;
+      publishBtn.textContent =
+        "Updating...";
+
+      try{
+
+        await window.updateDoc(
+          window.doc(
+            window.db,
+            "soundkits",
+            id
+          ),
+          {
+            title:
+              $("kitTitle").value.trim(),
+
+            description:
+              $("kitDesc").value.trim(),
+
+            category:
+              $("kitCategory").value,
+
+            price:
+              Number(
+                $("kitPrice").value || 0
+              ),
+
+            cover:
+              kitCover || "",
+
+            previewAudioURL:
+              $("previewAudioURL").value.trim(),
+
+            downloadUrl:
+              $("kitDownloadUrl").value.trim(),
+
+            published:
+              $("kitPublished").checked
+          }
+        );
+
+        alert(
+          "Sound kit updated"
+        );
+
+        publishBtn.textContent =
+          "Publish Sound Kit";
+
+        publishBtn.onclick =
+          publishKit;
+
+        // clear form
+
+        $("kitTitle").value = "";
+        $("kitDesc").value = "";
+        $("kitCategory").value = "";
+        $("kitPrice").value = "0";
+        $("previewAudioURL").value = "";
+        $("kitDownloadUrl").value = "";
+
+        $("kitPublished").checked =
+          true;
+
+        $("kitCoverBox").innerHTML =
+          "<span>Cover Preview</span>";
+
+        loadKits();
+        loadDashboardStats();
+
+      }catch(err){
+
+        console.error(err);
+
+        alert(
+          "Update failed: " +
+          (err?.message || err)
+        );
+
+      }
+
+      publishBtn.disabled = false;
+
+    };
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
 }
 
 /* ===========================
