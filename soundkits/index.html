@@ -606,7 +606,7 @@
 
   async function fallbackFetchSoundKits(){
     const { collection, getDocs, query, limit, where } = window.FB;
-    const names = ["soundKits", "soundkits", "sound_kits", "kits"];
+    const names = ["soundKits", "soundkits"];
     let lastErr = null;
 
     for (const name of names){
