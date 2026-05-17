@@ -83,55 +83,55 @@
     }
 
     .preview-btn{
-  position:absolute;
-  right:16px;
-  bottom:16px;
+      position:absolute;
+      right:16px;
+      bottom:16px;
 
-  width:58px;
-  height:58px;
+      width:58px;
+      height:58px;
 
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.16);
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.16);
 
-  background:rgba(50,50,50,.45);
+      background:rgba(50,50,50,.45);
 
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
 
-  cursor:pointer;
-  z-index:20;
+      cursor:pointer;
+      z-index:20;
 
-  box-shadow:
-    0 8px 24px rgba(0,0,0,.28),
-    inset 0 1px 0 rgba(255,255,255,.08);
+      box-shadow:
+        0 8px 24px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.08);
 
-  transition:.18s ease;
-}
+      transition:.18s ease;
+    }
 
-.preview-btn:hover{
-  transform:scale(1.05);
-}
+    .preview-btn:hover{
+      transform:scale(1.05);
+    }
 
-.preview-btn::before{
-  content:"▶";
+    .preview-btn::before{
+      content:"▶";
 
-  color:#fff;
+      color:#fff;
 
-  font-size:20px;
-  line-height:1;
+      font-size:20px;
+      line-height:1;
 
-  margin-left:3px;
-}
+      margin-left:3px;
+    }
 
-.preview-btn.playing::before{
-  content:"❚❚";
-  font-size:15px;
-  margin-left:0;
-}
+    .preview-btn.playing::before{
+      content:"❚❚";
+      font-size:15px;
+      margin-left:0;
+    }
 
     /* SOCIAL */
 
@@ -154,22 +154,22 @@
 
     @media(max-width:760px){
 
-  .preview-btn{
-    width:54px;
-    height:54px;
-    right:12px;
-    bottom:12px;
-  }
+    .preview-btn{
+      width:54px;
+      height:54px;
+      right:12px;
+      bottom:12px;
+    }
 
-  .preview-btn::before{
-    font-size:18px;
-  }
+    .preview-btn::before{
+      font-size:18px;
+    }
 
-  .title{
-    font-size:22px;
-  }
+    .title{
+      font-size:22px;
+    }
 
-}
+  }
   </style>
 </head>
 
