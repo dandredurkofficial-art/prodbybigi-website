@@ -112,6 +112,11 @@
       transition:.18s ease;
     }
 
+    .preview-btn.disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
     .preview-btn:hover{
       transform:scale(1.05);
     }
@@ -463,11 +468,11 @@
         $("kitCover").innerHTML = `
           <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
 
-          ${
-            kit.previewAudioURL
-            ? `<button class="preview-btn" id="previewBtn" type="button"></button>`
-            : ""
-          }
+          <button
+            class="preview-btn ${!kit.previewAudioURL ? 'disabled' : ''}"
+            id="previewBtn"
+            type="button"
+          ></button>
         `;
       }
 
@@ -509,7 +514,16 @@
 
       // Preview button
       const previewBtn = $("previewBtn");
-      if(previewBtn && kit.previewAudioURL){
+      if(previewBtn){
+
+        if(!kit.previewAudioURL){
+
+          previewBtn.onclick = () => {
+            alert("No preview uploaded yet");
+          };
+
+        } else {
+        
         let isPlaying = false;
         let audio = new Audio(kit.previewAudioURL);
         audio.preload = "metadata";
