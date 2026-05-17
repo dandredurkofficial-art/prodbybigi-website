@@ -6755,47 +6755,47 @@ async function loadKits(){
     }
 
     kitsData.forEach(k=>{
-  list.innerHTML += `
-    <div class="track">
+      list.innerHTML += `
+        <div class="track">
 
-      <img src="${k.cover||''}">
+          <img src="${k.cover||''}">
 
-      <div style="flex:1">
-        <strong>${k.title}</strong><br>
-        ${k.category||"—"} • ${
-          k.price
-          ? "$"+Number(k.price).toFixed(2)
-          : "Free"
-        }
-      </div>
+          <div style="flex:1">
+            <strong>${k.title}</strong><br>
+            ${k.category||"—"} • ${
+              k.price
+              ? "$"+Number(k.price).toFixed(2)
+              : "Free"
+            }
+          </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
 
-        <button
-          onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')"
-        >
-          Link
-        </button>
+            <button
+              onclick="copyKitLink('${(k.downloadUrl||"").replace(/'/g,"\\'")}')"
+            >
+              Link
+            </button>
 
-        <button
-          onclick="editKit('${k.id}')"
-          style="background:#2563eb;color:#fff;"
-        >
-          Edit
-        </button>
+            <button
+              onclick="editKit('${k.id}')"
+              style="background:#2563eb;color:#fff;"
+            >
+              Edit
+            </button>
 
-        <button
-          onclick="deleteKit('${k.id}')"
-          style="background:#dc2626;color:#fff;"
-        >
-          Delete
-        </button>
+            <button
+              onclick="deleteKit('${k.id}')"
+              style="background:#dc2626;color:#fff;"
+            >
+              Delete
+            </button>
 
-      </div>
+          </div>
 
-    </div>
-  `;
-});
+        </div>
+      `;
+    });
   }catch(err){
     list.innerHTML = `<div style="color:#ef4444;">Could not load kits: ${err?.message||err}</div>`;
   }
