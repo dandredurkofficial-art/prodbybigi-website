@@ -1536,6 +1536,122 @@
     display:inline-block;
   }
 
+  /* =========================
+     MOBILE TRACK LIST FIX
+  ========================= */
+
+  .mobile-track{
+    display:flex;
+    align-items:flex-start;
+    gap:14px;
+    padding:14px;
+    border-radius:16px;
+    background:#091122;
+    border:1px solid #1f2937;
+    margin-bottom:16px;
+  }
+
+  .track-art{
+    width:90px !important;
+    height:90px !important;
+    border-radius:14px !important;
+    object-fit:cover;
+    flex-shrink:0;
+  }
+
+  .track-info{
+    flex:1;
+    min-width:0;
+  }
+
+  .track-title{
+    display:block;
+    font-size:22px;
+    line-height:1.1;
+    font-weight:900;
+    color:#fff;
+    margin-bottom:6px;
+    word-break:break-word;
+  }
+
+  .track-meta{
+    color:#cbd5e1;
+    font-size:15px;
+    margin-bottom:10px;
+  }
+
+  .track-extra{
+    font-size:13px;
+    color:rgba(255,255,255,.72);
+    line-height:1.55;
+    margin-bottom:14px;
+    word-break:break-word;
+  }
+
+  .track-extra b{
+    color:#fff;
+  }
+
+  .track-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+
+  .track-actions button{
+    min-width:84px;
+    height:42px;
+    border-radius:12px;
+    background:#111827;
+    border:1px solid #1f2937;
+    color:#fff;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+  }
+
+  .track-actions button:hover{
+    background:#1e293b;
+  }
+
+  .track-actions button:first-child{
+    width:46px;
+    min-width:46px;
+    padding:0;
+    font-size:16px;
+  }
+
+  /* MOBILE */
+
+  @media(max-width:640px){
+
+    .mobile-track{
+      flex-direction:column;
+    }
+
+    .track-art{
+      width:100% !important;
+      height:auto !important;
+      aspect-ratio:1/1;
+    }
+
+    .track-title{
+      font-size:26px;
+    }
+
+    .track-meta{
+      font-size:16px;
+    }
+
+    .track-actions{
+      width:100%;
+    }
+
+    .track-actions button{
+      flex:1;
+    }
+  }
+
   /* Tablet */
   @media(max-width:1100px){
     .analytics-stat-grid{
