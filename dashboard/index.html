@@ -5286,43 +5286,98 @@ function dedupeBeats(list){
 }
 
 function renderTracks(){
+
   const beatsEl = $("beats");
   if (!beatsEl) return;
 
   beatsEl.innerHTML = "";
 
   beatsData.forEach((b, i) => {
-    const typeBeat = String(b?.typeBeat || "").trim();
-    const moodText = Array.isArray(b?.mood) ? b.mood.join(", ") : "";
-    const tagsText = Array.isArray(b?.tags) ? b.tags.join(", ") : "";
-    const beatDesc = String(b?.beatDescription || "").trim();
+
+    const typeBeat =
+      String(b?.typeBeat || "").trim();
+
+    const moodText =
+      Array.isArray(b?.mood)
+        ? b.mood.join(", ")
+        : "";
+
+    const tagsText =
+      Array.isArray(b?.tags)
+        ? b.tags.join(", ")
+        : "";
+
+    const beatDesc =
+      String(b?.beatDescription || "").trim();
 
     beatsEl.innerHTML += `
-      <div class="track">
-        <img src="${b.artwork || ''}" alt="${b.title || 'Beat'}">
 
-        <div style="flex:1;min-width:0;">
-          <strong>${b.title || "Untitled"}</strong><br>
-          BPM ${b.bpm || "—"} • ${b.key || "—"}
+      <div class="track mobile-track">
+
+        <img
+          src="${b.artwork || ''}"
+          alt="${b.title || 'Beat'}"
+          class="track-art"
+        >
+
+        <div class="track-info">
+
+          <strong class="track-title">
+            ${b.title || "Untitled"}
+          </strong>
+
+          <div class="track-meta">
+            BPM ${b.bpm || "—"} • ${b.key || "—"}
+          </div>
 
           ${
             typeBeat || moodText || tagsText || beatDesc
               ? `
-                <div style="margin-top:6px;font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;">
+                <div class="track-extra">
+
                   ${typeBeat ? `<div><b>Type Beat:</b> ${typeBeat}</div>` : ``}
+
                   ${moodText ? `<div><b>Mood:</b> ${moodText}</div>` : ``}
+
                   ${tagsText ? `<div><b>Tags:</b> ${tagsText}</div>` : ``}
+
                   ${beatDesc ? `<div><b>Description:</b> ${beatDesc}</div>` : ``}
+
                 </div>
               `
               : ``
           }
+
+          <div class="track-actions">
+
+            <button
+              type="button"
+              id="playBtn${i}"
+              onclick="playPreview(${i})"
+            >
+              ▶
+            </button>
+
+            <button
+              type="button"
+              onclick="editBeat(${i})"
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              onclick="deleteBeat(${i})"
+            >
+              Delete
+            </button>
+
+          </div>
+
         </div>
 
-        <button type="button" onclick="playPreview(${i})">▶</button>
-        <button type="button" onclick="editBeat(${i})">Edit</button>
-        <button type="button" onclick="deleteBeat(${i})">Delete</button>
       </div>
+
     `;
   });
 }
@@ -5398,22 +5453,73 @@ function editBeat(i){
 
   showPage("upload");
 }
+let currentAudio = null;
+let currentPlayBtn = null;
+
 async function playPreview(i){
 
-  if(currentAudio) currentAudio.pause();
-
   const beat = beatsData[i];
-  const url = beat?.previewAudio;
 
-  if(!url) return alert("No previewAudio for this beat yet.");
+  if(!beat?.previewAudio){
+    return alert("No previewAudio for this beat yet.");
+  }
 
-  currentAudio = new Audio(url);
-  currentAudio.play();
+  const btn =
+    document.getElementById(`playBtn${i}`);
 
-  // ✅ increment real play counter
+  // SAME BUTTON = TOGGLE PAUSE
+  if(
+    currentAudio &&
+    currentPlayBtn === btn &&
+    !currentAudio.paused
+  ){
+
+    currentAudio.pause();
+
+    btn.textContent = "▶";
+
+    return;
+  }
+
+  // STOP OLD AUDIO
+  if(currentAudio){
+
+    currentAudio.pause();
+
+    if(currentPlayBtn){
+      currentPlayBtn.textContent = "▶";
+    }
+  }
+
+  currentAudio =
+    new Audio(beat.previewAudio);
+
+  currentPlayBtn = btn;
+
   try{
 
-    // increment beat play counter
+    await currentAudio.play();
+
+    btn.textContent = "❚❚";
+
+  }catch(err){
+
+    console.error(err);
+
+    btn.textContent = "▶";
+
+    return;
+  }
+
+  currentAudio.onended = ()=>{
+
+    btn.textContent = "▶";
+
+  };
+
+  // PLAY COUNTER
+  try{
+
     await window.updateDoc(
       window.doc(window.db,"beats",beat.id),
       {
@@ -5421,7 +5527,6 @@ async function playPreview(i){
       }
     );
 
-    // ✅ log analytics play event
     await window.addDoc(
       window.collection(window.db,"analyticsEvents"),
       {
@@ -5433,9 +5538,10 @@ async function playPreview(i){
     );
 
   }catch(e){
-    console.log("Play tracking failed", e);
-  }
 
+    console.log("Play tracking failed", e);
+
+  }
 }
 async function deleteBeat(i){
   const beat = beatsData[i];
