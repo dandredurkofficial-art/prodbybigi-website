@@ -325,21 +325,30 @@
   }
 
   function normalizeKit(docId, data){
-    data = data || {};
     return {
       id: docId,
       title: data.title || data.name || "Untitled Kit",
       cover: data.cover || data.coverUrl || data.image || data.artwork || "",
       description: data.description || data.desc || "",
-      category: String(data.category || "").toLowerCase(),
+      category: (data.category || "").toLowerCase(),
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
       downloadUrl: data.downloadUrl || data.downloadURL || "",
-      producerPlan: data.producerPlan || data.plan || "",
-      producerId: data.producerId || data.uid || data.userId || "",
-      producerName: data.producerName || data.producer || data.username || "Audiory",
-      previewUrl: data.previewUrl || data.preview || ""
+      previewAudioURL: data.previewAudioURL || "",
+
+      producerId: data.producerId || "",
+
+      producerName:
+        data.producerName ||
+        data.displayName ||
+        data.username ||
+        "",
+
+      producerPlan:
+        data.producerPlan ||
+        data.plan ||
+        "",
     };
   }
 
