@@ -17,6 +17,7 @@
     .cover{
       aspect-ratio:1/1;border-radius:18px;overflow:hidden;
       background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      position:relative;
     }
     .cover img{width:100%;height:100%;object-fit:cover;display:block}
     .title{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:2px 0 8px}
@@ -28,6 +29,15 @@
       border:1px solid rgba(255,255,255,.12);
       padding:10px 12px;border-radius:999px;font-weight:900;
       display:inline-flex;gap:8px;align-items:center
+    }
+    .pill.price{
+      border:1.5px solid #295dff;
+      background:transparent;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .pill.price:hover{
+      background:rgba(255,255,255,.05);
     }
     .btn{
       background:rgba(255,255,255,.10);
@@ -49,90 +59,67 @@
     .hidden{display:none!important}
 
     .producer{
-  margin-top:8px;
-  color:rgba(255,255,255,.72);
-  font-size:15px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
+      margin-top:8px;
+      color:rgba(255,255,255,.72);
+      font-size:15px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .producer a{
+      color:inherit;
+      text-decoration:none;
+      font-weight:700;
+    }
+    .producer a:hover{
+      text-decoration:underline;
+      color:#fff;
+    }
+    .verify-badge{
+      width:16px;
+      height:16px;
+      display:inline-block;
+      vertical-align:middle;
+    }
 
-.cover{
-  position:relative;
-}
+    .preview-btn{
+      position:absolute;
+      right:18px;
+      bottom:18px;
+      width:74px;
+      height:74px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(0,0,0,.42);
+      backdrop-filter:blur(6px);
+      -webkit-backdrop-filter:blur(6px);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      cursor:pointer;
+      z-index:20;
+    }
+    .preview-btn::before{
+      content:"▶";
+      font-size:24px;
+      margin-left:4px;
+    }
+    .preview-btn.playing::before{
+      content:"❚";
+      font-size:18px;
+      margin-left:0;
+    }
 
-.preview-btn{
-  position:absolute;
-  right:18px;
-  bottom:18px;
-
-  width:74px;
-  height:74px;
-  border-radius:50%;
-
-  border:1px solid rgba(255,255,255,.14);
-
-  background:rgba(0,0,0,.42);
-
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  color:#fff;
-  cursor:pointer;
-
-  z-index:20;
-}
-
-.preview-btn::before{
-  content:"▶";
-  font-size:24px;
-  margin-left:4px;
-}
-
-.preview-btn.playing::before{
-  content:"❚❚";
-  font-size:18px;
-  margin-left:0;
-}
-
-.price-btn{
-  height:54px;
-  padding:0 22px;
-  border-radius:16px;
-  border:1.5px solid #295dff;
-  background:transparent;
-  color:#fff;
-  font-size:18px;
-  font-weight:900;
-  cursor:pointer;
-  transition:.2s;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-}
-
-.price-btn:hover{
-  background:rgba(255,255,255,.05);
-}
-
-@media(max-width:760px){
-
-  .preview-btn{
-    width:92px;
-    height:92px;
-  }
-
-  .title{
-    font-size:22px;
-  }
-
-}
+    @media(max-width:760px){
+      .preview-btn{
+        width:92px;
+        height:92px;
+      }
+      .title{
+        font-size:22px;
+      }
+    }
   </style>
 </head>
 
@@ -197,16 +184,18 @@
       <div>
         <div class="title">
           <span id="kitTitle">—</span>
-          <span id="kitVerified"></span>
         </div>
 
         <div class="row">
           <div class="pill"><span class="muted">Category:</span> <span id="kitCategory">—</span></div>
-          <div class="pill"><span class="muted">Price:</span> <span id="kitPrice">—</span></div>
+          <div class="pill price" id="pricePill">
+            <span id="kitPrice">—</span>
+          </div>
         </div>
 
-        <div class="producer">
-          <span id="kitProducer">Audiory</span>
+        <div class="producer" id="producerRow">
+          <span>By</span>
+          <a href="#" id="kitProducerLink">Audiory</a>
           <span id="kitVerified"></span>
         </div>
 
@@ -295,14 +284,14 @@
       published: data.published !== false,
       createdAt: data.createdAt || 0,
       downloadUrl: data.downloadUrl || data.downloadURL || "",
-      producerPlan: data.producerPlan || data.plan || ""
+      producerPlan: data.producerPlan || data.plan || "",
+      producerId: data.producerId || data.uid || data.userId || "",
+      producerName: data.producerName || data.producer || data.username || "Audiory",
+      previewUrl: data.previewUrl || data.preview || ""
     };
   }
 
   async function getKitByIdAnyCollection(kitId){
-    // ✅ IMPORTANT:
-    // - try the collection you actually use FIRST: "soundkits"
-    // - catch errors per collection so we can try the next one
     const { doc, getDoc } = window.FB;
 
     const cols = ["soundkits", "soundKits"];
@@ -316,17 +305,13 @@
         if (snap.exists()){
           return normalizeKit(snap.id, snap.data());
         }
-
-        // If it doesn't exist, just continue
       }catch(err){
-        // permission-denied / not-found on wrong collection should NOT stop us
         lastErr = err;
         continue;
       }
     }
 
     if (lastErr) {
-      // If both collections fail, surface the real error
       throw lastErr;
     }
 
@@ -355,31 +340,50 @@
 
       // Render UI
       $("kitTitle").textContent = kit.title;
-      $("kitVerified").innerHTML =
-        AudioryVerify.badge(kit.producerPlan || "");
       $("kitCategory").textContent = kit.category || "—";
       $("kitPrice").textContent = kit.price ? money(kit.price) : "Free";
       $("kitDesc").textContent = kit.description || "No description.";
 
-      $("kitCover").innerHTML = kit.cover
-        ? `<img src="${kit.cover}" alt="${kit.title}" loading="lazy">`
-        : "";
+      // Producer name + link + verification badge
+      const producerLink = $("kitProducerLink");
+      const verifiedEl = $("kitVerified");
+      
+      producerLink.textContent = kit.producerName;
+      if(kit.producerId){
+        producerLink.href = `/producer/?id=${encodeURIComponent(kit.producerId)}`;
+      } else {
+        producerLink.href = "/producers/";
+        producerLink.style.pointerEvents = "none";
+      }
+
+      verifiedEl.innerHTML = AudioryVerify.badge(kit.producerPlan || "");
+
+      // Cover + preview button if previewUrl exists
+      if(kit.cover){
+        $("kitCover").innerHTML = `
+          <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
+          ${kit.previewUrl ? `<button class="preview-btn" id="previewBtn" type="button"></button>` : ""}
+        `;
+      }
+
+      // Price pill click = add to cart
+      $("pricePill").onclick = () => {
+        $("addBtn").click();
+      };
 
       // Buttons
       $("detailsBtn").onclick = () => {
         alert(
           `${kit.title}\n\n${kit.description || "No description."}\n\n` +
           `Category: ${kit.category || "—"}\n` +
-          `Price: ${kit.price ? money(kit.price) : "Free"}`
+          `Price: ${kit.price ? money(kit.price) : "Free"}\n` +
+          `Producer: ${kit.producerName}`
         );
       };
 
       $("addBtn").onclick = () => {
-
         if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
-
           alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
-
           return;
         }
 
@@ -390,13 +394,42 @@
           price: Number(kit.price || 0),
           licenseKey: "soundkit",
           licenseName: "Sound Kit",
-          producerId: "",
-          producerName: "",
+          producerId: String(kit.producerId || ""),
+          producerName: String(kit.producerName || ""),
           downloadUrl: String(kit.downloadUrl || "")
         });
 
         alert("Added to cart ✅");
       };
+
+      // Preview button
+      const previewBtn = $("previewBtn");
+      if(previewBtn && kit.previewUrl){
+        let isPlaying = false;
+        let audio = new Audio(kit.previewUrl);
+        audio.preload = "metadata";
+        
+        previewBtn.onclick = async () => {
+          if(isPlaying){
+            audio.pause();
+            isPlaying = false;
+            previewBtn.classList.remove("playing");
+          } else {
+            try{
+              await audio.play();
+              isPlaying = true;
+              previewBtn.classList.add("playing");
+            }catch(e){
+              console.error(e);
+            }
+          }
+        };
+        
+        audio.onended = () => {
+          isPlaying = false;
+          previewBtn.classList.remove("playing");
+        };
+      }
 
       status.classList.add("hidden");
       card.classList.remove("hidden");
@@ -408,7 +441,7 @@
         "Load failed.\n\n" +
         (code ? ("Code: " + code + "\n") : "") +
         "Message: " + msg + "\n\n" +
-        "Most common cause: page tried wrong collection first. This file now safely tries both.";
+        "Check that producerId and producerName exist in your Firestore doc.";
     }
   }
 
