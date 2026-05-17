@@ -625,6 +625,14 @@
         kits.sort((a,b)=> Number(b.createdAt||0) - Number(a.createdAt||0));
         return kits;
       }catch(err){
+
+        console.error("Collection failed:", name, err);
+
+        // skip permission-denied collections
+        if(err?.code === "permission-denied"){
+          continue;
+        }
+
         lastErr = err;
       }
     }
