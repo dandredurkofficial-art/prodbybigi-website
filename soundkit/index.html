@@ -167,7 +167,7 @@
     "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
   
-<script type="module" src="/js/firebase.js"></script>|
+<script type="module" src="/js/firebase.js"></script>
 <script src="/js/verify.js"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
@@ -203,7 +203,7 @@
       price: Number(data.price ?? 0) || 0,
       published: data.published !== false,
       createdAt: data.createdAt || 0,
-      downloadUrl: data.downloadUrl || data.downloadURL || "".
+      downloadUrl: data.downloadUrl || data.downloadURL || "",
       producerPlan: data.producerPlan || data.plan || ""
     };
   }
