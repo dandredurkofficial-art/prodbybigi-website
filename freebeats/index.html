@@ -704,8 +704,25 @@ async function loadFreeBeats(){
       grid.appendChild(card);
 
       card.addEventListener("click", (e) => {
+
         if (e.target.closest("[data-play-btn]")) return;
-        if (e.target.closest(".download-pill")) return;
+
+        if (e.target.closest(".download-pill")) {
+          return;
+        }
+
+        if (e.target.closest(".price-pill")) {
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          if(window.openLicenseModal){
+            window.openLicenseModal(b);
+          }
+
+          return;
+        }
+
         if (e.target.closest(".producer")) return;
         if (e.target.closest(".beat-open")) return;
         if (e.target.closest(".beat-title-link")) return;
