@@ -621,12 +621,10 @@ async function loadFreeBeats(){
             ${
               (() => {
 
-                const hasPaidLicense =
-                  Number(b.price) > 0 ||
-                  Number(b.basicLicensePrice) > 0 ||
-                  Number(b.leasePrice) > 0;
+                const basicPrice =
+                  Number(b?.licenses?.basic?.price || 0);
 
-                if(hasPaidLicense){
+                if(basicPrice > 0){
 
                   return `
                     <button class="pb-pill price-pill" type="button">
@@ -652,15 +650,7 @@ async function loadFreeBeats(){
                         </svg>
                       </span>
 
-                      <span>
-                        ${
-                          money(
-                            b.price ||
-                            b.basicLicensePrice ||
-                            b.leasePrice
-                          )
-                        }
-                      </span>
+                      <span>${money(basicPrice)}</span>
 
                     </button>
                   `;
@@ -673,7 +663,6 @@ async function loadFreeBeats(){
                 `;
               })()
             }
-
             ${
               b.freeDownload === true
               ? `
