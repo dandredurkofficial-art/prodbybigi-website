@@ -507,10 +507,7 @@ function prettyProducerName(b){
 }
 
 function isFreeBeat(b){
-  if(b.freeDownload === true) return true;
-  if(b.isFree === true) return true;
-  if(Number(b.price) === 0) return true;
-  return false;
+  return b.freeDownload === true;
 }
 
 async function loadFreeBeats(){
