@@ -710,6 +710,8 @@ async function loadFreeBeats(){
 
         if (e.target.closest("[data-play-btn]")) return;
 
+        if (e.target.closest(".price-pill")) return;
+
         if (e.target.closest(".download-pill")) return;
 
         if (e.target.closest(".producer")) return;
@@ -719,6 +721,27 @@ async function loadFreeBeats(){
         if (e.target.closest(".beat-title-link")) return;
 
         location.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+      });
+
+      card.querySelector(".price-pill")?.addEventListener("click", (e) => {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if(window.openLicenseModal){
+          window.openLicenseModal(b);
+          return;
+        }
+
+        if(window.AudioryLicenseModal?.open){
+          window.AudioryLicenseModal.open(b);
+          return;
+        }
+
+        document.dispatchEvent(new CustomEvent("audiory-open-license", {
+          detail: b
+        }));
 
       });
       
