@@ -619,10 +619,73 @@ async function loadFreeBeats(){
             ${b.genre ? `<div class="beat-genre">${b.genre}</div>` : ``}
           </div>
 
-          <button class="pb-pill free" type="button">
-            <span class="ic">⬇️</span>
-            <span>Free</span>
-          </button>
+          <div class="pb-actions">
+
+            ${
+    Number(b.price) > 0
+    ? `
+      <button class="pb-pill price-pill" type="button">
+        <span class="lock-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M7 10V7a5 5 0 0 1 10 0v3"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"/>
+
+            <rect x="5" y="10"
+              width="14"
+              height="10"
+              rx="2"
+              stroke="white"
+              stroke-width="2"/>
+          </svg>
+        </span>
+
+        <span>${money(b.price)}</span>
+      </button>
+    `
+    : `
+      <button class="pb-pill price-pill" type="button">
+        Free
+      </button>
+    `
+  }
+
+  ${
+    b.freeDownload === true
+    ? `
+      <button class="pb-pill download-pill"
+        type="button">
+
+        <span class="download-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4V14"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"/>
+
+            <path
+              d="M8 10L12 14L16 10"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+
+            <path
+              d="M5 20H19"
+              stroke="white"
+              stroke-width="2"
+              stroke-linecap="round"/>
+          </svg>
+        </span>
+
+      </button>
+    `
+    : ``
+  }
+
+</div>
         </div>
       `;
 
