@@ -628,21 +628,9 @@ async function loadFreeBeats(){
 
                   return `
                     <button
-                    class="pb-pill price-pill"
-                    type="button"
-
-                    data-beat-id="${b.id}"
-                    data-beat-title="${b.title || ''}"
-                    data-beat-price="${basicPrice}"
-                    data-producer-id="${b.producerId || ''}"
-
-                    data-license-basic='${JSON.stringify(b.licenses?.basic || {}).replace(/'/g,"&#39;")}'
-
-                    data-license-premium='${JSON.stringify(b.licenses?.premium || {}).replace(/'/g,"&#39;")}'
-
-                    data-license-exclusive='${JSON.stringify(b.licenses?.exclusive || {}).replace(/'/g,"&#39;")}'
-
-                  >
+                      class="pb-pill price-pill"
+                      type="button"
+                      data-beat-id="${b.id}">
 
                     <span class="lock-icon">
                       <svg viewBox="0 0 24 24" fill="none">
@@ -722,8 +710,6 @@ async function loadFreeBeats(){
 
         if (e.target.closest("[data-play-btn]")) return;
 
-        if (e.target.closest(".price-pill")) return;
-
         if (e.target.closest(".download-pill")) return;
 
         if (e.target.closest(".producer")) return;
@@ -733,17 +719,6 @@ async function loadFreeBeats(){
         if (e.target.closest(".beat-title-link")) return;
 
         location.href = "/beat/?id=" + encodeURIComponent(b.id);
-
-      });
-
-      card.querySelector(".price-pill")?.addEventListener("click", (e) => {
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        if(window.AudioryLicenseModal?.open){
-          window.AudioryLicenseModal.open(b);
-        }
 
       });
       
