@@ -736,6 +736,15 @@ async function loadFreeBeats(){
         location.href = "/beat/?id=" + encodeURIComponent(b.id);
       });
 
+      card.querySelector(".price-pill")?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if(window.openLicenseModal){
+          window.openLicenseModal(b);
+        }
+      });
+
       setTimeout(()=>{
         const link = document.createElement("link");
         link.rel = "prefetch";
