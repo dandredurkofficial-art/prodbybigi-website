@@ -38,6 +38,11 @@
     getStorage, ref, uploadBytesResumable, getDownloadURL
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+  import {
+    getFunctions,
+    httpsCallable
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
     authDomain: "audiory-beat-store.firebaseapp.com",
@@ -54,10 +59,16 @@
   const auth = getAuth(app);
   const storage = getStorage(app);
 
+  const functions = getFunctions(app);
+
   // expose to window
   window.db = db;
   window.auth = auth;
   window.storage = storage;
+
+  /* ✅ ADD THIS */
+  window.functions = functions;
+  window.httpsCallable = httpsCallable;
 
   window.orderBy = orderBy;
   window.limit = limit;
@@ -3285,6 +3296,22 @@ let pmInitialized = false;
 function $(id){ return document.getElementById(id); }
 
 /* ===========================
+   CLOUD FUNCTIONS
+=========================== */
+
+const publishBeatFn =
+  window.httpsCallable(
+    window.functions,
+    "publishBeat"
+  );
+
+const updateBeatFn =
+  window.httpsCallable(
+    window.functions,
+    "updateBeat"
+  );
+
+/* ===========================
    ✅ PLAN HELPERS
 =========================== */
 function normalizeTier(t){
@@ -5277,12 +5304,16 @@ async function publishBeat(){
     payload.searchableText = buildSearchableText(payload);
 
     if (isEditing && beatIdToUpdate){
-      await window.updateDoc(
-        window.doc(window.db, "beats", beatIdToUpdate),
-        payload
-      );
+
+      await updateBeatFn({
+        beatId: beatIdToUpdate,
+        ...payload
+      });
+
     } else {
-      await window.addDoc(window.collection(window.db, "beats"), payload);
+
+      await publishBeatFn(payload);
+
     }
 
     editingBeatId = null;
