@@ -6830,13 +6830,16 @@ async function uploadKitCover(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".jpg";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/soundkits/covers/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> $("kitCoverStatus").innerHTML = `<div class="upload-status">Uploading cover… ${p}%</div>`
+      onProgress:(p)=>
+        $("kitCoverStatus").innerHTML =
+          `<div class="upload-status">Uploading cover… ${p}%</div>`
     });
 
-    kitCover = url;
+    kitCover = upload.downloadURL;
+
     $("kitCoverBox").innerHTML = `<img src="${kitCover}">`;
     $("kitCoverStatus").innerHTML = `<div class="upload-status">✔ Cover uploaded</div>`;
   }catch(err){
@@ -6854,13 +6857,15 @@ async function uploadKitFile(){
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".zip";
 
-    const url = await uploadToStorage({
+    const upload = await uploadToStorage({
       file,
       path: `audiory/soundkits/files/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> $("kitFileStatus").innerHTML = `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
+      onProgress:(p)=>
+        $("kitFileStatus").innerHTML =
+          `<div class="upload-status">Uploading kit ZIP… ${p}%</div>`
     });
 
-    kitFile = url;
+    kitFile = upload.downloadURL;
     $("kitDownloadUrl").value = kitFile;
     $("kitFileStatus").innerHTML = `<div class="upload-status">✔ Kit file uploaded</div>`;
   }catch(err){
@@ -6886,7 +6891,7 @@ async function uploadPreviewAudio(){
     const ext =
       extFromName(file.name) || ".mp3";
 
-    const url =
+    const upload =
       await uploadToStorage({
         file,
         path: `audiory/soundkits/previews/${uid}/${Date.now()}${ext}`,
@@ -6896,7 +6901,8 @@ async function uploadPreviewAudio(){
             `<div class="upload-status">Uploading preview audio… ${p}%</div>`
       });
 
-    $("previewAudioURL").value = url;
+    $("previewAudioURL").value =
+      upload.downloadURL;
 
     $("previewAudioStatus").innerHTML =
       `<div class="upload-status">✔ Preview uploaded</div>`;
