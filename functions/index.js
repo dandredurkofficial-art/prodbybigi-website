@@ -48,6 +48,19 @@ exports.onProducerSignupWelcome = emailTriggers.onProducerSignupWelcome;
 exports.onPayoutProcessed = emailTriggers.onPayoutProcessed;
 exports.onBuyerOrderPaidInvoice = emailTriggers.onBuyerOrderPaidInvoice;
 
+/* =========================
+   BEATS FUNCTIONS
+========================= */
+
+const beats =
+require("./beats");
+
+exports.publishBeat =
+beats.publishBeat;
+
+exports.updateBeat =
+beats.updateBeat;
+
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
