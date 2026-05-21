@@ -6871,70 +6871,49 @@ async function uploadKitFile(){
 }
 
 async function uploadPreviewAudio(){
-
   try{
 
-    const picker =
-      document.createElement("input");
+    const file = await pickFile("audio/*");
 
-    picker.type = "file";
+    if(!file) return;
 
-    picker.accept = "audio/*";
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status">Uploading preview audio…</div>`;
 
-    picker.click();
+    const uid =
+      window.auth?.currentUser?.uid || "anon";
 
-    picker.onchange = async()=>{
+    const ext =
+      extFromName(file.name) || ".mp3";
 
-      const file =
-        picker.files[0];
+    const url =
+      await uploadToStorage({
+        file,
+        path: `audiory/soundkits/previews/${uid}/${Date.now()}${ext}`,
 
-      if(!file) return;
+        onProgress:(p)=>
+          $("previewAudioStatus").innerHTML =
+            `<div class="upload-status">Uploading preview audio… ${p}%</div>`
+      });
 
-      const status =
-        document.getElementById(
-          "previewAudioStatus"
-        );
+    $("previewAudioURL").value = url;
 
-      status.innerHTML =
-        "Uploading preview audio...";
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status">✔ Preview uploaded</div>`;
 
-      const storageRef =
-        ref(
-          storage,
-          `soundkit-previews/${Date.now()}-${file.name}`
-        );
+  }catch(err){
 
-      await uploadBytes(
-        storageRef,
-        file
-      );
+    console.error(err);
 
-      const url =
-        await getDownloadURL(
-          storageRef
-        );
-
-      document.getElementById(
-        "previewAudioURL"
-      ).value = url;
-
-      status.innerHTML =
-        "✅ Preview uploaded";
-
-    };
-
-  }
-
-  catch(error){
-
-    console.error(error);
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status err">✖ Upload failed</div>`;
 
     alert(
-      "Preview upload failed"
+      "Preview upload failed: " +
+      (err?.message || err)
     );
 
   }
-
 }
 async function publishKit(){
   if(!window.currentUser){
