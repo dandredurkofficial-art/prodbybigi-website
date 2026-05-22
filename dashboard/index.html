@@ -70,6 +70,12 @@
   window.functions = functions;
   window.httpsCallable = httpsCallable;
 
+  window.publishBeatFn =
+    httpsCallable(functions, "publishBeat");
+
+  window.updateBeatFn =
+    httpsCallable(functions, "updateBeat");
+
   window.orderBy = orderBy;
   window.limit = limit;
 
@@ -3301,22 +3307,6 @@ let __campaignCountdownTimer = null;
 function $(id){ return document.getElementById(id); }
 
 /* ===========================
-   CLOUD FUNCTIONS
-=========================== */
-
-const publishBeatFn =
-  window.httpsCallable(
-    window.functions,
-    "publishBeat"
-  );
-
-const updateBeatFn =
-  window.httpsCallable(
-    window.functions,
-    "updateBeat"
-  );
-
-/* ===========================
    ✅ PLAN HELPERS
 =========================== */
 function normalizeTier(t){
@@ -5308,14 +5298,14 @@ async function publishBeat(){
 
     if (isEditing && beatIdToUpdate){
 
-      await updateBeatFn({
+      await window.updateBeatFn({
         beatId: beatIdToUpdate,
         ...payload
       });
 
     } else {
 
-      await publishBeatFn(payload);
+      await window.publishBeatFn(payload);
 
     }
 
