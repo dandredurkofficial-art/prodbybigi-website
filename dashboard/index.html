@@ -3296,6 +3296,7 @@ let pmInitialized = false
 let __campaignCountDownTimer = null;
 let __loadBeatsToken = null;
 let __producerCollabSubmissions = [];
+let __campaignCountdownTimer = null;
 
 function $(id){ return document.getElementById(id); }
 
@@ -6212,7 +6213,6 @@ document.getElementById("boostMpesaSend")?.addEventListener("click", async () =>
 });
 
 let __boostPollTimer = null;
-let __campaignCountdownTimer = null;
 
 async function getBoostOrderStatus(orderId){
   const user = window.currentUser;
