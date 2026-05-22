@@ -3295,6 +3295,7 @@ let pmInitialized = false
   
 let __campaignCountDownTimer = null;
 let __loadBeatsToken = null;
+let __producerCollabSubmissions = [];
 
 function $(id){ return document.getElementById(id); }
 
@@ -4272,8 +4273,6 @@ function escapeHtmlSafe(v){
     .replace(/"/g,"&quot;")
     .replace(/'/g,"&#39;");
 }
-
-let __producerCollabSubmissions = [];
 
 async function loadProducerCollabSubmissions(){
   const statusEl = document.getElementById("producerCollabStatus");
