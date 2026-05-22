@@ -4994,12 +4994,12 @@ async function uploadFullAudio(){
 }
 async function uploadPreviewAudio(){
   try{
+    if (blockIfUploadLimitReached()) return;
 
     const file = await pickFile("audio/*");
-
     if(!file) return;
 
-    $("previewAudioStatus").innerHTML =
+    $("previewStatus").innerHTML =
       `<div class="upload-status">Uploading preview…</div>`;
 
     const uid =
@@ -5014,31 +5014,30 @@ async function uploadPreviewAudio(){
         path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
 
         onProgress:(p)=>
-          $("previewAudioStatus").innerHTML =
+          $("previewStatus").innerHTML =
             `<div class="upload-status">Uploading preview… ${p}%</div>`
       });
 
     previewAudio =
-      upload.downloadURL || upload.url;
+      upload.downloadURL;
 
     previewAudioPath =
-      upload.storagePath || upload.path;
+      upload.storagePath;
 
-    $("previewAudioStatus").innerHTML =
+    $("previewStatus").innerHTML =
       `<div class="upload-status">✔ Preview uploaded</div>`;
 
   }catch(err){
 
     console.error(err);
 
-    $("previewAudioStatus").innerHTML =
+    $("previewStatus").innerHTML =
       `<div class="upload-status err">✖ Upload failed</div>`;
 
     alert(
       "Preview upload failed: " +
       (err?.message || err)
     );
-
   }
 }
 async function uploadStemsZip(){
