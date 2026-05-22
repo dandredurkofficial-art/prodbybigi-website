@@ -4995,7 +4995,7 @@ async function uploadPreviewAudio(){
     const file = await pickFile("audio/*");
     if(!file) return;
 
-    $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview…</div>`;
+    $("previewAudioStatus").innerHTML = `<div class="upload-status">Uploading preview…</div>`;
     const uid = window.auth?.currentUser?.uid || "anon";
     const ext = extFromName(file.name) || ".mp3";
 
