@@ -3291,7 +3291,11 @@ let pmActiveThreadId = "";
 let pmActiveOtherUid = "";
 let pmActiveOtherName = "";
 let pmActiveUnsub = null;
-let pmInitialized = false;
+let pmInitialized = false
+
+let __loadBeatsToken = null;
+let __campaignCountDownTimer = null;
+let __producerCollabSubmissions = [];
 
 function $(id){ return document.getElementById(id); }
 
