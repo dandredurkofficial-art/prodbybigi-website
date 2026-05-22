@@ -4993,25 +4993,46 @@ async function uploadPreviewAudio(){
   try{
 
     const file = await pickFile("audio/*");
+
     if(!file) return;
 
-    $("previewAudioStatus").innerHTML = `<div class="upload-status">Uploading preview…</div>`;
-    const uid = window.auth?.currentUser?.uid || "anon";
-    const ext = extFromName(file.name) || ".mp3";
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status">Uploading preview…</div>`;
 
-    const upload = await uploadToStorage({
-      file,
-      path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
-      onProgress:(p)=> $("previewStatus").innerHTML = `<div class="upload-status">Uploading preview… ${p}%</div>`
-    });
+    const uid =
+      window.auth?.currentUser?.uid || "anon";
+
+    const ext =
+      extFromName(file.name) || ".mp3";
+
+    const upload =
+      await uploadToStorage({
+        file,
+        path: `audiory/beats/preview/${uid}/${Date.now()}${ext}`,
+
+        onProgress:(p)=>
+          $("previewAudioStatus").innerHTML =
+            `<div class="upload-status">Uploading preview… ${p}%</div>`
+      });
 
     previewAudio = upload.downloadURL;
     previewAudioPath = upload.storagePath;
-    $("previewStatus").innerHTML = `<div class="upload-status">✔ Preview uploaded</div>`;
+
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status">✔ Preview uploaded</div>`;
+
   }catch(err){
+
     console.error(err);
-    $("previewStatus").innerHTML = `<div class="upload-status err">✖ Upload failed</div>`;
-    alert("Preview upload failed: " + (err?.message || err));
+
+    $("previewAudioStatus").innerHTML =
+      `<div class="upload-status err">✖ Upload failed</div>`;
+
+    alert(
+      "Preview upload failed: " +
+      (err?.message || err)
+    );
+
   }
 }
 async function uploadStemsZip(){
