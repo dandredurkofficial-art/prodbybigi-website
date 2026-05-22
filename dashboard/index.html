@@ -3294,6 +3294,7 @@ let pmActiveUnsub = null;
 let pmInitialized = false
   
 let __campaignCountDownTimer = null;
+let __loadBeatsToken = null;
 
 function $(id){ return document.getElementById(id); }
 
@@ -5383,7 +5384,6 @@ function resetUploadForm(){
 /* ===========================
    LOAD / RENDER BEATS
 =========================== */
-let __loadBeatsToken = 0;
 
 async function loadBeats(){
   if(!window.currentUser) return;
