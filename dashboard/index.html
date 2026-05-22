@@ -4980,8 +4980,11 @@ async function uploadFullAudio(){
       onProgress:(p)=> $("fullStatus").innerHTML = `<div class="upload-status">Uploading full beat… ${p}%</div>`
     });
 
-    fullAudio = upload.downloadURL;
-    fullAudioPath = upload.storagePath; 
+    fullAudio =
+      upload.downloadURL || upload.url;
+
+    fullAudioPath =
+      upload.storagePath || upload.path; 
     $("fullStatus").innerHTML = `<div class="upload-status">✔ Full beat uploaded</div>`;
   }catch(err){
     console.error(err);
@@ -5015,8 +5018,11 @@ async function uploadPreviewAudio(){
             `<div class="upload-status">Uploading preview… ${p}%</div>`
       });
 
-    previewAudio = upload.downloadURL;
-    previewAudioPath = upload.storagePath;
+    previewAudio =
+      upload.downloadURL || upload.url;
+
+    previewAudioPath =
+      upload.storagePath || upload.path;
 
     $("previewAudioStatus").innerHTML =
       `<div class="upload-status">✔ Preview uploaded</div>`;
