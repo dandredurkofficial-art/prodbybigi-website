@@ -4991,7 +4991,6 @@ async function uploadFullAudio(){
 }
 async function uploadPreviewAudio(){
   try{
-    if (blockIfUploadLimitReached()) return;
 
     const file = await pickFile("audio/*");
     if(!file) return;
