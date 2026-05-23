@@ -4826,6 +4826,65 @@ function blockIfUploadLimitReached(){
 }
 
 /* ===========================
+   ✅ SOUND KITS UPLOAD LIMIT 
+=========================== */
+
+function soundkitLimitForTier(tier){
+
+  switch(String(tier || "free").toLowerCase()){
+
+    case "starter":
+      return 2;
+
+    case "pro":
+    case "elite":
+      return Infinity;
+
+    default:
+      return 0;
+  }
+}
+
+function blockIfSoundkitLimitReached(){
+
+  const limit =
+    soundkitLimitForTier(
+      getPlanTier()
+    );
+
+  if(!isFinite(limit)) return false;
+
+  const count =
+    kitsData.length || 0;
+
+  if(count >= limit){
+
+    if(limit === 0){
+
+      alert(
+        "Sound Kits are available on Starter plan and above."
+      );
+
+    }else{
+
+      alert(
+        `Sound kit limit reached (${count}/${limit}). Upgrade to upload more.`
+      );
+
+    }
+
+    showPage(
+      "upgrade",
+      document.getElementById("navUpg")
+    );
+
+    return true;
+  }
+
+  return false;
+}
+
+/* ===========================
    UPLOADS
 =========================== */
 async function compressImageFile(file, options = {}) {
@@ -6971,6 +7030,9 @@ async function uploadKitPreviewAudio(){
   }
 }
 async function publishKit(){
+  
+  if(blockIfSoundkitLimitReached()) return;
+  
   if(!window.currentUser){
     alert("Please login again.");
     return;
