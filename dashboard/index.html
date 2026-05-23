@@ -6984,14 +6984,26 @@ async function uploadKitFile(){
 }
 
 async function uploadKitPreviewAudio(){
+
   try{
 
-    const file = await pickFile("audio/*");
+    const file =
+      await pickFile("audio/*");
 
     if(!file) return;
 
-    $("previewAudioStatus").innerHTML =
-      `<div class="upload-status">Uploading preview audio…</div>`;
+    const statusEl =
+      $("previewAudioStatus");
+
+    if(statusEl){
+
+      statusEl.style.display =
+        "block";
+
+      statusEl.innerHTML =
+        `<div class="upload-status">Uploading preview audio…</div>`;
+
+    }
 
     const uid =
       window.auth?.currentUser?.uid || "anon";
@@ -7001,31 +7013,55 @@ async function uploadKitPreviewAudio(){
 
     const upload =
       await uploadToStorage({
-        file,
-        path: `audiory/soundkits/previews/${uid}/${Date.now()}${ext}`,
 
-        onProgress:(p)=>
-          $("previewAudioStatus").innerHTML =
-            `<div class="upload-status">Uploading preview audio… ${p}%</div>`
+        file,
+
+        path:
+          `audiory/soundkits/previews/${uid}/${Date.now()}${ext}`,
+
+        onProgress:(p)=>{
+
+          if(statusEl){
+
+            statusEl.innerHTML =
+              `<div class="upload-status">Uploading preview audio… ${p}%</div>`;
+
+          }
+
+        }
+
       });
 
     const previewUrl =
-      upload.downloadURL || upload.url || "";
+      upload.downloadURL ||
+      upload.url ||
+      "";
 
     $("previewAudioURL").value =
       previewUrl;
 
-    $("previewAudioStatus").innerHTML =
-      previewUrl
-        ? `<div class="upload-status">✔ Preview uploaded</div>`
-        : `<div class="upload-status err">✖ Upload failed</div>`;
+    if(statusEl){
+
+      statusEl.innerHTML =
+        previewUrl
+          ? `<div class="upload-status">✔ Preview uploaded</div>`
+          : `<div class="upload-status err">✖ Upload failed</div>`;
+
+    }
 
   }catch(err){
 
     console.error(err);
 
-    $("previewAudioStatus").innerHTML =
-      `<div class="upload-status err">✖ Upload failed</div>`;
+    const statusEl =
+      $("previewAudioStatus");
+
+    if(statusEl){
+
+      statusEl.innerHTML =
+        `<div class="upload-status err">✖ Upload failed</div>`;
+
+    }
 
     alert(
       "Preview upload failed: " +
@@ -7033,6 +7069,7 @@ async function uploadKitPreviewAudio(){
     );
 
   }
+
 }
 async function publishKit(){
   
