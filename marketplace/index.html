@@ -1943,124 +1943,82 @@
 
   function renderMarketplace(filtered, grid){
 
-    filtered.forEach((b)=>{
-      const card = document.createElement("div");
-      card.className = "card beat-card";
-      card.setAttribute("data-beat-id", b.id);
+  filtered.forEach((b)=>{
 
-      const audioUrl = b.audio || "";
-      const pageUrl = beatPageUrl(b);
+    const card = document.createElement("div");
 
-      card.innerHTML = `
-        <div class="beat-cover">
-          <a class="beat-open"
-             href="${pageUrl}"
-             data-open-beat="1"
-             data-producer-id="${String(b.producerId || "")}"
-             data-beat-id="${String(b.id || "")}"
-             aria-label="Open beat page">
-            ${coverHTML(b.artwork, b.title)}
-          </a>
+    card.className = "card beat-card";
 
-          <button
-            class="play-fab"
-            data-ignore-license="1"
-            data-audio-url="${audioUrl}"
+    card.setAttribute("data-beat-id", b.id);
+
+    const audioUrl =
+      b.previewAudio || b.audio || "";
+
+    const pageUrl =
+      beatPageUrl(b);
+
+    card.innerHTML = `
+
+      <div class="beat-cover">
+
+        <a
+          class="beat-open"
+          href="${pageUrl}"
+          data-open-beat="1"
+          data-producer-id="${String(b.producerId || "")}"
+          data-beat-id="${String(b.id || "")}"
+          aria-label="Open beat page"
+        >
+          ${coverHTML(b.artwork, b.title)}
+        </a>
+
+        <button
+          class="play-fab"
+          type="button"
+          data-play-btn
+          data-beat-id="${String(b.id || "")}"
+          data-producer-id="${String(b.producerId || "")}"
+          data-audio-url="${audioUrl}"
+          aria-label="Play preview"
+        >
+          <span class="playIcon">▶</span>
+        </button>
+
+      </div>
+
+      <div class="beat-meta">
+
+        <div>
+
+          <a
+            class="beat-title-link"
+            href="${pageUrl}"
+            data-open-beat="1"
             data-producer-id="${String(b.producerId || "")}"
             data-beat-id="${String(b.id || "")}"
-            aria-label="Play preview"
-            type="button">
-            <span class="playIcon">▶</span>
-          </button>
+          >
+            <h3>${b.title}</h3>
+          </a>
+
+          <a
+            class="producer"
+            href="/producer-profile/?producerId=${encodeURIComponent(b.producerId || "")}"
+            data-producer-id="${String(b.producerId || "")}"
+            data-beat-id="${String(b.id || "")}"
+          >
+            ${prettyProducerName(b)}
+            ${AudioryVerify.badge(b.producerPlan)}
+          </a>
+
+          ${b.genre ? `<div>${b.genre}</div>` : ``}
+
         </div>
 
-        <div class="beat-meta">
-          <div>
-            <a class="beat-title-link"
-               href="${pageUrl}"
-               data-open-beat="1"
-               data-producer-id="${String(b.producerId || "")}"
-               data-beat-id="${String(b.id || "")}">
-              <h3>${b.title}</h3>
-            </a>
+        ${pillHTML(b)}
 
-            <a class="producer"
-               href="/producer-profile/?producerId=${encodeURIComponent(b.producerId || "")}"
-               data-producer-id="${String(b.producerId || "")}"
-               data-beat-id="${String(b.id || "")}">
-              ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
-            </a>
+      </div>
 
-      ${b.genre ? `<div>${b.genre}</div>` : ``}
-    </div>
-
-    ${pillHTML(b)}
-  </div>
-`;
-
-      const playBtn = card.querySelector(".play-fab");
-
-      if (playBtn) {
-  playBtn.onclick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const pid = String(b.producerId || "");
-    const bid = String(b.id || "");
-    const anaKey = `${pid}:${bid}`;
-
-    try {
-
-      const audioUrl = String(
-        b.previewAudio || b.audio || ""
-      ).trim();
-
-      if (!audioUrl) {
-        alert("No preview available for this beat.");
-        return;
-      }
-
-      // ✅ OPEN GLOBAL PLAYER
-      if (typeof window.openGlobalPlayer === "function") {
-
-        window.openGlobalPlayer({
-          id: bid,
-          title: b.title || "Untitled Beat",
-          producerName: b.producerName || "Unknown Producer",
-          artwork: b.artwork || "",
-          audio: audioUrl
-        });
-
-      } else {
-
-        console.warn("Global player not found");
-
-      }
-
-      // analytics
-      if (pid && bid && !window.__ANA_SENT__.play[anaKey]) {
-
-        window.__ANA_SENT__.play[anaKey] = 1;
-
-        try {
-          logAnalyticsEvent({
-            producerId: pid,
-            type: "play",
-            beatId: bid
-          });
-        } catch (err) {
-          console.warn("analytics event failed", err);
-        }
-
-      }
-
-    } catch (err) {
-
-      console.error(err);
-
-    }
-  };
-}
+    `;
       
       /* FREE DOWNLOAD */
       card.addEventListener("click", (e)=>{
