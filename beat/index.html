@@ -1210,81 +1210,59 @@
       renderBeatExtraMeta(beat);
 
       const playBtn = $("beatPlayBtn");
-      playBtn.setAttribute("data-audio-url", String(beat.audio || ""));
-      playBtn.setAttribute("data-producer-id", String(beat.producerId || ""));
-      playBtn.setAttribute("data-beat-id", String(beat.id || beatId));
+
+      playBtn.setAttribute(
+        "data-audio-url",
+        String(beat.previewAudio || beat.audio || "")
+      );
+
+      playBtn.setAttribute(
+        "data-producer-id",
+        String(beat.producerId || "")
+      );
+
+      playBtn.setAttribute(
+        "data-beat-id",
+        String(beat.id || beatId)
+      );
 
       playBtn.onclick = async () => {
-        const pid = String(beat.producerId || "");
-        const bid = String(beat.id || beatId);
-        const anaKey = `${pid}:${bid}`;
 
-        try {
-          const audioUrl = String(beat.previewAudio || beat.audio || "").trim();
-          if (!audioUrl) {
+        try{
+
+          const audioUrl =
+            String(
+              beat.previewAudio || beat.audio || ""
+            ).trim();
+
+          if (!audioUrl){
             alert("No preview available for this beat.");
             return;
           }
 
-          if (!window.__beatPageAudio) {
-            window.__beatPageAudio = new Audio();
-            window.__beatPageAudio.preload = "none";
+          if (typeof window.openGlobalPlayer === "function"){
+
+            window.openGlobalPlayer({
+              id: String(beat.id || beatId),
+              title: beat.title || "Untitled Beat",
+              producerName: prettyProducerName(beat),
+              artwork: beat.artwork || "",
+              audio: audioUrl
+            });
+
+          } else {
+
+            console.warn("Global player not found");
+
           }
 
-          const audio = window.__beatPageAudio;
-          const icon = playBtn.querySelector(".playIcon");
+        }catch(e){
 
-          const currentSrc = audio.getAttribute("data-current-src") || "";
-
-          if (currentSrc === audioUrl && !audio.paused) {
-            audio.pause();
-            if (icon) icon.textContent = "▶";
-            return;
-          }
-
-          if (currentSrc !== audioUrl) {
-            audio.pause();
-            audio.currentTime = 0;
-            audio.src = audioUrl;
-            audio.setAttribute("data-current-src", audioUrl);
-          }
-
-          await audio.play();
-          if (icon) icon.textContent = "❚❚";
-
-          audio.onpause = () => {
-            if (icon) icon.textContent = "▶";
-          };
-
-          audio.onended = () => {
-            if (icon) icon.textContent = "▶";
-          };
-
-          if (pid && bid && !window.__ANA_SENT__.play[anaKey]) {
-            window.__ANA_SENT__.play[anaKey] = 1;
-
-            try {
-              logAnalyticsEvent({ producerId: pid, type: "beat_play", beatId: bid });
-            } catch (e) {
-              console.warn("analytics event failed", e);
-            }
-
-            try {
-              const { doc, updateDoc, increment } = window.FB;
-              const ref = doc(window.FB.db, "beats", bid);
-              await updateDoc(ref, { plays: increment(1) });
-
-              const currentPlays = Number($("beatPlays").textContent || 0);
-              $("beatPlays").textContent = currentPlays + 1;
-            } catch (e) {
-              console.error("plays increment failed:", e);
-            }
-          }
-        } catch (e) {
           console.error("audio play failed:", e);
-        }
-      };
 
+        }
+
+      };
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
