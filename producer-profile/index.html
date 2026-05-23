@@ -303,6 +303,231 @@
     .social a{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
     .social svg{width:18px;height:18px;fill:currentColor}
 
+    /* =========================
+       PAYMENT MODAL - NEW STYLE
+    ========================= */
+    .pb-pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.68);
+      display:none;
+      z-index:10050;
+    }
+
+    .pb-pay-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(720px, calc(100vw - 18px));
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:26px;
+      padding:0;
+      box-shadow:0 28px 90px rgba(0,0,0,.52);
+      display:none;
+      z-index:10051;
+    }
+
+    .pb-pay-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:22px 24px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .pb-pay-title{
+      font-weight:950;
+      font-size:24px;
+      margin:0;
+      color:#fff;
+    }
+
+    .pb-pay-sub{
+      color:rgba(255,255,255,.72);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.5;
+      white-space:pre-line;
+    }
+
+    .pb-pay-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:24px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
+    }
+
+    .pb-pay-close:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .pb-pay-body{
+      padding:22px 24px 24px;
+      display:grid;
+      gap:16px;
+    }
+
+    .pb-pay-methods{
+      display:grid;
+      gap:14px;
+    }
+
+    .pb-pay-btn{
+      width:100%;
+      min-height:76px;
+      border-radius:18px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:0 22px;
+      color:#fff;
+      font-size:17px;
+      box-shadow:none;
+    }
+
+    .pb-pay-btn.primary{
+      background:#4b86ef;
+    }
+
+    .pb-pay-btn.success{
+      background:#24c65a;
+    }
+
+    .pb-pay-btn:hover{
+      filter:brightness(1.03);
+    }
+
+    .pb-pay-btn-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .pb-pay-amount{
+      font-size:16px;
+      font-weight:900;
+      opacity:.96;
+    }
+
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:4px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+    }
+
+    .pb-pay-label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.86);
+      margin-bottom:8px;
+    }
+
+    .pb-pay-input{
+      width:100%;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+      font-size:15px;
+    }
+
+    .pb-pay-input:focus{
+      border-color:rgba(34,197,94,.55);
+    }
+
+    .pb-pay-send{
+      margin-top:14px;
+      min-height:50px;
+      padding:0 20px;
+      border:none;
+      border-radius:14px;
+      background:#24c65a;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .pb-pay-send:hover{
+      filter:brightness(1.03);
+    }
+
+    .pb-pay-send:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    } 
+
+    .pb-pay-status{
+      min-height:18px;
+      margin-top:10px;
+      font-size:13px;
+      color:rgba(255,255,255,.78);
+      white-space:pre-line;
+    }
+
+    .mpesa-icon{
+      width:20px;
+      height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .mpesa-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    @media (max-width: 640px){
+      .pb-pay-modal{
+        width:calc(100vw - 16px);
+        max-height:calc(100vh - 20px);
+        border-radius:24px;
+      }
+
+      .pb-pay-head{
+        padding:18px 18px 12px;
+      }
+
+      .pb-pay-title{
+        font-size:20px;
+      }
+
+      .pb-pay-body{
+        padding:16px 18px 18px;
+      }
+
+      .pb-pay-btn{
+        min-height:72px;
+        border-radius:18px;
+        padding:0 18px;
+        font-size:16px;
+      }
+
+      .pb-pay-amount{
+        font-size:14px;
+      }
+    }
+
     /* ======================================================
        ✅ DM MODAL (Inbox on profile)
     ====================================================== */
@@ -663,6 +888,51 @@
   </div>
 </aside>
 
+<!-- PAYMENT METHOD MODAL -->
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
+
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
+
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
@@ -684,6 +954,349 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
+
+/* =========================================================
+   PRODUCER PROFILE PAYMENT MODAL
+========================================================= */
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const payBackdrop = $("pbPayBackdrop");
+  const payModal = $("pbPayModal");
+  const payClose = $("pbPayClose");
+  const payTitle = $("pbPayTitle");
+  const paySub = $("pbPaySub");
+  const payAmountA = $("pbPayAmountA");
+  const payAmountB = $("pbPayAmountB");
+  const btnPaypal = $("pbPayWithPaypal");
+  const btnMpesa = $("pbPayWithMpesa");
+  const mpesaBox = $("pbMpesaBox");
+  const mpesaPhone = $("pbMpesaPhone");
+  const payStatus = $("pbPayStatus");
+  const pbSendStkPush = $("pbSendStkPush");
+
+  function getBeatById(beatId){
+    return (window.__LATEST_BEATS__ || []).find(
+      b => String(b?.id || "") === String(beatId || "")
+    ) || null;
+  }
+
+  function getDefaultLicenseForBeat(beat){
+    if (!beat) {
+      return {
+        licenseKey: "basic",
+        amount: 0
+      };
+    }
+
+    const lic = beat.licenses || {};
+
+    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+      return {
+        licenseKey: "basic",
+        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+      return {
+        licenseKey: "premium",
+        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+      return {
+        licenseKey: "exclusive",
+        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+      };
+    }
+
+    return {
+      licenseKey: "basic",
+      amount: Number(beat.price || 0)
+    };
+  }
+
+  function syncSelectionFromModal(){
+    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+    const selectedCard =
+      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+      document.querySelector('#pbLicensesGrid .selected') ||
+      document.querySelector('#pbLicensesGrid .active') ||
+      document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+    let licenseKey = "";
+    if (selectedCard) {
+      licenseKey =
+        selectedCard.dataset.licenseKey ||
+        selectedCard.dataset.key ||
+        "";
+    }
+
+    if (!licenseKey && selectedCard) {
+      const txt = (selectedCard.textContent || "").toLowerCase();
+      if (txt.includes("exclusive")) licenseKey = "exclusive";
+      else if (txt.includes("premium")) licenseKey = "premium";
+      else if (txt.includes("basic")) licenseKey = "basic";
+    }
+
+    if (!licenseKey) {
+      const existing = window.__PB_SELECTED__ || {};
+      licenseKey = existing.licenseKey || "basic";
+    }
+
+    window.__PB_SELECTED__ = {
+      ...(window.__PB_SELECTED__ || {}),
+      title: title || window.__PB_SELECTED__?.title || "",
+      licenseKey,
+      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+    };
+
+    console.log("✅ marketplace synced from modal", window.__PB_SELECTED__);
+  }
+
+  function openPayModal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) {
+      alert("Select a beat and license first.");
+      return;
+    }
+
+    payTitle.textContent = "Choose payment method";
+    paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
+    payAmountA.textContent = money(sel.amount || 0);
+    payAmountB.textContent = money(sel.amount || 0);
+    payStatus.textContent = "";
+    mpesaBox.style.display = "none";
+    mpesaPhone.value = "";
+
+    payBackdrop.style.display = "block";
+    payModal.style.display = "block";
+    payBackdrop.setAttribute("aria-hidden","false");
+  }
+
+  function closePayModal(){
+    payBackdrop.style.display = "none";
+    payModal.style.display = "none";
+    payBackdrop.setAttribute("aria-hidden","true");
+    mpesaBox.style.display = "none";
+    payStatus.textContent = "";
+  }
+
+  function showMpesaBox(){
+    mpesaBox.style.display = "block";
+    payStatus.textContent = "";
+    setTimeout(()=> mpesaPhone?.focus(), 50);
+  }
+
+  async function sendMpesaStkPush(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const phone = (mpesaPhone.value || "").trim();
+    if (!phone) {
+      payStatus.textContent = "Enter your phone number first.";
+      return;
+    }
+
+    const digits = phone.replace(/\D/g,"");
+    if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+      payStatus.textContent = "Use format: 2547XXXXXXXX";
+      return;
+    }
+
+    const amt = Number(sel.amount || 0);
+    if (!amt || amt <= 0) {
+      payStatus.textContent = "Price not detected. Try selecting the license again.";
+      return;
+    }
+
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    if (!u?.uid){
+      payStatus.textContent = "Please sign in to pay with M-Pesa.";
+      setTimeout(()=> location.href="/login/", 600);
+      return;
+    }
+
+    pbSendStkPush.disabled = true;
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Sending STK Push… check your phone.";
+
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), 25000);
+
+    try{
+      const body = {
+        phone: digits,
+        beatId: String(sel.beatId),
+        buyerId: String(u.uid),
+        licenseKey: String(sel.licenseKey || "basic"),
+        amount: Math.round(amt),
+        amountUsd: Number(amt)
+      };
+
+      const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      const data = await r.json().catch(()=> ({}));
+
+      if (!r.ok) {
+        console.error("STK push failed:", data);
+        payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+        return;
+      }
+
+      payStatus.textContent =
+        "✅ STK Push sent.\nApprove on your phone." +
+        (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+
+    } catch (err){
+      console.error(err);
+      if (String(err?.name) === "AbortError"){
+        payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
+      } else {
+        payStatus.textContent = "Error: " + (err?.message || err);
+      }
+    } finally {
+      clearTimeout(t);
+      pbSendStkPush.disabled = false;
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  async function payWithPaypal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const body = {
+      beatId: sel.beatId,
+      licenseKey: sel.licenseKey || "basic"
+    };
+
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Opening PayPal…";
+
+    try{
+      const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await r.json().catch(()=> ({}));
+      if (!r.ok) {
+        console.error("PayPal createOrder failed:", data);
+        alert(data?.error || "PayPal create order failed");
+        payStatus.textContent = "";
+        return;
+      }
+
+      const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+      if (!url) {
+        console.error("No approveUrl:", data);
+        alert("PayPal approval link missing.");
+        payStatus.textContent = "";
+        return;
+      }
+
+      location.href = url;
+    } catch (err){
+      console.error(err);
+      alert("PayPal error: " + (err?.message || err));
+      payStatus.textContent = "";
+    } finally {
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  payBackdrop?.addEventListener("click", closePayModal);
+  payClose?.addEventListener("click", closePayModal);
+  btnPaypal?.addEventListener("click", payWithPaypal);
+  btnMpesa?.addEventListener("click", showMpesaBox);
+  pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+
+  document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
+
+    const beatId = String(card.getAttribute("data-beat-id") || "");
+    if (!beatId) return;
+
+    const title = (
+      card.querySelector("h3")?.textContent || ""
+    ).trim();
+
+    const beat = getBeatById(beatId);
+    const fallback = getDefaultLicenseForBeat(beat);
+
+    window.__PB_SELECTED__ = {
+      beatId,
+      title: title || "",
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+
+    console.log("✅ marketplace default selection", window.__PB_SELECTED__);
+  }, true);
+
+  document.addEventListener("click", (e)=>{
+    const clickedCard = e.target.closest("#pbLicensesGrid > *");
+    if (!clickedCard) return;
+
+    setTimeout(syncSelectionFromModal, 0);
+  }, true);
+
+  const buyNowBtn = document.getElementById("pbBuyNow");
+  if (buyNowBtn) {
+    buyNowBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      let sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) {
+        alert("Select a beat and license first.");
+        return;
+      }
+
+      syncSelectionFromModal();
+      sel = window.__PB_SELECTED__;
+
+      if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+        const beat = getBeatById(sel.beatId);
+        const fallback = getDefaultLicenseForBeat(beat);
+
+        window.__PB_SELECTED__ = {
+          ...sel,
+          licenseKey: fallback.licenseKey,
+          amount: fallback.amount
+        };
+
+        sel = window.__PB_SELECTED__;
+      }
+
+      if (!sel?.amount || sel.amount <= 0) {
+        alert("Select a license first.");
+        return;
+      }
+
+      openPayModal();
+    }, true);
+  }
+})();
+
   function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
   function coverHTML(url, title){
     if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
