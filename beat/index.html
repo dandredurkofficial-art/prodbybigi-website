@@ -1212,6 +1212,11 @@
       const playBtn = $("beatPlayBtn");
 
       playBtn.setAttribute(
+        "data-play-btn",
+        ""
+      );
+
+      playBtn.setAttribute(
         "data-audio-url",
         String(beat.previewAudio || beat.audio || "")
       );
@@ -1225,44 +1230,6 @@
         "data-beat-id",
         String(beat.id || beatId)
       );
-
-      playBtn.onclick = async () => {
-
-        try{
-
-          const audioUrl =
-            String(
-              beat.previewAudio || beat.audio || ""
-            ).trim();
-
-          if (!audioUrl){
-            alert("No preview available for this beat.");
-            return;
-          }
-
-          if (typeof window.openGlobalPlayer === "function"){
-
-            window.openGlobalPlayer({
-              id: String(beat.id || beatId),
-              title: beat.title || "Untitled Beat",
-              producerName: prettyProducerName(beat),
-              artwork: beat.artwork || "",
-              audio: audioUrl
-            });
-
-          } else {
-
-            console.warn("Global player not found");
-
-          }
-
-        }catch(e){
-
-          console.error("audio play failed:", e);
-
-        }
-
-      };
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
