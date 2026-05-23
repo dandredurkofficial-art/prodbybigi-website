@@ -2589,7 +2589,7 @@
     </button>
 
     <div
-      id="previewAudioStatus"
+      id="kitPreviewAudioStatus"
       style="
         min-height:24px;
         margin-top:8px;
@@ -7002,7 +7002,7 @@ async function uploadKitPreviewAudio(){
     if(!file) return;
 
     const statusEl =
-      $("previewAudioStatus");
+      $("kitPreviewAudioStatus");
 
     if(statusEl){
 
@@ -7063,7 +7063,7 @@ async function uploadKitPreviewAudio(){
     console.error(err);
 
     const statusEl =
-      $("previewAudioStatus");
+      $("kitPreviewAudioStatus");
 
     if(statusEl){
 
