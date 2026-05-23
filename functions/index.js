@@ -61,6 +61,19 @@ beats.publishBeat;
 exports.updateBeat =
 beats.updateBeat;
 
+/* =========================
+   SOUND KITS FUNCTIONS
+========================= */
+
+const soundkits =
+require("./soundkits");
+
+exports.publishKit =
+soundkits.publishKit;
+
+exports.updateKit =
+soundkits.updateKit;
+
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
