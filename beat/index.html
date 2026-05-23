@@ -1211,25 +1211,18 @@
 
       const playBtn = $("beatPlayBtn");
 
-      playBtn.setAttribute(
-        "data-play-btn",
-        ""
-      );
+      playBtn.dataset.audioUrl =
+        String(beat.previewAudio || beat.audio || "");
 
-      playBtn.setAttribute(
-        "data-audio-url",
-        String(beat.previewAudio || beat.audio || "")
-      );
+      playBtn.dataset.producerId =
+        String(beat.producerId || "");
 
-      playBtn.setAttribute(
-        "data-producer-id",
-        String(beat.producerId || "")
-      );
+      playBtn.dataset.beatId =
+        String(beat.id || beatId);
 
-      playBtn.setAttribute(
-        "data-beat-id",
-        String(beat.id || beatId)
-      );
+      if (window.bindGlobalPlayerButtons) {
+        window.bindGlobalPlayerButtons();
+      }
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
