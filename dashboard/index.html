@@ -7009,11 +7009,16 @@ async function uploadKitPreviewAudio(){
             `<div class="upload-status">Uploading preview audio… ${p}%</div>`
       });
 
+    const previewUrl =
+      upload.downloadURL || upload.url || "";
+
     $("previewAudioURL").value =
-      upload.downloadURL;
+      previewUrl;
 
     $("previewAudioStatus").innerHTML =
-      `<div class="upload-status">✔ Preview uploaded</div>`;
+      previewUrl
+        ? `<div class="upload-status">✔ Preview uploaded</div>`
+        : `<div class="upload-status err">✖ Upload failed</div>`;
 
   }catch(err){
 
