@@ -76,6 +76,13 @@
   window.updateBeatFn =
     httpsCallable(functions, "updateBeat");
 
+  /* ✅ SOUNDKITS */
+  window.publishKitFn =
+    httpsCallable(functions, "publishKit");
+
+  window.updateKitFn =
+    httpsCallable(functions, "updateKit");
+
   window.orderBy = orderBy;
   window.limit = limit;
 
@@ -7096,18 +7103,34 @@ async function publishKit(){
   try{
     const producerName = getProducerDisplayName();
 
-    await window.addDoc(window.collection(window.db,"soundkits"),{
-      title: ($("kitTitle").value || "Untitled Kit").trim(),
-      description: ($("kitDesc").value || "").trim(),
-      category: ($("kitCategory").value || "").trim(),
-      price: Number($("kitPrice").value || 0) || 0,
-      cover: kitCover || "",
-      previewAudioURL: ($("previewAudioURL").value || "").trim(),
-      downloadUrl: ($("kitDownloadUrl").value || kitFile || "").trim(),
-      producerId: window.currentUser.uid,
+    await window.publishKitFn({
+
+      title:
+        ($("kitTitle").value || "Untitled Kit").trim(),
+
+      description:
+        ($("kitDesc").value || "").trim(),
+
+      category:
+        ($("kitCategory").value || "").trim(),
+
+      price:
+        Number($("kitPrice").value || 0) || 0,
+
+      cover:
+        kitCover || "",
+
+      previewAudioURL:
+        ($("previewAudioURL").value || "").trim(),
+
+      downloadUrl:
+        ($("kitDownloadUrl").value || kitFile || "").trim(),
+
       producerName,
-      published: $("kitPublished").checked === true,
-      createdAt: Date.now()
+
+      published:
+        $("kitPublished").checked === true
+
     });
 
     $("kitTitle").value = "";
@@ -7301,40 +7324,37 @@ async function editKit(id){
 
       try{
 
-        await window.updateDoc(
-          window.doc(
-            window.db,
-            "soundkits",
-            id
-          ),
-          {
-            title:
-              $("kitTitle").value.trim(),
+        await window.updateKitFn({
 
-            description:
-              $("kitDesc").value.trim(),
+          kitId: id,
 
-            category:
-              $("kitCategory").value,
+          title:
+            $("kitTitle").value.trim(),
 
-            price:
-              Number(
-                $("kitPrice").value || 0
-              ),
+          description:
+            $("kitDesc").value.trim(),
 
-            cover:
-              kitCover || "",
+          category:
+            $("kitCategory").value,
 
-            previewAudioURL:
-              $("previewAudioURL").value.trim(),
+          price:
+            Number(
+              $("kitPrice").value || 0
+            ),
 
-            downloadUrl:
-              $("kitDownloadUrl").value.trim(),
+          cover:
+            kitCover || "",
 
-            published:
-              $("kitPublished").checked
-          }
-        );
+          previewAudioURL:
+            $("previewAudioURL").value.trim(),
+
+          downloadUrl:
+            $("kitDownloadUrl").value.trim(),
+
+          published:
+            $("kitPublished").checked
+
+        });
 
         alert(
           "Sound kit updated"
