@@ -1226,30 +1226,55 @@
         "data-beat-id",
         String(beat.id || beatId)
       );
-          if (pid && bid && !window.__ANA_SENT__.play[anaKey]) {
-            window.__ANA_SENT__.play[anaKey] = 1;
 
-            try {
-              logAnalyticsEvent({ producerId: pid, type: "beat_play", beatId: bid });
-            } catch (e) {
-              console.warn("analytics event failed", e);
-            }
+      playBtn.addEventListener("click", async () => {
 
-            try {
-              const { doc, updateDoc, increment } = window.FB;
-              const ref = doc(window.FB.db, "beats", bid);
-              await updateDoc(ref, { plays: increment(1) });
+        const pid = String(beat.producerId || "");
+        const bid = String(beat.id || beatId);
+        const anaKey = `${pid}:${bid}`;
 
-              const currentPlays = Number($("beatPlays").textContent || 0);
-              $("beatPlays").textContent = currentPlays + 1;
-            } catch (e) {
-              console.error("plays increment failed:", e);
-            }
-          }
-        } catch (e) {
-          console.error("audio play failed:", e);
+        if (!pid || !bid) return;
+
+        if (window.__ANA_SENT__.play[anaKey]) return;
+
+        window.__ANA_SENT__.play[anaKey] = 1;
+
+        try {
+
+          logAnalyticsEvent({
+            producerId: pid,
+            type: "beat_play",
+            beatId: bid
+          });
+
+        } catch(e){
+          console.warn("analytics failed", e);
         }
-      };
+
+        try {
+
+          const { doc, updateDoc, increment } = window.FB;
+
+          const ref =
+            doc(window.FB.db, "beats", bid);
+
+          await updateDoc(ref, {
+            plays: increment(1)
+          });
+
+          const currentPlays =
+            Number($("beatPlays").textContent || 0);
+
+          $("beatPlays").textContent =
+            currentPlays + 1;
+
+        } catch(e){
+
+          console.error("play increment failed", e);
+
+        }
+
+      });
 
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
