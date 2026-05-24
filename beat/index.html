@@ -554,20 +554,6 @@
         >
           <div id="beatCover"></div>
         </a>
-
-        <button
-          class="play-fab"
-          type="button"
-          data-play-btn
-          data-ignore-license="1"
-          data-audio=""
-          data-producer-id=""
-          data-beat-id=""
-          aria-label="Play preview"
-        >
-          <span class="playIcon">▶</span>
-        </button>
-
       </div>
 
       <div class="row" style="margin-top:12px;justify-content:space-between;">
@@ -1204,20 +1190,36 @@
         }catch{}
       }
 
-      $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
-      $("beatTitle").textContent = beat.title || "Beat";
+      $("coverWrap").innerHTML = `
 
-      const prodName = prettyProducerName(beat);
-      const prodLink = $("beatProducerLink");
-      prodLink.innerHTML = `${prodName} ${window.AudioryVerify ? AudioryVerify.badge(beat.producerPlan) : ""}`;
-      prodLink.href = `/producer-profile/?producerId=${encodeURIComponent(String(beat.producerId||""))}`;
+        <a
+          class="beat-open"
+          href="javascript:void(0)"
+          aria-label="Open beat page"
+        >
+          ${coverHTML(beat.artwork, beat.title)}
+        </a>
 
-      $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
-      $("beatBpm").textContent = pickBpm(beat);
-      $("beatKey").textContent = pickKey(beat);
-      $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
-      $("beatPlays").textContent = Number(beat.plays || 0);
-      renderBeatExtraMeta(beat);
+        <button
+          class="play-fab"
+          type="button"
+          data-play-btn
+          data-ignore-license="1"
+          data-audio-url="${String(
+            beat.previewAudio || beat.audio || ""
+          )}"
+          data-producer-id="${String(
+            beat.producerId || ""
+          )}"
+          data-beat-id="${String(
+            beat.id || beatId
+          )}"
+          aria-label="Play preview"
+        >
+          <span class="playIcon">▶</span>
+        </button>
+
+      `;
       
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
