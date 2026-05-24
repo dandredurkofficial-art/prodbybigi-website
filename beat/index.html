@@ -1227,6 +1227,14 @@
         String(beat.id || beatId)
       );
 
+      const clonedBtn =
+        playBtn.cloneNode(true);
+
+      playBtn.parentNode.replaceChild(
+        clonedBtn,
+        playBtn
+      );
+
       playBtn.addEventListener("click", async () => {
 
         const pid = String(beat.producerId || "");
