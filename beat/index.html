@@ -1209,20 +1209,33 @@
       $("beatPlays").textContent = Number(beat.plays || 0);
       renderBeatExtraMeta(beat);
 
-      const playBtn = $("beatPlayBtn");
+      $("coverWrap").innerHTML = `
 
-      playBtn.dataset.audioUrl =
-        String(beat.previewAudio || beat.audio || "");
+      <div id="beatCover">
+        ${coverHTML(beat.artwork, beat.title)}
+      </div>
 
-      playBtn.dataset.producerId =
-        String(beat.producerId || "");
+      <button
+        class="play-fab"
+        id="beatPlayBtn"
+        type="button"
+        data-play-btn
+        data-ignore-license="1"
+        data-audio-url="${String(
+          beat.previewAudio || beat.audio || ""
+        )}"
+        data-producer-id="${String(
+          beat.producerId || ""
+        )}"
+        data-beat-id="${String(
+          beat.id || beatId
+        )}"
+        aria-label="Play"
+      >
+        <span class="playIcon">▶</span>
+      </button>
 
-      playBtn.dataset.beatId =
-        String(beat.id || beatId);
-
-      if (window.bindGlobalPlayerButtons) {
-        window.bindGlobalPlayerButtons();
-      }
+    `;
       const pillWrap = $("beatPricePillWrap");
       if (pillWrap){
         const bId = String(beat.id||beatId);
