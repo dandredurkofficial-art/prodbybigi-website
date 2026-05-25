@@ -7,11 +7,11 @@
   <link rel="stylesheet" href="/css/auth.css" />
   <link rel="stylesheet" href="/css/mobile-fix.css">
   <style>
-    /* Global Background - Restored to the clean Light UI */
+    /* Force identical look & background colors across all devices */
     body {
-      background-color: #f8fafc;
+      background-color: #f8fafc !important;
       margin: 0;
-      padding: 0;
+      padding: 40px 16px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       display: flex;
       flex-direction: column;
@@ -19,6 +19,7 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      box-sizing: border-box;
     }
 
     /* Elegant Gradient Top Area Banner */
@@ -54,16 +55,17 @@
       display: block;
     }
 
-    /* Container matching the Help Desk White Cards */
+    /* Container matching the Registration Card Layout exactly */
     .auth-box {
-      background: #ffffff;
+      background: #ffffff !important;
       max-width: 450px;
-      width: 90%;
+      width: 100%;
       border-radius: 16px;
       padding: 40px;
       box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
       box-sizing: border-box;
-      margin-top: 60px; /* Accounts for the logo placement above on desktop */
+      margin-top: 60px;
+      border: none !important;
     }
 
     .auth-box h2 {
@@ -73,62 +75,6 @@
       margin-top: 0;
       margin-bottom: 24px;
       text-align: center;
-    }
-
-    .auth-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 24px;
-    }
-
-    /* Primary Login Button matching original signature brand blue */
-    .auth-actions button {
-      flex: 1;
-      min-width: 140px;
-      height: 52px;
-      background: #5533ff;
-      color: #ffffff;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .auth-actions button:hover {
-      background: #4422ee;
-    }
-
-    .auth-actions button:disabled {
-      background: #9ca3af;
-      cursor: not-allowed;
-    }
-
-    /* Clean link button styling */
-    .link-btn {
-      background: none;
-      border: none;
-      color: #5533ff;
-      cursor: pointer;
-      padding: 0;
-      margin-top: 16px;
-      text-align: left;
-      font-size: 15px;
-      font-weight: 700;
-      transition: color 0.2s ease;
-    }
-
-    .link-btn:hover {
-      color: #4422ee;
-      text-decoration: underline;
-    }
-
-    .muted {
-      color: #64748b;
-      font-size: 13px;
-      margin-top: 8px;
     }
 
     .field {
@@ -143,13 +89,13 @@
       margin-bottom: 8px;
     }
 
-    /* Input wrapper adapted to clean light UI */
+    /* Input wrappers matched cleanly */
     .auth-input {
       width: 100%;
       height: 56px;
       border-radius: 12px;
       border: 1px solid #cbd5e1;
-      background: #ffffff;
+      background: #ffffff !important;
       display: flex;
       align-items: center;
       box-sizing: border-box;
@@ -204,8 +150,8 @@
       height: 100%;
       border: none;
       outline: none;
-      background: transparent;
-      color: #1e293b;
+      background: transparent !important;
+      color: #1e293b !important;
       font-size: 15px;
       font-weight: 600;
       margin: 0;
@@ -218,7 +164,7 @@
       opacity: 1;
     }
 
-    /* Password Eye Button adapted to light style */
+    /* Password Eye Button */
     .auth-eye-btn {
       width: 44px;
       min-width: 44px;
@@ -250,7 +196,73 @@
       display: block;
     }
 
-    /* Signup callout text */
+    /* Primary Action & Secondary Buttons styling matches register exactly */
+    .auth-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    button#loginBtn {
+      width: 100%;
+      height: 52px;
+      background: #5533ff;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button#loginBtn:hover {
+      background: #4422ee;
+    }
+
+    button#loginBtn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    button#googleBtn {
+      width: 100%;
+      height: 52px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    button#googleBtn:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* Action Links */
+    .link-btn {
+      background: none;
+      border: none;
+      color: #5533ff;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 14px;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 700;
+      transition: color 0.2s ease;
+    }
+
+    .link-btn:hover {
+      color: #4422ee;
+      text-decoration: underline;
+    }
+
     p {
       color: #64748b;
       font-size: 15px;
@@ -266,6 +278,22 @@
       text-decoration: underline;
     }
 
+    .muted {
+      color: #64748b;
+      font-size: 15px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #status {
+      margin-top: 12px;
+      text-align: center;
+      color: #ef4444;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 18px;
+    }
+
     @media (max-width: 480px) {
       body::before {
         height: 260px;
@@ -274,7 +302,7 @@
         position: relative;
         top: auto;
         left: auto;
-        margin-top: 32px;
+        margin-top: 16px;
         margin-bottom: 16px;
       }
       .auth-box {
@@ -365,10 +393,13 @@
       <button id="googleBtn" type="button" style="display:none;">Continue with Google</button>
     </div>
 
-    <button class="link-btn" id="resetBtn" type="button">Forgot password?</button>
-    <div class="muted" id="status"></div>
+    <div style="display: flex; flex-direction: column;">
+      <button class="link-btn" id="resetBtn" type="button">Forgot password?</button>
+    </div>
+    
+    <div id="status"></div>
 
-    <p style="margin-top:20px; text-align: center;">
+    <p style="margin-top:20px; text-align: center;" class="muted">
       Don’t have an account?
       <a href="/register/">Register</a>
     </p>
