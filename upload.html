@@ -65,495 +65,424 @@
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    /* =========================================
-       ✅ GLOBAL LIGHT SYSTEM (WHITE & BLUE)
-    ========================================= */
-    body {
-      background: #ffffff !important;
-      color: #1e293b !important;
+    /* ✅ Premium BeatStars Widescreen Layout Fix */
+    .container {
+      max-width: 1440px !important;
+      width: 100% !important;
+      margin: 0 auto !important;
+      padding-left: 24px !important;
+      padding-right: 24px !important;
+      box-sizing: border-box !important;
     }
 
-    /* Price Pill */
-    .pb-pill {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      min-height: 36px;
-      padding: 0 14px;
-      border-radius: 12px;
-      border: 1px solid #295dff;
-      background: #ffffff;
-      color: #295dff;
-      white-space: nowrap;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1;
-      box-sizing: border-box;
-      transition: all 0.2s ease;
+    @media (max-width: 768px) {
+      .container {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+      }
     }
 
-    .pb-pill:hover {
-      background: #295dff;
+    /* ✅ Brand Logo Style Fix */
+    .brand .logo {
+      font-size: 24px;
+      font-weight: 900;
       color: #ffffff;
+      letter-spacing: -0.5px;
+      text-transform: none;
     }
 
-    .pb-pill .ic {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 14px;
-      height: 14px;
-      font-size: 13px;
-      line-height: 1;
-      color: #295dff;
-      flex-shrink: 0;
+    /* ✅ Tighter BeatStars-style price pill */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+      min-height:36px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1px solid #295dff;
+      background:#0a0d14;
+      color:#ffffff;
+      white-space:nowrap;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
     }
 
-    .pb-pill:hover .ic {
-      color: #ffffff;
+    .pb-pill:hover{
+      background:#295dff;
+      color:#ffffff;
+      transform:none;
     }
 
-    .pb-pill.free {
-      border-color: #22c55e;
-      background: #ffffff;
-      color: #22c55e;
+    .pb-pill .ic{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      font-size:13px;
+      line-height:1;
+      color:#facc15;
+      flex-shrink:0;
     }
 
-    .pb-pill.free:hover {
-      background: #22c55e;
-      color: #ffffff;
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
     }
 
-    /* Lock icon */
-    .lock-icon {
-      width: 16px;
-      height: 16px;
-      display: inline-block;
+    .lock-icon{
+      width:16px;
+      height:16px;
+      display:inline-block;
     }
 
-    .lock-icon svg {
-      width: 100%;
-      height: 100%;
-      display: block;
+    .lock-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
     }
 
-    /* Clamps */
+    .chart-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .chart-text{
+      min-width:0;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
     .trend-meta .t,
-    .home-title-clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
       line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
     .trend-meta .p,
-    .home-producer-clamp {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
 
-    .chart-meta-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 2px;
+    .chart-meta-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:2px;
     }
 
-    .chart-pill {
-      flex-shrink: 0;
-      display: flex;
-      align-items: flex-end;
+    .chart-pill{
+      flex-shrink:0;
+      display:flex;
+      align-items:flex-end;
     }
 
-    .home-title-clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-weight: 800 !important;
-      font-size: 12.5px !important;
-      line-height: 1.2 !important;
-      margin: 0;
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-weight:800 !important;
+      font-size:12.5px !important;
+      line-height:1.2 !important;
+      margin:0;
     }
 
-    .home-producer-clamp {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 11.5px !important;
-      line-height: 1.2 !important;
-      margin-top: 4px !important;
-      opacity: .82;
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:11.5px !important;
+      line-height:1.2 !important;
+      margin-top:4px !important;
+      opacity:.82;
     }
 
-    /* Free Download Modal */
-    .pb-free-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(4px);
-      display: none;
-      z-index: 9998;
+    .producer-link{
+      color:rgba(255,255,255,.62);
+      text-decoration:none;
     }
-    .pb-free-modal {
-      position: fixed;
-      left: 50%; top: 50%;
-      transform: translate(-50%,-50%);
-      width: min(520px, calc(100vw - 24px));
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
-      display: none;
-      z-index: 9999;
+    .producer-link:hover{ text-decoration:none; color:#ffffff; }
+
+    /* ✅ Free download modal */
+    .pb-free-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      z-index:9998;
     }
-    .pb-free-head {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      margin-bottom: 10px;
+    .pb-free-modal{
+      position:fixed;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 24px));
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 20px 70px rgba(0,0,0,.45);
+      display:none;
+      z-index:9999;
     }
-    .pb-free-title {
-      font-size: 18px;
-      font-weight: 900;
-      margin: 0;
-      color: #0f172a;
+    .pb-free-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:10px;
     }
-    .pb-free-close {
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 6px 8px;
-      border-radius: 10px;
+    .pb-free-title{
+      font-size:16px;
+      font-weight:900;
+      margin:0;
     }
-    .pb-free-close:hover { background: #f1f5f9; }
-    .pb-free-sub {
-      color: #475569;
-      font-size: 14px;
-      margin: 8px 0 16px;
-      line-height: 1.5;
+    .pb-free-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
     }
-    .pb-free-label {
-      font-size: 13px;
-      font-weight: 800;
-      margin: 12px 0 6px;
-      color: #334155;
+    .pb-free-close:hover{background:rgba(255,255,255,.08)}
+    .pb-free-sub{
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+      margin:8px 0 14px;
+      line-height:1.4;
     }
-    .pb-free-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #cbd5e1;
-      background: #f8fafc;
-      color: #0f172a;
-      outline: none;
+    .pb-free-label{
+      font-size:13px;
+      font-weight:800;
+      margin:10px 0 6px;
+      color:rgba(255,255,255,.85);
     }
-    .pb-free-input:focus { border-color: #295dff; background: #ffffff; }
-    .pb-free-btn {
-      width: 100%;
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      font-weight: 900;
-      background: #295dff;
-      color: #ffffff;
+    .pb-free-input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
     }
-    .pb-free-btn[disabled] { opacity: .65; cursor: not-allowed; }
-    .pb-free-note {
-      margin-top: 12px;
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.4;
+    .pb-free-input:focus{border-color:#295dff}
+    .pb-free-btn{
+      width:100%;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      background:#295dff;
+      color:#fff;
     }
-    .pb-free-status {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #22c55e;
-      min-height: 18px;
+    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
+    .audiory-support-fab{
+      position:fixed; right:18px; bottom:18px; z-index:9999;
+      display:flex; gap:10px; align-items:center;
+      padding:12px 14px; border-radius:999px;
+      background:#0e111a; color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 18px 50px rgba(0,0,0,.45);
+      cursor:pointer; font-family:system-ui;
+    }
+    .audiory-support-fab:hover{transform:translateY(-1px)}
+    .audiory-support-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
+    .audiory-support-fab b{font-size:14px}
+    .audiory-support-fab span{font-size:12px;opacity:.8}
+
+    .hero-sub{
+      margin:10px 0 0;
+      color:rgba(255,255,255,.78);
+      font-size:15px;
+      line-height:1.6;
+      max-width:760px;
     }
 
-    /* Support FAB */
-    .audiory-support-fab {
-      position: fixed; right: 18px; bottom: 18px; z-index: 9999;
-      display: flex; gap: 10px; align-items: center;
-      padding: 12px 14px; border-radius: 999px;
-      background: #ffffff; color: #0f172a;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      cursor: pointer; font-family: system-ui;
+    @media (max-width:768px){
+      .hero-sub{
+        font-size:14px;
+        line-height:1.5;
+      }
     }
-    .audiory-support-dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
-    .audiory-support-fab b { font-size: 14px; }
-    .audiory-support-fab span { font-size: 12px; opacity: .7; }
 
-    .hero-sub {
-      margin: 12px 0 0;
-      color: #475569;
-      font-size: 16px;
-      line-height: 1.6;
-      max-width: 760px;
+    /* =========================
+       PAYMENT MODAL
+    ========================= */
+    .pb-pay-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.68);
+      display:none; z-index:10050;
     }
+    .pb-pay-modal{
+      position:fixed; left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(720px, calc(100vw - 18px));
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:26px; padding:0;
+      box-shadow:0 28px 90px rgba(0,0,0,.52);
+      display:none; z-index:10051;
+    }
+    .pb-pay-head{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      padding:22px 24px 14px; border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .pb-pay-title{ font-weight:950; font-size:24px; margin:0; color:#fff; }
+    .pb-pay-sub{ color:rgba(255,255,255,.72); font-size:13px; margin-top:8px; line-height:1.5; white-space:pre-line; }
+    .pb-pay-close{ border:none; background:transparent; color:#fff; font-size:24px; cursor:pointer; padding:4px 8px; border-radius:10px; }
+    .pb-pay-close:hover{ background:rgba(255,255,255,.08); }
+    .pb-pay-body{ padding:22px 24px 24px; display:grid; gap:16px; }
+    .pb-pay-methods{ display:grid; gap:14px; }
+    .pb-pay-btn{
+      width:100%; min-height:76px; border-radius:18px; border:none; cursor:pointer; font-weight:900;
+      display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 22px; color:#fff; font-size:17px;
+    }
+    .pb-pay-btn.primary{ background:#295dff; }
+    .pb-pay-btn.success{ background:#22c55e; }
+    .pb-pay-btn:hover{ filter:brightness(1.05); }
+    .pb-pay-btn-left{ display:flex; align-items:center; gap:14px; }
+    .pb-pay-amount{ font-size:16px; font-weight:900; opacity:.96; }
+    .pb-pay-phone-wrap{ display:none; margin-top:4px; padding:14px; border-radius:18px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04); }
+    .pb-pay-label{ font-size:12px; font-weight:900; color:rgba(255,255,255,.86); margin-bottom:8px; }
+    .pb-pay-input{ width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:#fff; outline:none; font-size:15px; }
+    .pb-pay-input:focus{ border-color:#22c55e; }
+    .pb-pay-send{ margin-top:14px; min-height:50px; padding:0 20px; border:none; border-radius:14px; background:#22c55e; color:#fff; font-size:15px; font-weight:900; cursor:pointer; }
+    .pb-pay-send:disabled{ opacity:.7; cursor:not-allowed; }
+    .pb-pay-status{ min-height:18px; margin-top:10px; font-size:13px; color:rgba(255,255,255,.78); white-space:pre-line; }
+
+    /* ===================================
+         AUDIORY VERIFIED BADGES SYSTEM
+      =================================== */
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+    .verify-badge svg{
+      width:15px;
+      height:15px;
+      display:block;
+    }
+    .verify-pro svg{ color:#295dff; }
+    .verify-elite svg{ color:#fbbf24; }
 
     /* =========================================
-       PAYMENT MODAL - WHITE & BLUE BRANDING
+       CLEAN DYNAMIC CARD SYSTEM
     ========================================= */
-    .pb-pay-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.4);
-      backdrop-filter: blur(4px);
-      display: none;
-      z-index: 10050;
+    .trending-strip{
+      display:flex;
+      gap:16px;
+      overflow-x:auto;
+      padding:4px 2px 12px;
+      scroll-snap-type:x proximity;
+      scrollbar-width:none;
+    }
+    .trending-strip::-webkit-scrollbar{ display:none; }
+
+    .trending-strip .trend-card{
+      min-width:210px;
+      width:210px;
+      flex:0 0 210px;
+      scroll-snap-align:start;
     }
 
-    .pb-pay-modal {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%,-50%);
-      width: min(720px, calc(100vw - 18px));
-      max-height: calc(100vh - 28px);
-      overflow: auto;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 26px;
-      padding: 0;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.1);
-      display: none;
-      z-index: 10051;
+    .chart-grid{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0,1fr));
+      gap:20px 16px;
     }
 
-    .pb-pay-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 24px 24px 16px;
-      border-bottom: 1px solid #f1f5f9;
+    .trend-card,
+    .chart-card{
+      background:#141414 !important;
+      border:1px solid rgba(255,255,255,.08) !important;
+      border-radius:16px !important;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      box-shadow:none !important;
     }
 
-    .pb-pay-title {
-      font-weight: 950;
-      font-size: 24px;
-      margin: 0;
-      color: #0f172a;
+    .beat-cover{
+      position:relative;
+      aspect-ratio:1 / 1;
+      overflow:hidden;
+      background:#0b0b0b;
     }
 
-    .pb-pay-sub {
-      color: #475569;
-      font-size: 14px;
-      margin-top: 8px;
-      line-height: 1.5;
-      white-space: pre-line;
+    .beat-cover .beat-open{ display:block; width:100%; height:100%; }
+    .beat-cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    .play-fab{
+      position:absolute; right:12px; bottom:12px;
+      width:44px; height:44px; border-radius:50% !important;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(0,0,0,.65); backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer;
+    }
+    .play-fab .playIcon{ color:#fff; font-size:14px; margin-left:2px; }
+
+    .trend-meta, .chart-meta-row{ padding:12px 14px 0; }
+    .chart-meta-row{ display:block !important; }
+    .chart-text{ display:block; min-width:0; }
+
+    .trend-meta .t, .home-title-clamp{
+      color:#fff !important; text-decoration:none;
+      font-size:15px !important; line-height:1.3 !important;
+      font-weight:800 !important; margin:0 !important;
+      min-height:38px; display:-webkit-box;
+      -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
     }
 
-    .pb-pay-close {
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 24px;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 10px;
+    .trend-meta .p, .home-producer-clamp{
+      display:flex; align-items:center;
+      color:rgba(255,255,255,.62) !important;
+      font-size:13px !important; line-height:1.2 !important;
+      margin-top:6px !important; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    .pb-pay-close:hover { background: #f1f5f9; }
+    .trend-actions, .chart-pill{ padding:12px 14px 14px; margin-top:auto; }
+    .chart-pill{ display:block !important; }
 
-    .pb-pay-body {
-      padding: 24px;
-      display: grid;
-      gap: 16px;
+    .trend-actions .pb-pill, .chart-pill .pb-pill{
+      width:100%; min-height:40px; border-radius:10px;
+      font-size:13px; font-weight:800; background:transparent;
+      border:1.5px solid #295dff; color:#fff;
     }
 
-    .pb-pay-methods { display: grid; gap: 14px; }
-
-    .pb-pay-btn {
-      width: 100%;
-      min-height: 76px;
-      border-radius: 18px;
-      border: none;
-      cursor: pointer;
-      font-weight: 900;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 0 22px;
-      color: #ffffff;
-      font-size: 17px;
-    }
-
-    .pb-pay-btn.primary { background: #295dff; }
-    .pb-pay-btn.success { background: #22c55e; }
-    .pb-pay-btn:hover { filter: brightness(1.06); }
-
-    .pb-pay-btn-left { display: flex; align-items: center; gap: 14px; }
-    .pb-pay-amount { font-size: 16px; font-weight: 900; opacity: .96; }
-
-    .pb-pay-phone-wrap {
-      display: none;
-      margin-top: 4px;
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-    }
-
-    .pb-pay-label {
-      font-size: 13px;
-      font-weight: 900;
-      color: #334155;
-      margin-bottom: 8px;
-    }
-
-    .pb-pay-input {
-      width: 100%;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #0f172a;
-      outline: none;
-      font-size: 15px;
-    }
-
-    .pb-pay-input:focus { border-color: #22c55e; }
-
-    .pb-pay-send {
-      margin-top: 14px;
-      min-height: 50px;
-      padding: 0 20px;
-      border: none;
-      border-radius: 14px;
-      background: #22c55e;
-      color: #ffffff;
-      font-size: 15px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .pb-pay-status {
-      min-height: 18px;
-      margin-top: 12px;
-      font-size: 13px;
-      color: #475569;
-      white-space: pre-line;
-    }
-
-    .mpesa-icon {
-      width: 20px;
-      height: 20px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-    .mpesa-icon svg { width: 100%; height: 100%; display: block; }
-
-    /* Verified badges */
-    .verify-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 6px;
-      vertical-align: middle;
-    }
-    .verify-badge svg { width: 16px; height: 16px; display: block; }
-    .verify-pro svg { color: #295dff; }
-    .verify-elite svg { color: #fbbf24; }
-
-    /* Card System */
-    .trending-strip {
-      display: flex; gap: 16px; overflow-x: auto;
-      padding: 8px 2px; scroll-snap-type: x proximity;
-      scrollbar-width: none;
-    }
-    .trending-strip::-webkit-scrollbar { display: none; }
-    .trending-strip .trend-card { min-width: 176px; width: 176px; flex: 0 0 176px; scroll-snap-align: start; }
-
-    .chart-grid { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 16px 14px; }
-
-    .trend-card, .chart-card {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 18px !important;
-      overflow: hidden; gap: 0 !important; padding: 0 !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
-    }
-
-    .beat-cover {
-      position: relative; aspect-ratio: 1 / 1;
-      overflow: hidden; background: #f1f5f9; border-radius: 0 !important;
-    }
-    .beat-cover .beat-open { display: block; width: 100%; height: 100%; }
-    .beat-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    .play-fab {
-      position: absolute; right: 14px; bottom: 14px; width: 50px; height: 50px;
-      border-radius: 50% !important; border: 1px solid #e2e8f0;
-      background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px);
-      -webkit-backdrop-filter: blur(5px); cursor: pointer;
-    }
-    .play-fab .playIcon { color: #295dff; font-size: 15px; }
-
-    .trend-meta, .chart-meta-row { padding: 14px 14px 0 14px; }
-    .chart-meta-row { display: block !important; }
-    .chart-text { display: block; min-width: 0; }
-
-    .trend-meta .t, .home-title-clamp {
-      color: #0f172a !important; text-decoration: none;
-      font-size: 16px !important; line-height: 1.3 !important;
-      font-weight: 800 !important; margin: 0 !important; min-height: 42px;
-    }
-
-    .trend-meta .p, .home-producer-clamp {
-      color: #64748b !important; font-size: 13px !important;
-      line-height: 1.2 !important; margin-top: 6px !important;
-      margin-bottom: 0 !important;
-    }
-
-    .trend-actions, .chart-pill { padding: 14px; }
-    .chart-pill { display: block !important; }
-
-    .trend-actions .pb-pill, .chart-pill .pb-pill {
-      width: 100%; min-height: 48px; border-radius: 12px;
-      font-size: 15px; font-weight: 800;
-    }
-
-    .producer-link { color: #64748b !important; text-decoration: none; }
-    .producer-link:hover { color: #295dff !important; }
-
-    /* Smart Finder */
-    .smart-chip {
-      border: 1px solid #e2e8f0; background: #f8fafc; color: #334155;
-      border-radius: 999px; padding: 9px 14px; font-size: 13px;
-      font-weight: 700; cursor: pointer; transition: all 0.2s ease;
-    }
-    .smart-chip:hover { background: #295dff; color: #ffffff; border-color: #295dff; }
-    .smart-finder-hint { color: #64748b; font-size: 13px; margin-bottom: 12px; }
-    .smart-finder-hint span { color: #0f172a; font-weight: 700; }
-
-    @media (max-width:1200px){ .chart-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
-    @media (max-width:980px){ .chart-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+    @media (max-width:1200px){ .chart-grid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+    @media (max-width:980px){ .chart-grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
     @media (max-width:768px){
-      .chart-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px 12px; }
-      .trending-strip { gap: 14px; }
-      .trending-strip .trend-card { min-width: 168px; width: 168px; flex: 0 0 168px; }
-      .trend-meta, .chart-meta-row { padding: 12px 12px 0 12px; }
-      .trend-actions, .chart-pill { padding: 12px; }
-      .trend-meta .t, .home-title-clamp { font-size: 15px !important; min-height: 38px; }
-      .trend-actions .pb-pill, .chart-pill .pb-pill { min-height: 44px; font-size: 14px; }
+      .chart-grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 12px; }
+      .trending-strip .trend-card{ min-width:160px; width:160px; flex:0 0 160px; }
+      .trend-meta .t, .home-title-clamp{ font-size:14px !important; min-height:36px; }
+      .trend-meta .p, .home-producer-clamp{ font-size:12px !important; }
+      .trend-actions .pb-pill, .chart-pill .pb-pill{ min-height:36px; font-size:12px; }
     }
   </style>
 </head>
@@ -580,10 +509,8 @@
       <a href="/pricing/">Pricing</a>
       <a href="/collabs/">Collabs</a>
       <a href="https://blog.audiory.site">Blog</a>
-
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
-
       <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
       <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
@@ -616,10 +543,9 @@
 </nav>
 
 <main class="container">
-
   <section class="hero">
-    <div class="card hero-card" style="background:#ffffff; border:1px solid #e2e8f0; box-shadow:0 10px 30px rgba(0,0,0,0.02);">
-      <h1 class="hero-title" style="color:#0f172a;">Your first hit starts here</h1>
+    <div class="card hero-card">
+      <h1 class="hero-title">Your first hit starts here</h1>
       <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
       <div class="hero-search smart-finder-wrap">
         <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
@@ -630,7 +556,6 @@
         <div class="smart-finder-hint">
           Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
         </div>
-
         <div class="smart-finder-chips">
           <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
           <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
@@ -644,8 +569,8 @@
   </section>
 
   <section class="section">
-    <div class="card" style="padding:18px; background:#ffffff; border:1px solid #e2e8f0;">
-      <h2 class="h2" style="margin-bottom:12px; color:#0f172a;">Explore Audiory</h2>
+    <div class="card" style="padding:18px;">
+      <h2 class="h2" style="margin-bottom:12px;">Explore Audiory</h2>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
         <a class="play-btn" href="/marketplace/">Browse Beats</a>
         <a class="play-btn" href="/freebeats/">Free Beats</a>
@@ -659,24 +584,26 @@
 
   <section class="section">
     <div class="home-row">
-      <h2 class="h2" style="color:#0f172a;">Featured Beats</h2>
+      <h2 class="h2">Featured Beats</h2>
       <a class="see-all" href="/marketplace/?featured=1">See all →</a>
     </div>
-    <div id="featuredStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading featured beats…</div>
+    <div id="featuredStatus" class="loading-box" style="margin-top:12px;">Loading featured beats…</div>
     <div id="featuredStrip" class="trending-strip"></div>
   </section>
 
   <section class="section">
     <div class="home-row">
-      <h2 class="h2" style="color:#0f172a;">Trending Beats</h2>
+      <h2 class="h2">Trending Beats</h2>
       <a class="see-all" href="/marketplace/">See all →</a>
     </div>
-    <div id="homeStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading beats…</div>
+    <div id="homeStatus" class="loading-box" style="margin-top:12px;">Loading beats…</div>
     <div id="trendingStrip" class="trending-strip"></div>
   </section>
 
   <section class="section">
-    <div class="home-row"><h2 class="h2" style="color:#0f172a;">Popular Genres</h2></div>
+    <div class="home-row">
+      <h2 class="h2">Popular Genres</h2>
+    </div>
     <div class="genres-grid">
       <a class="card genre" href="/marketplace/?genre=Afrobeats">
         <img src="https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Afrobeats">
@@ -706,34 +633,37 @@
   </section>
 
   <section class="section">
-    <div class="home-row"><h2 class="h2" style="color:#0f172a;">Top Charting Beats</h2><a class="see-all" href="/marketplace/">See all →</a></div>
+    <div class="home-row">
+      <h2 class="h2">Top Charting Beats</h2>
+      <a class="see-all" href="/marketplace/">See all →</a>
+    </div>
     <div id="chartGrid" class="chart-grid"></div>
   </section>
 
   <section class="section">
-    <div class="card producers-promo" style="background:#ffffff; border:1px solid #e2e8f0;">
-      <div class="kicker" style="color:#295dff;">For Producers</div>
-      <h3 style="color:#0f172a;">Your music business in one place</h3>
+    <div class="card producers-promo">
+      <div class="kicker">For Producers</div>
+      <h3>Your music business in one place</h3>
       <div class="promo-list">
         <div class="promo-item">
           <div class="promo-icon">⚡</div>
           <div>
-            <h4 style="color:#1e293b;">Manage your business</h4>
-            <p style="color:#64748b;">Upload your beats, manage your store, and sell licenses in one workflow.</p>
+            <h4>Manage your business</h4>
+            <p>Upload your beats, manage your store, and sell licenses in one workflow.</p>
           </div>
         </div>
         <div class="promo-item">
           <div class="promo-icon">📈</div>
           <div>
-            <h4 style="color:#1e293b;">Track your performance</h4>
-            <p style="color:#64748b;">See what’s trending and grow with analytics & upgrades.</p>
+            <h4>Track your performance</h4>
+            <p>See what’s trending and grow with analytics & upgrades.</p>
           </div>
         </div>
         <div class="promo-item">
           <div class="promo-icon">🎯</div>
           <div>
-            <h4 style="color:#1e293b;">Grow your audience</h4>
-            <p style="color:#64748b;">Build your producer profile and reach more artists.</p>
+            <h4>Grow your audience</h4>
+            <p>Build your producer profile and reach more artists.</p>
           </div>
         </div>
       </div>
@@ -743,10 +673,9 @@
       </div>
     </div>
   </section>
-
 </main>
 
-<footer class="footer" style="background:#f8fafc; border-top:1px solid #e2e8f0; color:#64748b;">
+<footer class="footer">
   <div class="container footer-row">
     <div>© 2026 Audiory</div>
     <div class="footer-links">
@@ -759,9 +688,15 @@
       <a href="/creator-agreement/">Creator Agreement</a>
     </div>
     <div class="social">
-      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/><path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></a>
-      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></a>
-      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></a>
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/><path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/><path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
+      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </a>
       <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/></svg></a>
       <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/><path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/></svg></a>
     </div>
@@ -770,63 +705,48 @@
 
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
-  <div class="pb-modal-card" style="background:#ffffff; color:#0f172a;">
+  <div class="pb-modal-card">
     <div class="pb-modal-head">
       <div>
-        <div class="pb-modal-kicker" style="color:#295dff;">Choose License</div>
-        <h3 id="pbModalTitle" class="pb-modal-title" style="color:#0f172a;">Beat</h3>
-        <div class="pb-modal-sub" id="pbModalSub" style="color:#475569;">Select a license to continue.</div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
       </div>
       <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
     </div>
     <div class="pb-licenses" id="pbLicensesGrid"></div>
-    <div class="pb-modal-foot" style="border-top:1px solid #f1f5f9;">
-      <div class="pb-total">
-        <div class="pb-total-label" style="color:#64748b;">Total</div>
-        <div class="pb-total-price" id="pbTotalPrice" style="color:#0f172a;">$0.00</div>
-      </div>
+    <div class="pb-modal-foot">
+      <div class="pb-total"><div class="pb-total-label">Total</div><div class="pb-total-price" id="pbTotalPrice">$0.00</div></div>
       <div class="pb-actions">
         <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
         <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
       </div>
     </div>
-    <div class="pb-terms" id="pbTermsBox" style="background:#f8fafc; border-top:1px solid #e2e8f0;">
-      <div class="pb-terms-title" style="color:#334155;">Usage</div>
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
       <div class="pb-terms-grid" id="pbTermsGrid"></div>
     </div>
   </div>
 </div>
 
-<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
-<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true" style="background:#ffffff; color:#0f172a; border-left:1px solid #e2e8f0;">
-  <div class="pb-cart-head" style="border-bottom:1px solid #f1f5f9;">
-    <div>
-      <div class="pb-cart-title" style="color:#0f172a;">Your Cart</div>
-      <div class="pb-cart-sub" id="pbCartSub" style="color:#64748b;">0 items</div>
-    </div>
-    <button class="pb-cart-close" id="pbCartClose" type="button">✕</button>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div><div class="pb-cart-title">Your Cart</div><div class="pb-cart-sub" id="pbCartSub">0 items</div></div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
   </div>
   <div class="pb-cart-body" id="pbCartItems"></div>
-  <div class="pb-cart-foot" style="border-top:1px solid #f1f5f9; background:#f8fafc;">
-    <div class="pb-cart-totals"><div class="muted">Total</div><div class="pb-cart-total" id="pbCartTotal" style="color:#0f172a;">$0.00</div></div>
-    <div class="pb-cart-actions">
-      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
-      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
-    </div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals"><div class="muted">Total</div><div class="pb-cart-total" id="pbCartTotal">$0.00</div></div>
+    <div class="pb-cart-actions"><button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button><button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button></div>
   </div>
 </aside>
 
 <div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
 <div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
-  <div class="pb-free-head">
-    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
-    <button class="pb-free-close" id="pbFreeClose">✕</button>
-  </div>
+  <div class="pb-free-head"><h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3><button class="pb-free-close" id="pbFreeClose" aria-label="Close">✕</button></div>
   <div class="pb-free-sub" id="pbFreeSub">Enter your email address and full name to unlock your free download. We will send your free track to the email address.</div>
-  <div class="pb-free-label">Full name</div>
-  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
-  <div class="pb-free-label">Email address</div>
-  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
+  <div class="pb-free-label">Full name</div><input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
+  <div class="pb-free-label">Email address</div><input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
   <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
   <div class="pb-free-status" id="pbFreeStatus"></div>
   <div class="pb-free-note">By continuing, you agree to our Terms & Privacy Policy.</div>
@@ -835,11 +755,8 @@
 <div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
 <div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
   <div class="pb-pay-head">
-    <div>
-      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
-      <div class="pb-pay-sub" id="pbPaySub">—</div>
-    </div>
-    <button class="pb-pay-close" id="pbPayClose">✕</button>
+    <div><div class="pb-pay-title" id="pbPayTitle">Choose payment method</div><div class="pb-pay-sub" id="pbPaySub">—</div></div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
   </div>
   <div class="pb-pay-body">
     <div class="pb-pay-methods">
@@ -847,22 +764,10 @@
         <span class="pb-pay-btn-left"><span>Pay with PayPal</span></span>
         <span class="pb-pay-amount" id="pbPayAmountA">—</span>
       </button>
-
       <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
-        <span class="pb-pay-btn-left">
-          <span class="mpesa-icon" aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none">
-              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.24)"/>
-              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            </svg>
-          </span>
-          <span>Pay with M-Pesa</span>
-        </span>
+        <span class="pb-pay-btn-left"><span>Pay with M-Pesa</span></span>
         <span class="pb-pay-amount" id="pbPayAmountB">—</span>
       </button>
-
       <div class="pb-pay-phone-wrap" id="pbMpesaBox">
         <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
         <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
@@ -891,18 +796,29 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
-  /* =========================================
-     SMART FINDER
-  ========================================= */
+  // Dynamic UI Builder logic
+  const FallbackVerify = {
+    badge: function(plan) {
+      if (!plan) return '';
+      const p = String(plan).toLowerCase();
+      if (p === 'pro') {
+        return `<span class="verify-badge verify-pro" title="Pro Producer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>`;
+      }
+      if (p === 'elite' || p === 'enterprise') {
+        return `<span class="verify-badge verify-elite" title="Elite Producer"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>`;
+      }
+      return '';
+    }
+  };
+
   (function(){
     const input = document.getElementById("searchInput");
     const btn = document.getElementById("searchBtn");
     const chips = Array.from(document.querySelectorAll("[data-smart-fill]"));
-
     if(!input || !btn) return;
 
-    const KNOWN_GENRES = ["trap", "drill", "afrobeats", "amapiano", "r&b", "hip hop", "hiphop", "dancehall", "bongo", "gengetone", "reggae"];
-    const KNOWN_MOODS = ["chill", "dark", "happy", "sad", "emotional", "lyrical", "aggressive", "club", "romantic", "melodic", "hard", "smooth"];
+    const KNOWN_GENRES = ["trap","drill","afrobeats","amapiano","r&b","hip hop","hiphop","dancehall","bongo","gengetone","reggae"];
+    const KNOWN_MOODS = ["chill","dark","happy","sad","emotional","lyrical","aggressive","club","romantic","melodic","hard","smooth"];
 
     function normalizeText(str){ return String(str || "").toLowerCase().replace(/&/g, "and").replace(/\s+/g, " ").trim(); }
     function unique(arr){ return [...new Set((arr || []).filter(Boolean))]; }
@@ -933,10 +849,7 @@
       return { q: original, genre: unique(foundGenres), mood: unique(foundMoods), typeBeat: detectedTypeBeat, tags: unique(tags) };
     }
 
-    function goSmart(){
-      const raw = (input.value || "").trim();
-      if(!raw){ location.href = "/marketplace/"; return; }
-      const parsed = parseSmartFinder(raw);
+    function buildMarketplaceUrl(parsed){
       const url = new URL("/marketplace/", location.origin);
       if (parsed.q) url.searchParams.set("q", parsed.q);
       if (parsed.genre.length) url.searchParams.set("genre", parsed.genre.join(","));
@@ -944,235 +857,178 @@
       if (parsed.typeBeat) url.searchParams.set("typeBeat", parsed.typeBeat);
       if (parsed.tags.length) url.searchParams.set("tags", parsed.tags.join(","));
       url.searchParams.set("smart", "1");
-      location.href = url.pathname + url.search;
+      return url.pathname + url.search;
+    }
+
+    function goSmart(){
+      const raw = (input.value || "").trim();
+      location.href = raw ? buildMarketplaceUrl(parseSmartFinder(raw)) : "/marketplace/";
     }
 
     btn.addEventListener("click", goSmart);
-    input.addEventListener("keydown", (e)=>{ if(e.key === "Enter") { e.preventDefault(); goSmart(); } });
-    chips.forEach(chip => {
-      chip.addEventListener("click", () => {
-        input.value = chip.getAttribute("data-smart-fill") || "";
-        input.focus();
-      });
-    });
+    input.addEventListener("keydown", (e)=> { if(e.key === "Enter") { e.preventDefault(); goSmart(); } });
+    chips.forEach(chip => { chip.addEventListener("click", () => { input.value = chip.getAttribute("data-smart-fill") || ""; input.focus(); }); });
   })();
 
   function money(n){ const v = Number(n); return !Number.isFinite(v) ? "$0.00" : "$" + v.toFixed(2); }
   function prettyProducerName(b){ return b.producerName && String(b.producerName).trim() ? String(b.producerName).trim() : (b.producerId ? "Prod. " + String(b.producerId).slice(0,8) : "Prod. Unknown"); }
   
   function coverHTML(url, title){
-    if (url) return `<img src="${url}" alt="${title || "Beat"}" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer" />`;
-    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:#64748b;">${String(title || "B").trim().slice(0,2).toUpperCase()}</div>`;
+    if (url) return `<img src="${url}" alt="${title || "Beat"}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`;
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:18px;color:rgba(255,255,255,.9)">${String(title || "B").trim().slice(0,2).toUpperCase()}</div>`;
   }
 
-  function beatPageUrl(b){ return "/beat/?id=" + encodeURIComponent(String(b?.id || "")); }
-  function producerPageUrl(b){ return "/producer-profile/?producerId=" + encodeURIComponent(String(b?.producerId || "")); }
+  function beatPageUrl(b){ return "/beat/?id=" + encodeURIComponent(b?.id || ""); }
+  function producerPageUrl(b){ return "/producer-profile/?producerId=" + encodeURIComponent(b?.producerId || ""); }
   function getBeatPremiereTime(b){ return b?.premiereAt?.toMillis?.() || (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) || Number(b?.premiereAt || b?.releaseAt || 0); }
-  function isUpcomingPremiereBeat(b){ const p = getBeatPremiereTime(b); return b?.isPremiere === true && p && Number.isFinite(p) && p > Date.now(); }
-
-  function formatPremiereCountdown(b){
-    const p = getBeatPremiereTime(b); if (!p) return "Premiere soon";
-    const diff = Math.max(0, p - Date.now());
-    const days = Math.floor(diff / 86400000), hours = Math.floor((diff % 86400000) / 3600000), mins = Math.floor((diff % 3600000) / 60000);
-    return days > 0 ? `Premieres in ${days}d ${hours}h` : (hours > 0 ? `Premieres in ${hours}h ${mins}m` : `Premieres in ${mins}m`);
-  }
-
-  function preSaveHTML(b){
-    return `<div class="presave-wrap"><button class="pb-pill presave-pill" type="button" data-presave="1"><span class="ic">🔔</span><span>Pre-save</span></button><div class="presave-countdown">${formatPremiereCountdown(b)}</div></div>`;
-  }
-
+  function isUpcomingPremiereBeat(b){ const p = getBeatPremiereTime(b); return b?.isPremiere === true && p && p > Date.now(); }
+  
   function isFreeBeat(b){
-    if (!b) return true; if (b.freeDownload === true || b.isFree === true) return true;
-    if (Number.isFinite(Number(b.price))) return Number(b.price) <= 0;
-    const l = b.licenses || {}; return !(l?.basic?.enabled === true || l?.premium?.enabled === true || l?.exclusive?.enabled === true);
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true || Number(b.price) <= 0) return true;
+    const lic = b.licenses || {};
+    return !(lic?.basic?.enabled || lic?.premium?.enabled || lic?.exclusive?.enabled);
   }
 
   function pillHTML(b){
-    if (isUpcomingPremiereBeat(b)) return preSaveHTML(b);
-    if (isFreeBeat(b)) return `<button class="pb-pill free" type="button" data-free-download="1"><span class="ic">⬇️</span><span>Free</span></button>`;
-    return `<button class="pb-pill price-pill" type="button">
-      <span class="ic lock-icon">
-        <svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg>
-      </span>
-      <span>${money(b.price)}</span>
-    </button>`;
+    if (isUpcomingPremiereBeat(b)){
+      return `<div class="presave-wrap"><button class="pb-pill" type="button" data-presave="1"><span>🔔 Pre-save</span></button></div>`;
+    }
+    if (isFreeBeat(b)){
+      return `<button class="pb-pill free" type="button" data-free-download="1"><span>⬇️ Free</span></button>`;
+    }
+    return `<button class="pb-pill price-pill" type="button"><span class="ic lock-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg></span><span>${money(b.price)}</span></button>`;
   }
 
   function getChartScore(b){ return (Number(b.plays || 0) * 1) + (Number(b.cartAdds || 0) * 3) + (Number(b.downloads || 0) * 4) + (Number(b.sales || 0) * 8); }
 
-  async function logBeatPlay(beat){
-    try {
-      const b = beat || {}; const pid = String(b.producerId || "").trim(); const bid = String(b.id || "").trim();
-      if (!pid || !bid) return; window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
-      const k = `${pid}:${bid}`; if (window.__ANA_SENT__.play[k]) return; window.__ANA_SENT__.play[k] = 1;
-      const FB = window.FB;
-      if (FB?.db && typeof FB.doc === "function" && typeof FB.updateDoc === "function" && typeof FB.increment === "function"){
-        await FB.updateDoc(FB.doc(FB.db, "beats", bid), { plays: FB.increment(1), lastPlayedAt: Date.now() });
-      }
-    } catch(err) { console.error(err); }
-  }
-  window.logBeatPlay = logBeatPlay;
-
-  /* =========================================
-     FREE DOWNLOAD INTERACTION
-  ========================================= */
-  const FreeDL = (() => {
-    const backdrop = document.getElementById("pbFreeBackdrop"), modal = document.getElementById("pbFreeModal"), nameEl = document.getElementById("pbFreeName"), emailEl = document.getElementById("pbFreeEmail"), titleEl = document.getElementById("pbFreeTitle"), statusEl = document.getElementById("pbFreeStatus"), sendBtn = document.getElementById("pbFreeSend");
-    let currentBeat = null;
-    return {
-      open: (beat) => {
-        currentBeat = beat; titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
-        statusEl.textContent = ""; nameEl.value = ""; emailEl.value = ""; backdrop.style.display = "block"; modal.style.display = "block"; setTimeout(()=>nameEl.focus(), 30);
-      },
-      close: () => { backdrop.style.display = "none"; modal.style.display = "none"; currentBeat = null; },
-      send: async () => {
-        const name = (nameEl.value || "").trim(), email = (emailEl.value || "").trim().toLowerCase();
-        if (!name || !email.includes("@") || !currentBeat?.id) return alert("Please check your entries.");
-        sendBtn.disabled = true; sendBtn.textContent = "Sending...";
-        try {
-          if (window.FB && typeof window.FB.logFreeDownload === "function") {
-            await window.FB.logFreeDownload({ beatId: currentBeat.id, beatTitle: currentBeat.title || "", producerId: currentBeat.producerId || "", producerName: currentBeat.producerName || "", fullName: name, email, createdAt: Date.now() });
-          }
-          statusEl.textContent = "✅ Sent! Check inbox/spam."; setTimeout(FreeDL.close, 900);
-        } catch(e) { alert("Error: " + e.message); }
-        sendBtn.disabled = false; sendBtn.textContent = "Send";
-      }
-    };
-  })();
-
-  document.getElementById("pbFreeBackdrop")?.addEventListener("click", FreeDL.close);
-  document.getElementById("pbFreeClose")?.addEventListener("click", FreeDL.close);
-  document.getElementById("pbFreeSend")?.addEventListener("click", FreeDL.send);
-
-  /* =========================================
-     CHECKOUT + PAYMENT ROUTER
-  ========================================= */
+  /* Payment Selection Orchestrator */
   (function(){
     const $ = (id)=>document.getElementById(id);
-    const mBox = $("pbMpesaBox"), pPhone = $("pbMpesaPhone"), pStatus = $("pbPayStatus"), bPush = $("pbSendStkPush");
+    const payBackdrop = $("pbPayBackdrop"); const payModal = $("pbPayModal");
+    const payClose = $("pbPayClose"); const payTitle = $("pbPayTitle");
+    const paySub = $("pbPaySub"); const payAmountA = $("pbPayAmountA");
+    const payAmountB = $("pbPayAmountB"); const btnPaypal = $("pbPayWithPaypal");
+    const btnMpesa = $("pbPayWithMpesa"); const mpesaBox = $("pbMpesaBox");
+    const mpesaPhone = $("pbMpesaPhone"); const payStatus = $("pbPayStatus");
+    const pbSendStkPush = $("pbSendStkPush");
 
     function openPayModal(){
-      const sel = window.__PB_SELECTED__; if (!sel?.beatId) return alert("Select a beat and license first.");
-      $("pbPayTitle").textContent = "Choose payment method";
-      $("pbPaySub").textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
-      $("pbPayAmountA").textContent = money(sel.amount || 0); $("pbPayAmountB").textContent = money(sel.amount || 0);
-      pStatus.textContent = ""; mBox.style.display = "none"; pPhone.value = "";
-      $("pbPayBackdrop").style.display = "block"; $("pbPayModal").style.display = "block";
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat and license first.");
+      payTitle.textContent = "Choose payment method";
+      paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
+      payAmountA.textContent = money(sel.amount || 0);
+      payAmountB.textContent = money(sel.amount || 0);
+      payStatus.textContent = ""; mpesaBox.style.display = "none"; mpesaPhone.value = "";
+      payBackdrop.style.display = "block"; payModal.style.display = "block";
     }
 
-    $("pbPayBackdrop")?.addEventListener("click", () => { $("pbPayBackdrop").style.display="none"; $("pbPayModal").style.display="none"; });
-    $("pbPayClose")?.addEventListener("click", () => { $("pbPayBackdrop").style.display="none"; $("pbPayModal").style.display="none"; });
+    payClose?.addEventListener("click", () => { payBackdrop.style.display = "none"; payModal.style.display = "none"; });
+    payBackdrop?.addEventListener("click", () => { payBackdrop.style.display = "none"; payModal.style.display = "none"; });
 
     document.addEventListener("click", (e)=>{
-      const card = e.target.closest("[data-beat-id]"); if (!card || !e.target.closest(".price-pill")) return;
-      const bid = card.getAttribute("data-beat-id"), title = (card.querySelector(".t") || card.querySelector(".home-title-clamp"))?.textContent || "Beat";
-      const beat = (window.__LATEST_BEATS__ || []).find(b => String(b.id) === String(bid));
-      let lKey = "basic", amt = Number(beat?.price || 0);
-      if (beat?.licenses?.basic?.enabled) amt = Number(beat.licenses.basic.price);
-      window.__PB_SELECTED__ = { beatId: bid, title: title.trim(), licenseKey: lKey, amount: amt };
+      const card = e.target.closest("[data-beat-id]");
+      if (!card || !e.target.closest(".price-pill")) return;
+      const bId = card.getAttribute("data-beat-id");
+      const title = (card.querySelector(".t") || card.querySelector(".home-title-clamp"))?.textContent || "Beat";
+      const beats = window.__LATEST_BEATS__ || [];
+      const match = beats.find(x => x.id === bId);
+      window.__PB_SELECTED__ = { beatId: bId, title: title.trim(), licenseKey: "basic", amount: Number(match?.price || 0) };
     }, true);
 
     $("pbBuyNow")?.addEventListener("click", (e)=>{
-      e.preventDefault(); openPayModal();
+      e.preventDefault(); e.stopPropagation();
+      if(!window.__PB_SELECTED__) return alert("Select a dynamic license tier first.");
+      openPayModal();
     }, true);
 
-    $("pbPayWithPaypal")?.addEventListener("click", async () => {
-      const sel = window.__PB_SELECTED__; if (!sel?.beatId) return;
-      pStatus.textContent = "Opening PayPal…";
+    btnPaypal?.addEventListener("click", async () => {
+      const sel = window.__PB_SELECTED__;
       try {
-        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ beatId: sel.beatId, licenseKey: sel.licenseKey }) });
-        const d = await r.json(); if (!r.ok) throw new Error(d.error || "Create order failed");
-        location.href = d.approveUrl || (d.approveLinks || []).find(x=>x.rel==="approve")?.href;
-      } catch(e) { pStatus.textContent = e.message; }
-    });
-
-    $("pbPayWithMpesa")?.addEventListener("click", () => { mBox.style.display = "block"; pPhone.focus(); });
-
-    bPush?.addEventListener("click", async () => {
-      const sel = window.__PB_SELECTED__; const phone = (pPhone.value || "").trim();
-      if (!phone) { pStatus.textContent = "Enter your phone number first."; return; }
-      
-      /* ✅ VERIFY THE 2547 FORMAT REGARDLESS OF ACCIDENTAL STRIPS */
-      const digits = phone.replace(/\D/g,"");
-      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
-        pStatus.textContent = "Use valid Kenyan format: 2547XXXXXXXX";
-        return;
-      }
-
-      const u = window.FB?.auth?.currentUser || window.FB?.user;
-      if (!u?.uid) { pStatus.textContent = "Sign in to complete checkout."; return; }
-
-      bPush.disabled = true; pStatus.textContent = "Sending STK Push… check your phone.";
-      try {
-        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+        btnPaypal.disabled = true; payStatus.textContent = "Opening secure gateway link...";
+        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
           method: "POST", headers: { "Content-Type":"application/json" },
-          body: JSON.stringify({ phone: digits, beatId: String(sel.beatId), buyerId: String(u.uid), licenseKey: String(sel.licenseKey), amount: Math.round(sel.amount), amountUsd: Number(sel.amount) })
+          body: JSON.stringify({ beatId: sel.beatId, licenseKey: sel.licenseKey || "basic" })
         });
         const d = await r.json();
-        pStatus.textContent = r.ok ? "✅ STK Push sent.\nConfirm transaction PIN on your handset." : (d.error || "Transaction process failed.");
-      } catch(e) { pStatus.textContent = "Server response failure. Verify connection."; }
-      bPush.disabled = false;
+        if (d.approveUrl) location.href = d.approveUrl;
+        else alert("Order callback reference missing.");
+      } catch(e) { alert("Gateway connection issue."); } finally { btnPaypal.disabled = false; }
+    });
+
+    btnMpesa?.addEventListener("click", () => { mpesaBox.style.display = "block"; mpesaPhone.focus(); });
+    pbSendStkPush?.addEventListener("click", async () => {
+      const sel = window.__PB_SELECTED__;
+      let phone = mpesaPhone.value.replace(/\D/g,"");
+      if(phone.length !== 12) return alert("Required input pattern format: 2547XXXXXXXX");
+      try {
+        pbSendStkPush.disabled = true; payStatus.textContent = "Sending STK Push prompt securely...";
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+          method: "POST", headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({ phone, beatId: sel.beatId, licenseKey: sel.licenseKey, amount: Math.round(sel.amount), buyerId: window.FB?.auth?.currentUser?.uid || "guest" })
+        });
+        if(r.ok) payStatus.textContent = "✅ STK Push transmitted initialization completed. Enter pin code on phone.";
+      } catch(e) { payStatus.textContent = "Execution error."; } finally { pbSendStkPush.disabled = false; }
     });
   })();
 
-  async function goToMyDashboard() {
-    try {
-      const u = window.FB?.auth?.currentUser; if (!u) { window.location.href = "/login/"; return; }
-      const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, "users", u.uid));
-      const role = String(snap.exists() ? (snap.data()?.role || "") : "").toLowerCase();
-      window.location.href = role === "producer" ? "/dashboard/" : (role === "admin" ? "/admin-dashboard/" : "/buyer-dashboard/");
-    } catch (e) { window.location.href = "/buyer-dashboard/"; }
-  }
-
-  window.addEventListener("firebase-ready", () => {
-    document.getElementById("navDashboard")?.addEventListener("click", async (e) => { e.preventDefault(); await goToMyDashboard(); });
-    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => { e.preventDefault(); await goToMyDashboard(); });
-    if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats();
-  });
-
   async function loadHomeBeats(){
-    const strip = document.getElementById("trendingStrip"), chart = document.getElementById("chartGrid"), fStrip = document.getElementById("featuredStrip");
+    const strip = document.getElementById("trendingStrip");
+    const chart = document.getElementById("chartGrid");
+    const fStrip = document.getElementById("featuredStrip");
+    
     try {
-      let beats = await window.FB.fetchBeats({ max:30 }); window.__LATEST_BEATS__ = beats;
-      document.getElementById("homeStatus").classList.add("hidden"); document.getElementById("featuredStatus").classList.add("hidden");
-
-      const featured = beats.filter(b => b.featured === true).sort(() => Math.random() - 0.5).slice(0, 10);
-      const charting = [...beats].sort((a, b) => getChartScore(b) - getChartScore(a)).slice(0, 10);
+      let beats = await window.FB.fetchBeats({ max:30 });
+      window.__LATEST_BEATS__ = beats;
+      
+      document.getElementById("homeStatus").classList.add("hidden");
+      document.getElementById("featuredStatus").classList.add("hidden");
 
       strip.innerHTML = ""; chart.innerHTML = ""; fStrip.innerHTML = "";
 
-      /* Populate lists natively */
-      beats.slice(0, 12).forEach(b => appendBeatCard(b, strip, "trend-card"));
-      featured.forEach(b => appendBeatCard(b, fStrip, "trend-card"));
-      charting.forEach(b => appendBeatCard(b, chart, "chart-card", true));
+      beats.forEach(b => {
+        const badgeMarkup = window.AudioryVerify ? window.AudioryVerify.badge(b.producerPlan) : FallbackVerify.badge(b.producerPlan);
+        const card = document.createElement("div");
+        card.className = "trend-card"; card.setAttribute("data-beat-id", b.id);
+        card.innerHTML = `
+          <div class="beat-cover">
+            <a class="beat-open" href="${beatPageUrl(b)}">${coverHTML(b.artwork, b.title)}</a>
+            <button class="play-fab" data-audio-url="${b.previewAudio || b.audio || ''}"><span class="playIcon">▶</span></button>
+          </div>
+          <div class="trend-meta">
+            <a class="t" href="${beatPageUrl(b)}">${b.title}</a>
+            <a class="p producer-link" href="${producerPageUrl(b)}">${prettyProducerName(b)} ${badgeMarkup}</a>
+          </div>
+          <div class="trend-actions">${pillHTML(b)}</div>
+        `;
+        strip.appendChild(card);
+      });
+
+      // Populate Top Charts Grid Section cleanly
+      [...beats].slice(0, 10).forEach(b => {
+        const badgeMarkup = window.AudioryVerify ? window.AudioryVerify.badge(b.producerPlan) : FallbackVerify.badge(b.producerPlan);
+        const card = document.createElement("div");
+        card.className = "chart-card"; card.setAttribute("data-beat-id", b.id);
+        card.innerHTML = `
+          <div class="beat-cover">
+            <a class="beat-open" href="${beatPageUrl(b)}">${coverHTML(b.artwork, b.title)}</a>
+            <button class="play-fab" data-audio-url="${b.previewAudio || b.audio || ''}"><span class="playIcon">▶</span></button>
+          </div>
+          <div class="chart-meta-row">
+            <div class="chart-text">
+              <a class="home-title-clamp" href="${beatPageUrl(b)}">${b.title}</a>
+              <a class="home-producer-clamp producer-link" href="${producerPageUrl(b)}">${prettyProducerName(b)} ${badgeMarkup}</a>
+            </div>
+          </div>
+          <div class="chart-pill">${pillHTML(b)}</div>
+        `;
+        chart.appendChild(card);
+      });
     } catch(e) { console.error(e); }
   }
 
-  function appendBeatCard(b, container, className, isChart = false) {
-    const el = document.createElement("div"); el.className = `card ${className}`; el.setAttribute("data-beat-id", b.id);
-    const audioUrl = b.previewAudio || b.audio || "", bUrl = beatPageUrl(b), pUrl = producerPageUrl(b);
-
-    el.innerHTML = `
-      <div class="beat-cover">
-        <a class="beat-open" href="${bUrl}">${coverHTML(b.artwork, b.title)}</a>
-        <button class="play-fab" data-audio-url="${audioUrl}" type="button"><span class="playIcon">▶</span></button>
-      </div>
-      <div class="${isChart ? 'chart-meta-row' : 'trend-meta'}">
-        <div class="${isChart ? 'chart-text' : ''}">
-          <a class="${isChart ? 'home-title-clamp' : 't'}" href="${bUrl}">${b.title}</a>
-          <a class="${isChart ? 'home-producer-clamp' : 'p'} producer-link" href="${pUrl}">${prettyProducerName(b)}</a>
-        </div>
-      </div>
-      <div class="${isChart ? 'chart-pill' : 'trend-actions'}">${pillHTML(b)}</div>
-    `;
-
-    el.addEventListener("click", (e) => {
-      if (e.target.closest("[data-free-download='1']")) { e.preventDefault(); FreeDL.open(b); }
-      else if (!e.target.closest(".play-fab") && !e.target.closest(".pb-pill") && !e.target.closest(".producer-link")) { location.href = bUrl; }
-    });
-    container.appendChild(el);
-  }
+  window.addEventListener("firebase-ready", () => { if(window.FB) loadHomeBeats(); });
 </script>
-
 </body>
 </html>
