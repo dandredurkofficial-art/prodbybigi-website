@@ -542,9 +542,9 @@
     /* Standardized Footer System Match */
 .footer {
   width: 100%;
-  padding: 24px 20px; /* REDUCED: Made the footer shorter vertically */
+  padding: 32px 20px; /* Balanced padding */
   text-align: center;
-  border-top: 1px solid #e2e8f0; /* Tweak to match your card borders */
+  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
   background-color: #ffffff;
   box-sizing: border-box;
   margin-top: auto;
@@ -554,9 +554,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px; /* REDUCED: Brought elements closer together */
-  color: #94a3b8; /* Cleaner, lighter gray text to blend nicely */
-  font-size: 13px; /* Slightly smaller for a classic pro footer vibe */
+  gap: 20px; /* Gives elements breathing room without being huge */
+  color: #94a3b8;
+  font-size: 13px;
 }
 
 /* Legal & Navigation Links */
@@ -564,11 +564,11 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 16px; /* Uses gap instead of unpredictable margins */
+  gap: 20px;
 }
 
 .footer-links a {
-  color: #64748b; /* Darker gray for readable text links */
+  color: #64748b;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
@@ -578,42 +578,50 @@
   color: #3b2fad; 
 }
 
-/* Social Icons Area Fixes */
+/* Premium Social Container */
 .social {
-  display: inline-flex;
-  gap: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
   margin-top: 4px;
 }
 
+/* Beautiful, subtle circular button styling for icons */
 .social a { 
-  color: #94a3b8; /* Sleek slate gray instead of muddy dark gray */
-  font-size: 18px; /* Good size for clean visibility */
-  transition: all 0.2s ease;
-  display: inline-flex;
+  color: #64748b; /* Clean neutral color */
+  font-size: 16px; /* Perfect proportional icon size */
+  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
+  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
+  border-radius: 50% !important; /* Crisp, perfect circles */
+  width: 38px !important; /* Explicit standard button size */
+  height: 38px !important;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  
-  /* CRITICAL FIX: These lines strip away any default background circles/squares */
-  background: transparent !important; 
-  border-radius: 0 !important;
-  width: auto !important;
-  height: auto !important;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
 }
 
-/* Vibrant hover effect */
+/* Smooth brand coloring glow on hover */
 .social a:hover { 
-  color: #3b2fad; 
-  transform: translateY(-2px); /* Subtle premium lift effect */
+  color: #ffffff !important; /* Icon turns clean white */
+  background: #3b2fad !important; /* Circle fills with your signature purple */
+  border-color: #3b2fad !important;
+  transform: translateY(-3px); /* Elegant premium hover lift */
+  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
 }
 
 /* Copyright line styling */
-.footer-row > span, 
-.footer-row p {
+.footer-row > span {
   color: #94a3b8;
   font-size: 12px;
-  margin-top: 4px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
 }
 
+    
     /* =========================================
    AUDIORY MARKETPLACE CLEAN CARD SYSTEM (HOMEPAGE MATCHING)
 ========================================= */
