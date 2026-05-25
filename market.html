@@ -160,26 +160,52 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
-    /* lightweight UI additions (won't break your CSS) */
-    .market-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:14px 0 4px}
-    .market-search{
+    /* Clean white container */
+    .market-search {
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      border: 2px solid #e2e8f0;
+      border-radius: 30px;
+      padding: 6px 6px 6px 20px;
+      max-width: 400px;
+      width: 100%;
+      transition: border-color 0.2s ease;
+    }
+
+    .market-search:focus-within {
+      border-color: #3b2fad; /* Highlights purple when user clicks to type */
+    }
+
+    /* Dark text for readability on white */
+    .market-search input {
+      background: transparent;
+      border: none;
+      color: #1e293b;
+      font-size: 16px;
+      width: 100%;
+      outline: none;
+    }
+
+    .market-search input::placeholder {
+      color: #94a3b8;
+    }
+
+    /* Purple accent button */
+    .market-search button {
       background: #3b2fad;
       color: white;
       border: none;
-      border-radius: 12px;
-      padding: 0 12px;
+      border-radius: 24px;
+      padding: 10px 24px;
       font-weight: 700;
+      font-size: 14px;
       cursor: pointer;
+      transition: background 0.2s ease;
     }
-    .market-search input{
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #1e293b;
-      padding: 16px 20px;
-      border-radius: 14px;
-      font-size: 16px;
-      width: 100%;
-      box-sizing: border-box;
+
+    .market-search button:hover {
+      background: #2c228a;
     }
     .chips{display:flex;flex-wrap:wrap;gap:8px}
     .chip{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;font-weight:700;font-size:12px;cursor:pointer}
