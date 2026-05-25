@@ -57,463 +57,513 @@
   }
   </script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/mobile-fix.css">
   
   <style>
-    body{
-      margin:0;
-      background:#0b0d12;
-      color:#fff;
-      font-family:Inter, sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      min-height:100vh;
-      padding:16px;
-      box-sizing:border-box;
+    /* Global Background - Matching Login Light UI */
+    body {
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 40px 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-sizing: border-box;
     }
 
-    .card{
-      background:#121726;
-      padding:30px;
-      border-radius:16px;
-      width:100%;
-      max-width:420px;
-      border:1px solid #1d2230;
-      box-sizing:border-box;
+    /* Elegant Gradient Top Area Banner */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 380px;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 50%, #111440 100%);
+      z-index: -1;
     }
 
-    h2{
-      text-align:center;
-      margin-bottom:18px;
-      font-size:26px;
-      font-weight:800;
+    /* Absolute positioned Brand Logo Header (Top Left) */
+    .brand-header {
+      position: absolute;
+      top: 28px;
+      left: 36px;
+      z-index: 10;
     }
 
-    .auth-sub{
-      text-align:center;
-      margin:-4px 0 18px;
-      color:#9ca3af;
-      font-size:14px;
-      line-height:1.5;
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
     }
 
-    .field{ margin-bottom:18px; }
-
-    .field label{
-      display:block;
-      font-size:16px;
-      font-weight:800;
-      color:#fff;
-      margin-bottom:12px;
+    .brand-logo svg {
+      height: 38px;
+      width: auto;
+      display: block;
     }
 
-    .auth-input{
-      width:100%;
-      height:74px;
-      border-radius:20px;
-      border:1px solid #2b3152;
-      background:#05091b;
-      display:flex;
-      align-items:center;
-      box-sizing:border-box;
-      overflow:hidden;
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.03),
-        0 0 0 1px rgba(104,119,255,.04);
+    /* Container matching the Login Card layout */
+    .auth-box {
+      background: #ffffff;
+      max-width: 450px;
+      width: 100%;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      margin-top: 60px;
     }
 
-    .auth-input-main{
-      flex:1;
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:0 18px;
-      min-width:0;
-      height:100%;
-      box-sizing:border-box;
+    .auth-box h2 {
+      color: #1e293b;
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 8px;
+      text-align: center;
     }
 
-    .auth-icon{
-      width:24px;
-      height:24px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#9da3d9;
-      flex:0 0 auto;
+    .auth-sub {
+      text-align: center;
+      margin: 0 0 24px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
     }
 
-    .auth-icon svg{
-      width:24px;
-      height:24px;
+    .field {
+      margin-bottom: 20px;
     }
 
-    .auth-divider{
-      width:1px;
-      height:32px;
-      background:rgba(255,255,255,.22);
-      flex:0 0 auto;
+    .field label, .role-title {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
     }
 
-    .auth-input input{
-      flex:1;
-      min-width:0;
-      height:100%;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:#fff;
-      font-size:15px;
-      font-weight:700;
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    /* Input wrapper matching light UI exactly */
+    .auth-input {
+      width: 100%;
+      height: 56px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding-right: 6px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .auth-input input::placeholder{
-      color:#8f95c8;
-      opacity:1;
+    .auth-input:focus-within {
+      border-color: #5533ff;
+      box-shadow: 0 0 0 3px rgba(85, 51, 255, 0.15);
     }
 
-    .auth-eye-btn{
-      width:56px;
-      min-width:56px;
-      height:56px;
-      margin-right:8px;
-      border:none;
-      border-radius:16px;
-      background:#3b416d;
-      color:#b9bee8;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      padding:0;
-      flex:0 0 56px;
-      box-sizing:border-box;
+    .auth-input-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      min-width: 0;
+      height: 100%;
+      box-sizing: border-box;
     }
 
-    .auth-eye-btn svg{
-      width:24px;
-      height:24px;
-      display:block;
+    .auth-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      flex: 0 0 auto;
     }
 
-    .role-wrap{
-      margin-bottom:18px;
+    .auth-icon svg {
+      width: 20px;
+      height: 20px;
+      display: block;
     }
 
-    .role-title{
-      display:block;
-      font-size:16px;
-      font-weight:800;
-      color:#fff;
-      margin-bottom:12px;
+    .auth-divider {
+      width: 1px;
+      height: 24px;
+      background: #e2e8f0;
+      flex: 0 0 auto;
     }
 
-    .role{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
+    .auth-input input {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #1e293b;
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .role-card{
-      position:relative;
-      display:flex;
-      align-items:center;
-      gap:16px;
-      width:100%;
-      min-height:96px;
-      padding:18px;
-      border-radius:20px;
-      border:1px solid #232941;
-      background:#0f1219;
-      cursor:pointer;
-      box-sizing:border-box;
-      transition:.18s ease;
-      user-select:none;
-      -webkit-tap-highlight-color:transparent;
+    .auth-input input::placeholder {
+      color: #94a3b8;
+      opacity: 1;
     }
 
-    .role-card:hover{
-      border-color:#3a4267;
-      background:#151925;
+    /* Password Eye Button */
+    .auth-eye-btn {
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      flex: 0 0 44px;
+      box-sizing: border-box;
+      align-self: center;
+      transition: background 0.2s ease, color 0.2s ease;
     }
 
-    .role-card.selected{
-      border-color:#8b5cf6;
-      box-shadow:0 0 0 2px rgba(139,92,246,.14);
-      background:linear-gradient(180deg, #161528 0%, #101423 100%);
+    .auth-eye-btn:hover {
+      background: #e2e8f0;
+      color: #334155;
     }
 
-    .role-card input[type="radio"]{
-      position:absolute;
-      opacity:0;
-      pointer-events:none;
+    .auth-eye-btn svg {
+      width: 20px;
+      height: 20px;
+      display: block;
     }
 
-    .role-radio{
-      width:28px;
-      height:28px;
-      border-radius:50%;
-      border:2px solid #9b5cff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex:0 0 28px;
-      box-sizing:border-box;
+    /* Account Type Radio Cards - Clean light styling */
+    .role-wrap {
+      margin-bottom: 20px;
     }
 
-    .role-radio::after{
-      content:"";
-      width:14px;
-      height:14px;
-      border-radius:50%;
-      background:transparent;
-      transition:.18s ease;
+    .role {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
-    .role-card.selected .role-radio::after{
-      background:#9b5cff;
+    .role-card {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      cursor: pointer;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .role-icon{
-      width:34px;
-      height:34px;
-      color:#9b5cff;
-      flex:0 0 34px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+    .role-card:hover {
+      border-color: #94a3b8;
+      background: #f8fafc;
     }
 
-    .role-icon svg{
-      width:34px;
-      height:34px;
-      display:block;
+    .role-card.selected {
+      border-color: #5533ff;
+      background: rgba(85, 51, 255, 0.03);
     }
 
-    .role-copy{
-      min-width:0;
-      flex:1;
+    .role-card input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .role-name{
-      display:block;
-      font-size:17px;
-      font-weight:800;
-      color:#fff;
-      line-height:1.2;
+    .role-radio {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 22px;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
     }
 
-    .role-desc{
-      display:block;
-      margin-top:6px;
-      font-size:14px;
-      color:#8f95c8;
-      line-height:1.35;
+    .role-card.selected .role-radio {
+      border-color: #5533ff;
     }
 
-    .agree-box{
-      margin-top:4px;
-      margin-bottom:18px;
+    .role-radio::after {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: transparent;
+      transition: background-color 0.2s ease;
     }
 
-    .agree-card{
-      position:relative;
-      display:flex;
-      align-items:flex-start;
-      gap:14px;
-      width:100%;
-      min-height:78px;
-      padding:18px;
-      border-radius:20px;
-      border:1px solid #232941;
-      background:#05091b;
-      box-sizing:border-box;
-      cursor:pointer;
-      -webkit-tap-highlight-color:transparent;
+    .role-card.selected .role-radio::after {
+      background: #5533ff;
     }
 
-    .agree-card input[type="checkbox"]{
-      position:absolute;
-      opacity:0;
-      pointer-events:none;
+    .role-icon {
+      width: 24px;
+      height: 24px;
+      color: #64748b;
+      flex: 0 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .agree-check{
-      width:26px;
-      height:26px;
-      border-radius:8px;
-      border:2px solid #39435f;
-      background:#222b42;
-      flex:0 0 26px;
-      margin-top:2px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-sizing:border-box;
+    .role-card.selected .role-icon {
+      color: #5533ff;
     }
 
-    .agree-check::after{
-      content:"";
-      width:12px;
-      height:12px;
-      border-radius:4px;
-      background:transparent;
-      transition:.18s ease;
+    .role-icon svg {
+      width: 24px;
+      height: 24px;
+      display: block;
     }
 
-    .agree-card.checked .agree-check{
-      border-color:#6cf;
-      background:#23324d;
+    .role-copy {
+      min-width: 0;
+      flex: 1;
     }
 
-    .agree-card.checked .agree-check::after{
-      background:#6cf;
+    .role-name {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.2;
     }
 
-    .agree-text{
-      font-size:15px;
-      line-height:1.55;
-      color:#cfd5ff;
+    .role-desc {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.35;
     }
 
-    .agree-text a{
-      color:#ffb347;
-      font-weight:700;
-      text-decoration:none;
+    /* Terms & Agreement Callout Box */
+    .agree-box {
+      margin-top: 4px;
+      margin-bottom: 20px;
     }
 
-    .agree-text a:hover{
-      text-decoration:underline;
+    .agree-card {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #f8fafc;
+      box-sizing: border-box;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    button#createBtn{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:none;
-      background:#6cf;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:8px;
-      font-size:16px;
+    .agree-card input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
     }
 
-    .btn-secondary{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      background:#111827;
-      border:1px solid #1d2230;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:10px;
+    .agree-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 2px solid #cbd5e1;
+      background: #ffffff;
+      flex: 0 0 20px;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
     }
 
-    a{
-      color:#6cf;
-      text-decoration:none;
+    .agree-card.checked .agree-check {
+      border-color: #5533ff;
+      background: #5533ff;
     }
 
-    .muted{
-      color:#9ca3af;
-      font-size:13px;
-      margin-top:10px;
-      text-align:center;
+    .agree-check::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      background: transparent;
+      transition: background-color 0.2s ease;
     }
 
-    #status{
-      margin-top:10px;
-      text-align:center;
-      color:#9ca3af;
-      font-size:13px;
-      min-height:18px;
+    .agree-card.checked .agree-check::after {
+      background: #ffffff;
     }
 
-    @media (max-width: 480px){
-      .card{
-        padding:22px;
-        border-radius:18px;
+    .agree-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #475569;
+    }
+
+    .agree-text a {
+      color: #5533ff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .agree-text a:hover {
+      text-decoration: underline;
+    }
+
+    /* Primary Action & Secondary Buttons styling */
+    button#createBtn {
+      width: 100%;
+      height: 52px;
+      background: #5533ff;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button#createBtn:hover {
+      background: #4422ee;
+    }
+
+    button#createBtn:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      height: 52px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+
+    p {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    p a {
+      color: #5533ff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+
+    .muted {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    #status {
+      margin-top: 12px;
+      text-align: center;
+      color: #ef4444;
+      font-size: 14px;
+      font-weight: 600;
+      min-height: 18px;
+    }
+
+    @media (max-width: 480px) {
+      body::before {
+        height: 260px;
       }
-
-      h2{
-        font-size:24px;
+      .brand-header {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-top: 16px;
+        margin-bottom: 16px;
       }
-
-      .auth-input{
-        height:70px;
-        border-radius:18px;
+      .auth-box {
+        padding: 24px 20px;
+        margin-top: 0;
       }
-
-      .auth-input-main{
-        gap:12px;
-        padding:0 16px;
+      .auth-input {
+        height: 52px;
       }
-
-      .auth-icon{
-        width:22px;
-        height:22px;
-      }
-
-      .auth-icon svg{
-        width:22px;
-        height:22px;
-      }
-
-      .auth-divider{
-        height:30px;
-      }
-
-      .auth-input input{
-        font-size:14px;
-      }
-
-      .auth-eye-btn{
-        width:52px;
-        min-width:52px;
-        height:52px;
-        flex:0 0 52px;
-        margin-right:8px;
-        border-radius:14px;
-      }
-
-      .auth-eye-btn svg{
-        width:22px;
-        height:22px;
-      }
-
-      .role-card{
-        min-height:88px;
-        padding:16px;
-      }
-
-      .role-name{
-        font-size:16px;
-      }
-
-      .role-desc{
-        font-size:13px;
-      }
-
-      .agree-card{
-        padding:16px;
-        min-height:74px;
-      }
-
-      .agree-text{
-        font-size:14px;
+      .auth-eye-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
+
+  <header class="brand-header">
+    <a href="/" class="brand-logo" aria-label="Audiory Home">
+      <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(2, 4)">
+          <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+          <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+          <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+          <circle cx="18" cy="13" r="1.5" fill="#5533ff" />
+          <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+      </svg>
+    </a>
+  </header>
+
+  <div class="auth-box">
     <h2>Create Account</h2>
     <p class="auth-sub">Join Audiory to buy beats, download free beats, or start selling your beats online.</p>
 
@@ -554,7 +604,6 @@
             <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"></path>
             <circle cx="12" cy="12" r="3"></circle>
           </svg>
-
           <svg id="pwEyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
             <path d="M3 3l18 18"></path>
             <path d="M10.6 10.7a3 3 0 0 0 4.2 4.2"></path>
@@ -625,7 +674,7 @@
 
     <div id="status"></div>
 
-    <p class="muted">
+    <p style="margin-top:20px; text-align: center;" class="muted">
       Already have an account?
       <a href="/login/">Login</a>
     </p>
