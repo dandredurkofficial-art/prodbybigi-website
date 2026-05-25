@@ -801,33 +801,86 @@
     .audiory-support-fab { right: 12px !important; bottom: 12px !important; transform: scale(.92); }
 
     /* Standardized Footer System Match */
-    .footer {
-      width: 100%;
-      padding: 32px 20px;
-      text-align: center;
-      border-top: 1px solid #f1f5f9;
-      background-color: #ffffff;
-      box-sizing: border-box;
-      margin-top: auto;
-    }
-    .footer-row {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      color: #64748b;
-      font-size: 14px;
-    }
-    .footer-links a {
-      color: #64748b;
-      text-decoration: none;
-      margin: 0 10px;
-      font-weight: 500;
-    }
-    .footer-links a:hover { color: #3b2fad; }
-    .social a { color: #64748b; margin: 0 8px; transition: color 0.2s; }
-    .social a:hover { color: #3b2fad; }
+.footer {
+  width: 100%;
+  padding: 32px 20px; /* Balanced padding */
+  text-align: center;
+  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
+  background-color: #ffffff;
+  box-sizing: border-box;
+  margin-top: auto;
+}
 
+.footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Gives elements breathing room without being huge */
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* Legal & Navigation Links */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover { 
+  color: #3b2fad; 
+}
+
+/* Premium Social Container */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+/* Beautiful, subtle circular button styling for icons */
+.social a { 
+  color: #64748b; /* Clean neutral color */
+  font-size: 16px; /* Perfect proportional icon size */
+  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
+  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
+  border-radius: 50% !important; /* Crisp, perfect circles */
+  width: 38px !important; /* Explicit standard button size */
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Smooth brand coloring glow on hover */
+.social a:hover { 
+  color: #ffffff !important; /* Icon turns clean white */
+  background: #3b2fad !important; /* Circle fills with your signature purple */
+  border-color: #3b2fad !important;
+  transform: translateY(-3px); /* Elegant premium hover lift */
+  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
+}
+
+/* Copyright line styling */
+.footer-row > span {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
     /* Smart Finder Layout Rules */
     .smart-finder-meta { margin-top: 16px; text-align: left; }
     .smart-finder-hint { color: #64748b; font-size: 13px; margin-bottom: 12px; }
