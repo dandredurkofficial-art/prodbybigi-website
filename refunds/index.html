@@ -7,7 +7,7 @@
   <title>Refund Policy | Audiory</title>
   <meta name="description" content="Audiory Refund Policy. Learn when refunds are available for digital purchases such as beat licenses and sound kits.">
   <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#0b1220">
+  <meta name="theme-color" content="#1d1b84">
 
   <link rel="canonical" href="https://audiory.site/refunds/">
 
@@ -26,79 +26,250 @@
   <meta name="twitter:description" content="When refunds are available for digital purchases on Audiory.">
   <meta name="twitter:image" content="https://audiory.site/audioryfavicon.webp">
 
-  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    /* Reset & Base Styling - Flat White Background */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar */
+    .premium-header {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo svg {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+
+    .back-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Flat Content Wrapper (No shadow, no outer backgrounds) */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 50px 24px;
+      box-sizing: border-box;
+    }
+
+    .document-card h1 {
+      color: #1e293b;
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .date-sub {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 36px;
+    }
+
+    .document-card h2 {
+      color: #1e293b;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 6px;
+    }
+
+    .document-card p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .document-card ul {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-left: 22px;
+    }
+
+    .document-card li {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .document-card strong {
+      color: #1e293b;
+    }
+
+    /* Anchor Links styling */
+    .document-card a {
+      color: #3b2fad;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .document-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Standardized Footer */
+    .footer {
+      width: 100%;
+      padding: 24px 20px;
+      text-align: center;
+      border-top: 1px solid #f1f5f9;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
+    }
+
+    .footer-text {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Responsive scaling adjustments */
+    @media (max-width: 640px) {
+      .main-content {
+        padding: 32px 20px;
+      }
+      .document-card h1 {
+        font-size: 26px;
+      }
+      .document-card h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">Audiory</span></div>
-    <a href="/index.html">← Back</a>
-  </div>
-</header>
+  <header class="premium-header">
+    <div class="header-container">
+      <a href="/" class="brand-logo" aria-label="Audiory Home">
+        <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(2, 4)">
+            <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+            <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+            <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+            <circle cx="18" cy="13" r="1.5" fill="#3b2fad" />
+            <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </g>
+          <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+        </svg>
+      </a>
+      <a href="/index.html" class="back-btn">← Back</a>
+    </div>
+  </header>
 
-<main class="container section card">
-  <h1 class="h1">Refund Policy</h1>
-  <p class="sub">Last updated: January 2026</p>
+  <main class="main-content">
+    <article class="document-card">
+      <h1>Refund Policy</h1>
+      <div class="date-sub">Last updated: January 2026</div>
 
-  <p>
-    Audiory sells digital products (including beat licenses and sound kits). Because digital files and licenses
-    can be accessed immediately after purchase, <strong>all sales are generally final</strong>.
-    This policy explains the limited cases where refunds may be approved.
-  </p>
+      <p>
+        Audiory sells digital products (including beat licenses and sound kits). Because digital files and licenses
+        can be accessed immediately after purchase, <strong>all sales are generally final</strong>.
+        This policy explains the limited cases where refunds may be approved.
+      </p>
 
-  <h2 class="h2">1. No Refunds for Digital Deliveries</h2>
-  <p>
-    Once a digital item is delivered, downloaded, or a license is granted, we cannot typically offer refunds,
-    exchanges, or cancellations.
-  </p>
+      <h2>1. No Refunds for Digital Deliveries</h2>
+      <p>
+        Once a digital item is delivered, downloaded, or a license is granted, we cannot typically offer refunds,
+        exchanges, or cancellations.
+      </p>
 
-  <h2 class="h2">2. Refunds We May Approve</h2>
-  <p>We may issue a refund in these situations:</p>
-  <ul>
-    <li><strong>Duplicate charge:</strong> You were charged twice for the same order.</li>
-    <li><strong>Technical failure:</strong> You cannot access your purchase due to a platform error and we cannot resolve it.</li>
-    <li><strong>Unauthorized transaction:</strong> A purchase was made without your permission (subject to verification).</li>
-    <li><strong>Incorrect product delivery:</strong> You received the wrong file or the file is corrupted and cannot be replaced.</li>
-  </ul>
+      <h2>2. Refunds We May Approve</h2>
+      <p>We may issue a refund in these situations:</p>
+      <ul>
+        <li><strong>Duplicate charge:</strong> You were charged twice for the same order.</li>
+        <li><strong>Technical failure:</strong> You cannot access your purchase due to a platform error and we cannot resolve it.</li>
+        <li><strong>Unauthorized transaction:</strong> A purchase was made without your permission (subject to verification).</li>
+        <li><strong>Incorrect product delivery:</strong> You received the wrong file or the file is corrupted and cannot be replaced.</li>
+      </ul>
 
-  <h2 class="h2">3. Refunds We Do Not Approve</h2>
-  <ul>
-    <li>Change of mind or no longer needing the product</li>
-    <li>Incompatibility with your software/hardware</li>
-    <li>Disliking the sound after purchase</li>
-    <li>Accidental purchase (if delivery already occurred)</li>
-    <li>Claims after files were downloaded/accessed (unless there is a verified platform issue)</li>
-  </ul>
+      <h2>3. Refunds We Do Not Approve</h2>
+      <ul>
+        <li>Change of mind or no longer needing the product</li>
+        <li>Incompatibility with your software/hardware</li>
+        <li>Disliking the sound after purchase</li>
+        <li>Accidental purchase (if delivery already occurred)</li>
+        <li>Claims after files were downloaded/accessed (unless there is a verified platform issue)</li>
+      </ul>
 
-  <h2 class="h2">4. How to Request a Refund</h2>
-  <p>
-    Send an email to <strong>billing@audiory.site</strong> with:
-  </p>
-  <ul>
-    <li>Your order details (email used, date, item name)</li>
-    <li>Reason for request</li>
-    <li>Any screenshots or error messages (if relevant)</li>
-  </ul>
+      <h2>4. How to Request a Refund</h2>
+      <p>
+        Send an email to <a href="mailto:billing@audiory.site">billing@audiory.site</a> with:
+      </p>
+      <ul>
+        <li>Your order details (email used, date, item name)</li>
+        <li>Reason for request</li>
+        <li>Any screenshots or error messages (if relevant)</li>
+      </ul>
 
-  <h2 class="h2">5. Review Timeline</h2>
-  <p>
-    Refund requests are reviewed as quickly as possible. If approved, refunds are returned to the original payment method
-    through the payment provider’s standard processing times.
-  </p>
+      <h2>5. Review Timeline</h2>
+      <p>
+        Refund requests are reviewed as quickly as possible. If approved, refunds are returned to the original payment method
+        through the payment provider’s standard processing times.
+      </p>
 
-  <h2 class="h2">6. Contact</h2>
-  <ul>
-    <li><strong>Billing:</strong> billing@audiory.site</li>
-    <li><strong>Support:</strong> support@audiory.site</li>
-  </ul>
-</main>
+      <h2>6. Contact</h2>
+      <ul>
+        <li><strong>Billing:</strong> <a href="mailto:billing@audiory.site">billing@audiory.site</a></li>
+        <li><strong>Support:</strong> <a href="mailto:support@audiory.site">support@audiory.site</a></li>
+      </ul>
+    </article>
+  </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-  </div>
-</footer>
+  <footer class="footer">
+    <div class="footer-text">© 2026 Audiory. All Rights Reserved.</div>
+  </footer>
 
 </body>
 </html>
