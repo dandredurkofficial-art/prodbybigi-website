@@ -16,7 +16,7 @@
   <link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
   <meta property="og:title" content="Audiory – Global Beat Marketplace">
-  <meta property="og:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers. Your first hit starts here.">
+  <meta property="og:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers. Your first hit starts here Simon.">
   <meta property="og:url" content="https://audiory.site/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://audiory.site/og-image.jpg">
@@ -65,50 +65,42 @@
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    /* ✅ tighter BeatStars-style price pill */
-    .pb-pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-
-      min-height:36px;
-      padding:0 14px;
-
-      border-radius:12px;
-      border:1px solid #295dff;
-      background:#0a0d14;
-
-      color:#ffffff;
-      white-space:nowrap;
-      text-decoration:none;
-
-      font-size:12px;
-      font-weight:800;
-      line-height:1;
-
-      box-sizing:border-box;
-      box-shadow:none;
-      transform:none;
+    /* ✅ Tighter BeatStars-style price pill */
+    .pb-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 12px;
+      border: 1px solid #295dff;
+      background: #0a0d14;
+      color: #ffffff;
+      white-space: nowrap;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      box-sizing: border-box;
+      box-shadow: none;
+      transform: none;
+      cursor: pointer;
     }
 
-    .pb-pill:hover{
-      background:#101521;
-      transform:none;
+    .pb-pill:hover {
+      background: #101521;
+      transform: none;
     }
 
-    .pb-pill:active{
-      transform:none;
-    }
-
-    .pb-pill .ic{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:14px;
-      height:14px;
-      color:#facc15;
-      flex-shrink:0;
+    .pb-pill .ic {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      color: rgba(255,255,255,.85);
+      flex-shrink: 0;
     }
 
     .pb-pill .ic svg {
@@ -117,791 +109,308 @@
       display: block;
     }
 
-    .pb-pill.free{
-      border-color:#295dff;
-      background:#0a0d14;
+    .pb-pill.free {
+      border-color: #295dff;
+      background: #0a0d14;
     }
 
-    /* BeatStars-style lock icon */
-    .lock-icon{
-      width:16px;
-      height:16px;
-      display:inline-block;
+    .lock-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
     }
 
-    .lock-icon svg{
-      width:100%;
-      height:100%;
-      display:block;
-    }
-    /* Beat card layout fix */
-    .chart-card{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+    .lock-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    /* text area */
-    .chart-text{
-      min-width:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
+    /* Grid & Cards Layout Styling */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 16px 14px;
     }
 
-    /* title clamp */
-    .trend-meta .t,
-    .home-title-clamp{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      line-clamp: 2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .trending-strip {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 4px 2px 8px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+    .trending-strip::-webkit-scrollbar { display: none; }
+
+    .trending-strip .trend-card {
+      min-width: 176px;
+      width: 176px;
+      flex: 0 0 176px;
+      scroll-snap-align: start;
     }
 
-    /* producer line */
-    .trend-meta .p,
-    .home-producer-clamp{
-      display:block;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .trend-card, .chart-card {
+      background: #141414 !important;
+      border: 1px solid rgba(255,255,255,.08) !important;
+      border-radius: 18px !important;
+      box-shadow: none !important;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0 !important;
+      padding: 0 !important;
     }
 
-    /* row that contains text + price */
-    .chart-meta-row{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
-      margin-top:2px;
+    .beat-cover {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #0b0b0b;
+      border-radius: 0 !important;
     }
 
-    /* price pill container */
-    .chart-pill{
-      flex-shrink:0;
-      display:flex;
-      align-items:flex-end;
+    .beat-cover .beat-open {
+      display: block;
+      width: 100%;
+      height: 100%;
     }
 
-    .home-title-clamp{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      font-weight:800 !important;
-      font-size:12.5px !important;
-      line-height:1.2 !important;
-      margin:0;
+    .beat-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    .home-producer-clamp{
-      display:block;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      font-size:11.5px !important;
-      line-height:1.2 !important;
-      margin-top:4px !important;
-      opacity:.82;
-    }
-
-    .producer-link{
-      color:var(--muted);
-      text-decoration:none;
-    }
-    .producer-link:hover{ text-decoration:underline; }
-
-    /* ✅ Free download modal (BeatStars style) */
-    .pb-free-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      z-index:9998;
-    }
-    .pb-free-modal{
-      position:fixed;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(520px, calc(100vw - 24px));
-      background:#0b1220;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:18px;
-      box-shadow:0 20px 70px rgba(0,0,0,.45);
-      display:none;
-      z-index:9999;
-    }
-    .pb-free-head{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      margin-bottom:10px;
-    }
-    .pb-free-title{
-      font-size:16px;
-      font-weight:900;
-      margin:0;
-    }
-    .pb-free-close{
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:18px;
-      cursor:pointer;
-      padding:6px 8px;
-      border-radius:10px;
-      display: inline-flex;
+    .play-fab {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50% !important;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.42);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      box-shadow: none !important;
+      display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .pb-free-close:hover{background:rgba(255,255,255,.08)}
-    .pb-free-sub{
-      color:rgba(255,255,255,.7);
-      font-size:13px;
-      margin:8px 0 14px;
-      line-height:1.4;
-    }
-    .pb-free-label{
-      font-size:13px;
-      font-weight:800;
-      margin:10px 0 6px;
-      color:rgba(255,255,255,.85);
-    }
-    .pb-free-input{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-    }
-    .pb-free-input:focus{border-color:rgba(59,130,246,.55)}
-    .pb-free-btn{
-      width:100%;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      background:#3b82f6;
-      color:#fff;
-    }
-    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
-    .pb-free-note{
-      margin-top:10px;
-      color:rgba(255,255,255,.55);
-      font-size:12px;
-      line-height:1.35;
-    }
-    .pb-free-status{
-      margin-top:10px;
-      font-size:13px;
-      color:#22c55e;
-      min-height:18px;
+      padding: 0;
+      cursor: pointer;
+      color: #fff;
     }
 
-    .hero-sub{
-      margin:10px 0 0;
-      color:rgba(255,255,255,.78);
-      font-size:15px;
-      line-height:1.6;
-      max-width:760px;
-    }
-
-    @media (max-width:768px){
-      .hero-sub{
-        font-size:14px;
-        line-height:1.5;
-      }
-    }
-
-    /* =========================
-       PAYMENT MODAL - NEW STYLE
-    ========================= */
-    .pb-pay-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.68);
-      display:none;
-      z-index:10050;
-    }
-
-    .pb-pay-modal{
-      position:fixed;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:min(720px, calc(100vw - 18px));
-      max-height:calc(100vh - 28px);
-      overflow:auto;
-      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:26px;
-      padding:0;
-      box-shadow:0 28px 90px rgba(0,0,0,.52);
-      display:none;
-      z-index:10051;
-    }
-
-    .pb-pay-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      padding:22px 24px 14px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-
-    .pb-pay-title{
-      font-weight:950;
-      font-size:24px;
-      margin:0;
-      color:#fff;
-    }
-
-    .pb-pay-sub{
-      color:rgba(255,255,255,.72);
-      font-size:13px;
-      margin-top:8px;
-      line-height:1.5;
-      white-space:pre-line;
-    }
-
-    .pb-pay-close{
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:24px;
-      cursor:pointer;
-      padding:4px 8px;
-      border-radius:10px;
+    .play-fab .playIcon {
+      width: 16px;
+      height: 16px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
 
-    .pb-pay-close:hover{
-      background:rgba(255,255,255,.08);
+    .play-fab .playIcon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    .pb-pay-body{
-      padding:22px 24px 24px;
-      display:grid;
-      gap:16px;
+    .trend-meta, .chart-meta-row {
+      padding: 14px 14px 0 14px;
     }
 
-    .pb-pay-methods{
-      display:grid;
-      gap:14px;
+    .chart-meta-row {
+      display: block !important;
     }
 
-    .pb-pay-btn{
-      width:100%;
-      min-height:76px;
-      border-radius:18px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:0 22px;
-      color:#fff;
-      font-size:17px;
-      box-shadow:none;
+    .chart-text {
+      display: block;
+      min-width: 0;
     }
 
-    .pb-pay-btn.primary{
-      background:#4b86ef;
+    .trend-meta .t, .home-title-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #fff !important;
+      text-decoration: none;
+      font-size: 17px !important;
+      line-height: 1.2 !important;
+      font-weight: 800 !important;
+      margin: 0 !important;
+      min-height: 40px;
     }
 
-    .pb-pay-btn.success{
-      background:#24c65a;
+    .trend-meta .p, .home-producer-clamp {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: rgba(255,255,255,.62) !important;
+      font-size: 14px !important;
+      line-height: 1.2 !important;
+      margin-top: 7px !important;
+      margin-bottom: 0 !important;
+      opacity: 1 !important;
     }
 
-    .pb-pay-btn:hover{
-      filter:brightness(1.03);
+    .trend-actions, .chart-pill {
+      padding: 14px;
+      padding-top: 14px;
     }
 
-    .pb-pay-btn-left{
-      display:flex;
-      align-items:center;
-      gap:14px;
+    .chart-pill {
+      display: block !important;
     }
 
-    .pb-pay-amount{
-      font-size:16px;
-      font-weight:900;
-      opacity:.96;
+    .trend-actions .pb-pill, .chart-pill .pb-pill {
+      width: 100%;
+      min-height: 50px;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 800;
+      justify-content: center;
+      padding: 0 14px;
+      background: transparent;
+      border: 1.5px solid #295dff;
     }
 
-    .pb-pay-phone-wrap{
-      display:none;
-      margin-top:4px;
-      padding:14px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
+    .producer-link {
+      color: rgba(255,255,255,.62) !important;
+      text-decoration: none;
+    }
+    .producer-link:hover {
+      text-decoration: none;
+      color: #fff !important;
     }
 
-    .pb-pay-label{
-      font-size:12px;
-      font-weight:900;
-      color:rgba(255,255,255,.86);
-      margin-bottom:8px;
+    /* Modal Frameworks (Free & Premium Payment Structures) */
+    .pb-free-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.55);
+      display: none;
+      z-index: 9998;
     }
-
-    .pb-pay-input{
-      width:100%;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-      font-size:15px;
+    .pb-free-modal {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(-50%,-50%);
+      width: min(520px, calc(100vw - 24px));
+      background: #0b1220;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 20px 70px rgba(0,0,0,.45);
+      display: none;
+      z-index: 9999;
     }
-
-    .pb-pay-input:focus{
-      border-color:rgba(34,197,94,.55);
+    .pb-free-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-bottom: 10px;
     }
-
-    .pb-pay-send{
-      margin-top:14px;
-      min-height:50px;
-      padding:0 20px;
-      border:none;
-      border-radius:14px;
-      background:#24c65a;
-      color:#fff;
-      font-size:15px;
-      font-weight:900;
-      cursor:pointer;
+    .pb-free-title { font-size: 16px; font-weight: 900; margin: 0; }
+    .pb-free-close {
+      border: none; background: transparent; color: #fff; font-size: 18px; cursor: pointer;
+      padding: 6px 8px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;
     }
-
-    .pb-pay-send:hover{
-      filter:brightness(1.03);
+    .pb-free-close:hover { background: rgba(255,255,255,.08); }
+    .pb-free-sub { color: rgba(255,255,255,.7); font-size: 13px; margin: 8px 0 14px; line-height: 1.4; }
+    .pb-free-label { font-size: 13px; font-weight: 800; margin: 10px 0 6px; color: rgba(255,255,255,.85); }
+    .pb-free-input {
+      width: 100%; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06); color: #fff; outline: none;
     }
-
-    .pb-pay-send:disabled{
-      opacity:.7;
-      cursor:not-allowed;
+    .pb-free-input:focus { border-color: rgba(59,130,246,.55); }
+    .pb-free-btn {
+      width: 100%; margin-top: 14px; padding: 12px 14px; border-radius: 14px; border: none;
+      cursor: pointer; font-weight: 900; background: #3b82f6; color: #fff;
     }
+    .pb-free-btn[disabled] { opacity: .65; cursor: not-allowed; }
+    .pb-free-note { margin-top: 10px; color: rgba(255,255,255,.55); font-size: 12px; line-height: 1.35; }
+    .pb-free-status { margin-top: 10px; font-size: 13px; color: #22c55e; min-height: 18px; }
 
-    .pb-pay-status{
-      min-height:18px;
-      margin-top:10px;
-      font-size:13px;
-      color:rgba(255,255,255,.78);
-      white-space:pre-line;
+    .hero-sub { margin: 10px 0 0; color: rgba(255,255,255,.78); font-size: 15px; line-height: 1.6; max-width: 760px; }
+
+    /* Payment Window Overlay Rules */
+    .pb-pay-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.68); display: none; z-index: 10050; }
+    .pb-pay-modal {
+      position: fixed; left: 50%; top: 50%; transform: translate(-50%,-50%);
+      width: min(720px, calc(100vw - 18px)); max-height: calc(100vh - 28px); overflow: auto;
+      background: linear-gradient(180deg,#08142a 0%, #071122 100%); border: 1px solid rgba(255,255,255,.10);
+      border-radius: 26px; padding: 0; box-shadow: 0 28px 90px rgba(0,0,0,.52); display: none; z-index: 10051;
     }
+    .pb-pay-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 22px 24px 14px; border-bottom: 1px solid rgba(255,255,255,.08); }
+    .pb-pay-title { font-weight: 950; font-size: 24px; margin: 0; color: #fff; }
+    .pb-pay-sub { color: rgba(255,255,255,.72); font-size: 13px; margin-top: 8px; line-height: 1.5; white-space: pre-line; }
+    .pb-pay-close { border: none; background: transparent; color: #fff; font-size: 24px; cursor: pointer; padding: 4px 8px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; }
+    .pb-pay-close:hover { background: rgba(255,255,255,.08); }
+    .pb-pay-body { padding: 22px 24px 24px; display: grid; gap: 16px; }
+    .pb-pay-methods { display: grid; gap: 14px; }
+    .pb-pay-btn { width: 100%; min-height: 76px; border-radius: 18px; border: none; cursor: pointer; font-weight: 900; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 0 22px; color: #fff; font-size: 17px; box-shadow: none; }
+    .pb-pay-btn.primary { background: #4b86ef; }
+    .pb-pay-btn.success { background: #24c65a; }
+    .pb-pay-btn:hover { filter: brightness(1.03); }
+    .pb-pay-btn-left { display: flex; align-items: center; gap: 14px; }
+    .pb-pay-amount { font-size: 16px; font-weight: 900; opacity: .96; }
+    .pb-pay-phone-wrap { display: none; margin-top: 4px; padding: 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); }
+    .pb-pay-label { font-size: 12px; font-weight: 900; color: rgba(255,255,255,.86); margin-bottom: 8px; }
+    .pb-pay-input { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: #fff; outline: none; font-size: 15px; }
+    .pb-pay-input:focus { border-color: rgba(34,197,94,.55); }
+    .pb-pay-send { margin-top: 14px; min-height: 50px; padding: 0 20px; border: none; border-radius: 14px; background: #24c65a; color: #fff; font-size: 15px; font-weight: 900; cursor: pointer; }
+    .pb-pay-send:hover { filter: brightness(1.03); }
+    .pb-pay-send:disabled { opacity: .7; cursor: not-allowed; }
+    .pb-pay-status { min-height: 18px; margin-top: 10px; font-size: 13px; color: rgba(255,255,255,.78); white-space: pre-line; }
+    .mpesa-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mpesa-icon svg { width: 100%; height: 100%; display: block; }
 
-    .mpesa-icon{
-      width:20px;
-      height:20px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
+    /* Verification Badge Styles */
+    .verify-badge { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle; }
+    .verify-badge svg { width: 16px; height: 16px; display: block; }
+    .verify-pro svg { color: #1d9bf0; }
+    .verify-elite svg { color: #fbbf24; }
+
+    /* Smart Search Components */
+    .smart-finder-wrap { position: relative; }
+    .smart-finder-meta { margin-top: 12px; }
+    .smart-finder-hint { color: rgba(255,255,255,.68); font-size: 13px; line-height: 1.5; margin-bottom: 10px; }
+    .smart-finder-hint span { color: #fff; opacity: .9; font-weight: 700; }
+    .smart-finder-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+    .smart-chip { border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: #fff; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 800; cursor: pointer; transition: .18s ease; }
+    .smart-chip:hover { background: rgba(255,255,255,.09); border-color: rgba(59,130,246,.38); }
+
+    /* Target Device Layout Tweaks */
+    @media (max-width: 1200px) { .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    @media (max-width: 980px) { .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media (max-width: 768px) {
+      .hero-sub { font-size: 14px; line-height: 1.5; }
+      .chart-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 12px; }
+      .trending-strip { gap: 14px; }
+      .trending-strip .trend-card { min-width: 168px; width: 168px; flex: 0 0 168px; }
+      .trend-meta, .chart-meta-row { padding: 12px 12px 0 12px; }
+      .trend-actions, .chart-pill { padding: 12px; padding-top: 12px; }
+      .trend-meta .t, .home-title-clamp { font-size: 16px !important; min-height: 38px; }
+      .trend-meta .p, .home-producer-clamp { font-size: 13px !important; margin-top: 6px !important; }
+      .trend-actions .pb-pill, .chart-pill .pb-pill { min-height: 46px; font-size: 16px; }
+      .play-fab { width: 46px; height: 46px; }
     }
-
-    .mpesa-icon svg{
-      width:100%;
-      height:100%;
-      display:block;
+    @media (max-width: 640px) {
+      .pb-pay-modal { width: calc(100vw - 16px); max-height: calc(100vh - 20px); border-radius: 24px; }
+      .pb-pay-head { padding: 18px 18px 12px; }
+      .pb-pay-title { font-size: 20px; }
+      .pb-pay-body { padding: 16px 18px 18px; }
+      .pb-pay-btn { min-height: 72px; border-radius: 18px; padding: 0 18px; font-size: 16px; }
+      .pb-pay-amount { font-size: 14px; }
+      .smart-finder-hint { font-size: 12px; }
+      .smart-chip { padding: 8px 12px; font-size: 11.5px; }
+      .presave-wrap { width: 100%; margin-top: 14px; display: flex; flex-direction: column; gap: 8px; }
+      .presave-wrap .presave-pill { width: 100% !important; margin-top: 0 !important; }
+      .presave-countdown { color: rgba(255,255,255,.62); font-size: 12px; text-align: center; line-height: 1.2; }
     }
-
-    @media (max-width: 640px){
-      .pb-pay-modal{
-        width:calc(100vw - 16px);
-        max-height:calc(100vh - 20px);
-        border-radius:24px;
-      }
-
-      .pb-pay-head{
-        padding:18px 18px 12px;
-      }
-
-      .pb-pay-title{
-        font-size:20px;
-      }
-
-      .pb-pay-body{
-        padding:16px 18px 18px;
-      }
-
-      .pb-pay-btn{
-        min-height:72px;
-        border-radius:18px;
-        padding:0 18px;
-        font-size:16px;
-      }
-
-      .pb-pay-amount{
-        font-size:14px;
-      }
-    }
-
-    .pb-pill{
-      color:#fff;
-    }
-
-    .pb-pill .ic{
-      color:rgba(255,255,255,.85);
-    }
-
-    /* ===================================
-         AUDIORY VERIFIED BADGES
-      =================================== */
-
-      .verify-badge{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        margin-left:6px;
-        vertical-align:middle;
-      }
-
-      .verify-badge svg{
-        width:16px;
-        height:16px;
-        display:block;
-      }
-
-      /* PRO (blue) */
-
-      .verify-pro svg{
-        color:#1d9bf0;
-      }
-
-      /* ELITE (gold) */
-
-      .verify-elite svg{
-        color:#fbbf24;
-      }
-
-      /* =========================================
-         AUDIORY CLEAN CARD SYSTEM
-         BeatStars-inspired mobile polish
-      ========================================= */
-
-      .trending-strip{
-        display:flex;
-        gap:16px;
-        overflow-x:auto;
-        padding:4px 2px 8px;
-        scroll-snap-type:x proximity;
-        scrollbar-width:none;
-      }
-      .trending-strip::-webkit-scrollbar{ display:none; }
-
-      .trending-strip .trend-card{
-        min-width:176px;
-        width:176px;
-        flex:0 0 176px;
-        scroll-snap-align:start;
-      }
-
-      .chart-grid{
-        display:grid;
-        grid-template-columns:repeat(5, minmax(0,1fr));
-        gap:16px 14px;
-      }
-
-      .trend-card,
-      .chart-card{
-        background:#141414 !important;
-        border:1px solid rgba(255,255,255,.08) !important;
-        border-radius:18px !important;
-        box-shadow:none !important;
-        overflow:hidden;
-        gap:0 !important;
-        padding:0 !important;
-      }
-
-      .beat-cover{
-        position:relative;
-        aspect-ratio:1 / 1;
-        overflow:hidden;
-        background:#0b0b0b;
-        border-radius:0 !important;
-      }
-
-      .beat-cover .beat-open{
-        display:block;
-        width:100%;
-        height:100%;
-      }
-
-      .beat-cover img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-      }
-
-      .play-fab{
-        position:absolute;
-        right:14px;
-        bottom:14px;
-        width:50px;
-        height:50px;
-        border-radius:50% !important;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(0,0,0,.42);
-        backdrop-filter:blur(5px);
-        -webkit-backdrop-filter:blur(5px);
-        box-shadow:none !important;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        cursor: pointer;
-        color: #fff;
-      }
-
-      .play-fab .playIcon{
-        width: 16px;
-        height: 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .play-fab .playIcon svg {
-        width: 100%;
-        height: 100%;
-        display: block;
-      }
-
-      .trend-meta,
-      .chart-meta-row{
-        padding:14px 14px 0 14px;
-      }
-
-      .chart-meta-row{
-        display:block !important;
-      }
-
-      .chart-text{
-        display:block;
-        min-width:0;
-      }
-
-      .trend-meta .t,
-      .home-title-clamp{
-        display:-webkit-box;
-        -webkit-line-clamp:2;
-        -webkit-box-orient:vertical;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        color:#fff !important;
-        text-decoration:none;
-        font-size:17px !important;
-        line-height:1.2 !important;
-        font-weight:800 !important;
-        margin:0 !important;
-        min-height:40px;
-      }
-
-      .trend-meta .p,
-      .home-producer-clamp{
-        display:block;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        color:rgba(255,255,255,.62) !important;
-        font-size:14px !important;
-        line-height:1.2 !important;
-        margin-top:7px !important;
-        margin-bottom:0 !important;
-        opacity:1 !important;
-      }
-
-      .trend-actions,
-      .chart-pill{
-        padding:14px;
-        padding-top:14px;
-      }
-
-      .chart-pill{
-        display:block !important;
-      }
-
-      .trend-actions .pb-pill,
-      .chart-pill .pb-pill{
-        width:100%;
-        min-height:50px;
-        border-radius:14px;
-        font-size:17px;
-        font-weight:800;
-        justify-content:center;
-        padding:0 14px;
-        background:transparent;
-        border:1.5px solid #295dff;
-      }
-
-      .trend-actions .pb-pill .ic,
-      .chart-pill .pb-pill .ic{
-        width:16px;
-        height:16px;
-      }
-
-      .producer-link{
-        color:rgba(255,255,255,.62) !important;
-        text-decoration:none;
-      }
-      .producer-link:hover{
-        text-decoration:none;
-        color:#fff !important;
-      }
-
-      @media (max-width:1200px){
-        .chart-grid{
-          grid-template-columns:repeat(4,minmax(0,1fr));
-        }
-      }
-
-      @media (max-width:980px){
-        .chart-grid{
-          grid-template-columns:repeat(3,minmax(0,1fr));
-        }
-      }
-
-      @media (max-width:768px){
-        .chart-grid{
-          grid-template-columns:repeat(2,minmax(0,1fr));
-          gap:14px 12px;
-        }
-
-        .trending-strip{
-          gap:14px;
-        }
-
-        .trending-strip .trend-card{
-          min-width:168px;
-          width:168px;
-          flex:0 0 168px;
-        }
-
-        .trend-meta,
-        .chart-meta-row{
-          padding:12px 12px 0 12px;
-        }
-
-        .trend-actions,
-        .chart-pill{
-          padding:12px;
-          padding-top:12px;
-        }
-
-        .trend-meta .t,
-        .home-title-clamp{
-          font-size:16px !important;
-          min-height:38px;
-        }
-
-        .trend-meta .p,
-        .home-producer-clamp{
-          font-size:13px !important;
-          margin-top:6px !important;
-        }
-
-        .trend-actions .pb-pill,
-        .chart-pill .pb-pill{
-          min-height:46px;
-          font-size:16px;
-        }
-
-        .play-fab{
-          width:46px;
-          height:46px;
-        }
-
-        /* =========================
-           SMART FINDER
-        ========================= */
-        .smart-finder-wrap{
-          position:relative;
-        }
-
-        .smart-finder-meta{
-          margin-top:12px;
-        }
-
-        .smart-finder-hint{
-          color:rgba(255,255,255,.68);
-          font-size:13px;
-          line-height:1.5;
-          margin-bottom:10px;
-        }
-
-        .smart-finder-hint span{
-          color:#fff;
-          opacity:.9;
-          font-weight:700;
-        }
-
-        .smart-finder-chips{
-          display:flex;
-          gap:10px;
-          flex-wrap:wrap;
-        }
-
-        .smart-chip{
-          border:1px solid rgba(255,255,255,.12);
-          background:rgba(255,255,255,.05);
-          color:#fff;
-          border-radius:999px;
-          padding:9px 13px;
-          font-size:12px;
-          font-weight:800;
-          cursor:pointer;
-          transition:.18s ease;
-        }
-
-        .smart-chip:hover{
-          background:rgba(255,255,255,.09);
-          border-color:rgba(59,130,246,.38);
-        }
-
-        @media (max-width:640px){
-          .smart-finder-hint{
-            font-size:12px;
-          }
-
-          .smart-chip{
-            padding:8px 12px;
-            font-size:11.5px;
-          }
-
-          .presave-wrap{
-            width:100%;
-            margin-top:14px;
-            display:flex;
-            flex-direction:column;
-            gap:8px;
-          }
-
-          .presave-wrap .presave-pill{
-            width:100% !important;
-            margin-top:0 !important;
-          }
-
-          .presave-countdown{
-            color:rgba(255,255,255,.62);
-            font-size:12px;
-            text-align:center;
-            line-height:1.2;
-          }
-       }
-      
   </style>
-
 </head>
 <body>
 
@@ -927,12 +436,8 @@
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-      <a id="navDashboard" class="ghost hidden" href="#">
-        Dashboard
-      </a>
-      <button id="navSignOut" class="ghost hidden" type="button">
-        Sign out
-      </button>
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
 
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button" style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
@@ -949,7 +454,7 @@
   <div class="menu-head">
     <div class="menu-title">Menu</div>
     <button class="icon-btn" id="menuCloseBtn" aria-label="Close" style="display:inline-flex; align-items:center; justify-content:center;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
   <a href="/">Feed</a>
@@ -968,7 +473,6 @@
 </nav>
 
 <main class="container">
-
   <section class="hero">
     <div class="card hero-card">
       <h1 class="hero-title">Your first hit starts here</h1>
@@ -1014,7 +518,6 @@
       <h2 class="h2">Featured Beats</h2>
       <a class="see-all" href="/marketplace/?featured=1">See all →</a>
     </div>
-
     <div id="featuredStatus" class="loading-box" style="margin-top:12px;">Loading featured beats…</div>
     <div id="featuredStrip" class="trending-strip"></div>
   </section>
@@ -1024,7 +527,6 @@
       <h2 class="h2">Trending Beats</h2>
       <a class="see-all" href="/marketplace/">See all →</a>
     </div>
-
     <div id="homeStatus" class="loading-box" style="margin-top:12px;">Loading beats…</div>
     <div id="trendingStrip" class="trending-strip"></div>
   </section>
@@ -1124,7 +626,6 @@
       </div>
     </div>
   </section>
-
 </main>
 
 <footer class="footer">
@@ -1189,7 +690,7 @@
         <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
       </div>
       <button class="icon-btn" id="pbModalClose" aria-label="Close" style="display:inline-flex; align-items:center; justify-content:center;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </button>
     </div>
 
@@ -1222,7 +723,7 @@
       <div class="pb-cart-sub" id="pbCartSub">0 items</div>
     </div>
     <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button" style="display:inline-flex; align-items:center; justify-content:center;">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
 
@@ -1246,13 +747,12 @@
   <div class="pb-free-head">
     <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
     <button class="pb-free-close" id="pbFreeClose" aria-label="Close">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
 
   <div class="pb-free-sub" id="pbFreeSub">
-    Enter your email address and full name to unlock your free download.
-    We will send your free track to the email address.
+    Enter your email address and full name to unlock your free download. We will send your free track to the email address.
   </div>
 
   <div class="pb-free-label">Full name</div>
@@ -1264,9 +764,7 @@
   <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
   <div class="pb-free-status" id="pbFreeStatus"></div>
 
-  <div class="pb-free-note">
-    By continuing, you agree to our Terms & Privacy Policy.
-  </div>
+  <div class="pb-free-note">By continuing, you agree to our Terms & Privacy Policy.</div>
 </div>
 
 <div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
@@ -1277,16 +775,14 @@
       <div class="pb-pay-sub" id="pbPaySub">—</div>
     </div>
     <button class="pb-pay-close" id="pbPayClose" aria-label="Close">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
     </button>
   </div>
 
   <div class="pb-pay-body">
     <div class="pb-pay-methods">
       <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
-        <span class="pb-pay-btn-left">
-          <span>Pay with PayPal</span>
-        </span>
+        <span class="pb-pay-btn-left"><span>Pay with PayPal</span></span>
         <span class="pb-pay-amount" id="pbPayAmountA">—</span>
       </button>
 
@@ -1320,14 +816,9 @@
 </script>
 
 <script>
-  // ✅ PayPal (no trailing slash)
   window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
   window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
-
-  // ✅ M-Pesa STK Push (no trailing slash)
   window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
-
-  // ✅ We'll track the selected beat/license here
   window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
 </script>
 
@@ -1341,10 +832,9 @@
 <script src="/js/license-modal.js"></script>
 
 <script>
-  /* =========================
-     SMART FINDER (SAFE VERSION)
-     Homepage only
-  ========================= */
+  /* =========================================
+     SMART FINDER SEARCH LOGIC
+  ========================================= */
   (function(){
     const input = document.getElementById("searchInput");
     const btn = document.getElementById("searchBtn");
@@ -1352,141 +842,65 @@
 
     if(!input || !btn) return;
 
-    const KNOWN_GENRES = [
-      "trap",
-      "drill",
-      "afrobeats",
-      "amapiano",
-      "r&b",
-      "hip hop",
-      "hiphop",
-      "dancehall",
-      "bongo",
-      "gengetone",
-      "reggae"
-    ];
-
-    const KNOWN_MOODS = [
-      "chill",
-      "dark",
-      "happy",
-      "sad",
-      "emotional",
-      "lyrical",
-      "aggressive",
-      "club",
-      "romantic",
-      "melodic",
-      "hard",
-      "smooth"
-    ];
+    const KNOWN_GENRES = ["trap", "drill", "afrobeats", "amapiano", "r&b", "hip hop", "hiphop", "dancehall", "bongo", "gengetone", "reggae"];
+    const KNOWN_MOODS = ["chill", "dark", "happy", "sad", "emotional", "lyrical", "aggressive", "club", "romantic", "melodic", "hard", "smooth"];
 
     function normalizeText(str){
-      return String(str || "")
-        .toLowerCase()
-        .replace(/&/g, "and")
-        .replace(/\s+/g, " ")
-        .trim();
+      return String(str || "").toLowerCase().replace(/&/g, "and").replace(/\s+/g, " ").trim();
     }
 
-    function unique(arr){
-      return [...new Set((arr || []).filter(Boolean))];
-    }
+    function unique(arr){ return [...new Set((arr || []).filter(Boolean))]; }
 
     function parseSmartFinder(raw){
       const original = String(raw || "").trim();
       const normalized = normalizeText(original);
-
       const foundGenres = [];
       const foundMoods = [];
 
-      KNOWN_GENRES.forEach(g => {
-        if (normalized.includes(normalizeText(g))) foundGenres.push(g);
-      });
-
-      KNOWN_MOODS.forEach(m => {
-        if (normalized.includes(normalizeText(m))) foundMoods.push(m);
-      });
+      KNOWN_GENRES.forEach(g => { if (normalized.includes(normalizeText(g))) foundGenres.push(g); });
+      KNOWN_MOODS.forEach(m => { if (normalized.includes(normalizeText(m))) foundMoods.push(m); });
 
       let detectedTypeBeat = "";
-
       if (/\btype beat\b/i.test(original)) {
-        detectedTypeBeat = original
-          .replace(/\btype beat\b/i, "")
-          .trim();
+        detectedTypeBeat = original.replace(/\btype beat\b/i, "").trim();
       } else {
-        const artistCandidates = [
-          "j cole","drake","burna boy","future","21 savage","travis scott",
-          "central cee","gunna","lil baby","wizkid","asake","davido",
-          "sza","the weeknd","tems","metro boomin","yeat","young thug"
-        ];
-
+        const artistCandidates = ["j cole","drake","burna boy","future","21 savage","travis scott","central cee","gunna","lil baby","wizkid","asake","davido","sza","the weeknd","tems","metro boomin","yeat","young thug"];
         const hit = artistCandidates.find(name => normalized.includes(name));
-        if (hit) {
-          detectedTypeBeat = hit.replace(/\b\w/g, c => c.toUpperCase());
-        }
+        if (hit) { detectedTypeBeat = hit.replace(/\b\w/g, c => c.toUpperCase()); }
       }
 
-      const cleanedWords = original
-        .split(/\s+/)
-        .map(x => x.trim())
-        .filter(Boolean);
-
+      const cleanedWords = original.split(/\s+/).map(x => x.trim()).filter(Boolean);
       const tags = cleanedWords.filter(word => {
         const w = normalizeText(word);
-        if (!w) return false;
-        if (KNOWN_GENRES.includes(w)) return false;
-        if (KNOWN_MOODS.includes(w)) return false;
+        if (!w || KNOWN_GENRES.includes(w) || KNOWN_MOODS.includes(w)) return false;
         return true;
       });
 
-      return {
-        q: original,
-        genre: unique(foundGenres),
-        mood: unique(foundMoods),
-        typeBeat: detectedTypeBeat,
-        tags: unique(tags)
-      };
+      return { q: original, genre: unique(foundGenres), mood: unique(foundMoods), typeBeat: detectedTypeBeat, tags: unique(tags) };
     }
 
     function buildMarketplaceUrl(parsed){
       const url = new URL("/marketplace/", location.origin);
-
       if (parsed.q) url.searchParams.set("q", parsed.q);
       if (parsed.genre.length) url.searchParams.set("genre", parsed.genre.join(","));
       if (parsed.mood.length) url.searchParams.set("mood", parsed.mood.join(","));
       if (parsed.typeBeat) url.searchParams.set("typeBeat", parsed.typeBeat);
       if (parsed.tags.length) url.searchParams.set("tags", parsed.tags.join(","));
       url.searchParams.set("smart", "1");
-
       return url.pathname + url.search;
     }
 
     function goSmart(){
       const raw = (input.value || "").trim();
-      if(!raw){
-        location.href = "/marketplace/";
-        return;
-      }
-
-      const parsed = parseSmartFinder(raw);
-      const target = buildMarketplaceUrl(parsed);
-      location.href = target;
+      if(!raw){ location.href = "/marketplace/"; return; }
+      location.href = buildMarketplaceUrl(parseSmartFinder(raw));
     }
 
     btn.addEventListener("click", goSmart);
-
-    input.addEventListener("keydown", (e)=>{
-      if(e.key === "Enter"){
-        e.preventDefault();
-        goSmart();
-      }
-    });
-
+    input.addEventListener("keydown", (e)=>{ if(e.key === "Enter"){ e.preventDefault(); goSmart(); } });
     chips.forEach(chip => {
       chip.addEventListener("click", () => {
-        const fill = chip.getAttribute("data-smart-fill") || "";
-        input.value = fill;
+        input.value = chip.getAttribute("data-smart-fill") || "";
         input.focus();
       });
     });
@@ -1494,75 +908,34 @@
 
   function money(n){
     const v = Number(n);
-    if (!Number.isFinite(v)) return "$0.00";
-    return "$" + v.toFixed(2);
+    return !Number.isFinite(v) ? "$0.00" : "$" + v.toFixed(2);
   }
 
   function prettyProducerName(b){
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
-    if (!b.producerId) return "Prod. Unknown";
-    return "Prod. " + String(b.producerId).slice(0,8);
+    return b.producerId ? "Prod. " + String(b.producerId).slice(0,8) : "Prod. Unknown";
   }
 
   function coverHTML(url, title){
     if (url) {
-      return `
-        <img
-          src="${url}"
-          alt="${title || "Beat"}"
-          loading="lazy"
-          decoding="async"
-          fetchpriority="low"
-          referrerpolicy="no-referrer"
-        />
-      `;
+      return `<img src="${url}" alt="${title || "Beat"}" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer" />`;
     }
-
     const initials = String(title || "B").trim().slice(0,2).toUpperCase();
-
-    return `
-      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">
-        ${initials}
-      </div>
-    `;
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
   }
 
-  function beatPageUrl(b){
-    const id = String(b?.id || "");
-    return "/beat/?id=" + encodeURIComponent(id);
-  }
-  function producerPageUrl(b){
-    const pid = String(b?.producerId || "");
-    return "/producer-profile/?producerId=" + encodeURIComponent(pid);
-  }
-
-  function getBeatPremiereTime(b){
-    return (
-      b?.premiereAt?.toMillis?.() ||
-      (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) ||
-      Number(b?.premiereAt || b?.releaseAt || 0)
-    );
-  }
-
-  function isUpcomingPremiereBeat(b){
-    const premiereAt = getBeatPremiereTime(b);
-    return (
-      b?.isPremiere === true &&
-      premiereAt &&
-      Number.isFinite(premiereAt) &&
-      premiereAt > Date.now()
-    );
-  }
+  function beatPageUrl(b){ return "/beat/?id=" + encodeURIComponent(String(b?.id || "")); }
+  function producerPageUrl(b){ return "/producer-profile/?producerId=" + encodeURIComponent(String(b?.producerId || "")); }
+  function getBeatPremiereTime(b){ return b?.premiereAt?.toMillis?.() || (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) || Number(b?.premiereAt || b?.releaseAt || 0); }
+  function isUpcomingPremiereBeat(b){ const p = getBeatPremiereTime(b); return b?.isPremiere === true && p && Number.isFinite(p) && p > Date.now(); }
 
   function formatPremiereCountdown(b){
-    const premiereAt = getBeatPremiereTime(b);
-    if (!premiereAt) return "Premiere soon";
-
-    const diff = Math.max(0, premiereAt - Date.now());
+    const p = getBeatPremiereTime(b);
+    if (!p) return "Premiere soon";
+    const diff = Math.max(0, p - Date.now());
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
-
     if (days > 0) return `Premieres in ${days}d ${hours}h`;
     if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
     return `Premieres in ${mins}m`;
@@ -1572,998 +945,385 @@
     return `
       <div class="presave-wrap">
         <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
-          <span class="ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-          </span>
+          <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>
           <span>Pre-save</span>
         </button>
-
-        <div class="presave-countdown">
-          ${formatPremiereCountdown(b)}
-        </div>
+        <div class="presave-countdown">${formatPremiereCountdown(b)}</div>
       </div>
     `;
   }
 
-  async function logAnalyticsEvent({ producerId, type, beatId=null }){
-    try{
-      const FB = window.FB;
-      if (!FB?.auth?.currentUser) return;
-      if (!producerId || !type) return;
-      if (!FB?.db || typeof FB.addDoc !== "function" || typeof FB.collection !== "function") return;
-
-      const ts =
-        (typeof FB.serverTimestamp === "function")
-          ? FB.serverTimestamp()
-          : Date.now();
-
-      await FB.addDoc(FB.collection(FB.db, "analyticsEvents"), {
-        producerId: String(producerId),
-        type: String(type),
-        beatId: beatId ? String(beatId) : null,
-        actorUid: FB.auth.currentUser.uid,
-        createdAt: ts
-      });
-    }catch(err){
-      console.warn("homepage analytics log failed:", err);
-    }
-  }
-
-async function logBeatPlay(beat, playBtn){
-  try{
-    const b = beat || {};
-    const producerId = String(b.producerId || "").trim();
-    const beatId = String(b.id || "").trim();
-
-    if (!producerId || !beatId) return;
-
-    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
-    const playKey = `${producerId}:${beatId}`;
-
-    if (window.__ANA_SENT__.play[playKey]) return;
-    window.__ANA_SENT__.play[playKey] = 1;
-
-    const FB = window.FB;
-    if (
-      !FB?.db ||
-      typeof FB.doc !== "function" ||
-      typeof FB.updateDoc !== "function" ||
-      typeof FB.increment !== "function"
-    ){
-      console.error("Homepage play tracking failed: Firebase helpers missing");
-      delete window.__ANA_SENT__.play[playKey];
-      return;
-    }
-
-    try{
-      const ref = FB.doc(FB.db, "beats", beatId);
-      await FB.updateDoc(ref, {
-        plays: FB.increment(1),
-        lastPlayedAt: Date.now()
-      });
-      console.log("✅ homepage plays incremented:", beatId);
-    }catch(err){
-      console.error("❌ homepage Firestore increment failed:", err);
-      delete window.__ANA_SENT__.play[playKey];
-      return;
-    }
-
-    try{
-      if (typeof FB.trackEvent === "function"){
-        await FB.trackEvent({
-          type: "beat_play",
-          beatId,
-          producerId,
-          path: location.pathname + location.search,
-          meta: { surface: "home", action: "preview" }
-        });
-      }
-    }catch(err){
-      console.warn("Homepage trackEvent failed:", err);
-    }
-
-  }catch(err){
-    console.error("logBeatPlay failed", err);
-  }
-}
-window.logBeatPlay = logBeatPlay;
-
-  /* ===========================
-     ✅ FREE DOWNLOAD
-  =========================== */
-  const FreeDL = (() => {
-    const $ = (id)=>document.getElementById(id);
-
-    const backdrop = $("pbFreeBackdrop");
-    const modal = $("pbFreeModal");
-    const closeBtn = $("pbFreeClose");
-    const sendBtn = $("pbFreeSend");
-    const nameEl = $("pbFreeName");
-    const emailEl = $("pbFreeEmail");
-    const titleEl = $("pbFreeTitle");
-    const statusEl = $("pbFreeStatus");
-
-    let currentBeat = null;
-
-    function open(beat){
-      currentBeat = beat || null;
-      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
-      statusEl.textContent = "";
-      nameEl.value = "";
-      emailEl.value = "";
-
-      backdrop.style.display = "block";
-      modal.style.display = "block";
-      backdrop.setAttribute("aria-hidden","false");
-      setTimeout(()=>nameEl.focus(), 30);
-    }
-
-    function close(){
-      backdrop.style.display = "none";
-      modal.style.display = "none";
-      backdrop.setAttribute("aria-hidden","true");
-      currentBeat = null;
-    }
-
-    async function send(){
-      const fullName = (nameEl.value || "").trim();
-      const email = (emailEl.value || "").trim().toLowerCase();
-
-      if (!fullName) return alert("Enter your full name");
-      if (!email || !email.includes("@")) return alert("Enter a valid email");
-      if (!currentBeat?.id) return alert("Beat not found");
-
-      const key = `pb_free_${currentBeat.id}_${email}`;
-      if (localStorage.getItem(key) === "1"){
-        statusEl.textContent = "✅ Already sent. Check inbox/spam.";
-        return;
-      }
-
-      sendBtn.disabled = true;
-      sendBtn.textContent = "Sending...";
-
-      try{
-        if (window.FB && typeof window.FB.logFreeDownload === "function"){
-          await window.FB.logFreeDownload({
-            beatId: currentBeat.id,
-            beatTitle: currentBeat.title || "",
-            producerId: currentBeat.producerId || "",
-            producerName: currentBeat.producerName || "",
-            fullName,
-            email,
-            createdAt: Date.now()
-          });
-        }
-
-        localStorage.setItem(key, "1");
-        statusEl.textContent = "✅ Sent! Check inbox/spam.";
-        setTimeout(close, 900);
-      }catch(err){
-        console.error(err);
-        alert("Failed: " + (err?.message || err));
-      }
-
-      sendBtn.disabled = false;
-      sendBtn.textContent = "Send";
-    }
-
-    backdrop?.addEventListener("click", close);
-    closeBtn?.addEventListener("click", close);
-    sendBtn?.addEventListener("click", send);
-
-    return { open, close };
-    })();
-
-    document.addEventListener("click", (e)=>{
-      const preBtn = e.target.closest("[data-presave='1']");
-      if (!preBtn) return;
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
-    });
-
-    function isFreeBeat(b){
+  function isFreeBeat(b){
     if (!b) return true;
     if (b.freeDownload === true || b.isFree === true) return true;
-
-    if (Number.isFinite(Number(b.price))) {
-      return Number(b.price) <= 0;
-    }
-
+    if (Number.isFinite(Number(b.price))) return Number(b.price) <= 0;
     const lic = b.licenses || {};
-    const hasPaidLicense =
-      lic?.basic?.enabled === true ||
-      lic?.premium?.enabled === true ||
-      lic?.exclusive?.enabled === true;
-
-    if (hasPaidLicense) return false;
-    return true;
+    return !(lic?.basic?.enabled === true || lic?.premium?.enabled === true || lic?.exclusive?.enabled === true);
   }
 
   function pillHTML(b){
-    if (isUpcomingPremiereBeat(b)){
-      return preSaveHTML(b);
-    }
-
+    if (isUpcomingPremiereBeat(b)) return preSaveHTML(b);
     if (isFreeBeat(b)){
       return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
-        <span class="ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        </span>
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></span>
         <span>Free</span>
       </button>`;
     }
-
     return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
-      <span class="ic lock-icon">
-        <svg viewBox="0 0 24 24" fill="none">
-          <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
-          <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
-        </svg>
-      </span>
+      <span class="ic lock-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/></svg></span>
       <span>${money(b.price)}</span>
     </button>`;
   }
 
   function getChartScore(b){
-    const plays = Number(b.plays || 0);
-    const cartAdds = Number(b.cartAdds || 0);
-    const downloads = Number(b.downloads || 0);
-    const sales = Number(b.sales || 0);
-
-    return (plays * 1) + (cartAdds * 3) + (downloads * 4) + (sales * 8);
+    return (Number(b.plays || 0) * 1) + (Number(b.cartAdds || 0) * 3) + (Number(b.downloads || 0) * 4) + (Number(b.sales || 0) * 8);
   }
+
+  async function logBeatPlay(beat, playBtn){
+    try {
+      const b = beat || {};
+      const producerId = String(b.producerId || "").trim();
+      const beatId = String(b.id || "").trim();
+      if (!producerId || !beatId) return;
+
+      window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+      const playKey = `${producerId}:${beatId}`;
+      if (window.__ANA_SENT__.play[playKey]) return;
+      window.__ANA_SENT__.play[playKey] = 1;
+
+      const FB = window.FB;
+      if (!FB?.db || typeof FB.doc !== "function" || typeof FB.updateDoc !== "function" || typeof FB.increment !== "function"){
+        delete window.__ANA_SENT__.play[playKey];
+        return;
+      }
+
+      await FB.updateDoc(FB.doc(FB.db, "beats", beatId), { plays: FB.increment(1), lastPlayedAt: Date.now() });
+      if (typeof FB.trackEvent === "function"){
+        await FB.trackEvent({ type: "beat_play", beatId, producerId, path: location.pathname + location.search, meta: { surface: "home", action: "preview" } });
+      }
+    } catch(err) { console.error("logBeatPlay failed", err); }
+  }
+  window.logBeatPlay = logBeatPlay;
 
   /* =========================================================
-     ✅ NEW: Selection tracker + Payment Modal logic
-     Works without editing license-modal.js
+     FREE DOWNLOAD INTERACTION HANDLER
+  ========================================================= */
+  const FreeDL = (() => {
+    const backdrop = document.getElementById("pbFreeBackdrop");
+    const modal = document.getElementById("pbFreeModal");
+    const closeBtn = document.getElementById("pbFreeClose");
+    const sendBtn = document.getElementById("pbFreeSend");
+    const nameEl = document.getElementById("pbFreeName");
+    const emailEl = document.getElementById("pbFreeEmail");
+    const titleEl = document.getElementById("pbFreeTitle");
+    const statusEl = document.getElementById("pbFreeStatus");
+    let currentBeat = null;
+
+    function open(beat){
+      currentBeat = beat || null;
+      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
+      statusEl.textContent = ""; nameEl.value = ""; emailEl.value = "";
+      if(backdrop && modal) { backdrop.style.display = "block"; modal.style.display = "block"; backdrop.setAttribute("aria-hidden","false"); setTimeout(()=>nameEl.focus(), 30); }
+    }
+    function close(){ if(backdrop && modal) { backdrop.style.display = "none"; modal.style.display = "none"; backdrop.setAttribute("aria-hidden","true"); currentBeat = null; } }
+
+    async function send(){
+      const fullName = (nameEl.value || "").trim();
+      const email = (emailEl.value || "").trim().toLowerCase();
+      if (!fullName || !email || !email.includes("@") || !currentBeat?.id) return alert("Please check your validation fields.");
+
+      const key = `pb_free_${currentBeat.id}_${email}`;
+      if (localStorage.getItem(key) === "1"){ statusEl.textContent = "✅ Already sent. Check inbox/spam."; return; }
+
+      sendBtn.disabled = true; sendBtn.textContent = "Sending...";
+      try {
+        if (window.FB && typeof window.FB.logFreeDownload === "function"){
+          await window.FB.logFreeDownload({ beatId: currentBeat.id, beatTitle: currentBeat.title || "", producerId: currentBeat.producerId || "", producerName: currentBeat.producerName || "", fullName, email, createdAt: Date.now() });
+        }
+        localStorage.setItem(key, "1");
+        statusEl.textContent = "✅ Sent! Check inbox/spam.";
+        setTimeout(close, 900);
+      } catch(err) { alert("Failed: " + (err?.message || err)); }
+      sendBtn.disabled = false; sendBtn.textContent = "Send";
+    }
+
+    backdrop?.addEventListener("click", close);
+    closeBtn?.addEventListener("click", close);
+    sendBtn?.addEventListener("click", send);
+    return { open, close };
+  })();
+
+  document.addEventListener("click", (e)=>{
+    if (e.target.closest("[data-presave='1']")) { e.preventDefault(); e.stopPropagation(); alert("✅ Pre-save added. We’ll remind you when this beat premieres."); }
+  });
+
+  /* =========================================================
+     SELECTION TRACKER + PAYMENT GATEWAY CONTROLLER
   ========================================================= */
   (function(){
-  const $ = (id)=>document.getElementById(id);
+    const payBackdrop = document.getElementById("pbPayBackdrop");
+    const payModal = document.getElementById("pbPayModal");
+    const payClose = document.getElementById("pbPayClose");
+    const payTitle = document.getElementById("pbPayTitle");
+    const paySub = document.getElementById("pbPaySub");
+    const payAmountA = document.getElementById("pbPayAmountA");
+    const payAmountB = document.getElementById("pbPayAmountB");
+    const btnPaypal = document.getElementById("pbPayWithPaypal");
+    const btnMpesa = document.getElementById("pbPayWithMpesa");
+    const mpesaBox = document.getElementById("pbMpesaBox");
+    const mpesaPhone = document.getElementById("pbMpesaPhone");
+    const payStatus = document.getElementById("pbPayStatus");
+    const pbSendStkPush = document.getElementById("pbSendStkPush");
 
-  const payBackdrop = $("pbPayBackdrop");
-  const payModal = $("pbPayModal");
-  const payClose = $("pbPayClose");
-  const payTitle = $("pbPayTitle");
-  const paySub = $("pbPaySub");
-  const payAmountA = $("pbPayAmountA");
-  const payAmountB = $("pbPayAmountB");
-  const btnPaypal = $("pbPayWithPaypal");
-  const btnMpesa = $("pbPayWithMpesa");
-  const mpesaBox = $("pbMpesaBox");
-  const mpesaPhone = $("pbMpesaPhone");
-  const payStatus = $("pbPayStatus");
-  const pbSendStkPush = $("pbSendStkPush");
+    function getBeatById(beatId){ return (window.__LATEST_BEATS__ || []).find(b => String(b?.id || "") === String(beatId || "")) || null; }
 
-  function getBeatById(beatId){
-    return (window.__LATEST_BEATS__ || []).find(
-      b => String(b?.id || "") === String(beatId || "")
-    ) || null;
-  }
-
-  function getDefaultLicenseForBeat(beat){
-    if (!beat) {
-      return {
-        licenseKey: "basic",
-        amount: 0
-      };
+    function getDefaultLicenseForBeat(beat){
+      if (!beat) return { licenseKey: "basic", amount: 0 };
+      const lic = beat.licenses || {};
+      if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) return { licenseKey: "basic", amount: Number(lic?.basic?.price ?? beat.price ?? 0) };
+      if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) return { licenseKey: "premium", amount: Number(lic?.premium?.price ?? beat.price ?? 0) };
+      if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) return { licenseKey: "exclusive", amount: Number(lic?.exclusive?.price ?? beat.price ?? 0) };
+      return { licenseKey: "basic", amount: Number(beat.price || 0) };
     }
 
-    const lic = beat.licenses || {};
-
-    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
-      return {
-        licenseKey: "basic",
-        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
-      };
-    }
-
-    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
-      return {
-        licenseKey: "premium",
-        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
-      };
-    }
-
-    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
-      return {
-        licenseKey: "exclusive",
-        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
-      };
-    }
-
-    return {
-      licenseKey: "basic",
-      amount: Number(beat.price || 0)
-    };
-  }
-
-  function syncSelectionFromModal(){
-    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
-    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
-    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
-
-    const selectedCard =
-      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
-      document.querySelector('#pbLicensesGrid .selected') ||
-      document.querySelector('#pbLicensesGrid .active') ||
-      document.querySelector('#pbLicensesGrid [data-selected="true"]');
-
-    let licenseKey = "";
-    if (selectedCard) {
-      licenseKey =
-        selectedCard.dataset.licenseKey ||
-        selectedCard.dataset.key ||
-        "";
-    }
-
-    if (!licenseKey && selectedCard) {
-      const txt = (selectedCard.textContent || "").toLowerCase();
-      if (txt.includes("exclusive")) licenseKey = "exclusive";
-      else if (txt.includes("premium")) licenseKey = "premium";
-      else if (txt.includes("basic")) licenseKey = "basic";
-    }
-
-    if (!licenseKey) {
-      const existing = window.__PB_SELECTED__ || {};
-      licenseKey = existing.licenseKey || "basic";
-    }
-
-    window.__PB_SELECTED__ = {
-      ...(window.__PB_SELECTED__ || {}),
-      title: title || window.__PB_SELECTED__?.title || "",
-      licenseKey,
-      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
-    };
-
-    console.log("✅ synced from modal", window.__PB_SELECTED__);
-  }
-
-  function openPayModal(){
-    const sel = window.__PB_SELECTED__;
-
-    if (!sel?.beatId) {
-      alert("Select a beat and license first.");
-      return;
-    }
-
-    const currentSel = window.__PB_SELECTED__;
-
-    payTitle.textContent = "Choose payment method";
-    paySub.textContent = `${currentSel.title || "Beat"} • License: ${currentSel.licenseKey || "basic"}`;
-    payAmountA.textContent = money(currentSel.amount || 0);
-    payAmountB.textContent = money(currentSel.amount || 0);
-    payStatus.textContent = "";
-    mpesaBox.style.display = "none";
-    mpesaPhone.value = "";
-
-    payBackdrop.style.display = "block";
-    payModal.style.display = "block";
-    payBackdrop.setAttribute("aria-hidden","false");
-  }
-
-  function closePayModal(){
-    payBackdrop.style.display = "none";
-    payModal.style.display = "none";
-    payBackdrop.setAttribute("aria-hidden","true");
-    mpesaBox.style.display = "none";
-    payStatus.textContent = "";
-  }
-
-  payBackdrop?.addEventListener("click", closePayModal);
-  payClose?.addEventListener("click", closePayModal);
-
-  document.addEventListener("click", (e)=>{
-    const card = e.target.closest("[data-beat-id]");
-    if (!card) return;
-    if (!e.target.closest(".price-pill")) return;
-
-    const beatId = String(card.getAttribute("data-beat-id") || "");
-    if (!beatId) return;
-
-    const title =
-      (card.querySelector(".t")?.textContent ||
-       card.querySelector(".home-title-clamp")?.textContent ||
-       "").trim();
-
-    const beat = getBeatById(beatId);
-    const fallback = getDefaultLicenseForBeat(beat);
-
-    window.__PB_SELECTED__ = {
-      beatId,
-      title: title || "",
-      licenseKey: fallback.licenseKey,
-      amount: fallback.amount
-    };
-
-    console.log("✅ homepage default selection", window.__PB_SELECTED__);
-  }, true);
-
-  document.addEventListener("click", (e)=>{
-    const clickedCard = e.target.closest("#pbLicensesGrid > *");
-    if (!clickedCard) return;
-
-    setTimeout(syncSelectionFromModal, 0);
-  }, true);
-
-  const buyNowBtn = document.getElementById("pbBuyNow");
-  if (buyNowBtn) {
-    buyNowBtn.addEventListener("click", (e)=>{
-      e.preventDefault();
-      e.stopPropagation();
-
-      let sel = window.__PB_SELECTED__;
-      if (!sel?.beatId) {
-        alert("Select a beat and license first.");
-        return;
+    function syncSelectionFromModal(){
+      const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+      const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+      const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+      const selectedCard = document.querySelector('#pbLicensesGrid [aria-pressed="true"], #pbLicensesGrid .selected, #pbLicensesGrid .active, #pbLicensesGrid [data-selected="true"]');
+      
+      let licenseKey = selectedCard ? (selectedCard.dataset.licenseKey || selectedCard.dataset.key || "") : "";
+      if (!licenseKey && selectedCard) {
+        const txt = (selectedCard.textContent || "").toLowerCase();
+        if (txt.includes("exclusive")) licenseKey = "exclusive";
+        else if (txt.includes("premium")) licenseKey = "premium";
+        else if (txt.includes("basic")) licenseKey = "basic";
       }
+      if (!licenseKey) licenseKey = window.__PB_SELECTED__?.licenseKey || "basic";
 
-      syncSelectionFromModal();
-      sel = window.__PB_SELECTED__;
+      window.__PB_SELECTED__ = { ...(window.__PB_SELECTED__ || {}), title: title || window.__PB_SELECTED__?.title || "", licenseKey, amount: totalAmount || window.__PB_SELECTED__?.amount || 0 };
+    }
+
+    function openPayModal(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat and license first.");
+      payTitle.textContent = "Choose payment method";
+      paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
+      payAmountA.textContent = money(sel.amount || 0); payAmountB.textContent = money(sel.amount || 0);
+      payStatus.textContent = ""; mpesaBox.style.display = "none"; mpesaPhone.value = "";
+      payBackdrop.style.display = "block"; payModal.style.display = "block"; payBackdrop.setAttribute("aria-hidden","false");
+    }
+
+    function closePayModal(){ payBackdrop.style.display = "none"; payModal.style.display = "none"; payBackdrop.setAttribute("aria-hidden","true"); mpesaBox.style.display = "none"; payStatus.textContent = ""; }
+
+    payBackdrop?.addEventListener("click", closePayModal);
+    payClose?.addEventListener("click", closePayModal);
+
+    document.addEventListener("click", (e)=>{
+      const card = e.target.closest("[data-beat-id]");
+      if (!card || !e.target.closest(".price-pill")) return;
+      const beatId = String(card.getAttribute("data-beat-id") || "");
+      const title = (card.querySelector(".t, .home-title-clamp")?.textContent || "").trim();
+      const fallback = getDefaultLicenseForBeat(getBeatById(beatId));
+
+      window.__PB_SELECTED__ = { beatId, title: title || "", licenseKey: fallback.licenseKey, amount: fallback.amount };
+    }, true);
+
+    document.addEventListener("click", (e)=>{ if (e.target.closest("#pbLicensesGrid > *")) setTimeout(syncSelectionFromModal, 0); }, true);
+
+    document.getElementById("pbBuyNow")?.addEventListener("click", (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      let sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat and license first.");
+      syncSelectionFromModal(); sel = window.__PB_SELECTED__;
 
       if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
-        const beat = getBeatById(sel.beatId);
-        const fallback = getDefaultLicenseForBeat(beat);
-
-        window.__PB_SELECTED__ = {
-          ...sel,
-          licenseKey: fallback.licenseKey,
-          amount: fallback.amount
-        };
-
+        const fallback = getDefaultLicenseForBeat(getBeatById(sel.beatId));
+        window.__PB_SELECTED__ = { ...sel, licenseKey: fallback.licenseKey, amount: fallback.amount };
         sel = window.__PB_SELECTED__;
       }
-
-      if (!sel?.amount || sel.amount <= 0) {
-        alert("Select a license first.");
-        return;
-      }
-
+      if (!sel?.amount || sel.amount <= 0) return alert("Select a license first.");
       openPayModal();
     }, true);
-  }
 
-  async function payWithPaypal(){
-    const sel = window.__PB_SELECTED__;
-    if (!sel?.beatId) return alert("Select a beat first.");
-
-    const body = {
-      beatId: sel.beatId,
-      licenseKey: sel.licenseKey || "basic"
-    };
-
-    btnPaypal.disabled = true;
-    btnMpesa.disabled = true;
-    payStatus.textContent = "Opening PayPal…";
-
-    try{
-      const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(body)
-      });
-
-      const data = await r.json().catch(()=> ({}));
-      if (!r.ok) {
-        console.error("PayPal createOrder failed:", data);
-        alert(data?.error || "PayPal create order failed");
-        payStatus.textContent = "";
-        return;
-      }
-
-      const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
-      if (!url) {
-        console.error("No approveUrl:", data);
-        alert("PayPal approval link missing.");
-        payStatus.textContent = "";
-        return;
-      }
-
-      location.href = url;
-    } catch (err){
-      console.error(err);
-      alert("PayPal error: " + (err?.message || err));
-      payStatus.textContent = "";
-    } finally {
-      btnPaypal.disabled = false;
-      btnMpesa.disabled = false;
-    }
-  }
-
-  function showMpesaBox(){
-    mpesaBox.style.display = "block";
-    payStatus.textContent = "";
-    setTimeout(()=> mpesaPhone?.focus(), 50);
-  }
-
-  async function sendMpesaStkPush(){
-    const sel = window.__PB_SELECTED__;
-    if (!sel?.beatId) return alert("Select a beat first.");
-
-    const phone = (mpesaPhone.value || "").trim();
-    if (!phone) {
-      payStatus.textContent = "Enter your phone number first.";
-      return;
+    async function payWithPaypal(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat first.");
+      btnPaypal.disabled = true; btnMpesa.disabled = true; payStatus.textContent = "Opening PayPal…";
+      try {
+        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ beatId: sel.beatId, licenseKey: sel.licenseKey || "basic" }) });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { alert(data?.error || "PayPal checkout instance failed"); payStatus.textContent = ""; return; }
+        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+        if (!url) { alert("PayPal approval link missing."); payStatus.textContent = ""; return; }
+        location.href = url;
+      } catch (err){ alert("PayPal error: " + (err?.message || err)); payStatus.textContent = ""; }
+      btnPaypal.disabled = false; btnMpesa.disabled = false;
     }
 
-    const digits = phone.replace(/\D/g,"");
-    if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
-      payStatus.textContent = "Use format: 2547XXXXXXXX";
-      return;
+    async function sendMpesaStkPush(){
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return alert("Select a beat first.");
+      const phone = (mpesaPhone.value || "").trim();
+      if (!phone) { payStatus.textContent = "Enter your phone number first."; return; }
+      const digits = phone.replace(/\D/g,"");
+      if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) { payStatus.textContent = "Use format: 2547XXXXXXXX"; return; }
+      const amt = Number(sel.amount || 0);
+      if (!amt || amt <= 0) { payStatus.textContent = "Price not detected. Try selecting the license again."; return; }
+
+      const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+      if (!u?.uid){ payStatus.textContent = "Please sign in to pay with M-Pesa."; setTimeout(()=> location.href="/login/", 600); return; }
+
+      pbSendStkPush.disabled = true; btnPaypal.disabled = true; btnMpesa.disabled = true;
+      payStatus.textContent = "Sending STK Push… check your phone.";
+      const controller = new AbortController();
+      const t = setTimeout(()=>controller.abort(), 25000);
+
+      try {
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, { method: "POST", headers: { "Content-Type":"application/json" }, body: JSON.stringify({ phone: digits, beatId: String(sel.beatId), buyerId: String(u.uid), licenseKey: String(sel.licenseKey || "basic"), amount: Math.round(amt), amountUsd: Number(amt) }), signal: controller.signal });
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) { payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`; return; }
+        payStatus.textContent = "✅ STK Push sent.\nApprove on your phone." + (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+      } catch (err){ payStatus.textContent = String(err?.name) === "AbortError" ? "Timed out waiting for server. Check your STK endpoint." : "Error: " + (err?.message || err); }
+      clearTimeout(t); pbSendStkPush.disabled = false; btnPaypal.disabled = false; btnMpesa.disabled = false;
     }
 
-    const amt = Number(sel.amount || 0);
-    if (!amt || amt <= 0) {
-      payStatus.textContent = "Price not detected. Try selecting the license again.";
-      return;
-    }
+    btnPaypal?.addEventListener("click", payWithPaypal);
+    btnMpesa?.addEventListener("click", () => { mpesaBox.style.display = "block"; payStatus.textContent = ""; setTimeout(()=> mpesaPhone?.focus(), 50); });
+    pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+  })();
 
-    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
-    if (!u?.uid){
-      payStatus.textContent = "Please sign in to pay with M-Pesa.";
-      setTimeout(()=> location.href="/login/", 600);
-      return;
-    }
-
-    pbSendStkPush.disabled = true;
-    btnPaypal.disabled = true;
-    btnMpesa.disabled = true;
-    payStatus.textContent = "Sending STK Push… check your phone.";
-
-    const controller = new AbortController();
-    const t = setTimeout(()=>controller.abort(), 25000);
-
-    try{
-      const body = {
-        phone: digits,
-        beatId: String(sel.beatId),
-        buyerId: String(u.uid),
-        licenseKey: String(sel.licenseKey || "basic"),
-        amount: Math.round(amt),
-        amountUsd: Number(amt)
-      };
-
-      const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify(body),
-        signal: controller.signal
-      });
-
-      const data = await r.json().catch(()=> ({}));
-
-      if (!r.ok) {
-        console.error("STK push failed:", data);
-        payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
-        return;
-      }
-
-      payStatus.textContent =
-        "✅ STK Push sent.\nApprove on your phone." +
-        (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
-
-    } catch (err){
-      console.error(err);
-      if (String(err?.name) === "AbortError"){
-        payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
-      } else {
-        payStatus.textContent = "Error: " + (err?.message || err);
-      }
-    } finally {
-      clearTimeout(t);
-      pbSendStkPush.disabled = false;
-      btnPaypal.disabled = false;
-      btnMpesa.disabled = false;
-    }
-  }
-
-  btnPaypal?.addEventListener("click", payWithPaypal);
-  btnMpesa?.addEventListener("click", showMpesaBox);
-  pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
-})();
-
+  /* =========================================================
+     DASHBOARD ROUTING FRAMEWORK
+  ========================================================= */
   async function goToMyDashboard() {
     try {
-      const auth = window.FB?.auth;
-      const db = window.FB?.db;
-
-      const user = auth?.currentUser;
-      if (!user) {
-        window.location.href = "/login/";
-        return;
-      }
-
-      const snap = await window.FB.getDoc(
-        window.FB.doc(db, "users", user.uid)
-      );
-
-      const role = String(
-        snap.exists() ? (snap.data()?.role || "") : ""
-      ).toLowerCase();
-
-      if (role === "producer") {
-        window.location.href = "/dashboard/";
-        return;
-      }
-
-      if (role === "buyer") {
-        window.location.href = "/buyer-dashboard/";
-        return;
-      }
-
-      if (role === "admin") {
-        window.location.href = "/admin-dashboard/";
-        return;
-      }
-
-      window.location.href = "/buyer-dashboard/";
-    } catch (e) {
-      console.error("Dashboard redirect error:", e);
-      window.location.href = "/buyer-dashboard/";
-    }
+      const u = window.FB?.auth?.currentUser;
+      if (!u) { window.location.href = "/login/"; return; }
+      const snap = await window.FB.getDoc(window.FB.doc(window.FB.db, "users", u.uid));
+      const role = String(snap.exists() ? (snap.data()?.role || "") : "").toLowerCase();
+      
+      if (role === "producer") window.location.href = "/dashboard/";
+      else if (role === "buyer") window.location.href = "/buyer-dashboard/";
+      else if (role === "admin") window.location.href = "/admin-dashboard/";
+      else window.location.href = "/buyer-dashboard/";
+    } catch (e) { console.error(e); window.location.href = "/buyer-dashboard/"; }
   }
 
   window.addEventListener("firebase-ready", () => {
-    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
-    });
-
-    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
-      e.preventDefault();
-      await goToMyDashboard();
-    });
+    document.getElementById("navDashboard")?.addEventListener("click", async (e) => { e.preventDefault(); await goToMyDashboard(); });
+    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => { e.preventDefault(); await goToMyDashboard(); });
   });
 
+  /* =========================================================
+     FIRESTORE DATA RENDERING PIPELINE
+  ========================================================= */
   async function loadHomeBeats(){
     const status = document.getElementById("homeStatus");
     const strip  = document.getElementById("trendingStrip");
     const chart  = document.getElementById("chartGrid");
-
     const featuredStatus = document.getElementById("featuredStatus");
     const featuredStrip  = document.getElementById("featuredStrip");
     
-    try{
+    try {
       status.textContent = "Loading beats…";
-      status.classList.remove("hidden");
-
-      /* =========================================
-         INSTANT LOAD (cache first)
-      ========================================= */
-
       let beats = [];
-
-      try{
-
+      try {
         const cached = sessionStorage.getItem("audiory_home_beats");
-
-        if(cached){
-          beats = JSON.parse(cached);
-          console.log("⚡ home beats loaded from cache");
-        }
-
-      }catch(e){
-        console.warn("cache parse failed",e);
-      }
+        if(cached) { beats = JSON.parse(cached); }
+      } catch(e){}
 
       if(!beats.length){
         beats = await window.FB.fetchBeats({ max:30 });
-        sessionStorage.setItem("audiory_home_beats",JSON.stringify(beats));
+        sessionStorage.setItem("audiory_home_beats", JSON.stringify(beats));
       }
+      window.FB.fetchBeats({ max:30, force:true }).then(fresh=>{ if(fresh?.length) sessionStorage.setItem("audiory_home_beats", JSON.stringify(fresh)); });
 
-      window.FB.fetchBeats({ max:30, force:true }).then(fresh=>{
-        if(!fresh?.length) return;
-        sessionStorage.setItem("audiory_home_beats",JSON.stringify(fresh));
-      });
-
-      /* ======================================
-         FAST PRODUCER PROFILE LOAD
-      ====================================== */
-
-      try{
-
-        const producerIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
-
-        const profilePromises = producerIds.map(id =>
-          window.FB.getProducerProfile(id).catch(()=>null)
-        );
-
-        const profiles = await Promise.all(profilePromises);
-
-        const profileMap = {};
-
-       profiles.forEach((p,i)=>{
-         if(!p) return;
-         profileMap[producerIds[i]] = p;
-       });
-
-       beats.forEach(b=>{
-         const prof = profileMap[b.producerId];
-         b.producerPlan = prof?.plan || "";
-       });
-
-     }catch(e){
-       console.warn("producer profiles load failed",e);
-     }
+      try {
+        const pIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
+        const profiles = await Promise.all(pIds.map(id => window.FB.getProducerProfile(id).catch(()=>null)));
+        const pMap = {};
+        profiles.forEach((p,i)=>{ if(p) pMap[pIds[i]] = p; });
+        beats.forEach(b=> { b.producerPlan = pMap[b.producerId]?.plan || ""; });
+      } catch(e){}
       
       window.__LATEST_BEATS__ = beats;
+      setTimeout(()=> { beats.slice(0,3).forEach(b=> { const l = document.createElement("link"); l.rel = "prefetch"; l.href = beatPageUrl(b); document.head.appendChild(l); }); }, 1500);
 
-      /* ======================================
-         PRELOAD BEAT PAGES
-      ====================================== */
+      const featuredBeats = beats.filter(b => b.featured === true).sort(() => Math.random() - 0.5);
+      const chartBeats = [...beats].sort((a, b) => getChartScore(b) - getChartScore(a)).slice(0, 10);
+      const visibleFeatured = featuredBeats.slice(0, 10);
 
-      setTimeout(()=>{
-
-        (beats || []).slice(0,3).forEach(b=>{
-
-          const link = document.createElement("link");
-          link.rel = "prefetch";
-          link.href = "/beat/?id=" + encodeURIComponent(b.id);
-
-          document.head.appendChild(link);
-
-        });
-
-      },1500);
-
-      const now = Date.now();
-
-      const featuredBeats = beats.filter(b => b.featured === true);
-      console.log("ALL FEATURED TEST:", featuredBeats);
-
-      const chartBeats = [...beats]
-        .sort((a, b) => getChartScore(b) - getChartScore(a))
-        .slice(0, 10);
-
-      /* RANDOMIZE FEATURED ORDER */
-      featuredBeats.sort(() => Math.random() - 0.5);
-
-      /* FEATURED ROTATION */
-
-      const rotationSize = 10;
-
-      const rotationIndex =
-        Math.floor(Date.now() / (1000 * 60 * 5)) % Math.ceil(featuredBeats.length / rotationSize);
-
-      const start = rotationIndex * rotationSize;
-
-      const visibleFeatured = featuredBeats.slice(start, start + rotationSize);
-
-      strip.innerHTML = "";
-      chart.innerHTML = "";
-      featuredStrip.innerHTML = "";
-
-      if(!beats.length){
-        status.textContent = "No beats yet.";
-        return;
-      }
-
+      strip.innerHTML = ""; chart.innerHTML = ""; featuredStrip.innerHTML = "";
+      if(!beats.length) { status.textContent = "No beats yet."; return; }
       status.classList.add("hidden");
 
-      /* =====================
-         FEATURED BEATS
-      ===================== */
-
       if(featuredBeats.length){
-
         featuredStatus.classList.add("hidden");
-
         visibleFeatured.forEach((b)=>{
-
-          const el = document.createElement("div");
-          el.className = "card trend-card";
-          el.setAttribute("data-beat-id", b.id);
-
+          const el = document.createElement("div"); el.className = "card trend-card"; el.setAttribute("data-beat-id", b.id);
           const audioUrl = b.previewAudio || b.audio || "";
-
-          /* preload audio preview */
-
-          if(audioUrl){
-          }
-
-          const beatUrl = beatPageUrl(b);
-          const prodUrl = producerPageUrl(b);
-
           el.innerHTML = `
             <div class="beat-cover">
-              <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
-                ${coverHTML(b.artwork, b.title)}
-              </a>
-
-              <button
-                class="play-fab"
-                data-ignore-license="1"
-                data-audio-url="${audioUrl}"
-                aria-label="Play preview"
-                type="button">
-                <span class="playIcon">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                </span>
-              </button>
+              <a class="beat-open" href="${beatPageUrl(b)}" data-open-beat="1" aria-label="Open beat page">${coverHTML(b.artwork, b.title)}</a>
+              <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play preview" type="button"><span class="playIcon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></button>
             </div>
-
             <div class="trend-meta">
-              <a class="t" href="${beatUrl}" data-open-beat="1">
-                ${b.title}
-              </a>
-
-              <a class="p producer-link" href="${prodUrl}" data-producer-link="1">
-                ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
-              </a>
+              <a class="t" href="${beatPageUrl(b)}" data-open-beat="1">${b.title}</a>
+              <a class="p producer-link" href="${producerPageUrl(b)}" data-producer-link="1">${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}</a>
             </div>
-
-            <div class="trend-actions">
-                ${pillHTML(b)}
-            </div>
+            <div class="trend-actions">${pillHTML(b)}</div>
           `;
-
-          el.addEventListener("click", (e)=>{
-            const freeBtn = e.target.closest("[data-free-download='1']");
-            if (!freeBtn) return;
-            e.preventDefault();
-            e.stopPropagation();
-            FreeDL.open(b);
-          });
-
-          el.addEventListener("click", (e)=>{
-            if (e.target.closest(".play-fab")) return;
-            if (e.target.closest("[data-free-download='1']")) return;
-            if (e.target.closest(".price-pill")) return;
-            if (e.target.closest("[data-producer-link='1']")) return;
-            if (e.target.closest("[data-open-beat='1']")) return;
-            location.href = beatUrl;
-          });
-
-         featuredStrip.appendChild(el);
-
-       });
-
-     }else{
-
-       featuredStatus.textContent = "No featured beats right now";
-
-     }
+          el.addEventListener("click", (e)=>{ if (e.target.closest("[data-free-download='1']")) { e.preventDefault(); e.stopPropagation(); FreeDL.open(b); } });
+          el.addEventListener("click", (e)=>{ if (!e.target.closest(".play-fab, [data-free-download='1'], .price-pill, [data-producer-link='1'], [data-open-beat='1']")) location.href = beatPageUrl(b); });
+          featuredStrip.appendChild(el);
+        });
+      } else { featuredStatus.textContent = "No featured beats right now"; }
 
       beats.slice(0,12).forEach((b)=>{
-        const el = document.createElement("div");
-        el.className = "card trend-card";
-        el.setAttribute("data-beat-id", b.id);
-
+        const el = document.createElement("div"); el.className = "card trend-card"; el.setAttribute("data-beat-id", b.id);
         const audioUrl = b.previewAudio || b.audio || "";
-        const beatUrl = beatPageUrl(b);
-        const prodUrl = producerPageUrl(b);
-
         el.innerHTML = `
           <div class="beat-cover">
-            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
-              ${coverHTML(b.artwork, b.title)}
-            </a>
-
-            <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play" type="button">
-              <span class="playIcon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              </span>
-            </button>
+            <a class="beat-open" href="${beatPageUrl(b)}" data-open-beat="1" aria-label="Open beat page">${coverHTML(b.artwork, b.title)}</a>
+            <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play" type="button"><span class="playIcon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></button>
           </div>
-
           <div class="trend-meta">
-            <a class="t" href="${beatUrl}" data-open-beat="1">
-              ${b.title}
-            </a>
-
-            <a class="p producer-link" href="${prodUrl}" data-producer-link="1">
-              ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
-            </a>
+            <a class="t" href="${beatPageUrl(b)}" data-open-beat="1">${b.title}</a>
+            <a class="p producer-link" href="${producerPageUrl(b)}" data-producer-link="1">${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}</a>
           </div>
-
-          <div class="trend-actions">
-            ${pillHTML(b)}
-          </div>
+          <div class="trend-actions">${pillHTML(b)}</div>
         `;
-
-        el.addEventListener("click", (e)=>{
-          const freeBtn = e.target.closest("[data-free-download='1']");
-          if (!freeBtn) return;
-          e.preventDefault(); e.stopPropagation();
-          FreeDL.open(b);
-        });
-
-        el.addEventListener("click", (e)=>{
-          if (e.target.closest(".play-fab")) return;
-          if (e.target.closest("[data-free-download='1']")) return;
-          if (e.target.closest(".price-pill")) return;
-          if (e.target.closest("[data-producer-link='1']")) return;
-          if (e.target.closest("[data-open-beat='1']")) return;
-          location.href = beatUrl;
-        });
-
+        el.addEventListener("click", (e)=>{ if (e.target.closest("[data-free-download='1']")) { e.preventDefault(); e.stopPropagation(); FreeDL.open(b); } });
+        el.addEventListener("click", (e)=>{ if (!e.target.closest(".play-fab, [data-free-download='1'], .price-pill, [data-producer-link='1'], [data-open-beat='1']")) location.href = beatPageUrl(b); });
         strip.appendChild(el);
       });
 
       chartBeats.forEach((b)=>{
-        const el = document.createElement("div");
-        el.className = "card chart-card";
-        el.setAttribute("data-beat-id", b.id);
-        el.style.padding = "10px";
-        el.style.borderRadius = "18px";
-
+        const el = document.createElement("div"); el.className = "card chart-card"; el.setAttribute("data-beat-id", b.id);
+        el.style.padding = "10px"; el.style.borderRadius = "18px";
         const audioUrl = b.previewAudio || b.audio || "";
-        const beatUrl = beatPageUrl(b);
-        const prodUrl = producerPageUrl(b);
-
-        console.log("Chart beat:", b.title, "score:", getChartScore(b), {
-          plays: b.plays || 0,
-          cartAdds: b.cartAdds || 0,
-          downloads: b.downloads || 0,
-          sales: b.sales || 0
-        });
-
         el.innerHTML = `
           <div class="beat-cover">
-            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
-              ${coverHTML(b.artwork, b.title)}
-            </a>
-
-            <button
-              class="play-fab"
-              data-ignore-license="1"
-              data-audio-url="${audioUrl}"
-              aria-label="Play preview"
-              type="button">
-              <span class="playIcon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-              </span>
-            </button>
+            <a class="beat-open" href="${beatPageUrl(b)}" data-open-beat="1" aria-label="Open beat page">${coverHTML(b.artwork, b.title)}</a>
+            <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play preview" type="button"><span class="playIcon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></button>
           </div>
-
-         <div class="chart-meta-row">
-           <div class="chart-text">
-             <a class="home-title-clamp" href="${beatUrl}" data-open-beat="1">
-               ${b.title}
-             </a>
-
-             <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1">
-               ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
-             </a>
-           </div>
-         </div>
-
-         <div class="chart-pill">
-             ${pillHTML(b)}
-         </div>
-       `;
-
-        el.addEventListener("click", (e)=>{
-          const freeBtn = e.target.closest("[data-free-download='1']");
-          if (!freeBtn) return;
-          e.preventDefault(); e.stopPropagation();
-          FreeDL.open(b);
-        });
-
-        el.addEventListener("click", (e)=>{
-          if (e.target.closest(".play-fab")) return;
-          if (e.target.closest("[data-free-download='1']")) return;
-          if (e.target.closest(".price-pill")) return;
-          if (e.target.closest("[data-producer-link='1']")) return;
-          if (e.target.closest("[data-open-beat='1']")) return;
-          location.href = beatUrl;
-        });
-
+          <div class="chart-meta-row">
+            <div class="chart-text">
+              <a class="home-title-clamp" href="${beatPageUrl(b)}" data-open-beat="1">${b.title}</a>
+              <a class="home-producer-clamp producer-link" href="${producerPageUrl(b)}" data-producer-link="1">${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}</a>
+            </div>
+          </div>
+          <div class="chart-pill">${pillHTML(b)}</div>
+        `;
+        el.addEventListener("click", (e)=>{ if (e.target.closest("[data-free-download='1']")) { e.preventDefault(); e.stopPropagation(); FreeDL.open(b); } });
+        el.addEventListener("click", (e)=>{ if (!e.target.closest(".play-fab, [data-free-download='1'], .price-pill, [data-producer-link='1'], [data-open-beat='1']")) location.href = beatPageUrl(b); });
         chart.appendChild(el);
       });
-
-    }catch(err){
-      console.error("[home] load error:", err);
-      status.textContent = "Could not load beats. Check Firestore rules & console.";
-    }
+    } catch(err){ console.error(err); status.textContent = "Could not load beats. Check Firestore setup."; }
   }
 
-  window.addEventListener("firebase-ready", () => {
-    if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats();
-  });
+  window.addEventListener("firebase-ready", () => { if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats(); });
 </script>
-
 </body>
 </html>
