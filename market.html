@@ -880,46 +880,128 @@
         min-width:0 !important;
       }
 
-      @media (max-width:1200px){
-        .beats-grid{grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+      /* =========================================
+       RESPONSIVE MOBILE STYLING (WHITE THEME FIXED)
+    ========================================= */
+    @media (max-width: 1200px){
+      .beats-grid{
+        grid-template-columns: repeat(4, minmax(0,1fr)) !important;
+      }
+    }
+
+    @media (max-width: 980px){
+      .beats-grid{
+        grid-template-columns: repeat(3, minmax(0,1fr)) !important;
+      }
+    }
+
+    @media (max-width: 768px){
+      /* Grid changes smoothly to a clean 2-column layout */
+      .beats-grid{
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+        gap: 14px 12px !important;
+        margin-top: 16px !important;
       }
 
-      @media (max-width:980px){
-        .beats-grid{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+      /* FIX: Forces the card background to white on mobile */
+      .beat-card{
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 18px !important;
+        overflow: hidden !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+        padding: 0 !important;
       }
 
-      @media (max-width:768px){
-        .beats-grid{
-          grid-template-columns:repeat(2,minmax(0,1fr)) !important;
-          gap:14px 12px !important;
-        }
+      .beat-cover{
+        position: relative !important;
+        aspect-ratio: 1 / 1 !important;
+        overflow: hidden !important;
+        background: #f8fafc !important; /* Clean fallback background */
+        border-radius: 0 !important;
+      }
 
-        .beat-meta{padding:12px !important;}
+      .beat-cover img{
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        display: block !important;
+      }
 
-        .beat-meta .pb-pill{
-          min-height:46px !important;
-          font-size:16px !important;
-        }
+      .beat-meta{
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        padding: 12px !important; /* Slightly tighter padding for mobile screens */
+      }
+
+      /* FIX: Dark text color on mobile */
+      .beat-title-link h3{
+        margin: 0 !important;
+        color: #1e293b !important;
+        font-size: 15px !important; /* Slightly scaled down text for mobile readability */
+        line-height: 1.2 !important;
+        font-weight: 800 !important;
+        min-height: 36px !important;
+      }
+
+      /* FIX: Soft gray producer text color on mobile */
+      .beat-meta .producer{
+        display: block !important;
+        margin-top: 5px !important;
+        color: #94a3b8 !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+
+      /* FIX: Clean purple pill layout for mobile */
+      .beat-meta .pb-pill{
+        width: 100% !important;
+        margin-top: 12px !important;
+        min-height: 42px !important;
+        border-radius: 12px !important;
+        border: 1.5px solid #3b2fad !important;
+        background: transparent !important;
+        color: #3b2fad !important;
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        justify-content: center !important;
+        padding: 0 14px !important;
+        min-width: 0 !important;
+      }
+
+      .beat-meta .pb-pill:hover {
+        background: rgba(59, 47, 173, 0.05) !important;
+      }
+
+      .play-fab{
+        width: 42px;
+        height: 42px;
+        right: 10px;
+        bottom: 10px;
       }
 
       .presave-wrap{
-        width:100%;
-        margin-top:14px;
-        display:flex;
-        flex-direction:column;
-        gap:8px;
+        width: 100%;
+        margin-top: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
 
       .presave-wrap .presave-pill{
-        width:100% !important;
-        margin-top:0 !important;
+        width: 100% !important;
+        margin-top: 0 !important;
       }
 
       .presave-countdown{
-        color:rgba(255,255,255,.62);
-        font-size:12px;
-        text-align:center;
-        line-height:1.2;
+        color: #94a3b8; /* Swapped from transparent white to soft gray */
+        font-size: 12px;
+        text-align: center;
+        line-height: 1.2;
       }
     }
   </style>
