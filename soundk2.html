@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sound Kit | Audiory</title>
+
+  <link rel="stylesheet" href="/css/global.css?v=6">
+  <link rel="stylesheet" href="/css/home.css?v=6">
+  <link rel="stylesheet" href="/css/cart.css">
+  <link rel="stylesheet" href="/css/mobile-fix.css">
+
+  <style>
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .desktop-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .cart-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container Spacing */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    .cardx{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px}
+    .grid{display:grid;grid-template-columns: 360px 1fr;gap:16px;align-items:start}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}}
+    .cover{
+      aspect-ratio:1/1;border-radius:18px;overflow:hidden;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+      position:relative;
+    }
+    .cover img{width:100%;height:100%;object-fit:cover;display:block}
+    .title{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:2px 0 8px}
+    .muted{color:rgba(255,255,255,.70)}
+    .desc{margin-top:10px;line-height:1.45;color:rgba(255,255,255,.86);white-space:pre-wrap}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+    .pill{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      padding:10px 12px;border-radius:999px;font-weight:900;
+      display:inline-flex;gap:8px;align-items:center
+    }
+    .pill.price{
+      border:1.5px solid #295dff;
+      background:transparent;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .pill.price:hover{
+      background:rgba(255,255,255,.05);
+    }
+    .btn{
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      color:rgba(255,255,255,.92);
+      padding:10px 14px;border-radius:999px;font-weight:900;cursor:pointer
+    }
+    .btn.primary{background:#2b6cff;border-color:#2b6cff;color:#fff}
+    .loading-box{
+      margin: 14px 0;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.85);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .hidden{display:none!important}
+
+    .producer{
+      margin-top:8px;
+      color:rgba(255,255,255,.72);
+      font-size:15px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .producer a{
+      color:inherit;
+      text-decoration:none;
+      font-weight:700;
+    }
+    .producer a:hover{
+      text-decoration:underline;
+      color:#fff;
+    }
+    .verify-badge{
+      width:16px;
+      height:16px;
+      display:inline-block;
+      vertical-align:middle;
+    }
+
+    .preview-btn{
+      position:absolute;
+      right:16px;
+      bottom:16px;
+
+      width:58px;
+      height:58px;
+
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.16);
+
+      background:rgba(50,50,50,.45);
+
+      backdrop-filter:blur(10px);
+      -webkit-backdrop-filter:blur(10px);
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      cursor:pointer;
+      z-index:20;
+
+      box-shadow:
+        0 8px 24px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+      transition:.18s ease;
+    }
+
+    .preview-btn.disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .preview-btn:hover{
+      transform:scale(1.05);
+    }
+
+    .preview-btn::before{
+      content:"▶";
+
+      color:#fff;
+
+      font-size:20px;
+      line-height:1;
+
+      margin-left:3px;
+    }
+
+    .preview-btn.playing::before{
+      content:"❚❚";
+      font-size:15px;
+      margin-left:0;
+    }
+
+    /* SOCIAL */
+
+    .social a{
+      display:inline-flex;
+      width:36px;
+      height:36px;
+      border-radius:999px;
+      align-items:center;
+      justify-content:center;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .social svg{
+      width:18px;
+      height:18px;
+      fill:rgba(255,255,255,.9);
+    }
+
+    @media(max-width:760px){
+
+    .preview-btn{
+      width:54px;
+      height:54px;
+      right:12px;
+      bottom:12px;
+    }
+
+    .preview-btn::before{
+      font-size:18px;
+    }
+
+    .title{
+      font-size:22px;
+    }
+
+  }
+  </style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/collabs/">Collabs</a>
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+      <a id="navDashboard" class="ghost hidden" href="#">
+        Dashboard
+      </a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/collabs/">Collabs</a>
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="wrap">
+  <a href="/soundkits/" class="muted" style="text-decoration:none;display:inline-block;margin:10px 0 14px;">← Back to Sound Kits</a>
+
+  <div id="status" class="loading-box">Loading sound kit…</div>
+
+  <section id="kitCard" class="cardx hidden">
+    <div class="grid">
+      <div class="cover" id="kitCover"></div>
+
+      <div>
+        <div class="title">
+          <span id="kitTitle">—</span>
+        </div>
+
+        <div class="row">
+          <div class="pill"><span class="muted">Category:</span> <span id="kitCategory">—</span></div>
+          <div class="pill price" id="pricePill">
+            <span id="kitPrice">—</span>
+          </div>
+        </div>
+
+        <div class="producer" id="producerRow">
+          <span>By</span>
+          <a href="#" id="kitProducerLink">Audiory</a>
+          <span id="kitVerified"></span>
+        </div>
+
+        <div class="desc" id="kitDesc"></div>
+
+        <div class="row">
+          <button class="btn primary" id="addBtn" type="button">🛒 Add to cart</button>
+          <button class="btn" id="detailsBtn" type="button">Details</button>
+        </div>
+
+        <div class="muted" style="margin-top:10px;font-size:13px;">
+          License: <b>Sound Kit</b>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-2.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" aria-label="TikTok">
+        <svg viewBox="0 0 24 24"><path d="M9 3v12.5a3.5 3.5 0 1 1-3-3.465V9.5A6.5 6.5 0 1 0 12.5 16V8.5a8.5 8.5 0 0 0 5.5 2V7.5a5.5 5.5 0 0 1-5.5-5.5H9z"/></svg>
+      </a>
+      <a href="https://x.com/audiorybeats" target="_blank" aria-label="X">
+        <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.3l-4.9-6.4L6.3 22H2l7.3-8.4L1 2h6.5l4.4 5.8L18.9 2zm-1.1 18h1.7L7.6 3.9H5.8L17.8 20z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" aria-label="Facebook">
+        <svg viewBox="0 0 24 24"><path d="M13 22v-9h3l1-4h-4V6.5c0-1.2.3-2 2-2h2V1.1S16.3 1 14.6 1C11 1 9 3 9 6.2V9H6v4h3v9h4z"/></svg>
+      </a>
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" aria-label="YouTube">
+        <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<!-- Cart Drawer -->
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+  <div class="pb-cart-body" id="pbCartItems"></div>
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+<script>
+  window.PB_PAYPAL_CREATE_ORDER_URL =
+    "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL =
+    "https://captureorder-f65rhsquva-uc.a.run.app";
+</script>
+  
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/performance.js"></script>
+<script src="/js/dashboard-link.js"></script>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+
+  function money(n){
+    const v = Number(n || 0);
+    return "$" + (isFinite(v) ? v.toFixed(2) : "0.00");
+  }
+
+  function getKitIdFromUrl(){
+    const qs = new URLSearchParams(location.search);
+    return (
+      (qs.get("id") || "").trim() ||
+      (qs.get("kitId") || "").trim() ||
+      (qs.get("soundkitId") || "").trim()
+    );
+  }
+
+  function normalizeKit(docId, data){
+    return {
+      id: docId,
+      title: data.title || data.name || "Untitled Kit",
+      cover: data.cover || data.coverUrl || data.image || data.artwork || "",
+      description: data.description || data.desc || "",
+      category: (data.category || "").toLowerCase(),
+      price: Number(data.price ?? 0) || 0,
+      published: data.published !== false,
+      createdAt: data.createdAt || 0,
+      downloadUrl: data.downloadUrl || data.downloadURL || "",
+      previewAudioURL: data.previewAudioURL || "",
+
+      previewAudioURL:
+        data.previewAudioURL ||
+        data.previewUrl ||
+        data.preview ||
+        "",
+
+      producerName:
+        data.producerName ||
+        data.displayName ||
+        data.username ||
+        "",
+
+      producerPlan:
+        data.producerPlan ||
+        data.plan ||
+        "",
+    };
+  }
+
+  async function getKitByIdAnyCollection(kitId){
+    const { doc, getDoc } = window.FB;
+
+    const cols = ["soundkits", "soundKits"];
+    let lastErr = null;
+
+    for (const col of cols){
+      try{
+        const ref = doc(window.FB.db, col, String(kitId));
+        const snap = await getDoc(ref);
+
+        if (snap.exists()){
+          return normalizeKit(snap.id, snap.data());
+        }
+      }catch(err){
+        lastErr = err;
+        continue;
+      }
+    }
+
+    if (lastErr?.code === "permission-denied") {
+      return null;
+    }
+
+    if (lastErr) {
+      throw lastErr;
+    }
+
+    return null;
+  }
+
+  async function load(){
+    const status = $("status");
+    const card = $("kitCard");
+
+    const kitId = getKitIdFromUrl();
+    if (!kitId){
+      status.textContent = "Missing kit id.\n\nOpen this page like:\n/soundkit/?id=YOUR_KIT_ID";
+      return;
+    }
+
+    status.textContent = "Loading sound kit…";
+    status.classList.remove("hidden");
+
+    try{
+      const kit = await getKitByIdAnyCollection(kitId);
+      console.log("KIT DATA", kit);
+      if (!kit){
+        status.textContent = `Sound kit not found: ${kitId}`;
+        return;
+      }
+
+      // Render UI
+      $("kitTitle").textContent = kit.title;
+      $("kitCategory").textContent = kit.category || "—";
+      $("kitPrice").textContent = kit.price ? money(kit.price) : "Free";
+      $("kitDesc").textContent = kit.description || "No description.";
+
+      // Producer name + link + verification badge
+      const producerLink = $("kitProducerLink");
+      const verifiedEl = $("kitVerified");
+      
+      producerLink.textContent = kit.producerName;
+      if(kit.producerId){
+        producerLink.href = `/producer-profile/?producerId=${encodeURIComponent(kit.producerId)}`;
+      } else {
+        producerLink.href = "/producers/";
+        producerLink.style.pointerEvents = "none";
+      }
+
+      verifiedEl.innerHTML = AudioryVerify.badge(kit.producerPlan || "");
+
+      // Cover + preview button if previewUrl exists
+      if(kit.cover){
+
+        console.log("PREVIEW URL =", kit.previewAudioURL);
+
+        $("kitCover").innerHTML = `
+          <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
+
+          <button
+            class="preview-btn ${!kit.previewAudioURL ? 'disabled' : ''}"
+            id="previewBtn"
+            type="button"
+          ></button>
+        `;
+      }
+
+      // Price pill click = add to cart
+      $("pricePill").onclick = () => {
+        $("addBtn").click();
+      };
+
+      // Buttons
+      $("detailsBtn").onclick = () => {
+        alert(
+          `${kit.title}\n\n${kit.description || "No description."}\n\n` +
+          `Category: ${kit.category || "—"}\n` +
+          `Price: ${kit.price ? money(kit.price) : "Free"}\n` +
+          `Producer: ${kit.producerName}`
+        );
+      };
+
+      $("addBtn").onclick = () => {
+        if (!window.PB_CART || typeof window.PB_CART.add !== "function"){
+          alert("Cart not loaded. Make sure /js/cart.js loads before /js/cart-ui.js");
+          return;
+        }
+
+        window.PB_CART.add({
+          beatId: String(kit.id),
+          title: kit.title,
+          artwork: kit.cover,
+          price: Number(kit.price || 0),
+          licenseKey: "soundkit",
+          licenseName: "Sound Kit",
+          producerId: String(kit.producerId || ""),
+          producerName: String(kit.producerName || ""),
+          downloadUrl: String(kit.downloadUrl || "")
+        });
+
+        alert("Added to cart ✅");
+      };
+
+      // Preview button
+      const previewBtn = $("previewBtn");
+      if(previewBtn){
+
+        if(!kit.previewAudioURL){
+
+          previewBtn.onclick = () => {
+            alert("No preview uploaded yet");
+          };
+
+        } else {
+        
+        let isPlaying = false;
+        let audio = new Audio(kit.previewAudioURL);
+        audio.preload = "metadata";
+        
+        previewBtn.onclick = async () => {
+          if(isPlaying){
+            audio.pause();
+            isPlaying = false;
+            previewBtn.classList.remove("playing");
+          } else {
+            try{
+              await audio.play();
+              isPlaying = true;
+              previewBtn.classList.add("playing");
+            }catch(e){
+              console.error(e);
+            }
+          }
+        };
+        
+        audio.onended = () => {
+          isPlaying = false;
+          previewBtn.classList.remove("playing");
+        };
+      }
+    }
+      status.classList.add("hidden");
+      card.classList.remove("hidden");
+    }catch(err){
+      console.error(err);
+      const code = err?.code ? String(err.code) : "";
+      const msg = err?.message ? String(err.message) : String(err || "");
+      status.textContent =
+        "Load failed.\n\n" +
+        (code ? ("Code: " + code + "\n") : "") +
+        "Message: " + msg + "\n\n" +
+        "Check that producerId and producerName exist in your Firestore doc.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", () => {
+    if (window.FB?.db) load();
+  });
+</script>
+
+</body>
+</html>
