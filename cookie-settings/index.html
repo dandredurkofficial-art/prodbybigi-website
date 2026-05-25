@@ -3,66 +3,394 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>Cookie Settings | Audiory</title>
-  <link rel="stylesheet" href="/css/global.css">
+  <meta name="description" content="Manage your cookie preferences on Audiory. Customize your privacy settings for analytics and preferences.">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#1d1b84">
+
+  <link rel="icon" href="/audioryfavicon.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp">
+
+  <style>
+    /* Reset & Base Styling - Flat White Background */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar */
+    .premium-header {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo svg {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+
+    .back-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Flat Content Wrapper */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 50px 24px;
+      box-sizing: border-box;
+    }
+
+    .document-card h1 {
+      color: #1e293b;
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .intro-text {
+      font-size: 15px;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+
+    /* Cookie Configuration Rows */
+    .cookie-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .cookie-row:first-of-type {
+      border-top: 1px solid #f1f5f9;
+    }
+
+    /* Custom Checkbox Design */
+    .checkbox-container {
+      display: block;
+      position: relative;
+      padding-left: 28px;
+      margin-bottom: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1e293b;
+      user-select: none;
+    }
+
+    .checkbox-container input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+
+    .checkmark {
+      position: absolute;
+      top: 3px;
+      left: 0;
+      height: 18px;
+      width: 18px;
+      background-color: #ffffff;
+      border: 2px solid #cbd5e1;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .checkbox-container:hover input:not(:disabled) ~ .checkmark {
+      border-color: #3b2fad;
+    }
+
+    .checkbox-container input:checked ~ .checkmark {
+      background-color: #3b2fad;
+      border-color: #3b2fad;
+    }
+
+    .checkbox-container input:disabled ~ .checkmark {
+      background-color: #f1f5f9;
+      border-color: #cbd5e1;
+      cursor: not-allowed;
+    }
+
+    .checkmark:after {
+      content: "";
+      position: absolute;
+      display: none;
+    }
+
+    .checkbox-container input:checked ~ .checkmark:after {
+      display: block;
+    }
+
+    .checkbox-container .checkmark:after {
+      left: 5px;
+      top: 2px;
+      width: 4px;
+      height: 8px;
+      border: stroke;
+      border-width: 0 2px 2px 0;
+      border: solid white;
+      transform: rotate(45deg);
+    }
+
+    .checkbox-container input:disabled ~ .checkmark:after {
+      border-color: #94a3b8;
+    }
+
+    .cookie-info {
+      flex: 1;
+    }
+
+    .cookie-desc {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    /* Action Save Button */
+    .save-btn {
+      background: #3b2fad;
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: background 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-btn:hover {
+      background: #1d1b84;
+    }
+
+    /* Custom Toast Message Panel instead of raw window alert */
+    #statusMessage {
+      margin-top: 20px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background-color: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      max-width: fit-content;
+    }
+
+    #statusMessage svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Standardized Footer */
+    .footer {
+      width: 100%;
+      padding: 24px 20px;
+      text-align: center;
+      border-top: 1px solid #f1f5f9;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
+    }
+
+    .footer-text {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 640px) {
+      .main-content {
+        padding: 32px 20px;
+      }
+      .document-card h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">Audiory</span></div>
-    <a href="/index.html">← Back</a>
-  </div>
-</header>
+  <header class="premium-header">
+    <div class="header-container">
+      <a href="/" class="brand-logo" aria-label="Audiory Home">
+        <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(2, 4)">
+            <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+            <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+            <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+            <circle cx="18" cy="13" r="1.5" fill="#3b2fad" />
+            <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </g>
+          <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+        </svg>
+      </a>
+      <a href="/index.html" class="back-btn">← Back</a>
+    </div>
+  </header>
 
-<main class="container section card">
-  <h1 class="h1">Cookie Settings</h1>
+  <main class="main-content">
+    <article class="document-card">
+      <h1>Cookie Settings</h1>
+      <p class="intro-text">
+        Audiory uses cookies to deliver a safe, functional, and fast music ecosystem. Review your preferences below and save your setup.
+      </p>
 
-  <p>
-    Choose which cookies you allow. Essential cookies cannot be disabled.
-  </p>
+      <div class="cookie-row">
+        <div class="cookie-info">
+          <label class="checkbox-container">
+            Essential Cookies
+            <input type="checkbox" checked disabled />
+            <span class="checkmark"></span>
+          </label>
+          <p class="cookie-desc">
+            Required for secure logging in, persistent user sessions, secure checkouts, and basic platform routing. These cannot be switched off.
+          </p>
+        </div>
+      </div>
 
-  <div class="card" style="padding:16px;margin-top:12px;">
-    <label>
-      <input type="checkbox" checked disabled>
-      Essential Cookies
-    </label>
-  </div>
+      <div class="cookie-row">
+        <div class="cookie-info">
+          <label class="checkbox-container">
+            Analytics Cookies
+            <input type="checkbox" id="analyticsCookies" />
+            <span class="checkmark"></span>
+          </label>
+          <p class="cookie-desc">
+            Helps us monitor global user traffic and track platform page speeds. This data helps us understand how producers and artists use the marketplace so we can keep optimizations accurate.
+          </p>
+        </div>
+      </div>
 
-  <div class="card" style="padding:16px;margin-top:12px;">
-    <label>
-      <input type="checkbox" id="analyticsCookies">
-      Analytics Cookies
-    </label>
-  </div>
+      <div class="cookie-row">
+        <div class="cookie-info">
+          <label class="checkbox-container">
+            Preference Cookies
+            <input type="checkbox" id="preferenceCookies" />
+            <span class="checkmark"></span>
+          </label>
+          <p class="cookie-desc">
+            Used to remember persistent custom setting arrays, audio player volume levels, and selected viewing filters across different catalog directories.
+          </p>
+        </div>
+      </div>
 
-  <div class="card" style="padding:16px;margin-top:12px;">
-    <label>
-      <input type="checkbox" id="preferenceCookies">
-      Preference Cookies
-    </label>
-  </div>
+      <button class="save-btn" onclick="saveCookies()">
+        Save Preferences
+      </button>
 
-  <button class="pb-btn primary" style="margin-top:16px;" onclick="saveCookies()">
-    Save Preferences
-  </button>
-</main>
+      <div id="statusMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>Cookie preferences successfully updated!</span>
+      </div>
+    </article>
+  </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-  </div>
-</footer>
+  <footer class="footer">
+    <div class="footer-text">© 2026 Audiory. All Rights Reserved.</div>
+  </footer>
 
-<script>
-  function saveCookies(){
-    localStorage.setItem("pb_cookie_settings", JSON.stringify({
-      analytics: document.getElementById("analyticsCookies").checked,
-      preferences: document.getElementById("preferenceCookies").checked
-    }));
-    alert("Cookie preferences saved ✅");
-  }
-</script>
+  <script>
+    // Initialize checkboxes on page load based on existing saved selections
+    document.addEventListener("DOMContentLoaded", () => {
+      try {
+        const saved = localStorage.getItem("pb_cookie_settings");
+        if (saved) {
+          const config = JSON.parse(saved);
+          if (config.analytics !== undefined) {
+            document.getElementById("analyticsCookies").checked = config.analytics;
+          }
+          if (config.preferences !== undefined) {
+            document.getElementById("preferenceCookies").checked = config.preferences;
+          }
+        }
+      } catch (e) {
+        console.error("Could not load cookie states:", e);
+      }
+    });
+
+    function saveCookies(){
+      try {
+        localStorage.setItem("pb_cookie_settings", JSON.stringify({
+          analytics: document.getElementById("analyticsCookies").checked,
+          preferences: document.getElementById("preferenceCookies").checked
+        }));
+        
+        // Visual custom layout banner trigger
+        const message = document.getElementById("statusMessage");
+        message.style.display = "inline-flex";
+        
+        // Auto fadeout effect
+        setTimeout(() => {
+          message.style.display = "none";
+        }, 4000);
+      } catch (e) {
+        console.error("Could not save cookie states:", e);
+      }
+    }
+  </script>
 
 </body>
 </html>
