@@ -7,192 +7,308 @@
   <link rel="stylesheet" href="/css/auth.css" />
   <link rel="stylesheet" href="/css/mobile-fix.css">
   <style>
-    .auth-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:10px;
+    /* Global Background - Restored to the clean Light UI */
+    body {
+      background-color: #f8fafc;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
 
-    .auth-actions button{
-      flex:1;
-      min-width:140px;
+    /* Elegant Gradient Top Area Banner */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 380px;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 50%, #111440 100%);
+      z-index: -1;
     }
 
-    .link-btn{
-      background:none;
-      border:none;
-      color:#6cf;
-      cursor:pointer;
-      padding:0;
-      margin-top:10px;
-      text-align:left;
-      font-size:15px;
-      font-weight:700;
+    /* Absolute positioned Brand Logo Header (Top Left) */
+    .brand-header {
+      position: absolute;
+      top: 28px;
+      left: 36px;
+      z-index: 10;
     }
 
-    .muted{
-      color:#9ca3af;
-      font-size:13px;
-      margin-top:8px;
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
     }
 
-    .field{
-      margin-bottom:18px;
+    .brand-logo svg {
+      height: 38px;
+      width: auto;
+      display: block;
     }
 
-    .field label{
-      display:block;
-      font-size:16px;
-      font-weight:800;
-      color:#fff;
-      margin-bottom:12px;
+    /* Container matching the Help Desk White Cards */
+    .auth-box {
+      background: #ffffff;
+      max-width: 450px;
+      width: 90%;
+      border-radius: 16px;
+      padding: 40px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      margin-top: 60px; /* Accounts for the logo placement above on desktop */
     }
 
-    .auth-input{
-      width:100%;
-      height:74px;
-      border-radius:20px;
-      border:1px solid #2b3152;
-      background:#05091b;
-      display:flex;
-      align-items:center;
-      box-sizing:border-box;
-      overflow:hidden;
-      padding-right:8px;
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,.03),
-        0 0 0 1px rgba(104,119,255,.04);
+    .auth-box h2 {
+      color: #1e293b;
+      font-size: 28px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 24px;
+      text-align: center;
     }
 
-    .auth-input-main{
-      flex:1;
-      display:flex;
-      align-items:center;
-      gap:14px;
-      padding:0 18px;
-      min-width:0;
-      height:100%;
-      box-sizing:border-box;
+    .auth-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 24px;
     }
 
-    .auth-icon{
-      width:24px;
-      height:24px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:#9da3d9;
-      flex:0 0 auto;
+    /* Primary Login Button matching original signature brand blue */
+    .auth-actions button {
+      flex: 1;
+      min-width: 140px;
+      height: 52px;
+      background: #5533ff;
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s ease;
     }
 
-    .auth-icon svg{
-      width:24px;
-      height:24px;
-      display:block;
+    .auth-actions button:hover {
+      background: #4422ee;
     }
 
-    .auth-divider{
-      width:1px;
-      height:32px;
-      background:rgba(255,255,255,.22);
-      flex:0 0 auto;
+    .auth-actions button:disabled {
+      background: #9ca3af;
+      cursor: not-allowed;
     }
 
-    .auth-input input{
-      flex:1;
-      min-width:0;
-      width:100%;
-      height:100%;
-      border:none;
-      outline:none;
-      background:transparent;
-      color:#fff;
-      font-size:15px;
-      font-weight:700;
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
+    /* Clean link button styling */
+    .link-btn {
+      background: none;
+      border: none;
+      color: #5533ff;
+      cursor: pointer;
+      padding: 0;
+      margin-top: 16px;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 700;
+      transition: color 0.2s ease;
     }
 
-    .auth-input input::placeholder{
-      color:#8f95c8;
-      opacity:1;
+    .link-btn:hover {
+      color: #4422ee;
+      text-decoration: underline;
     }
 
-    .auth-eye-btn{
-      width:56px;
-      min-width:56px;
-      height:56px;
-      border:none;
-      border-radius:16px;
-      background:#3b416d;
-      color:#b9bee8;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      cursor:pointer;
-      padding:0;
-      margin:0;
-      flex:0 0 56px;
-      box-sizing:border-box;
-      align-self:center;
+    .muted {
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 8px;
     }
 
-    .auth-eye-btn svg{
-      width:24px;
-      height:24px;
-      display:block;
+    .field {
+      margin-bottom: 20px;
     }
 
-    @media (max-width: 480px){
-      .auth-input{
-        height:70px;
-        border-radius:18px;
-        padding-right:8px;
+    .field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    /* Input wrapper adapted to clean light UI */
+    .auth-input {
+      width: 100%;
+      height: 56px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
+      padding-right: 6px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .auth-input:focus-within {
+      border-color: #5533ff;
+      box-shadow: 0 0 0 3px rgba(85, 51, 255, 0.15);
+    }
+
+    .auth-input-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      min-width: 0;
+      height: 100%;
+      box-sizing: border-box;
+    }
+
+    .auth-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      flex: 0 0 auto;
+    }
+
+    .auth-icon svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    .auth-divider {
+      width: 1px;
+      height: 24px;
+      background: #e2e8f0;
+      flex: 0 0 auto;
+    }
+
+    .auth-input input {
+      flex: 1;
+      min-width: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: #1e293b;
+      font-size: 15px;
+      font-weight: 600;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    .auth-input input::placeholder {
+      color: #94a3b8;
+      opacity: 1;
+    }
+
+    /* Password Eye Button adapted to light style */
+    .auth-eye-btn {
+      width: 44px;
+      min-width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      margin: 0;
+      flex: 0 0 44px;
+      box-sizing: border-box;
+      align-self: center;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .auth-eye-btn:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .auth-eye-btn svg {
+      width: 20px;
+      height: 20px;
+      display: block;
+    }
+
+    /* Signup callout text */
+    p {
+      color: #64748b;
+      font-size: 15px;
+    }
+
+    p a {
+      color: #5533ff;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    p a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      body::before {
+        height: 260px;
       }
-
-      .auth-input-main{
-        gap:12px;
-        padding:0 16px;
+      .brand-header {
+        position: relative;
+        top: auto;
+        left: auto;
+        margin-top: 32px;
+        margin-bottom: 16px;
       }
-
-      .auth-icon{
-        width:22px;
-        height:22px;
+      .auth-box {
+        padding: 24px 20px;
+        margin-top: 0;
       }
-
-      .auth-icon svg{
-        width:22px;
-        height:22px;
+      .auth-input {
+        height: 52px;
       }
-
-      .auth-divider{
-        height:30px;
-      }
-
-      .auth-input input{
-        font-size:14px;
-      }
-
-      .auth-eye-btn{
-        width:52px;
-        min-width:52px;
-        height:52px;
-        flex:0 0 52px;
-        border-radius:14px;
-        margin:0;
-        align-self:center;
-      }
-
-      .auth-eye-btn svg{
-        width:22px;
-        height:22px;
+      .auth-eye-btn {
+        width: 40px;
+        min-width: 40px;
+        height: 40px;
+        flex: 0 0 40px;
       }
     }
   </style>
 </head>
 <body>
+
+  <header class="brand-header">
+    <a href="/" class="brand-logo" aria-label="Audiory Home">
+      <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(2, 4)">
+          <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+          <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+          <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+          <circle cx="18" cy="13" r="1.5" fill="#5533ff" />
+          <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+      </svg>
+    </a>
+  </header>
 
   <div class="auth-box">
     <h2>Login</h2>
@@ -252,7 +368,7 @@
     <button class="link-btn" id="resetBtn" type="button">Forgot password?</button>
     <div class="muted" id="status"></div>
 
-    <p style="margin-top:14px;">
+    <p style="margin-top:20px; text-align: center;">
       Don’t have an account?
       <a href="/register/">Register</a>
     </p>
