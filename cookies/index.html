@@ -3,46 +3,307 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
   <title>Cookies Policy | Audiory</title>
-  <link rel="stylesheet" href="/css/global.css">
+  <meta name="description" content="Audiory Cookies Policy. Read about how we use cookies, tracking technologies, and how to manage your privacy settings.">
+  <meta name="robots" content="index,follow">
+  <meta name="theme-color" content="#1d1b84">
+
+  <link rel="canonical" href="https://audiory.site/cookies-policy/">
+
+  <link rel="icon" href="/audioryfavicon.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp">
+
+  <meta property="og:site_name" content="Audiory">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Cookies Policy | Audiory">
+  <meta property="og:description" content="Learn how tracking technologies and cookies function to secure and optimize Audiory.">
+  <meta property="og:url" content="https://audiory.site/cookies-policy/">
+  <meta property="og:image" content="https://audiory.site/audioryfavicon.webp">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Cookies Policy | Audiory">
+  <meta name="twitter:description" content="Learn how tracking technologies and cookies function to secure and optimize Audiory.">
+  <meta name="twitter:image" content="https://audiory.site/audioryfavicon.webp">
+
+  <style>
+    /* Reset & Base Styling - Flat White Background */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar */
+    .premium-header {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo svg {
+      height: 30px;
+      width: auto;
+      display: block;
+    }
+
+    .back-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Flat Content Wrapper (No shadow, no outer backgrounds) */
+    .main-content {
+      flex: 1;
+      width: 100%;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 50px 24px;
+      box-sizing: border-box;
+    }
+
+    .document-card h1 {
+      color: #1e293b;
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .date-sub {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 36px;
+    }
+
+    .document-card h2 {
+      color: #1e293b;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 6px;
+    }
+
+    .document-card p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .document-card ul {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-left: 22px;
+    }
+
+    .document-card li {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .document-card strong {
+      color: #1e293b;
+    }
+
+    /* Action Hyperlink Configuration */
+    .document-card a {
+      color: #3b2fad;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .document-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Primary Preference Action Button Link Layout */
+    .action-btn-link {
+      display: inline-flex;
+      align-items: center;
+      background: #3b2fad;
+      color: #ffffff !important;
+      text-decoration: none !important;
+      font-weight: 700 !important;
+      font-size: 15px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      margin-top: 16px;
+      transition: background 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(59, 47, 173, 0.2);
+    }
+
+    .action-btn-link:hover {
+      background: #1d1b84;
+    }
+
+    /* Standardized Footer */
+    .footer {
+      width: 100%;
+      padding: 24px 20px;
+      text-align: center;
+      border-top: 1px solid #f1f5f9;
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
+    }
+
+    .footer-text {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    /* Responsive scaling adjustments */
+    @media (max-width: 640px) {
+      .main-content {
+        padding: 32px 20px;
+      }
+      .document-card h1 {
+        font-size: 26px;
+      }
+      .document-card h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">Audiory</span></div>
-    <a href="/index.html">← Back</a>
-  </div>
-</header>
+  <header class="premium-header">
+    <div class="header-container">
+      <a href="/" class="brand-logo" aria-label="Audiory Home">
+        <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(2, 4)">
+            <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+            <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+            <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+            <circle cx="18" cy="13" r="1.5" fill="#3b2fad" />
+            <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </g>
+          <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+        </svg>
+      </a>
+      <a href="/index.html" class="back-btn">← Back</a>
+    </div>
+  </header>
 
-<main class="container section card">
-  <h1 class="h1">Cookies Policy</h1>
+  <main class="main-content">
+    <article class="document-card">
+      <h1>Cookies Policy</h1>
+      <div class="date-sub">Last updated: January 2026</div>
 
-  <p>
-    Cookies help us provide essential functionality and improve your experience.
-  </p>
+      <p>
+        This Cookies Policy explains how Audiory (“we”, “our”, or “Platform”) uses cookies and similar tracking technologies to recognize you when you visit our marketplace. It details what these technologies are, why we use them, and your rights to control our use of them.
+      </p>
 
-  <h2 class="h2">Types of Cookies We Use</h2>
-  <ul>
-    <li><strong>Essential</strong> – login, cart, security</li>
-    <li><strong>Analytics</strong> – usage statistics</li>
-    <li><strong>Preferences</strong> – site settings</li>
-  </ul>
+      <h2>1. What Are Cookies?</h2>
+      <p>
+        Cookies are small text data files stored directly inside your internet browser directory when you load specific websites. They act as a memory log for platforms, allowing us to keep you logged in safely, prevent CSRF attacks, maintain items inside your shopping cart, and keep customized audio options running across multiple system navigation reloads.
+      </p>
 
-  <p>
-    You can manage cookie preferences anytime.
-  </p>
+      <h2>2. Types of Cookies We Use</h2>
+      <p>
+        We separate our tracking tools into three core groups based on function and platform dependency:
+      </p>
+      <ul>
+        <li>
+          <strong>Essential Cookies:</strong> These are critical system operations data links required strictly to run basic functionalities. Without these, core services like account logins, processing secure transactions, and routing user streaming bandwidth cannot execute reliably.
+        </li>
+        <li>
+          <strong>Analytics Cookies:</strong> These tools track aggregate user activity patterns, traffic entry nodes, page load speeds, and audio player error logs. This data remains completely non-identifiable and serves purely to assist us in building structural code upgrades.
+        </li>
+        <li>
+          <strong>Preference Cookies:</strong> These tools allow our interface code to store local custom states you select, such as preserving dashboard toggle parameters, remembering continuous volume slider settings, and keeping preferred sorting parameters inside beat directories.
+        </li>
+      </ul>
 
-  <a class="play-btn" href="/cookie-settings.html">
-    Manage Cookie Settings
-  </a>
-</main>
+      <h2>3. Session vs. Persistent Cookies</h2>
+      <p>
+        Cookies can also be classified based on how long they remain active on your machine:
+      </p>
+      <ul>
+        <li>
+          <strong>Session Cookies:</strong> These are temporary strings deleted instantly from your temporary system cache the moment your web browser process is fully shut down.
+        </li>
+        <li>
+          <strong>Persistent Cookies:</strong> These remain inside your browser storage path for a set duration or until wiped out manually by your cleaning processes. They allow us to remember your setup preferences next time you open the ecosystem.
+        </li>
+      </ul>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-  </div>
-</footer>
+      <h2>4. Managing Cookies in Your Browser</h2>
+      <p>
+        Most web browsers allow you to decline or remove cookies via their integrated configuration consoles. Be aware that disabling cookies completely may render parts of Audiory's audio player, checkout stack, and user panels unusable.
+      </p>
+      <p>
+        To make manual adjustments, navigate directly into your specific desktop or mobile client settings:
+      </p>
+      <ul>
+        <li><strong>Google Chrome:</strong> Settings → Privacy and Security → Third-Party Cookies</li>
+        <li><strong>Mozilla Firefox:</strong> Settings → Privacy & Security → Enhanced Tracking Protection</li>
+        <li><strong>Apple Safari:</strong> Settings → Privacy → Block All Cookies</li>
+        <li><strong>Microsoft Edge:</strong> Settings → Cookies and Site Permissions → Manage and Delete Cookies</li>
+      </ul>
+
+      <h2>5. Updates to This Policy</h2>
+      <p>
+        We may occasionally refresh this policy to reflect shifts in technology protocols, compliance regulations, or optimization frameworks. We recommend checking back periodically to stay updated on how we handle privacy.
+      </p>
+
+      <h2>6. Adjust Your Setup Directly</h2>
+      <p>
+        You can configure, turn off, or re-enable non-essential analytic and layout tracking states safely at any time directly through our localized control deck link below:
+      </p>
+
+      <a class="action-btn-link" href="/cookie-settings.html">
+        Manage Cookie Settings
+      </a>
+    </article>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-text">© 2026 Audiory. All Rights Reserved.</div>
+  </footer>
 
 </body>
 </html>
