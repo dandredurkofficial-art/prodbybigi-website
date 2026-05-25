@@ -568,146 +568,150 @@
     .social a:hover { color: #3b2fad; }
 
     /* =========================================
-       AUDIORY MARKETPLACE CLEAN CARD SYSTEM
-    ========================================= */
-    .beats-grid{
-      display:grid;
-      grid-template-columns:repeat(5, minmax(0,1fr));
-      gap:16px 14px;
-      margin-top:16px;
-    }
+   AUDIORY MARKETPLACE CLEAN CARD SYSTEM (HOMEPAGE MATCHING)
+========================================= */
+.beats-grid{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  gap:16px 14px;
+  margin-top:16px;
+}
 
-    .beat-card{
-      background:#141414 !important;
-      border:1px solid rgba(255,255,255,.08) !important;
-      border-radius:18px !important;
-      overflow:hidden;
-      box-shadow:none !important;
-      padding:0 !important;
-    }
+.beat-card{
+  /* CHANGED: Swapped from dark #141414 to clean white, with a light border and subtle shadow */
+  background: #ffffff !important; 
+  border: 1px solid #e2e8f0 !important; 
+  border-radius: 18px !important; 
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important; 
+  padding: 0 !important;
+}
 
-    .beat-cover{
-      position:relative;
-      aspect-ratio:1 / 1;
-      overflow:hidden;
-      background:#0b0b0b;
-      border-radius:0 !important;
-    }
+.beat-cover{
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f8fafc; /* CHANGED: Light fallback background for loading images */
+  border-radius: 0 !important;
+}
 
-    .beat-cover .beat-open{
-      display:block;
-      width:100%;
-      height:100%;
-    }
+.beat-cover .beat-open{
+  display: block;
+  width: 100%;
+  height: 100%;
+}
 
-    .beat-cover img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-    }
+.beat-cover img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 
-    .play-fab{
-      position:absolute;
-      right:14px;
-      bottom:14px;
-      width:50px;
-      height:50px;
-      border-radius:50% !important;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(0,0,0,.42);
-      backdrop-filter:blur(5px);
-      -webkit-backdrop-filter:blur(5px);
-      box-shadow:none !important;
-    }
+.play-fab{
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50% !important;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.42);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: none !important;
+}
 
-    .play-fab .playIcon{
-      font-size:15px;
-    }
+.play-fab .playIcon{
+  font-size: 15px;
+}
 
-    .beat-meta{
-      display:flex;
-      flex-direction:column;
-      gap:0;
-      padding:14px;
-    }
+.beat-meta{
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 14px;
+}
 
-    .beat-meta > div{
-      min-width:0;
-    }
+.beat-meta > div{
+  min-width: 0;
+}
 
-    .beat-title-link{
-      color:#fff !important;
-      text-decoration:none !important;
-      display:block;
-    }
+.beat-title-link{
+  color: #1e293b !important; /* CHANGED: Dark slate text color instead of white */
+  text-decoration: none !important;
+  display: block;
+}
 
-    .beat-title-link h3{
-      margin:0 !important;
-      color:#fff !important;
-      font-size:17px !important;
-      line-height:1.2 !important;
-      font-weight:800 !important;
-      display:-webkit-box;
-      -webkit-box-orient:vertical;
-      -webkit-line-clamp:2;
-      overflow:hidden;
-      min-height:40px;
-    }
+.beat-title-link h3{
+  margin: 0 !important;
+  color: #1e293b !important; /* CHANGED: Dark slate title color */
+  font-size: 17px !important;
+  line-height: 1.2 !important;
+  font-weight: 800 !important;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  min-height: 40px;
+}
 
-    .beat-meta .producer{
-      display:block;
-      margin-top:7px;
-      color:rgba(255,255,255,.62) !important;
-      font-size:14px !important;
-      line-height:1.2 !important;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      text-decoration:none;
-    }
+.beat-meta .producer{
+  display: block;
+  margin-top: 7px;
+  color: #94a3b8 !important; /* CHANGED: Muted gray for producer name */
+  font-size: 14px !important;
+  line-height: 1.2 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: none;
+}
 
-    .beat-meta .producer:hover{
-      color:#fff !important;
-      text-decoration:none;
-    }
+.beat-meta .producer:hover{
+  color: #3b2fad !important; /* CHANGED: Hovers to your classic brand purple */
+  text-decoration: none;
+}
 
-    .beat-meta > div > div:last-child{
-      margin-top:6px !important;
-      color:rgba(255,255,255,.52) !important;
-      font-size:12px !important;
-    }
+/* Genre / Style label under the producer name */
+.beat-meta > div > div:last-child{
+  margin-top: 6px !important;
+  color: #94a3b8 !important; /* CHANGED: Clean muted gray text instead of transparent white */
+  font-size: 12px !important;
+}
 
-    .beat-meta .pb-pill{
-      width:100%;
-      margin-top:14px;
-      min-height:50px;
-      border-radius:14px;
-      border:1.5px solid #295dff;
-      background:transparent;
-      color:#fff;
-      font-size:17px;
-      font-weight:800;
-      justify-content:center;
-      padding:0 14px;
-      box-shadow:none;
-      transform:none;
-    }
+/* Price button at the bottom */
+.beat-meta .pb-pill{
+  width: 100%;
+  margin-top: 14px;
+  min-height: 40px; /* Tweak height slightly to match classic layout if needed */
+  border-radius: 14px;
+  border: 1.5px solid #3b2fad; /* CHANGED: Uses your signature purple border from homepage */
+  background: transparent;
+  color: #3b2fad; /* CHANGED: Purple text to look identical to homepage action pill */
+  font-size: 15px;
+  font-weight: 800;
+  justify-content: center;
+  padding: 0 14px;
+  box-shadow: none;
+  transform: none;
+  display: inline-flex;
+  align-items: center;
+}
 
-    .beat-meta .pb-pill:hover{
-      background:rgba(255,255,255,.04);
-      transform:none;
-    }
+.beat-meta .pb-pill:hover{
+  background: rgba(59, 47, 173, 0.05); /* CHANGED: Soft purple tint on hover */
+  transform: none;
+}
 
-    .beat-meta .pb-pill .ic{
-      width:16px;
-      height:16px;
-      font-size:15px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-    }
-
+.beat-meta .pb-pill .ic{
+  width: 16px;
+  height: 16px;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
     @media (max-width: 1200px){
       .beats-grid{
         grid-template-columns:repeat(4, minmax(0,1fr));
