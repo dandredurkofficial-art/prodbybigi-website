@@ -1,1524 +1,2569 @@
-<style>
-  body { margin:0; font-family:Inter,system-ui; background:#070a12; color:#fff; }
-  header { height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 16px; border-bottom:1px solid #1f2937; }
-
-  .menu-btn { font-size:22px; cursor:pointer; user-select:none; -webkit-tap-highlight-color: transparent; }
-  .logout { background:#ef4444; border:none; padding:8px 14px; border-radius:8px; color:#fff; cursor:pointer; }
-
-  .header-actions{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-
-  .layout {
-    display:flex;
-    min-height:calc(100vh - 64px);
-  }
-
-  nav {
-    width:260px;
-    flex-shrink:0;
-    border-right:1px solid #1f2937;
-    padding:16px;
-  }
-
-  nav a {
-    display:block;
-    padding:12px;
-    margin-bottom:6px;
-    border-radius:10px;
-    color:#9ca3af;
-    cursor:pointer;
-    user-select:none;
-  }
-
-  nav a.active {
-    background:#111827;
-    color:#fff;
-  }
-
-  main {
-    flex:1;
-    padding:24px;
-    min-width:0;
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    overflow-x:hidden;
-  }
-
-  .page { display:none; }
-  .page.active { display:block; }
-
-  .card {
-    background:#0b1220;
-    border:1px solid #1f2937;
-    border-radius:16px;
-    padding:20px;
-    margin-bottom:20px;
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    overflow:hidden;
-  }
-
-  input,textarea,select {
-    width:100%;
-    max-width:100%;
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:10px;
-    padding:12px;
-    color:#fff;
-    margin-bottom:12px;
-    box-sizing:border-box;
-  }
-
-  .toggle {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    margin:12px 0;
-  }
-
-  .price { width:120px; }
-
-  button.primary{
-    display:block;
-    width:100%;
-    max-width:100%;
-    box-sizing:border-box;
-    padding:14px;
-    border-radius:12px;
-    border:none;
-    background:linear-gradient(180deg,#4e86ff,#3d6fe0);
-    color:white;
-    font-weight:600;
-    cursor:pointer;
-  }
-
-  button.primary[disabled]{
-    opacity:.6;
-    cursor:not-allowed;
-  }
-
-  button.primary + button.primary{
-    margin-top:10px;
-  }
-
-  @media (min-width:900px){
-    button.primary{
-      width:auto;
-      min-width:220px;
-    }
-  }
-
-  #withdrawBtn{
-    width:100%;
-    display:block;
-    box-sizing:border-box;
-  }
-
-  .artwork-preview {
-    width:100%;
-    max-width:260px;
-    aspect-ratio:1/1;
-    border-radius:14px;
-    background:#05070c;
-    border:1px dashed #1f2937;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    margin-bottom:14px;
-  }
-
-  .artwork-preview img {
-    width:100%;
-    height:100%;
-    object-fit:cover;
-  }
-
-  .upload-status{ font-size:13px; color:#22c55e; margin-bottom:8px; }
-  .upload-status.err{ color:#ef4444; }
-
-  .track {
-    display:flex;
-    align-items:center;
-    gap:14px;
-    margin-bottom:14px;
-  }
-
-  .track img {
-    width:64px;
-    height:64px;
-    border-radius:10px;
-    object-fit:cover;
-  }
-
-  .track button {
-    background:#111827;
-    border:1px solid #1f2937;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:8px;
-    cursor:pointer;
-  }
-
-  .pro-only {
-    border: 1px dashed rgba(59,130,246,.35);
-    background: rgba(59,130,246,.06);
-    border-radius: 14px;
-    padding: 14px;
-    margin-top: 14px;
-  }
-
-  .pro-only .title {
-    font-weight: 900;
-    margin-bottom: 6px;
-  }
-
-  .subtle { color:#9ca3af; font-size:13px; }
-
-  .row {
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    width:100%;
-    box-sizing:border-box;
-  }
-
-  .col {
-    flex:1;
-    min-width:260px;
-    max-width:100%;
-    box-sizing:border-box;
-  }
-
-  .btn2 {
-    background:#111827;
-    border:1px solid #1f2937;
-    color:#fff;
-    padding:10px 12px;
-    border-radius:10px;
-    cursor:pointer;
-    font-weight:900;
-  }
-
-  .btn2[disabled]{ opacity:.6; cursor:not-allowed; }
-
-  .chip {
-    display:inline-flex;
-    gap:8px;
-    align-items:center;
-    padding:8px 12px;
-    border-radius:999px;
-    background:#05070c;
-    border:1px solid #1f2937;
-    font-size:13px;
-    font-weight:800;
-    color:#e5e7eb;
-  }
-
-  .lockbox {
-    margin-top:10px;
-    padding:12px;
-    border-radius:12px;
-    background:rgba(239,68,68,.08);
-    border:1px solid rgba(239,68,68,.25);
-    color:#fecaca;
-    font-size:13px;
-  }
-
-  .okbox {
-    margin-top:10px;
-    padding:12px;
-    border-radius:12px;
-    background:rgba(34,197,94,.08);
-    border:1px solid rgba(34,197,94,.25);
-    color:#bbf7d0;
-    font-size:13px;
-  }
-
-  .msg-item{
-    display:flex;
-    gap:10px;
-    align-items:center;
-    padding:12px;
-    border-radius:12px;
-    background:#05070c;
-    border:1px solid #1f2937;
-    cursor:pointer;
-  }
-
-  .msg-item:hover{ border-color:#334155; }
-
-  .avatar{
-    width:44px;
-    height:44px;
-    border-radius:12px;
-    background:#111827;
-    border:1px solid #1f2937;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-weight:950;
-    color:#93c5fd;
-  }
-
-  .msg-meta{ flex:1; min-width:0; }
-  .msg-meta strong{ display:block; }
-  .msg-meta small{ color:#9ca3af; }
-
-  .price-grid{ display:flex; gap:12px; flex-wrap:wrap; }
-
-  .price-card{
-    flex:1;
-    min-width:260px;
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:16px;
-    padding:16px;
-  }
-
-  .price-card h3{ margin:0 0 6px 0; }
-  .price-big{ font-size:28px; font-weight:950; margin:6px 0 10px 0; }
-  .ul{ margin:0; padding-left:18px; color:#cbd5e1; }
-  .ul li{ margin:6px 0; }
-
-  .badge{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:6px 10px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.14);
-    background:rgba(255,255,255,.06);
-    font-size:12px;
-    font-weight:900;
-  }
-
-  .badge.good{ border-color: rgba(34,197,94,.28); background: rgba(34,197,94,.08); color:#bbf7d0; }
-  .badge.warn{ border-color: rgba(245,158,11,.28); background: rgba(245,158,11,.08); color:#fde68a; }
-  .badge.bad{ border-color: rgba(239,68,68,.28); background: rgba(239,68,68,.08); color:#fecaca; }
-
-  #aiTagBox input {
-    width: 100%;
-    max-width: 100%;
-    margin-top: 12px;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.15);
-    background: #0b1320;
-    color: white;
-    font-size: 14px;
-    outline: none;
-    box-sizing: border-box;
-  }
-
-  #aiTagBox input::placeholder {
-    color: rgba(255,255,255,0.6);
-  }
-
-  .sale-item.hidden-sale{
-    display:none;
-  }
-
-  .view-toggle{
-    margin-top:12px;
-    background:#111827;
-    border:1px solid #1f2937;
-    color:#fff;
-    padding:8px 12px;
-    border-radius:8px;
-    cursor:pointer;
-  }
-
-  /* Notifications */
-  .notif-btn{
-    width:44px;
-    height:44px;
-    border-radius:12px;
-    border:1px solid #1f2937;
-    background:transparent;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    position:relative;
-    padding:0;
-  }
-
-  .notif-btn svg{
-    width:22px;
-    height:22px;
-    fill:none;
-    stroke:#fff;
-    stroke-width:1.8;
-    stroke-linecap:round;
-    stroke-linejoin:round;
-  }
-
-  .notif-btn svg path{
-    fill:none;
-    stroke:#fff;
-  }
-
-  .notif-btn:hover{
-    background:rgba(255,255,255,.04);
-    border-color:#334155;
-  }
-
-  .notif-dot{
-    position:absolute;
-    top:9px;
-    right:9px;
-    width:9px;
-    height:9px;
-    border-radius:50%;
-    background:#ef4444;
-    box-shadow:0 0 0 2px #070a12;
-  }
-
-  .notif-panel{
-    position:fixed;
-    top:64px;
-    right:16px;
-    width:380px;
-    max-width:calc(100vw - 24px);
-    max-height:70vh;
-    overflow:auto;
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:18px;
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
-    z-index:10000;
-    display:none;
-  }
-
-  .notif-panel.open{
-    display:block;
-  }
-
-  .notif-panel-head{
-    padding:16px 16px 12px;
-    border-bottom:1px solid #1f2937;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-  }
-
-  .notif-panel-head h3{
-    margin:0;
-    font-size:20px;
-    font-weight:900;
-    color:#fff;
-  }
-
-  .notif-panel-body{
-    padding:10px;
-  }
-
-  .notif-empty{
-    padding:26px 14px;
-    text-align:center;
-    color:#9ca3af;
-  }
-
-  .notif-item{
-    display:flex;
-    gap:12px;
-    padding:12px;
-    border-radius:14px;
-    background:#0b1220;
-    border:1px solid #1f2937;
-    margin-bottom:10px;
-  }
-
-  .notif-item.unread{
-    border-color:#2563eb;
-    background:rgba(37,99,235,.10);
-  }
-
-  .notif-icon{
-    width:44px;
-    height:44px;
-    border-radius:50%;
-    background:#111827;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-    font-size:18px;
-  }
-
-  .notif-content{
-    flex:1;
-    min-width:0;
-  }
-
-  .notif-title{
-    font-weight:800;
-    color:#fff;
-    margin-bottom:4px;
-  }
-
-  .notif-text{
-    color:#cbd5e1;
-    font-size:13px;
-    line-height:1.45;
-  }
-
-  .notif-time{
-    margin-top:6px;
-    color:#94a3b8;
-    font-size:12px;
-  }
-
-  /* Payment modal */
-  .pb-pay-backdrop{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,.65);
-    display:none;
-    z-index:9998;
-  }
-
-  .pb-pay-modal{
-    position:fixed;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%);
-    width:420px;
-    max-width:92%;
-    background:#0b1220;
-    border:1px solid #1f2937;
-    border-radius:16px;
-    padding:22px;
-    display:none;
-    z-index:9999;
-  }
-
-  .pb-pay-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:16px;
-  }
-
-  .pb-pay-title{
-    font-weight:800;
-    font-size:18px;
-  }
-
-  .pb-pay-sub{
-    font-size:13px;
-    color:#9ca3af;
-  }
-
-  .pb-pay-close{
-    background:none;
-    border:none;
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-  }
-
-  .pb-pay-body{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-  }
-
-  .pb-pay-btn{
-    padding:12px;
-    border-radius:10px;
-    border:none;
-    font-weight:600;
-    cursor:pointer;
-  }
-
-  .pb-pay-btn.primary{
-    background:#3b82f6;
-    color:white;
-  }
-
-  .pb-pay-btn.success{
-    background:#22c55e;
-    color:white;
-  }
-
-  .pb-pay-phone-wrap{
-    margin-top:10px;
-    display:none;
-  }
-
-  .pb-pay-input{
-    width:100%;
-    padding:12px;
-    border-radius:10px;
-    border:1px solid #1f2937;
-    background:#05070c;
-    color:white;
-  }
-
-  .pb-pay-status{
-    font-size:13px;
-    margin-top:8px;
-    color:#9ca3af;
-  }
-
-  /* Bonus beats */
-  .bonus-beat-card{
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:14px;
-    padding:10px;
-    cursor:pointer;
-    transition:.18s ease;
-    user-select:none;
-  }
-
-  .bonus-beat-card:hover{
-    border-color:#3b82f6;
-    transform:translateY(-1px);
-  }
-
-  .bonus-beat-card.selected{
-    border-color:#3b82f6;
-    box-shadow:0 0 0 1px rgba(59,130,246,.35) inset;
-    background:rgba(59,130,246,.08);
-  }
-
-  .bonus-beat-cover{
-    width:100%;
-    aspect-ratio:1/1;
-    border-radius:10px;
-    overflow:hidden;
-    background:#0b1220;
-    border:1px solid #1f2937;
-    margin-bottom:8px;
-  }
-
-  .bonus-beat-cover img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-  }
-
-  .bonus-beat-title{
-    font-size:13px;
-    font-weight:800;
-    line-height:1.25;
-    color:#fff;
-  }
-
-  .bonus-beat-meta{
-    margin-top:4px;
-    font-size:12px;
-    color:#9ca3af;
-  }
-
-  .bonus-beat-check{
-    margin-top:8px;
-    font-size:12px;
-    font-weight:800;
-    color:#60a5fa;
-  }
-
-  /* Analytics */
-  .analytics-hero{
-    margin-top:14px;
-  }
-
-  .analytics-hero-top{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-bottom:18px;
-  }
-
-  .analytics-kicker{
-    color:#9ca3af;
-    font-size:13px;
-    font-weight:700;
-    margin-bottom:6px;
-  }
-
-  .analytics-main-title{
-    margin:0;
-    font-size:26px;
-    line-height:1.1;
-    font-weight:900;
-    color:#fff;
-  }
-
-  .analytics-range{
-    padding:10px 14px;
-    border-radius:12px;
-    background:#111827;
-    border:1px solid #1f2937;
-    color:#e5e7eb;
-    font-size:13px;
-    font-weight:800;
-  }
-
-  .analytics-stat-grid{
-    display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:14px;
-    margin-bottom:18px;
-  }
-
-  .analytics-stat-card{
-    background:#f8fafc;
-    color:#0f172a;
-    border-radius:18px;
-    padding:14px;
-    min-height:150px;
-    box-shadow:0 10px 30px rgba(0,0,0,.18);
-    display:flex;
-    flex-direction:column;
-    justify-content:flex-start;
-    overflow:hidden;
-  }
-
-  .analytics-stat-icon{
-    width:52px;
-    height:52px;
-    border-radius:16px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:12px;
-    flex-shrink:0;
-    overflow:hidden;
-  }
-
-  .analytics-stat-icon svg,
-  .analytics-stat-icon img{
-    width:24px;
-    height:24px;
-    object-fit:contain;
-    display:block;
-  }
-
-  .analytics-stat-icon.blue{ background:#dbeafe; }
-  .analytics-stat-icon.purple{ background:#ede9fe; }
-  .analytics-stat-icon.gold{ background:#fef3c7; }
-  .analytics-stat-icon.green{ background:#dcfce7; }
-
-  .analytics-stat-value{
-    font-size:24px;
-    line-height:1;
-    font-weight:900;
-    color:#111827;
-    margin-bottom:8px;
-  }
-
-  .analytics-stat-label{
-    color:#475569;
-    font-size:12px;
-    font-weight:700;
-    line-height:1.35;
-  }
-
-  .analytics-stat-change{
-    margin-top:8px;
-    font-size:11px;
-    font-weight:800;
-  }
-
-  .analytics-stat-change.up{ color:#16a34a; }
-  .analytics-stat-change.neutral{ color:#64748b; }
-
-  .analytics-bottom-grid{
-    display:grid;
-    grid-template-columns:1.35fr .85fr;
-    gap:14px;
-    align-items:stretch;
-  }
-
-  .analytics-panel{
-    background:#f8fafc;
-    color:#0f172a;
-    border-radius:18px;
-    padding:18px;
-    min-height:220px;
-    box-shadow:0 10px 30px rgba(0,0,0,.18);
-    overflow:hidden;
-  }
-
-  .analytics-panel.big{
-    min-height:220px;
-  }
-
-  .analytics-panel-head{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:10px;
-    margin-bottom:16px;
-  }
-
-  .analytics-panel-title{
-    font-size:16px;
-    font-weight:900;
-    color:#111827;
-    line-height:1.2;
-  }
-
-  .analytics-panel-sub{
-    margin-top:4px;
-    font-size:12px;
-    color:#64748b;
-    line-height:1.35;
-  }
-
-  .analytics-bars{
-    height:140px;
-    display:grid;
-    grid-template-columns:repeat(8,1fr);
-    gap:10px;
-    align-items:end;
-    margin-top:18px;
-  }
-
-  .analytics-bars span{
-    display:block;
-    width:100%;
-    border-radius:14px 14px 4px 4px;
-    background:linear-gradient(180deg,#60a5fa 0%, #2563eb 100%);
-    min-height:28px;
-  }
-
-  .analytics-ring-wrap{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    min-height:190px;
-  }
-
-  .analytics-ring{
-    width:126px;
-    height:126px;
-    border-radius:50%;
-    background:conic-gradient(#ef4444 0 68%, #e5e7eb 68% 100%);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .analytics-ring-inner{
-    width:92px;
-    height:92px;
-    border-radius:50%;
-    background:#fff;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-  }
-
-  .analytics-ring-inner strong{
-    font-size:22px;
-    font-weight:900;
-    color:#111827;
-  }
-
-  .analytics-ring-inner span{
-    margin-top:4px;
-    font-size:12px;
-    color:#64748b;
-  }
-
-  .stat-icon{
-    width:48px;
-    height:48px;
-    border-radius:16px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    margin-bottom:18px;
-    color:#0f172a;
-    flex-shrink:0;
-  }
-
-  .stat-icon svg{
-    width:26px;
-    height:26px;
-    display:block;
-  }
-
-  .soft-blue{ background:#dbeafe; color:#94a3b8; }
-  .soft-purple{ background:#ede9fe; color:#111827; }
-  .soft-gold{ background:#fef3c7; color:#111827; }
-  .soft-green{ background:#dcfce7; color:#111827; }
-
-  /* Private Messages fixed desktop */
-  .pm-box{
-    margin-top:14px;
-  }
-
-  .pm-input,
-  .pm-textarea{
-    width:100%;
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:14px;
-    padding:14px 16px;
-    color:#fff;
-    box-sizing:border-box;
-  }
-
-  .pm-textarea{
-    min-height:120px;
-    resize:vertical;
-  }
-
-  .pm-wrap{
-    padding:0 !important;
-    overflow:hidden;
-  }
-
-  .pm-topbar{
-    padding:16px 18px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-
-  .pm-layout{
-    display:grid;
-    grid-template-columns:320px minmax(0,1fr);
-    min-height:560px;
-  }
-
-  .pm-sidebar{
-    border-right:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.02);
-    min-width:0;
-  }
-
-  .pm-sidebar-head{
-    padding:14px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-
-  .pm-search{
-    width:100%;
-    height:46px;
-    box-sizing:border-box;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.05);
-    color:#fff;
-    padding:0 14px;
-    outline:none;
-  }
-
-  .pm-search:focus{
-    border-color:rgba(59,130,246,.6);
-    box-shadow:0 0 0 3px rgba(59,130,246,.12);
-  }
-
-  .pm-thread-list{
-    display:grid;
-    gap:0;
-    max-height:calc(560px - 75px);
-    overflow:auto;
-  }
-
-  .pm-thread-card{
-    display:grid;
-    grid-template-columns:46px minmax(0,1fr);
-    gap:12px;
-    align-items:center;
-    padding:14px;
-    border-bottom:1px solid rgba(255,255,255,.06);
-    cursor:pointer;
-    transition:background .15s ease;
-  }
-
-  .pm-thread-card:hover{
-    background:rgba(255,255,255,.04);
-  }
-
-  .pm-thread-card.active{
-    background:rgba(59,130,246,.14);
-  }
-
-  .pm-thread-avatar{
-    width:46px;
-    height:46px;
-    border-radius:14px;
-    display:grid;
-    place-items:center;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.10);
-    color:#fff;
-    font-weight:900;
-    font-size:14px;
-  }
-
-  .pm-thread-main{
-    min-width:0;
-  }
-
-  .pm-thread-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-  }
-
-  .pm-thread-top strong{
-    color:#fff;
-    font-size:14px;
-    font-weight:900;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .pm-thread-badge{
-    min-width:22px;
-    height:22px;
-    padding:0 7px;
-    border-radius:999px;
-    background:#3b82f6;
-    color:#fff;
-    font-size:11px;
-    font-weight:900;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-  }
-
-  .pm-thread-preview{
-    margin-top:5px;
-    color:rgba(255,255,255,.62);
-    font-size:12px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-
-  .pm-chat{
-    display:grid;
-    grid-template-rows:auto 1fr auto;
-    min-width:0;
-  }
-
-  .pm-chat-head{
-    padding:16px 18px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-
-  .pm-chat-name{
-    font-size:18px;
-    font-weight:900;
-    color:#fff;
-  }
-
-  .pm-chat-meta{
-    margin-top:4px;
-    color:rgba(255,255,255,.62);
-    font-size:12px;
-  }
-
-  .pm-messages{
-    padding:16px;
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    overflow:auto;
-    background:
-      radial-gradient(circle at top right, rgba(59,130,246,.08), transparent 35%),
-      linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0));
-  }
-
-  .pm-msg{
-    max-width:72%;
-    padding:12px 14px;
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.05);
-    color:#fff;
-    font-size:14px;
-    line-height:1.5;
-    white-space:pre-wrap;
-    word-break:break-word;
-  }
-
-  .pm-msg.me{
-    margin-left:auto;
-    background:rgba(59,130,246,.18);
-    border-color:rgba(59,130,246,.28);
-  }
-
-  .pm-msg-meta{
-    margin-top:6px;
-    font-size:11px;
-    color:rgba(255,255,255,.5);
-    display:flex;
-    justify-content:space-between;
-    gap:12px;
-  }
-
-  .pm-compose{
-    padding:14px 16px;
-    border-top:1px solid rgba(255,255,255,.08);
-    display:grid;
-    gap:10px;
-  }
-
-  .pm-compose-input{
-    width:100%;
-    box-sizing:border-box;
-    min-height:56px;
-    max-height:140px;
-    resize:vertical;
-    border-radius:16px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.05);
-    color:#fff;
-    padding:12px 14px;
-    outline:none;
-    font-family:inherit;
-  }
-
-  .pm-compose-input:focus{
-    border-color:rgba(59,130,246,.6);
-    box-shadow:0 0 0 3px rgba(59,130,246,.12);
-  }
-
-  .pm-send-row{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top:14px;
-  }
-
-  .pm-send-btn{
-    min-height:44px;
-    padding:0 16px;
-    border:none;
-    border-radius:14px;
-    font-weight:900;
-    cursor:pointer;
-    color:#fff;
-    background:#3b82f6;
-  }
-
-  .pm-status{
-    color:rgba(255,255,255,.62);
-    font-size:13px;
-  }
-
-  .pm-empty{
-    padding:22px;
-    color:rgba(255,255,255,.6);
-    text-align:center;
-  }
-
-  /* Collab submissions */
-  .producer-collab-list{
-    display:grid;
-    gap:12px;
-  }
-
-  .producer-collab-card{
-    border:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.03);
-    border-radius:18px;
-    padding:14px;
-  }
-
-  .producer-collab-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:12px;
-    flex-wrap:wrap;
-  }
-
-  .producer-collab-title{
-    color:#fff;
-    font-size:16px;
-    font-weight:900;
-    margin:0;
-  }
-
-  .producer-collab-sub{
-    color:rgba(255,255,255,.62);
-    font-size:12px;
-    margin-top:6px;
-  }
-
-  .producer-collab-message{
-    margin-top:12px;
-    color:rgba(255,255,255,.82);
-    font-size:14px;
-    line-height:1.6;
-    white-space:pre-line;
-  }
-
-  .producer-collab-beat{
-    margin-top:12px;
-    border:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.03);
-    border-radius:14px;
-    padding:12px;
-  }
-
-  .producer-collab-beat-title{
-    color:#fff;
-    font-size:14px;
-    font-weight:900;
-  }
-
-  .producer-collab-beat-meta{
-    margin-top:6px;
-    color:rgba(255,255,255,.6);
-    font-size:12px;
-  }
-
-  .producer-collab-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:14px;
-  }
-
-  .producer-collab-actions .btn2,
-  .producer-collab-actions .ghost-btn{
-    min-width:150px;
-  }
-
-  .collab-submission-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:10px;
-    margin-top:12px;
-  }
-
-  .collab-submission-actions .btn2,
-  .collab-submission-actions a.btn2{
-    min-width:150px;
-    text-align:center;
-    justify-content:center;
-    text-decoration:none;
-    color:#fff;
-    display:inline-flex;
-    align-items:center;
-  }
-
-  .collab-submission-actions a{
-    text-decoration:none;
-    color:#fff;
-  }
-
-  .collab-status-pill{
-    display:inline-flex;
-    align-items:center;
-    min-height:30px;
-    padding:0 10px;
-    border-radius:999px;
-    font-size:12px;
-    font-weight:900;
-    border:1px solid rgba(255,255,255,.10);
-  }
-
-  .collab-status-pill.pending{
-    background:rgba(245,158,11,.12);
-    color:#fbbf24;
-    border-color:rgba(245,158,11,.28);
-  }
-
-  .collab-status-pill.accepted{
-    background:rgba(34,197,94,.12);
-    color:#4ade80;
-    border-color:rgba(34,197,94,.28);
-  }
-
-  .collab-status-pill.rejected{
-    background:rgba(239,68,68,.12);
-    color:#f87171;
-    border-color:rgba(239,68,68,.28);
-  }
-
-  /* Customize Store */
-  .store-topbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    flex-wrap:wrap;
-    margin-top:14px;
-    margin-bottom:14px;
-  }
-
-  .store-bottom-save{
-    margin-top:14px;
-  }
-
-  .store-accordion{
-    border:1px solid #1f2937;
-    border-radius:18px;
-    background:#091122;
-    margin-top:14px;
-    overflow:hidden;
-  }
-
-  .store-accordion.active{
-    border-color:#334155;
-  }
-
-  .store-acc-head{
-    width:100%;
-    background:transparent;
-    border:none;
-    color:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:12px;
-    padding:18px 18px;
-    font-size:18px;
-    font-weight:900;
-    cursor:pointer;
-    text-align:left;
-  }
-
-  .store-acc-head:hover{
-    background:rgba(255,255,255,.03);
-  }
-
-  .store-acc-icon{
-    font-size:24px;
-    line-height:1;
-    color:#93c5fd;
-    flex-shrink:0;
-  }
-
-  .store-acc-body{
-    display:none;
-    padding:0 14px 14px;
-  }
-
-  .store-accordion.active .store-acc-body{
-    display:block;
-  }
-
-  .store-inner-card{
-    margin:0;
-    background:#07101f;
-  }
-
-  .store-mini-grid{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:14px;
-  }
-
-  .store-mini-card{
-    background:#05070c;
-    border:1px solid #1f2937;
-    border-radius:16px;
-    padding:14px;
-  }
-
-  .theme-preset-grid{
-    display:grid;
-    grid-template-columns:repeat(3,minmax(0,1fr));
-    gap:12px;
-  }
-
-  .theme-preset{
-    border:1px solid #1f2937;
-    background:#05070c;
-    color:#fff;
-    border-radius:14px;
-    padding:14px;
-    cursor:pointer;
-    font-weight:800;
-    text-align:left;
-  }
-
-  .theme-preset:hover{
-    border-color:#3b82f6;
-    background:#0b1320;
-  }
-
-  .theme-swatch-row{
-    display:flex;
-    gap:8px;
-    margin-bottom:10px;
-  }
-
-  .theme-swatch{
-    width:24px;
-    height:24px;
-    border-radius:999px;
-    border:1px solid rgba(255,255,255,.15);
-    display:inline-block;
-  }
-
-  /* Tablet */
-  @media(max-width:1100px){
-    .analytics-stat-grid{
-      grid-template-columns:repeat(2,minmax(0,1fr));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Audiory – Global Beat Marketplace | Buy & Sell Beats Online</title>
+
+  <meta name="description" content="Audiory is a global beat marketplace where producers sell beats and artists buy high-quality instrumentals. Discover trending beats, free beats, sound kits, and top producers worldwide.">
+  <meta name="author" content="Audiory">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://audiory.site/">
+
+  <link rel="icon" href="/audioryfavicon.webp">
+  <link rel="shortcut icon" href="/audioryfavicon.webp">
+  <link rel="icon" type="image/x-icon" href="/favicon.webp">
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp">
+
+  <meta property="og:title" content="Audiory – Global Beat Marketplace">
+  <meta property="og:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers. Your first hit starts here.">
+  <meta property="og:url" content="https://audiory.site/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://audiory.site/og-image.jpg">
+  <meta property="og:image:alt" content="Audiory – Beat Marketplace">
+  <meta property="og:site_name" content="Audiory">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Audiory – Global Beat Marketplace">
+  <meta name="twitter:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers.">
+  <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Audiory",
+    "alternateName": "Audiory Beat Marketplace",
+    "url": "https://audiory.site/",
+    "logo": "https://audiory.site/audioryfavicon.webp",
+    "sameAs": [
+      "https://www.instagram.com/audiorybeatstore",
+      "https://www.tiktok.com/@audiorybeatstore",
+      "https://x.com/audiorybeats",
+      "https://www.facebook.com/audiorybeatstore",
+      "https://youtube.com/@audiorybeatstore"
+    ]
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Audiory",
+    "alternateName": "Audiory Beat Marketplace",
+    "url": "https://audiory.site/"
+  }
+  </script>
+
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+  <link rel="stylesheet" href="/css/global.css?v=6">
+  <link rel="stylesheet" href="/css/home.css?v=6">
+  <link rel="stylesheet" href="/css/cart.css">
+  <link rel="stylesheet" href="/css/mobile-fix.css">
+
+  <style>
+    /* ✅ tighter BeatStars-style price pill */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:7px;
+
+      min-height:36px;
+      padding:0 14px;
+
+      border-radius:12px;
+      border:1px solid #295dff;
+      background:#0a0d14;
+
+      color:#ffffff;
+      white-space:nowrap;
+      text-decoration:none;
+
+      font-size:12px;
+      font-weight:800;
+      line-height:1;
+
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
     }
 
-    .analytics-bottom-grid{
-      grid-template-columns:1fr;
+    .pb-pill:hover{
+      background:#101521;
+      transform:none;
     }
-  }
 
-  @media(max-width:900px){
-    nav {
-      display:none;
-      position:fixed;
-      top:64px;
-      left:0;
+    .pb-pill:active{
+      transform:none;
+    }
+
+    .pb-pill .ic{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      color:#facc15;
+      flex-shrink:0;
+    }
+
+    .pb-pill .ic svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .pb-pill.free{
+      border-color:#295dff;
+      background:#0a0d14;
+    }
+
+    /* BeatStars-style lock icon */
+    .lock-icon{
+      width:16px;
+      height:16px;
+      display:inline-block;
+    }
+
+    .lock-icon svg{
+      width:100%;
       height:100%;
-      background:#070a12;
-      z-index:9999;
-      pointer-events:auto;
-    }
-
-    nav.open {
       display:block;
     }
-
-    .pm-layout{
-      grid-template-columns:1fr;
+    /* Beat card layout fix */
+    .chart-card{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
 
-    .pm-sidebar{
-      border-right:none;
+    /* text area */
+    .chart-text{
+      min-width:0;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+    }
+
+    /* title clamp */
+    .trend-meta .t,
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      line-clamp: 2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* producer line */
+    .trend-meta .p,
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    /* row that contains text + price */
+    .chart-meta-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    /* price pill container */
+    .chart-pill{
+      flex-shrink:0;
+      display:flex;
+      align-items:flex-end;
+    }
+
+    .home-title-clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-weight:800 !important;
+      font-size:12.5px !important;
+      line-height:1.2 !important;
+      margin:0;
+    }
+
+    .home-producer-clamp{
+      display:block;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      font-size:11.5px !important;
+      line-height:1.2 !important;
+      margin-top:4px !important;
+      opacity:.82;
+    }
+
+    .producer-link{
+      color:var(--muted);
+      text-decoration:none;
+    }
+    .producer-link:hover{ text-decoration:underline; }
+
+    /* ✅ Free download modal (BeatStars style) */
+    .pb-free-backdrop{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.55);
+      display:none;
+      z-index:9998;
+    }
+    .pb-free-modal{
+      position:fixed;
+      left:50%; top:50%;
+      transform:translate(-50%,-50%);
+      width:min(520px, calc(100vw - 24px));
+      background:#0b1220;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:0 20px 70px rgba(0,0,0,.45);
+      display:none;
+      z-index:9999;
+    }
+    .pb-free-head{
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      margin-bottom:10px;
+    }
+    .pb-free-title{
+      font-size:16px;
+      font-weight:900;
+      margin:0;
+    }
+    .pb-free-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:18px;
+      cursor:pointer;
+      padding:6px 8px;
+      border-radius:10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pb-free-close:hover{background:rgba(255,255,255,.08)}
+    .pb-free-sub{
+      color:rgba(255,255,255,.7);
+      font-size:13px;
+      margin:8px 0 14px;
+      line-height:1.4;
+    }
+    .pb-free-label{
+      font-size:13px;
+      font-weight:800;
+      margin:10px 0 6px;
+      color:rgba(255,255,255,.85);
+    }
+    .pb-free-input{
+      width:100%;
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+    }
+    .pb-free-input:focus{border-color:rgba(59,130,246,.55)}
+    .pb-free-btn{
+      width:100%;
+      margin-top:14px;
+      padding:12px 14px;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      background:#3b82f6;
+      color:#fff;
+    }
+    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
+    .pb-free-note{
+      margin-top:10px;
+      color:rgba(255,255,255,.55);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .pb-free-status{
+      margin-top:10px;
+      font-size:13px;
+      color:#22c55e;
+      min-height:18px;
+    }
+
+    .hero-sub{
+      margin:10px 0 0;
+      color:rgba(255,255,255,.78);
+      font-size:15px;
+      line-height:1.6;
+      max-width:760px;
+    }
+
+    @media (max-width:768px){
+      .hero-sub{
+        font-size:14px;
+        line-height:1.5;
+      }
+    }
+
+    /* =========================
+       PAYMENT MODAL - NEW STYLE
+    ========================= */
+    .pb-pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.68);
+      display:none;
+      z-index:10050;
+    }
+
+    .pb-pay-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(720px, calc(100vw - 18px));
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:26px;
+      padding:0;
+      box-shadow:0 28px 90px rgba(0,0,0,.52);
+      display:none;
+      z-index:10051;
+    }
+
+    .pb-pay-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:22px 24px 14px;
       border-bottom:1px solid rgba(255,255,255,.08);
     }
 
-    .pm-thread-list{
-      max-height:260px;
-    }
-
-    .pm-msg{
-      max-width:88%;
-    }
-
-    .store-mini-grid,
-    .theme-preset-grid{
-      grid-template-columns:1fr;
-    }
-  }
-
-  /* Mobile */
-  @media(max-width:640px){
-    .notif-panel{
-      right:12px;
-      left:12px;
-      width:auto;
-      max-width:none;
-    }
-
-    .toggle {
-      flex-direction:column;
-      align-items:flex-start;
-    }
-
-    .price {
-      width:100%;
-    }
-
-    #uploadSection button.primary{
-      width:100%;
-    }
-
-    .analytics-stat-grid{
-      grid-template-columns:1fr;
-    }
-
-    .analytics-main-title{
-      font-size:22px;
-    }
-
-    .analytics-stat-card{
-      min-height:190px;
-      padding:16px;
-    }
-
-    .analytics-stat-icon{
-      width:58px;
-      height:58px;
-    }
-
-    .analytics-stat-value{
-      font-size:28px;
-    }
-
-    .analytics-bottom-grid{
-      grid-template-columns:1fr;
-    }
-
-    .analytics-panel,
-    .analytics-panel.big{
-      min-height:auto;
-    }
-
-    .analytics-panel{
-      padding:16px;
-    }
-
-    .analytics-bars{
-      height:150px;
-      gap:8px;
-    }
-
-    .analytics-ring{
-      width:132px;
-      height:132px;
-    }
-
-    .analytics-ring-inner{
-      width:94px;
-      height:94px;
-    }
-
-    .analytics-ring-inner strong{
+    .pb-pay-title{
+      font-weight:950;
       font-size:24px;
+      margin:0;
+      color:#fff;
     }
 
-    .producer-collab-actions{
-      flex-direction:column;
+    .pb-pay-sub{
+      color:rgba(255,255,255,.72);
+      font-size:13px;
+      margin-top:8px;
+      line-height:1.5;
+      white-space:pre-line;
     }
 
-    .producer-collab-actions .btn2,
-    .producer-collab-actions .ghost-btn{
+    .pb-pay-close{
+      border:none;
+      background:transparent;
+      color:#fff;
+      font-size:24px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pb-pay-close:hover{
+      background:rgba(255,255,255,.08);
+    }
+
+    .pb-pay-body{
+      padding:22px 24px 24px;
+      display:grid;
+      gap:16px;
+    }
+
+    .pb-pay-methods{
+      display:grid;
+      gap:14px;
+    }
+
+    .pb-pay-btn{
       width:100%;
-      min-width:0;
+      min-height:76px;
+      border-radius:18px;
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:0 22px;
+      color:#fff;
+      font-size:17px;
+      box-shadow:none;
     }
 
-    .collab-submission-actions{
-      flex-direction:column;
+    .pb-pay-btn.primary{
+      background:#4b86ef;
     }
 
-    .collab-submission-actions .btn2,
-    .collab-submission-actions a.btn2{
+    .pb-pay-btn.success{
+      background:#24c65a;
+    }
+
+    .pb-pay-btn:hover{
+      filter:brightness(1.03);
+    }
+
+    .pb-pay-btn-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+    }
+
+    .pb-pay-amount{
+      font-size:16px;
+      font-weight:900;
+      opacity:.96;
+    }
+
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:4px;
+      padding:14px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+    }
+
+    .pb-pay-label{
+      font-size:12px;
+      font-weight:900;
+      color:rgba(255,255,255,.86);
+      margin-bottom:8px;
+    }
+
+    .pb-pay-input{
       width:100%;
-      min-width:0;
+      padding:14px 14px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      outline:none;
+      font-size:15px;
+    }
+
+    .pb-pay-input:focus{
+      border-color:rgba(34,197,94,.55);
+    }
+
+    .pb-pay-send{
+      margin-top:14px;
+      min-height:50px;
+      padding:0 20px;
+      border:none;
+      border-radius:14px;
+      background:#24c65a;
+      color:#fff;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .pb-pay-send:hover{
+      filter:brightness(1.03);
+    }
+
+    .pb-pay-send:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
+
+    .pb-pay-status{
+      min-height:18px;
+      margin-top:10px;
+      font-size:13px;
+      color:rgba(255,255,255,.78);
+      white-space:pre-line;
+    }
+
+    .mpesa-icon{
+      width:20px;
+      height:20px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .mpesa-icon svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    @media (max-width: 640px){
+      .pb-pay-modal{
+        width:calc(100vw - 16px);
+        max-height:calc(100vh - 20px);
+        border-radius:24px;
+      }
+
+      .pb-pay-head{
+        padding:18px 18px 12px;
+      }
+
+      .pb-pay-title{
+        font-size:20px;
+      }
+
+      .pb-pay-body{
+        padding:16px 18px 18px;
+      }
+
+      .pb-pay-btn{
+        min-height:72px;
+        border-radius:18px;
+        padding:0 18px;
+        font-size:16px;
+      }
+
+      .pb-pay-amount{
+        font-size:14px;
+      }
+    }
+
+    .pb-pill{
+      color:#fff;
+    }
+
+    .pb-pill .ic{
+      color:rgba(255,255,255,.85);
+    }
+
+    /* ===================================
+         AUDIORY VERIFIED BADGES
+      =================================== */
+
+      .verify-badge{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        margin-left:6px;
+        vertical-align:middle;
+      }
+
+      .verify-badge svg{
+        width:16px;
+        height:16px;
+        display:block;
+      }
+
+      /* PRO (blue) */
+
+      .verify-pro svg{
+        color:#1d9bf0;
+      }
+
+      /* ELITE (gold) */
+
+      .verify-elite svg{
+        color:#fbbf24;
+      }
+
+      /* =========================================
+         AUDIORY CLEAN CARD SYSTEM
+         BeatStars-inspired mobile polish
+      ========================================= */
+
+      .trending-strip{
+        display:flex;
+        gap:16px;
+        overflow-x:auto;
+        padding:4px 2px 8px;
+        scroll-snap-type:x proximity;
+        scrollbar-width:none;
+      }
+      .trending-strip::-webkit-scrollbar{ display:none; }
+
+      .trending-strip .trend-card{
+        min-width:176px;
+        width:176px;
+        flex:0 0 176px;
+        scroll-snap-align:start;
+      }
+
+      .chart-grid{
+        display:grid;
+        grid-template-columns:repeat(5, minmax(0,1fr));
+        gap:16px 14px;
+      }
+
+      .trend-card,
+      .chart-card{
+        background:#141414 !important;
+        border:1px solid rgba(255,255,255,.08) !important;
+        border-radius:18px !important;
+        box-shadow:none !important;
+        overflow:hidden;
+        gap:0 !important;
+        padding:0 !important;
+      }
+
+      .beat-cover{
+        position:relative;
+        aspect-ratio:1 / 1;
+        overflow:hidden;
+        background:#0b0b0b;
+        border-radius:0 !important;
+      }
+
+      .beat-cover .beat-open{
+        display:block;
+        width:100%;
+        height:100%;
+      }
+
+      .beat-cover img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        display:block;
+      }
+
+      .play-fab{
+        position:absolute;
+        right:14px;
+        bottom:14px;
+        width:50px;
+        height:50px;
+        border-radius:50% !important;
+        border:1px solid rgba(255,255,255,.14);
+        background:rgba(0,0,0,.42);
+        backdrop-filter:blur(5px);
+        -webkit-backdrop-filter:blur(5px);
+        box-shadow:none !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+        color: #fff;
+      }
+
+      .play-fab .playIcon{
+        width: 16px;
+        height: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .play-fab .playIcon svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .trend-meta,
+      .chart-meta-row{
+        padding:14px 14px 0 14px;
+      }
+
+      .chart-meta-row{
+        display:block !important;
+      }
+
+      .chart-text{
+        display:block;
+        min-width:0;
+      }
+
+      .trend-meta .t,
+      .home-title-clamp{
+        display:-webkit-box;
+        -webkit-line-clamp:2;
+        -webkit-box-orient:vertical;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        color:#fff !important;
+        text-decoration:none;
+        font-size:17px !important;
+        line-height:1.2 !important;
+        font-weight:800 !important;
+        margin:0 !important;
+        min-height:40px;
+      }
+
+      .trend-meta .p,
+      .home-producer-clamp{
+        display:block;
+        white-space:nowrap;
+        overflow:hidden;
+        text-overflow:ellipsis;
+        color:rgba(255,255,255,.62) !important;
+        font-size:14px !important;
+        line-height:1.2 !important;
+        margin-top:7px !important;
+        margin-bottom:0 !important;
+        opacity:1 !important;
+      }
+
+      .trend-actions,
+      .chart-pill{
+        padding:14px;
+        padding-top:14px;
+      }
+
+      .chart-pill{
+        display:block !important;
+      }
+
+      .trend-actions .pb-pill,
+      .chart-pill .pb-pill{
+        width:100%;
+        min-height:50px;
+        border-radius:14px;
+        font-size:17px;
+        font-weight:800;
+        justify-content:center;
+        padding:0 14px;
+        background:transparent;
+        border:1.5px solid #295dff;
+      }
+
+      .trend-actions .pb-pill .ic,
+      .chart-pill .pb-pill .ic{
+        width:16px;
+        height:16px;
+      }
+
+      .producer-link{
+        color:rgba(255,255,255,.62) !important;
+        text-decoration:none;
+      }
+      .producer-link:hover{
+        text-decoration:none;
+        color:#fff !important;
+      }
+
+      @media (max-width:1200px){
+        .chart-grid{
+          grid-template-columns:repeat(4,minmax(0,1fr));
+        }
+      }
+
+      @media (max-width:980px){
+        .chart-grid{
+          grid-template-columns:repeat(3,minmax(0,1fr));
+        }
+      }
+
+      @media (max-width:768px){
+        .chart-grid{
+          grid-template-columns:repeat(2,minmax(0,1fr));
+          gap:14px 12px;
+        }
+
+        .trending-strip{
+          gap:14px;
+        }
+
+        .trending-strip .trend-card{
+          min-width:168px;
+          width:168px;
+          flex:0 0 168px;
+        }
+
+        .trend-meta,
+        .chart-meta-row{
+          padding:12px 12px 0 12px;
+        }
+
+        .trend-actions,
+        .chart-pill{
+          padding:12px;
+          padding-top:12px;
+        }
+
+        .trend-meta .t,
+        .home-title-clamp{
+          font-size:16px !important;
+          min-height:38px;
+        }
+
+        .trend-meta .p,
+        .home-producer-clamp{
+          font-size:13px !important;
+          margin-top:6px !important;
+        }
+
+        .trend-actions .pb-pill,
+        .chart-pill .pb-pill{
+          min-height:46px;
+          font-size:16px;
+        }
+
+        .play-fab{
+          width:46px;
+          height:46px;
+        }
+
+        /* =========================
+           SMART FINDER
+        ========================= */
+        .smart-finder-wrap{
+          position:relative;
+        }
+
+        .smart-finder-meta{
+          margin-top:12px;
+        }
+
+        .smart-finder-hint{
+          color:rgba(255,255,255,.68);
+          font-size:13px;
+          line-height:1.5;
+          margin-bottom:10px;
+        }
+
+        .smart-finder-hint span{
+          color:#fff;
+          opacity:.9;
+          font-weight:700;
+        }
+
+        .smart-finder-chips{
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+        }
+
+        .smart-chip{
+          border:1px solid rgba(255,255,255,.12);
+          background:rgba(255,255,255,.05);
+          color:#fff;
+          border-radius:999px;
+          padding:9px 13px;
+          font-size:12px;
+          font-weight:800;
+          cursor:pointer;
+          transition:.18s ease;
+        }
+
+        .smart-chip:hover{
+          background:rgba(255,255,255,.09);
+          border-color:rgba(59,130,246,.38);
+        }
+
+        @media (max-width:640px){
+          .smart-finder-hint{
+            font-size:12px;
+          }
+
+          .smart-chip{
+            padding:8px 12px;
+            font-size:11.5px;
+          }
+
+          .presave-wrap{
+            width:100%;
+            margin-top:14px;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+          }
+
+          .presave-wrap .presave-pill{
+            width:100% !important;
+            margin-top:0 !important;
+          }
+
+          .presave-countdown{
+            color:rgba(255,255,255,.62);
+            font-size:12px;
+            text-align:center;
+            line-height:1.2;
+          }
+       }
+      
+  </style>
+
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu" style="display:inline-flex; align-items:center; justify-content:center;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/collabs/">Collabs</a>
+      <a href="https://blog.audiory.site">Blog</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="#">
+        Dashboard
+      </a>
+      <button id="navSignOut" class="ghost hidden" type="button">
+        Sign out
+      </button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button" style="display:inline-flex; align-items:center; justify-content:center; gap:6px;">
+      <span class="cart-ic" style="width:18px; height:18px; display:inline-block; color:currentColor;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close" style="display:inline-flex; align-items:center; justify-content:center;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+    </button>
+  </div>
+  <a href="/">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/collabs/">Collabs</a>
+  <a href="https://blog.audiory.site">Blog</a>
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="card hero-card">
+      <h1 class="hero-title">Your first hit starts here</h1>
+      <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
+      <div class="hero-search smart-finder-wrap">
+        <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+
+      <div class="smart-finder-meta">
+        <div class="smart-finder-hint">
+          Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
+        </div>
+
+        <div class="smart-finder-chips">
+          <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
+          <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
+          <button type="button" class="smart-chip" data-smart-fill="Afrobeats">Afrobeats</button>
+          <button type="button" class="smart-chip" data-smart-fill="Drill dark">Drill dark</button>
+          <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
+          <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card" style="padding:18px;">
+      <h2 class="h2" style="margin-bottom:12px;">Explore Audiory</h2>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <a class="play-btn" href="/marketplace/">Browse Beats</a>
+        <a class="play-btn" href="/freebeats/">Free Beats</a>
+        <a class="play-btn" href="/soundkits/">Sound Kits</a>
+        <a class="play-btn" href="/producers/">Top Producers</a>
+        <a class="play-btn" href="/pricing/">Pricing</a>
+        <a class="play-btn" href="/register/">Sell Beats</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="home-row">
+      <h2 class="h2">Featured Beats</h2>
+      <a class="see-all" href="/marketplace/?featured=1">See all →</a>
+    </div>
+
+    <div id="featuredStatus" class="loading-box" style="margin-top:12px;">Loading featured beats…</div>
+    <div id="featuredStrip" class="trending-strip"></div>
+  </section>
+
+  <section class="section">
+    <div class="home-row">
+      <h2 class="h2">Trending Beats</h2>
+      <a class="see-all" href="/marketplace/">See all →</a>
+    </div>
+
+    <div id="homeStatus" class="loading-box" style="margin-top:12px;">Loading beats…</div>
+    <div id="trendingStrip" class="trending-strip"></div>
+  </section>
+
+  <section class="section">
+    <div class="home-row">
+      <h2 class="h2">Popular Genres</h2>
+    </div>
+
+    <div class="genres-grid">
+      <a class="card genre" href="/marketplace/?genre=Afrobeats">
+        <img src="https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Afrobeats">
+        <div class="gname">Afrobeats</div>
+      </a>
+
+      <a class="card genre" href="/marketplace/?genre=Trap">
+        <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=200&q=60" alt="Trap">
+        <div class="gname">Trap</div>
+      </a>
+
+      <a class="card genre" href="/marketplace/?genre=Drill">
+        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=60" alt="Drill">
+        <div class="gname">Drill</div>
+      </a>
+
+      <a class="card genre" href="/marketplace/?genre=Amapiano">
+        <img src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=200&q=60" alt="Amapiano">
+        <div class="gname">Amapiano</div>
+      </a>
+
+      <a class="card genre" href="/marketplace/?genre=R%26B">
+        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=200&q=60" alt="R&B">
+        <div class="gname">R&amp;B</div>
+      </a>
+
+      <a class="card genre" href="/marketplace/?genre=Hip%20Hop">
+        <img src="https://images.unsplash.com/photo-1499415479124-43c32433a620?auto=format&fit=crop&w=200&q=60" alt="Hip Hop">
+        <div class="gname">Hip Hop</div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="home-row">
+      <h2 class="h2">Top Charting Beats</h2>
+      <a class="see-all" href="/marketplace/">See all →</a>
+    </div>
+    <div id="chartGrid" class="chart-grid"></div>
+  </section>
+
+  <section class="section">
+    <div class="card producers-promo">
+      <div class="kicker">For Producers</div>
+      <h3>Your music business in one place</h3>
+
+      <div class="promo-list">
+        <div class="promo-item">
+          <div class="promo-icon" style="width:24px; height:24px; display:inline-flex; align-items:center; color:#3b82f6;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          </div>
+          <div>
+            <h4>Manage your business</h4>
+            <p>Upload your beats, manage your store, and sell licenses in one workflow.</p>
+          </div>
+        </div>
+
+        <div class="promo-item">
+          <div class="promo-icon" style="width:24px; height:24px; display:inline-flex; align-items:center; color:#22c55e;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          </div>
+          <div>
+            <h4>Track your performance</h4>
+            <p>See what’s trending and grow with analytics & upgrades.</p>
+          </div>
+        </div>
+
+        <div class="promo-item">
+          <div class="promo-icon" style="width:24px; height:24px; display:inline-flex; align-items:center; color:#ef4444;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+          </div>
+          <div>
+            <h4>Grow your audience</h4>
+            <p>Build your producer profile and reach more artists.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:12px; flex-wrap:wrap;">
+        <a class="play-btn" href="/register/" style="display:inline-flex; align-items:center; gap:8px;">
+          <span class="playIcon" style="width:16px; height:16px; display:inline-flex;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 3a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3 3 3 0 0 0 3-3V6a3 3 0 0 0-3-3z"></path><path d="M6 21a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3v12a3 3 0 0 0 3 3z"></path></svg></span>
+          <span class="playText">Start Selling</span>
+        </a>
+        <a class="play-btn" href="/login/" style="display:inline-flex; align-items:center; gap:8px;">
+          <span class="playIcon" style="width:16px; height:16px; display:inline-flex;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></svg></span>
+          <span class="playText">Sign in</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
+        </svg>
+      </a>
+
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
+          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close" style="display:inline-flex; align-items:center; justify-content:center;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+      </button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button" style="display:inline-flex; align-items:center; justify-content:center;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+    </button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
+<div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
+  <div class="pb-free-head">
+    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
+    <button class="pb-free-close" id="pbFreeClose" aria-label="Close">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+    </button>
+  </div>
+
+  <div class="pb-free-sub" id="pbFreeSub">
+    Enter your email address and full name to unlock your free download.
+    We will send your free track to the email address.
+  </div>
+
+  <div class="pb-free-label">Full name</div>
+  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
+
+  <div class="pb-free-label">Email address</div>
+  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
+
+  <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
+  <div class="pb-free-status" id="pbFreeStatus"></div>
+
+  <div class="pb-free-note">
+    By continuing, you agree to our Terms & Privacy Policy.
+  </div>
+</div>
+
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></svg>
+    </button>
+  </div>
+
+  <div class="pb-pay-body">
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
+
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
+
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+</script>
+
+<script>
+  // ✅ PayPal (no trailing slash)
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+
+  // ✅ M-Pesa STK Push (no trailing slash)
+  window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
+
+  // ✅ We'll track the selected beat/license here
+  window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
+</script>
+
+<script type="module" src="/js/firebase.js?v=21"></script>
+<script src="/js/verify.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js?v=19"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/performance.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  /* =========================
+     SMART FINDER (SAFE VERSION)
+     Homepage only
+  ========================= */
+  (function(){
+    const input = document.getElementById("searchInput");
+    const btn = document.getElementById("searchBtn");
+    const chips = Array.from(document.querySelectorAll("[data-smart-fill]"));
+
+    if(!input || !btn) return;
+
+    const KNOWN_GENRES = [
+      "trap",
+      "drill",
+      "afrobeats",
+      "amapiano",
+      "r&b",
+      "hip hop",
+      "hiphop",
+      "dancehall",
+      "bongo",
+      "gengetone",
+      "reggae"
+    ];
+
+    const KNOWN_MOODS = [
+      "chill",
+      "dark",
+      "happy",
+      "sad",
+      "emotional",
+      "lyrical",
+      "aggressive",
+      "club",
+      "romantic",
+      "melodic",
+      "hard",
+      "smooth"
+    ];
+
+    function normalizeText(str){
+      return String(str || "")
+        .toLowerCase()
+        .replace(/&/g, "and")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function unique(arr){
+      return [...new Set((arr || []).filter(Boolean))];
+    }
+
+    function parseSmartFinder(raw){
+      const original = String(raw || "").trim();
+      const normalized = normalizeText(original);
+
+      const foundGenres = [];
+      const foundMoods = [];
+
+      KNOWN_GENRES.forEach(g => {
+        if (normalized.includes(normalizeText(g))) foundGenres.push(g);
+      });
+
+      KNOWN_MOODS.forEach(m => {
+        if (normalized.includes(normalizeText(m))) foundMoods.push(m);
+      });
+
+      let detectedTypeBeat = "";
+
+      if (/\btype beat\b/i.test(original)) {
+        detectedTypeBeat = original
+          .replace(/\btype beat\b/i, "")
+          .trim();
+      } else {
+        const artistCandidates = [
+          "j cole","drake","burna boy","future","21 savage","travis scott",
+          "central cee","gunna","lil baby","wizkid","asake","davido",
+          "sza","the weeknd","tems","metro boomin","yeat","young thug"
+        ];
+
+        const hit = artistCandidates.find(name => normalized.includes(name));
+        if (hit) {
+          detectedTypeBeat = hit.replace(/\b\w/g, c => c.toUpperCase());
+        }
+      }
+
+      const cleanedWords = original
+        .split(/\s+/)
+        .map(x => x.trim())
+        .filter(Boolean);
+
+      const tags = cleanedWords.filter(word => {
+        const w = normalizeText(word);
+        if (!w) return false;
+        if (KNOWN_GENRES.includes(w)) return false;
+        if (KNOWN_MOODS.includes(w)) return false;
+        return true;
+      });
+
+      return {
+        q: original,
+        genre: unique(foundGenres),
+        mood: unique(foundMoods),
+        typeBeat: detectedTypeBeat,
+        tags: unique(tags)
+      };
+    }
+
+    function buildMarketplaceUrl(parsed){
+      const url = new URL("/marketplace/", location.origin);
+
+      if (parsed.q) url.searchParams.set("q", parsed.q);
+      if (parsed.genre.length) url.searchParams.set("genre", parsed.genre.join(","));
+      if (parsed.mood.length) url.searchParams.set("mood", parsed.mood.join(","));
+      if (parsed.typeBeat) url.searchParams.set("typeBeat", parsed.typeBeat);
+      if (parsed.tags.length) url.searchParams.set("tags", parsed.tags.join(","));
+      url.searchParams.set("smart", "1");
+
+      return url.pathname + url.search;
+    }
+
+    function goSmart(){
+      const raw = (input.value || "").trim();
+      if(!raw){
+        location.href = "/marketplace/";
+        return;
+      }
+
+      const parsed = parseSmartFinder(raw);
+      const target = buildMarketplaceUrl(parsed);
+      location.href = target;
+    }
+
+    btn.addEventListener("click", goSmart);
+
+    input.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter"){
+        e.preventDefault();
+        goSmart();
+      }
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        const fill = chip.getAttribute("data-smart-fill") || "";
+        input.value = fill;
+        input.focus();
+      });
+    });
+  })();
+
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
+  function prettyProducerName(b){
+    if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function coverHTML(url, title){
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+
+    return `
+      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">
+        ${initials}
+      </div>
+    `;
+  }
+
+  function beatPageUrl(b){
+    const id = String(b?.id || "");
+    return "/beat/?id=" + encodeURIComponent(id);
+  }
+  function producerPageUrl(b){
+    const pid = String(b?.producerId || "");
+    return "/producer-profile/?producerId=" + encodeURIComponent(pid);
+  }
+
+  function getBeatPremiereTime(b){
+    return (
+      b?.premiereAt?.toMillis?.() ||
+      (b?.premiereAt?.seconds ? b.premiereAt.seconds * 1000 : null) ||
+      Number(b?.premiereAt || b?.releaseAt || 0)
+    );
+  }
+
+  function isUpcomingPremiereBeat(b){
+    const premiereAt = getBeatPremiereTime(b);
+    return (
+      b?.isPremiere === true &&
+      premiereAt &&
+      Number.isFinite(premiereAt) &&
+      premiereAt > Date.now()
+    );
+  }
+
+  function formatPremiereCountdown(b){
+    const premiereAt = getBeatPremiereTime(b);
+    if (!premiereAt) return "Premiere soon";
+
+    const diff = Math.max(0, premiereAt - Date.now());
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+
+    if (days > 0) return `Premieres in ${days}d ${hours}h`;
+    if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
+    return `Premieres in ${mins}m`;
+  }
+
+  function preSaveHTML(b){
+    return `
+      <div class="presave-wrap">
+        <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+          </span>
+          <span>Pre-save</span>
+        </button>
+
+        <div class="presave-countdown">
+          ${formatPremiereCountdown(b)}
+        </div>
+      </div>
+    `;
+  }
+
+  async function logAnalyticsEvent({ producerId, type, beatId=null }){
+    try{
+      const FB = window.FB;
+      if (!FB?.auth?.currentUser) return;
+      if (!producerId || !type) return;
+      if (!FB?.db || typeof FB.addDoc !== "function" || typeof FB.collection !== "function") return;
+
+      const ts =
+        (typeof FB.serverTimestamp === "function")
+          ? FB.serverTimestamp()
+          : Date.now();
+
+      await FB.addDoc(FB.collection(FB.db, "analyticsEvents"), {
+        producerId: String(producerId),
+        type: String(type),
+        beatId: beatId ? String(beatId) : null,
+        actorUid: FB.auth.currentUser.uid,
+        createdAt: ts
+      });
+    }catch(err){
+      console.warn("homepage analytics log failed:", err);
     }
   }
-</style>
+
+async function logBeatPlay(beat, playBtn){
+  try{
+    const b = beat || {};
+    const producerId = String(b.producerId || "").trim();
+    const beatId = String(b.id || "").trim();
+
+    if (!producerId || !beatId) return;
+
+    window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+    const playKey = `${producerId}:${beatId}`;
+
+    if (window.__ANA_SENT__.play[playKey]) return;
+    window.__ANA_SENT__.play[playKey] = 1;
+
+    const FB = window.FB;
+    if (
+      !FB?.db ||
+      typeof FB.doc !== "function" ||
+      typeof FB.updateDoc !== "function" ||
+      typeof FB.increment !== "function"
+    ){
+      console.error("Homepage play tracking failed: Firebase helpers missing");
+      delete window.__ANA_SENT__.play[playKey];
+      return;
+    }
+
+    try{
+      const ref = FB.doc(FB.db, "beats", beatId);
+      await FB.updateDoc(ref, {
+        plays: FB.increment(1),
+        lastPlayedAt: Date.now()
+      });
+      console.log("✅ homepage plays incremented:", beatId);
+    }catch(err){
+      console.error("❌ homepage Firestore increment failed:", err);
+      delete window.__ANA_SENT__.play[playKey];
+      return;
+    }
+
+    try{
+      if (typeof FB.trackEvent === "function"){
+        await FB.trackEvent({
+          type: "beat_play",
+          beatId,
+          producerId,
+          path: location.pathname + location.search,
+          meta: { surface: "home", action: "preview" }
+        });
+      }
+    }catch(err){
+      console.warn("Homepage trackEvent failed:", err);
+    }
+
+  }catch(err){
+    console.error("logBeatPlay failed", err);
+  }
+}
+window.logBeatPlay = logBeatPlay;
+
+  /* ===========================
+     ✅ FREE DOWNLOAD
+  =========================== */
+  const FreeDL = (() => {
+    const $ = (id)=>document.getElementById(id);
+
+    const backdrop = $("pbFreeBackdrop");
+    const modal = $("pbFreeModal");
+    const closeBtn = $("pbFreeClose");
+    const sendBtn = $("pbFreeSend");
+    const nameEl = $("pbFreeName");
+    const emailEl = $("pbFreeEmail");
+    const titleEl = $("pbFreeTitle");
+    const statusEl = $("pbFreeStatus");
+
+    let currentBeat = null;
+
+    function open(beat){
+      currentBeat = beat || null;
+      titleEl.textContent = "Free Download" + (beat?.title ? ` — ${beat.title}` : "");
+      statusEl.textContent = "";
+      nameEl.value = "";
+      emailEl.value = "";
+
+      backdrop.style.display = "block";
+      modal.style.display = "block";
+      backdrop.setAttribute("aria-hidden","false");
+      setTimeout(()=>nameEl.focus(), 30);
+    }
+
+    function close(){
+      backdrop.style.display = "none";
+      modal.style.display = "none";
+      backdrop.setAttribute("aria-hidden","true");
+      currentBeat = null;
+    }
+
+    async function send(){
+      const fullName = (nameEl.value || "").trim();
+      const email = (emailEl.value || "").trim().toLowerCase();
+
+      if (!fullName) return alert("Enter your full name");
+      if (!email || !email.includes("@")) return alert("Enter a valid email");
+      if (!currentBeat?.id) return alert("Beat not found");
+
+      const key = `pb_free_${currentBeat.id}_${email}`;
+      if (localStorage.getItem(key) === "1"){
+        statusEl.textContent = "✅ Already sent. Check inbox/spam.";
+        return;
+      }
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = "Sending...";
+
+      try{
+        if (window.FB && typeof window.FB.logFreeDownload === "function"){
+          await window.FB.logFreeDownload({
+            beatId: currentBeat.id,
+            beatTitle: currentBeat.title || "",
+            producerId: currentBeat.producerId || "",
+            producerName: currentBeat.producerName || "",
+            fullName,
+            email,
+            createdAt: Date.now()
+          });
+        }
+
+        localStorage.setItem(key, "1");
+        statusEl.textContent = "✅ Sent! Check inbox/spam.";
+        setTimeout(close, 900);
+      }catch(err){
+        console.error(err);
+        alert("Failed: " + (err?.message || err));
+      }
+
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Send";
+    }
+
+    backdrop?.addEventListener("click", close);
+    closeBtn?.addEventListener("click", close);
+    sendBtn?.addEventListener("click", send);
+
+    return { open, close };
+    })();
+
+    document.addEventListener("click", (e)=>{
+      const preBtn = e.target.closest("[data-presave='1']");
+      if (!preBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
+    });
+
+    function isFreeBeat(b){
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true) return true;
+
+    if (Number.isFinite(Number(b.price))) {
+      return Number(b.price) <= 0;
+    }
+
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    if (hasPaidLicense) return false;
+    return true;
+  }
+
+  function pillHTML(b){
+    if (isUpcomingPremiereBeat(b)){
+      return preSaveHTML(b);
+    }
+
+    if (isFreeBeat(b)){
+      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        </span>
+        <span>Free</span>
+      </button>`;
+    }
+
+    return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
+      <span class="ic lock-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </span>
+      <span>${money(b.price)}</span>
+    </button>`;
+  }
+
+  function getChartScore(b){
+    const plays = Number(b.plays || 0);
+    const cartAdds = Number(b.cartAdds || 0);
+    const downloads = Number(b.downloads || 0);
+    const sales = Number(b.sales || 0);
+
+    return (plays * 1) + (cartAdds * 3) + (downloads * 4) + (sales * 8);
+  }
+
+  /* =========================================================
+     ✅ NEW: Selection tracker + Payment Modal logic
+     Works without editing license-modal.js
+  ========================================================= */
+  (function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const payBackdrop = $("pbPayBackdrop");
+  const payModal = $("pbPayModal");
+  const payClose = $("pbPayClose");
+  const payTitle = $("pbPayTitle");
+  const paySub = $("pbPaySub");
+  const payAmountA = $("pbPayAmountA");
+  const payAmountB = $("pbPayAmountB");
+  const btnPaypal = $("pbPayWithPaypal");
+  const btnMpesa = $("pbPayWithMpesa");
+  const mpesaBox = $("pbMpesaBox");
+  const mpesaPhone = $("pbMpesaPhone");
+  const payStatus = $("pbPayStatus");
+  const pbSendStkPush = $("pbSendStkPush");
+
+  function getBeatById(beatId){
+    return (window.__LATEST_BEATS__ || []).find(
+      b => String(b?.id || "") === String(beatId || "")
+    ) || null;
+  }
+
+  function getDefaultLicenseForBeat(beat){
+    if (!beat) {
+      return {
+        licenseKey: "basic",
+        amount: 0
+      };
+    }
+
+    const lic = beat.licenses || {};
+
+    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+      return {
+        licenseKey: "basic",
+        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+      return {
+        licenseKey: "premium",
+        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+      return {
+        licenseKey: "exclusive",
+        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+      };
+    }
+
+    return {
+      licenseKey: "basic",
+      amount: Number(beat.price || 0)
+    };
+  }
+
+  function syncSelectionFromModal(){
+    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+    const selectedCard =
+      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+      document.querySelector('#pbLicensesGrid .selected') ||
+      document.querySelector('#pbLicensesGrid .active') ||
+      document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+    let licenseKey = "";
+    if (selectedCard) {
+      licenseKey =
+        selectedCard.dataset.licenseKey ||
+        selectedCard.dataset.key ||
+        "";
+    }
+
+    if (!licenseKey && selectedCard) {
+      const txt = (selectedCard.textContent || "").toLowerCase();
+      if (txt.includes("exclusive")) licenseKey = "exclusive";
+      else if (txt.includes("premium")) licenseKey = "premium";
+      else if (txt.includes("basic")) licenseKey = "basic";
+    }
+
+    if (!licenseKey) {
+      const existing = window.__PB_SELECTED__ || {};
+      licenseKey = existing.licenseKey || "basic";
+    }
+
+    window.__PB_SELECTED__ = {
+      ...(window.__PB_SELECTED__ || {}),
+      title: title || window.__PB_SELECTED__?.title || "",
+      licenseKey,
+      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+    };
+
+    console.log("✅ synced from modal", window.__PB_SELECTED__);
+  }
+
+  function openPayModal(){
+    const sel = window.__PB_SELECTED__;
+
+    if (!sel?.beatId) {
+      alert("Select a beat and license first.");
+      return;
+    }
+
+    const currentSel = window.__PB_SELECTED__;
+
+    payTitle.textContent = "Choose payment method";
+    paySub.textContent = `${currentSel.title || "Beat"} • License: ${currentSel.licenseKey || "basic"}`;
+    payAmountA.textContent = money(currentSel.amount || 0);
+    payAmountB.textContent = money(currentSel.amount || 0);
+    payStatus.textContent = "";
+    mpesaBox.style.display = "none";
+    mpesaPhone.value = "";
+
+    payBackdrop.style.display = "block";
+    payModal.style.display = "block";
+    payBackdrop.setAttribute("aria-hidden","false");
+  }
+
+  function closePayModal(){
+    payBackdrop.style.display = "none";
+    payModal.style.display = "none";
+    payBackdrop.setAttribute("aria-hidden","true");
+    mpesaBox.style.display = "none";
+    payStatus.textContent = "";
+  }
+
+  payBackdrop?.addEventListener("click", closePayModal);
+  payClose?.addEventListener("click", closePayModal);
+
+  document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
+
+    const beatId = String(card.getAttribute("data-beat-id") || "");
+    if (!beatId) return;
+
+    const title =
+      (card.querySelector(".t")?.textContent ||
+       card.querySelector(".home-title-clamp")?.textContent ||
+       "").trim();
+
+    const beat = getBeatById(beatId);
+    const fallback = getDefaultLicenseForBeat(beat);
+
+    window.__PB_SELECTED__ = {
+      beatId,
+      title: title || "",
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+
+    console.log("✅ homepage default selection", window.__PB_SELECTED__);
+  }, true);
+
+  document.addEventListener("click", (e)=>{
+    const clickedCard = e.target.closest("#pbLicensesGrid > *");
+    if (!clickedCard) return;
+
+    setTimeout(syncSelectionFromModal, 0);
+  }, true);
+
+  const buyNowBtn = document.getElementById("pbBuyNow");
+  if (buyNowBtn) {
+    buyNowBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      let sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) {
+        alert("Select a beat and license first.");
+        return;
+      }
+
+      syncSelectionFromModal();
+      sel = window.__PB_SELECTED__;
+
+      if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+        const beat = getBeatById(sel.beatId);
+        const fallback = getDefaultLicenseForBeat(beat);
+
+        window.__PB_SELECTED__ = {
+          ...sel,
+          licenseKey: fallback.licenseKey,
+          amount: fallback.amount
+        };
+
+        sel = window.__PB_SELECTED__;
+      }
+
+      if (!sel?.amount || sel.amount <= 0) {
+        alert("Select a license first.");
+        return;
+      }
+
+      openPayModal();
+    }, true);
+  }
+
+  async function payWithPaypal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const body = {
+      beatId: sel.beatId,
+      licenseKey: sel.licenseKey || "basic"
+    };
+
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Opening PayPal…";
+
+    try{
+      const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await r.json().catch(()=> ({}));
+      if (!r.ok) {
+        console.error("PayPal createOrder failed:", data);
+        alert(data?.error || "PayPal create order failed");
+        payStatus.textContent = "";
+        return;
+      }
+
+      const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+      if (!url) {
+        console.error("No approveUrl:", data);
+        alert("PayPal approval link missing.");
+        payStatus.textContent = "";
+        return;
+      }
+
+      location.href = url;
+    } catch (err){
+      console.error(err);
+      alert("PayPal error: " + (err?.message || err));
+      payStatus.textContent = "";
+    } finally {
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  function showMpesaBox(){
+    mpesaBox.style.display = "block";
+    payStatus.textContent = "";
+    setTimeout(()=> mpesaPhone?.focus(), 50);
+  }
+
+  async function sendMpesaStkPush(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const phone = (mpesaPhone.value || "").trim();
+    if (!phone) {
+      payStatus.textContent = "Enter your phone number first.";
+      return;
+    }
+
+    const digits = phone.replace(/\D/g,"");
+    if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+      payStatus.textContent = "Use format: 2547XXXXXXXX";
+      return;
+    }
+
+    const amt = Number(sel.amount || 0);
+    if (!amt || amt <= 0) {
+      payStatus.textContent = "Price not detected. Try selecting the license again.";
+      return;
+    }
+
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    if (!u?.uid){
+      payStatus.textContent = "Please sign in to pay with M-Pesa.";
+      setTimeout(()=> location.href="/login/", 600);
+      return;
+    }
+
+    pbSendStkPush.disabled = true;
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Sending STK Push… check your phone.";
+
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), 25000);
+
+    try{
+      const body = {
+        phone: digits,
+        beatId: String(sel.beatId),
+        buyerId: String(u.uid),
+        licenseKey: String(sel.licenseKey || "basic"),
+        amount: Math.round(amt),
+        amountUsd: Number(amt)
+      };
+
+      const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      const data = await r.json().catch(()=> ({}));
+
+      if (!r.ok) {
+        console.error("STK push failed:", data);
+        payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+        return;
+      }
+
+      payStatus.textContent =
+        "✅ STK Push sent.\nApprove on your phone." +
+        (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+
+    } catch (err){
+      console.error(err);
+      if (String(err?.name) === "AbortError"){
+        payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
+      } else {
+        payStatus.textContent = "Error: " + (err?.message || err);
+      }
+    } finally {
+      clearTimeout(t);
+      pbSendStkPush.disabled = false;
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  btnPaypal?.addEventListener("click", payWithPaypal);
+  btnMpesa?.addEventListener("click", showMpesaBox);
+  pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+})();
+
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
+
+      const user = auth?.currentUser;
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
+
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
+
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
+
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
+
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
+
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
+
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
+
+  window.addEventListener("firebase-ready", () => {
+    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+  });
+
+  async function loadHomeBeats(){
+    const status = document.getElementById("homeStatus");
+    const strip  = document.getElementById("trendingStrip");
+    const chart  = document.getElementById("chartGrid");
+
+    const featuredStatus = document.getElementById("featuredStatus");
+    const featuredStrip  = document.getElementById("featuredStrip");
+    
+    try{
+      status.textContent = "Loading beats…";
+      status.classList.remove("hidden");
+
+      /* =========================================
+         INSTANT LOAD (cache first)
+      ========================================= */
+
+      let beats = [];
+
+      try{
+
+        const cached = sessionStorage.getItem("audiory_home_beats");
+
+        if(cached){
+          beats = JSON.parse(cached);
+          console.log("⚡ home beats loaded from cache");
+        }
+
+      }catch(e){
+        console.warn("cache parse failed",e);
+      }
+
+      if(!beats.length){
+        beats = await window.FB.fetchBeats({ max:30 });
+        sessionStorage.setItem("audiory_home_beats",JSON.stringify(beats));
+      }
+
+      window.FB.fetchBeats({ max:30, force:true }).then(fresh=>{
+        if(!fresh?.length) return;
+        sessionStorage.setItem("audiory_home_beats",JSON.stringify(fresh));
+      });
+
+      /* ======================================
+         FAST PRODUCER PROFILE LOAD
+      ====================================== */
+
+      try{
+
+        const producerIds = [...new Set(beats.map(b => b.producerId).filter(Boolean))];
+
+        const profilePromises = producerIds.map(id =>
+          window.FB.getProducerProfile(id).catch(()=>null)
+        );
+
+        const profiles = await Promise.all(profilePromises);
+
+        const profileMap = {};
+
+       profiles.forEach((p,i)=>{
+         if(!p) return;
+         profileMap[producerIds[i]] = p;
+       });
+
+       beats.forEach(b=>{
+         const prof = profileMap[b.producerId];
+         b.producerPlan = prof?.plan || "";
+       });
+
+     }catch(e){
+       console.warn("producer profiles load failed",e);
+     }
+      
+      window.__LATEST_BEATS__ = beats;
+
+      /* ======================================
+         PRELOAD BEAT PAGES
+      ====================================== */
+
+      setTimeout(()=>{
+
+        (beats || []).slice(0,3).forEach(b=>{
+
+          const link = document.createElement("link");
+          link.rel = "prefetch";
+          link.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+          document.head.appendChild(link);
+
+        });
+
+      },1500);
+
+      const now = Date.now();
+
+      const featuredBeats = beats.filter(b => b.featured === true);
+      console.log("ALL FEATURED TEST:", featuredBeats);
+
+      const chartBeats = [...beats]
+        .sort((a, b) => getChartScore(b) - getChartScore(a))
+        .slice(0, 10);
+
+      /* RANDOMIZE FEATURED ORDER */
+      featuredBeats.sort(() => Math.random() - 0.5);
+
+      /* FEATURED ROTATION */
+
+      const rotationSize = 10;
+
+      const rotationIndex =
+        Math.floor(Date.now() / (1000 * 60 * 5)) % Math.ceil(featuredBeats.length / rotationSize);
+
+      const start = rotationIndex * rotationSize;
+
+      const visibleFeatured = featuredBeats.slice(start, start + rotationSize);
+
+      strip.innerHTML = "";
+      chart.innerHTML = "";
+      featuredStrip.innerHTML = "";
+
+      if(!beats.length){
+        status.textContent = "No beats yet.";
+        return;
+      }
+
+      status.classList.add("hidden");
+
+      /* =====================
+         FEATURED BEATS
+      ===================== */
+
+      if(featuredBeats.length){
+
+        featuredStatus.classList.add("hidden");
+
+        visibleFeatured.forEach((b)=>{
+
+          const el = document.createElement("div");
+          el.className = "card trend-card";
+          el.setAttribute("data-beat-id", b.id);
+
+          const audioUrl = b.previewAudio || b.audio || "";
+
+          /* preload audio preview */
+
+          if(audioUrl){
+          }
+
+          const beatUrl = beatPageUrl(b);
+          const prodUrl = producerPageUrl(b);
+
+          el.innerHTML = `
+            <div class="beat-cover">
+              <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
+                ${coverHTML(b.artwork, b.title)}
+              </a>
+
+              <button
+                class="play-fab"
+                data-ignore-license="1"
+                data-audio-url="${audioUrl}"
+                aria-label="Play preview"
+                type="button">
+                <span class="playIcon">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </span>
+              </button>
+            </div>
+
+            <div class="trend-meta">
+              <a class="t" href="${beatUrl}" data-open-beat="1">
+                ${b.title}
+              </a>
+
+              <a class="p producer-link" href="${prodUrl}" data-producer-link="1">
+                ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
+              </a>
+            </div>
+
+            <div class="trend-actions">
+                ${pillHTML(b)}
+            </div>
+          `;
+
+          el.addEventListener("click", (e)=>{
+            const freeBtn = e.target.closest("[data-free-download='1']");
+            if (!freeBtn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            FreeDL.open(b);
+          });
+
+          el.addEventListener("click", (e)=>{
+            if (e.target.closest(".play-fab")) return;
+            if (e.target.closest("[data-free-download='1']")) return;
+            if (e.target.closest(".price-pill")) return;
+            if (e.target.closest("[data-producer-link='1']")) return;
+            if (e.target.closest("[data-open-beat='1']")) return;
+            location.href = beatUrl;
+          });
+
+         featuredStrip.appendChild(el);
+
+       });
+
+     }else{
+
+       featuredStatus.textContent = "No featured beats right now";
+
+     }
+
+      beats.slice(0,12).forEach((b)=>{
+        const el = document.createElement("div");
+        el.className = "card trend-card";
+        el.setAttribute("data-beat-id", b.id);
+
+        const audioUrl = b.previewAudio || b.audio || "";
+        const beatUrl = beatPageUrl(b);
+        const prodUrl = producerPageUrl(b);
+
+        el.innerHTML = `
+          <div class="beat-cover">
+            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
+              ${coverHTML(b.artwork, b.title)}
+            </a>
+
+            <button class="play-fab" data-ignore-license="1" data-audio-url="${audioUrl}" aria-label="Play" type="button">
+              <span class="playIcon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+            </button>
+          </div>
+
+          <div class="trend-meta">
+            <a class="t" href="${beatUrl}" data-open-beat="1">
+              ${b.title}
+            </a>
+
+            <a class="p producer-link" href="${prodUrl}" data-producer-link="1">
+              ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
+            </a>
+          </div>
+
+          <div class="trend-actions">
+            ${pillHTML(b)}
+          </div>
+        `;
+
+        el.addEventListener("click", (e)=>{
+          const freeBtn = e.target.closest("[data-free-download='1']");
+          if (!freeBtn) return;
+          e.preventDefault(); e.stopPropagation();
+          FreeDL.open(b);
+        });
+
+        el.addEventListener("click", (e)=>{
+          if (e.target.closest(".play-fab")) return;
+          if (e.target.closest("[data-free-download='1']")) return;
+          if (e.target.closest(".price-pill")) return;
+          if (e.target.closest("[data-producer-link='1']")) return;
+          if (e.target.closest("[data-open-beat='1']")) return;
+          location.href = beatUrl;
+        });
+
+        strip.appendChild(el);
+      });
+
+      chartBeats.forEach((b)=>{
+        const el = document.createElement("div");
+        el.className = "card chart-card";
+        el.setAttribute("data-beat-id", b.id);
+        el.style.padding = "10px";
+        el.style.borderRadius = "18px";
+
+        const audioUrl = b.previewAudio || b.audio || "";
+        const beatUrl = beatPageUrl(b);
+        const prodUrl = producerPageUrl(b);
+
+        console.log("Chart beat:", b.title, "score:", getChartScore(b), {
+          plays: b.plays || 0,
+          cartAdds: b.cartAdds || 0,
+          downloads: b.downloads || 0,
+          sales: b.sales || 0
+        });
+
+        el.innerHTML = `
+          <div class="beat-cover">
+            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
+              ${coverHTML(b.artwork, b.title)}
+            </a>
+
+            <button
+              class="play-fab"
+              data-ignore-license="1"
+              data-audio-url="${audioUrl}"
+              aria-label="Play preview"
+              type="button">
+              <span class="playIcon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </span>
+            </button>
+          </div>
+
+         <div class="chart-meta-row">
+           <div class="chart-text">
+             <a class="home-title-clamp" href="${beatUrl}" data-open-beat="1">
+               ${b.title}
+             </a>
+
+             <a class="home-producer-clamp producer-link" href="${prodUrl}" data-producer-link="1">
+               ${prettyProducerName(b)} ${AudioryVerify.badge(b.producerPlan)}
+             </a>
+           </div>
+         </div>
+
+         <div class="chart-pill">
+             ${pillHTML(b)}
+         </div>
+       `;
+
+        el.addEventListener("click", (e)=>{
+          const freeBtn = e.target.closest("[data-free-download='1']");
+          if (!freeBtn) return;
+          e.preventDefault(); e.stopPropagation();
+          FreeDL.open(b);
+        });
+
+        el.addEventListener("click", (e)=>{
+          if (e.target.closest(".play-fab")) return;
+          if (e.target.closest("[data-free-download='1']")) return;
+          if (e.target.closest(".price-pill")) return;
+          if (e.target.closest("[data-producer-link='1']")) return;
+          if (e.target.closest("[data-open-beat='1']")) return;
+          location.href = beatUrl;
+        });
+
+        chart.appendChild(el);
+      });
+
+    }catch(err){
+      console.error("[home] load error:", err);
+      status.textContent = "Could not load beats. Check Firestore rules & console.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", () => {
+    if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats();
+  });
+</script>
+
+</body>
+</html>
