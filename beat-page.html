@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Beat | Audiory</title>
+
+  <meta name="description" content="Listen to beats on Audiory. View BPM, key, licenses, and explore more from the producer." />
+  <meta name="robots" content="index, follow" />
+
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/cart.css">
+  <link rel="stylesheet" href="/css/mobile-fix.css">
+
+  <style>
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .desktop-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .cart-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container Spacing & Grid Structures */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+
+    .beat-page {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 18px 24px 50px;
+      box-sizing: border-box;
+    }
+
+    .beat-wrap {
+      display: grid;
+      grid-template-columns: 1.05fr .95fr;
+      gap: 24px;
+    }
+
+    .cardx {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    }
+
+    .muted {
+      color: #64748b;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .title {
+      font-weight: 900;
+      font-size: 28px;
+      color: #0f172a;
+      margin: 0;
+      letter-spacing: -.02em;
+    }
+
+    .subline {
+      margin: 6px 0 0;
+      font-size: 15px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    /* ALBUM ART CONTAINER & FAB */
+    .cover-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1/1;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      display: grid;
+      place-items: center;
+    }
+
+    .cover-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .play-fab {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(0, 0, 0, .45);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
+    }
+
+    .play-fab:hover {
+      transform: scale(1.05);
+      background: rgba(0, 0, 0, .55);
+    }
+
+    .playIcon {
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1;
+      margin-left: 2px;
+    }
+
+    /* PARAMETERS METADATA BOXES */
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .kv {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 12px 16px;
+    }
+
+    .kv .k {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .02em;
+    }
+
+    .kv .v {
+      margin-top: 4px;
+      font-size: 16px;
+      font-weight: 900;
+      color: #0f172a;
+    }
+
+    .beat-extra-meta {
+      display: grid;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .beat-extra-card {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .beat-extra-label {
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 800;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .beat-extra-value {
+      font-size: 15px;
+      font-weight: 800;
+      color: #1e293b;
+    }
+
+    .beat-extra-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .beat-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .beat-extra-desc {
+      color: #334155;
+      line-height: 1.6;
+      font-size: 14px;
+      white-space: pre-line;
+    }
+
+    /* LICENSE ACQUISITION ROWS */
+    .lic-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .lic {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      transition: border-color 0.2s ease;
+    }
+
+    .lic:hover {
+      border-color: #cbd5e1;
+    }
+
+    .lic strong {
+      display: block;
+      font-size: 16px;
+      color: #0f172a;
+      font-weight: 800;
+    }
+
+    .lic .lsub {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* ACTION BUTTON SYSTEM */
+    .btn {
+      height: 44px;
+      border: none;
+      border-radius: 12px;
+      padding: 0 20px;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      background: #3b2fad;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      background: #2d2294;
+    }
+
+    .btn.ghost {
+      background: transparent;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+    }
+
+    .btn.ghost:hover {
+      background: #f8fafc;
+      color: #1e293b;
+      border-color: #cbd5e1;
+    }
+
+    /* MORE TRACKS MINI CARDS */
+    .more-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .mini {
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .mini:hover {
+      transform: translateY(-2px);
+      border-color: #cbd5e1;
+    }
+
+    .mini .mcover {
+      aspect-ratio: 1/1;
+      background: #f1f5f9;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .mini .mcover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .mini .mbody {
+      padding: 12px;
+    }
+
+    .mini .mt {
+      font-weight: 800;
+      font-size: 14px;
+      color: #0f172a;
+      line-height: 1.3;
+      max-height: 36px;
+      overflow: hidden;
+    }
+
+    .mini .ms {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       PRICE PILLS & ACTIONS (RE-BRANDED FLUID SYSTEM)
+       ========================================================= */
+    .pb-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 20px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 15px;
+      border: 1.5px solid #3b2fad;
+      background: rgba(59, 47, 173, 0.03);
+      color: #3b2fad;
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .pb-pill:hover {
+      background: rgba(59, 47, 173, 0.08);
+      transform: translateY(-1px);
+    }
+
+    .pb-pill.full {
+      width: 100%;
+    }
+
+    .pb-pill.free {
+      border-color: #3b2fad;
+      background: #3b2fad;
+      color: #ffffff;
+    }
+    
+    .pb-pill.free:hover {
+      background: #2d2294;
+      border-color: #2d2294;
+    }
+
+    .lock-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: cubic-bezier(0.4, 0, 0.2, 1);
+      flex-shrink: 0;
+    }
+
+    .lock-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: currentColor;
+    }
+
+    .mpesa-icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mpesa-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* =========================================================
+       GATEWAY OVERLAY MODAL WINDOW (FLAT LIGHT RE-SKIN)
+       ========================================================= */
+    .pb-pay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      z-index: 10050;
+    }
+
+    .pb-pay-modal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(540px, calc(100vw - 24px));
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 0;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+      display: none;
+      z-index: 10051;
+    }
+
+    .pb-pay-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .pb-pay-title {
+      font-weight: 900;
+      font-size: 22px;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .pb-pay-sub {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .pb-pay-close {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .pb-pay-close:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .pb-pay-body {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .pb-pay-btn {
+      width: 100%;
+      min-height: 68px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 20px;
+      color: #fff;
+      font-size: 16px;
+      transition: filter 0.2s ease;
+    }
+
+    .pb-pay-btn.primary { background: #2563eb; }
+    .pb-pay-btn.success { background: #16a34a; }
+    .pb-pay-btn:hover { filter: brightness(0.94); }
+
+    .pb-pay-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pb-pay-amount {
+      font-size: 15px;
+      font-weight: 700;
+      opacity: .95;
+    }
+
+    .pb-pay-phone-wrap {
+      display: none;
+      margin-top: 4px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .pb-pay-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .pb-pay-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      outline: none;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .pb-pay-input:focus {
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .pb-pay-send {
+      margin-top: 12px;
+      min-height: 44px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 10px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .pb-pay-send:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .pb-pay-status {
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #475569;
+      white-space: pre-line;
+      font-weight: 500;
+    }
+
+    /* VERIFICATION BADGES COLORING SYSTEM MATCH */
+    .verify-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .verify-badge svg {
+      width: 16px;
+      height: 16px;
+      display: block;
+    }
+    .verify-pro svg { color: #3b2fad; }
+    .verify-elite svg { color: #fbbf24; }
+
+    /* PREMIUM FOOTER BRAND MATCH */
+    .footer {
+      width: 100%;
+      padding: 32px 20px; 
+      text-align: center;
+      border-top: 1px solid #f1f5f9; 
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px; 
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover { 
+      color: #3b2fad; 
+    }
+
+    .social {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .social a { 
+      color: #64748b !important;
+      background: #f8fafc !important; 
+      border: 1px solid #e2e8f0 !important; 
+      border-radius: 50% !important; 
+      width: 38px !important; 
+      height: 38px !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .social svg {
+      width: 18px !important;
+      height: 18px !important;
+      fill: currentColor !important;
+    }
+
+    .social a:hover { 
+      color: #ffffff !important; 
+      background: #3b2fad !important; 
+      border-color: #3b2fad !important;
+      transform: translateY(-3px); 
+      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); 
+    }
+
+    /* RESPONSIVE LAYOUT SYSTEMS */
+    @media (max-width: 900px){
+      .beat-wrap { grid-template-columns: 1fr; gap: 20px; }
+      .more-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px){
+      .cardx { padding: 18px; }
+      .title { font-size: 22px; }
+      .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
+      .pb-pay-head { padding: 16px 16px 12px; }
+      .pb-pay-title { font-size: 18px; }
+      .pb-pay-body { padding: 16px; }
+      .pb-pay-btn { min-height: 60px; font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/collabs/">Collabs</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">🛒</span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <a href="/">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/collabs/">Collabs</a>
+
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="/buyer-dashboard/">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
+
+<main class="container beat-page">
+  <div id="beatStatus" class="cardx">Loading beat…</div>
+
+  <section id="beatContent" class="beat-wrap" style="display:none;">
+    <div class="cardx">
+      <div class="cover-wrap" id="coverWrap">
+        <div id="beatCover"></div>
+
+        <button class="play-fab"
+          id="beatPlayBtn"
+          type="button"
+          data-play-btn
+          data-ignore-license="1"
+          data-audio-url=""
+          data-producer-id=""
+          data-beat-id=""
+          aria-label="Play">
+          <span class="playIcon">▶</span>
+        </button>
+      </div>
+
+      <div class="row" style="margin-top:12px;justify-content:space-between;">
+        <div style="min-width:0;flex:1">
+          <h1 class="title" id="beatTitle">Beat</h1>
+          <div class="subline muted">
+            by
+            <a id="beatProducerLink" href="#" style="color:#fff;font-weight:900;text-decoration:none;">Producer</a>
+            <span id="beatGenre" class="muted"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="kv">
+          <div class="k">BPM</div>
+          <div class="v" id="beatBpm">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Key</div>
+          <div class="v" id="beatKey">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Uploaded</div>
+          <div class="v" id="beatDate">—</div>
+        </div>
+        <div class="kv">
+          <div class="k">Plays</div>
+          <div class="v" id="beatPlays">—</div>
+        </div>
+      </div>
+
+      <div class="beat-extra-meta" id="beatExtraMeta" style="display:none;">
+        <div class="beat-extra-card">
+          <div class="beat-extra-label">Type Beat</div>
+          <div class="beat-extra-value" id="beatTypeBeatView">—</div>
+        </div>
+
+        <div class="beat-extra-card">
+          <div class="beat-extra-label">Mood</div>
+          <div class="beat-extra-tags" id="beatMoodView"></div>
+        </div>
+
+        <div class="beat-extra-card">
+          <div class="beat-extra-label">Tags</div>
+          <div class="beat-extra-tags" id="beatTagsView"></div>
+        </div>
+
+        <div class="beat-extra-card">
+          <div class="beat-extra-label">Description</div>
+          <div class="beat-extra-desc" id="beatDescriptionView">—</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btn ghost" id="backToMarket" type="button">← Back to Marketplace</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="cardx">
+        <div class="row" style="justify-content:space-between;">
+          <div>
+            <div style="font-weight:900;font-size:16px;">Licensing</div>
+            <div class="muted" style="font-size:12px;margin-top:4px;">Choose a license to continue.</div>
+          </div>
+          <div id="beatPricePillWrap"></div>
+        </div>
+
+        <div class="lic-grid" id="licensesGrid"></div>
+      </div>
+
+      <div class="cardx" style="margin-top:14px;">
+        <div style="font-weight:900;font-size:16px;">More from this producer</div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">Explore other uploads.</div>
+        <div class="more-grid" id="moreGrid"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
+<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
+  <div class="pb-cart-head">
+    <div>
+      <div class="pb-cart-title">Your Cart</div>
+      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
+    </div>
+    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
+  </div>
+
+  <div class="pb-cart-body" id="pbCartItems"></div>
+
+  <div class="pb-cart-foot">
+    <div class="pb-cart-totals">
+      <div class="muted">Total</div>
+      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
+    </div>
+
+    <div class="pb-cart-actions">
+      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
+      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<footer class="footer">
+  <div class="container footer-row">
+    <div>© 2026 Audiory</div>
+    <div class="footer-links">
+      <a href="/privacy/">Privacy Policy</a>
+      <a href="/terms/">Terms</a>
+      <a href="/cookies/">Cookies</a>
+      <a href="/cookie-settings/">Cookie Settings</a>
+      <a href="/refunds/">Refund Policy</a>
+      <a href="/dmca/">DMCA</a>
+      <a href="/creator-agreement/">Creator Agreement</a>
+    </div>
+
+    <div class="social">
+      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" aria-label="Instagram">
+        <svg viewBox="0 0 24 24"><path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm10 2H7a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3zm-5 4a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.5-2.2a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2z"/></svg>
+      </a>
+      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" aria-label="TikTok">
+        <svg viewBox="0 0 24 24"><path d="M9 3v12.5a3.5 3.5 0 1 1-3-3.465V9.5A6.5 6.5 0 1 0 12.5 16V8.5a8.5 8.5 0 0 0 5.5 2V7.5a5.5 5.5 0 0 1-5.5-5.5H9z"/></svg>
+      </a>
+      <a href="https://x.com/audiorybeats" target="_blank" aria-label="X">
+        <svg viewBox="0 0 24 24"><path d="M18.9 2H22l-6.8 7.8L23 22h-6.3l-4.9-6.4L6.3 22H2l7.3-8.4L1 2h6.5l4.4 5.8L18.9 2zm-1.1 18h1.7L7.6 3.9H5.8L17.8 20z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" aria-label="Facebook">
+        <svg viewBox="0 0 24 24"><path d="M13 22v-9h3l1-4h-4V6.5c0-1.2.3-2 2-2h2V1.1S16.3 1 14.6 1C11 1 9 3 9 6.2V9H6v4h3v9h4z"/></svg>
+      </a>
+      <a href="https://youtube.com/@audiorybeatstore" target="_blank" aria-label="YouTube">
+        <svg viewBox="0 0 24 24"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.7 4.6 12 4.6 12 4.6s-5.7 0-7.5.5A3 3 0 0 0 2.4 7.2 31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.8.5 7.5.5 7.5.5s5.7 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8zM10 15.5v-7l6 3.5-6 3.5z"/></svg>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+    <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+      <span class="pb-pay-btn-left">
+        <span>Pay with PayPal</span>
+      </span>
+      <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+    </button>
+
+    <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+      <span class="pb-pay-btn-left">
+        <span class="mpesa-icon" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+            <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span>Pay with M-Pesa</span>
+      </span>
+      <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+    </button>
+
+    <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+      <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+      <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+      <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+      <div class="pb-pay-status" id="pbPayStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.API_BASE = "https://prodbybigi-api.onrender.com";
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+  window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
+  window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
+</script>
+
+<script type="module" src="/js/firebase.js"></script>
+<script src="/js/verify.js"></script>
+<script src="/js/menu.js"></script>
+<script src="/js/player.js?v=19"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/cart-ui.js"></script>
+<script src="/js/performance.js"></script>
+<script src="/js/license-modal.js"></script>
+
+<script>
+  const $ = (id)=>document.getElementById(id);
+
+  function qs(name){
+    const u = new URL(location.href);
+    return (u.searchParams.get(name) || "").trim();
+  }
+
+  function money(n){
+    const v = Number(n);
+    if (!Number.isFinite(v)) return "$0.00";
+    return "$" + v.toFixed(2);
+  }
+
+  function coverHTML(url, title){
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="eager"
+          decoding="async"
+          fetchpriority="high"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:26px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function miniCoverHTML(url, title){
+    if (url) {
+      return `
+        <img
+          src="${url}"
+          alt="${title || "Beat"}"
+          loading="lazy"
+          decoding="async"
+          fetchpriority="low"
+          referrerpolicy="no-referrer"
+        />
+      `;
+    }
+    const initials = String(title || "B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:18px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function prettyProducerName(b){
+    if (b?.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
+    if (!b?.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function isFreeBeat(b){
+    if (!b) return true;
+    if (b.freeDownload === true || b.isFree === true) return true;
+    if (Number.isFinite(Number(b.price))) return Number(b.price) <= 0;
+
+    const lic = b.licenses || {};
+    const hasPaidLicense =
+      lic?.basic?.enabled === true ||
+      lic?.premium?.enabled === true ||
+      lic?.exclusive?.enabled === true;
+
+    return !hasPaidLicense;
+  }
+
+  function pickBpm(beat){
+    const v = beat?.bpm;
+    if(!v) return "—";
+    return String(v);
+  }
+
+  function pickKey(beat){
+    const v = beat?.key;
+    if(!v) return "—";
+    return String(v);
+  }
+
+  function lockIconHTML(){
+    return `
+      <span class="lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="6" y="10" width="12" height="10" rx="2.4" stroke="currentColor" stroke-width="2"/>
+          <path d="M9 10V7.8a3 3 0 1 1 6 0V10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+    `;
+  }
+
+  async function logAnalyticsEvent({ producerId, type, beatId=null }){
+    try{
+      const FB = window.FB;
+
+      if (!producerId || !type) return;
+      if (!FB?.db || !FB?.addDoc || !FB?.collection) return;
+
+      await FB.addDoc(
+        FB.collection(FB.db,"analyticsEvents"),
+        {
+          producerId: String(producerId),
+          type: String(type),
+          beatId: beatId ? String(beatId) : null,
+          actorUid: FB.auth?.currentUser?.uid || null,
+          createdAt: Date.now()
+        }
+      );
+
+    }catch(e){
+      console.error("analytics event failed", e);
+    }
+  }
+  window.logAnalyticsEvent = logAnalyticsEvent;
+  window.__ANA_SENT__ = window.__ANA_SENT__ || { play:{}, view:{} };
+
+  function formatDate(x){
+    try{
+      if (!x) return "—";
+      if (x?.toDate) return x.toDate().toLocaleDateString();
+      if (typeof x === "number") return new Date(x).toLocaleDateString();
+      const d = new Date(x);
+      return isNaN(d.getTime()) ? "—" : d.toLocaleDateString();
+    }catch(e){ return "—"; }
+  }
+
+  function renderLicenses(beat){
+    const wrap = $("licensesGrid");
+    if (!wrap) return;
+    wrap.innerHTML = "";
+
+    const beatId = String(beat?.id || "");
+    const producerId = String(beat?.producerId || "");
+
+    const lic = beat.licenses || {};
+    const tiers = [
+      { key:"basic", label:"Basic License", hint:"WAV/MP3" },
+      { key:"premium", label:"Premium License", hint:"WAV + STEMS" },
+      { key:"exclusive", label:"Exclusive", hint:"WAV + STEMS, full rights" }
+    ];
+
+    if (isFreeBeat(beat)){
+      wrap.innerHTML = `
+        <div class="lic">
+          <div>
+            <strong>Free Download</strong>
+            <div class="lsub">This beat is free to download.</div>
+          </div>
+          <button class="pb-pill full free" type="button">⬇️ Free</button>
+        </div>
+      `;
+      return;
+    }
+
+    let added = 0;
+
+    tiers.forEach(t=>{
+      const cfg = lic?.[t.key] || null;
+      const enabled = cfg?.enabled === true;
+      const price = cfg?.price != null ? Number(cfg.price) : null;
+
+      if (enabled || Number.isFinite(price)){
+        added++;
+        const usd = Number.isFinite(price) ? price : Number(beat.price ?? 0);
+
+        wrap.insertAdjacentHTML("beforeend", `
+          <div class="lic">
+            <div>
+              <strong>${t.label}</strong>
+              <div class="lsub">${t.hint}</div>
+            </div>
+
+            <div class="row" style="justify-content:flex-end;">
+              <button class="pb-pill price-pill" type="button"
+                data-license="${t.key}"
+                data-producer-id="${producerId}"
+                data-beat-id="${beatId}"
+                aria-label="Choose license">
+                ${lockIconHTML()}
+                <span>${money(usd)}</span>
+              </button>
+
+              <button class="pb-pill" type="button"
+                data-mpesa="1"
+                data-license="${t.key}"
+                data-producer-id="${producerId}"
+                data-beat-id="${beatId}"
+                data-amount-usd="${usd}"
+                aria-label="Pay with M-Pesa">
+                <span class="mpesa-icon" aria-hidden="true">
+                  <svg viewBox="0 0 64 64" fill="none">
+                    <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+                    <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <span>M-Pesa</span>
+              </button>
+            </div>
+          </div>
+        `);
+      }
+    });
+
+    if (!added){
+      const usd = Number(beat.price || 0);
+      wrap.innerHTML = `
+        <div class="lic">
+          <div>
+            <strong>License</strong>
+            <div class="lsub">Choose license to continue.</div>
+          </div>
+
+          <div class="row" style="justify-content:flex-end;">
+            <button class="pb-pill price-pill" type="button"
+              data-producer-id="${producerId}"
+              data-beat-id="${beatId}"
+              aria-label="Choose license">
+              ${lockIconHTML()}
+              <span>${money(usd)}</span>
+            </button>
+
+            <button class="pb-pill" type="button"
+              data-mpesa="1"
+              data-license="basic"
+              data-producer-id="${producerId}"
+              data-beat-id="${beatId}"
+              data-amount-usd="${usd}"
+              aria-label="Pay with M-Pesa">
+              <span class="mpesa-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" fill="none">
+                  <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+                  <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                  <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                </svg>
+              </span>
+              <span>M-Pesa</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  function renderMoreFromProducer(allBeats, beat){
+    const wrap = $("moreGrid");
+    if (!wrap) return;
+
+    const uid = String(beat.producerId || "");
+    const others = (allBeats || [])
+      .filter(b => String(b?.producerId||"") === uid && String(b?.id||"") !== String(beat.id||""))
+      .slice(0, 8);
+
+    if (!others.length){
+      wrap.innerHTML = `<div class="muted" style="grid-column:1/-1;">No more beats yet.</div>`;
+      return;
+    }
+
+    wrap.innerHTML = "";
+    others.forEach((b)=>{
+      const url = `/beat/?id=${encodeURIComponent(String(b.id||""))}`;
+      const el = document.createElement("div");
+      el.className = "mini";
+      el.innerHTML = `
+        <div class="mcover">${miniCoverHTML(b.artwork, b.title)}</div>
+        <div class="mbody">
+          <div class="mt">${b.title || "Beat"}</div>
+          <div class="ms">${b.genre ? b.genre : ""}</div>
+        </div>
+      `;
+      el.addEventListener("click", ()=>{ location.href = url; });
+      wrap.appendChild(el);
+    });
+  }
+
+  async function fetchBeatById(beatId){
+    if (window.FB && typeof window.FB.fetchBeatById === "function"){
+      return await window.FB.fetchBeatById(beatId);
+    }
+
+    const cached = window.__LATEST_BEATS__;
+    if (Array.isArray(cached)){
+      const found = cached.find(b => String(b?.id||"") === String(beatId||""));
+      if (found) return found;
+    }
+
+    if (window.FB && typeof window.FB.fetchBeats === "function"){
+      const beats = await window.FB.fetchBeats({ max: 160, force: false });
+      window.__LATEST_BEATS__ = beats;
+      return (beats || []).find(b => String(b?.id||"") === String(beatId||"")) || null;
+    }
+
+    return null;
+  }
+
+  function renderBeatExtraMeta(beat){
+    const wrap = $("beatExtraMeta");
+    const typeBeatEl = $("beatTypeBeatView");
+    const moodEl = $("beatMoodView");
+    const tagsEl = $("beatTagsView");
+    const descEl = $("beatDescriptionView");
+
+    if (!wrap) return;
+
+    const typeBeat = String(beat?.typeBeat || "").trim();
+    const mood = Array.isArray(beat?.mood) ? beat.mood.filter(Boolean) : [];
+    const tags = Array.isArray(beat?.tags) ? beat.tags.filter(Boolean) : [];
+    const description = String(beat?.beatDescription || beat?.desc || "").trim();
+
+    console.log("EXTRA META =", { typeBeat, mood, tags, description });
+
+    const hasAnything = !!(typeBeat || mood.length || tags.length || description);
+
+    if (!hasAnything){
+      wrap.style.display = "none";
+      return;
+    }
+
+    wrap.style.display = "grid";
+
+    if (typeBeatEl){
+      typeBeatEl.textContent = typeBeat || "—";
+    }
+
+    if (moodEl){
+      moodEl.innerHTML = mood.length
+        ? mood.map(x => `<span class="beat-chip">${x}</span>`).join("")
+        : `<span class="muted">No mood added</span>`;
+    }
+
+    if (tagsEl){
+      tagsEl.innerHTML = tags.length
+        ? tags.map(x => `<span class="beat-chip">${x}</span>`).join("")
+        : `<span class="muted">No tags added</span>`;
+    }
+
+    if (descEl){
+      descEl.textContent = description || "No description added.";
+    }
+  }
+
+  function renderBeatInstant(beat){
+    if (!beat) return;
+
+    if ($("beatCover")) $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
+    if ($("beatTitle")) $("beatTitle").textContent = beat.title || "Beat";
+    if ($("beatBpm")) $("beatBpm").textContent = pickBpm(beat);
+    if ($("beatKey")) $("beatKey").textContent = pickKey(beat);
+    if ($("beatDate")) $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
+  }
+
+  async function loadBeatPage(){
+    const beatId = qs("id");
+    const status = $("beatStatus");
+    const content = $("beatContent");
+
+    if (!beatId){
+      status.textContent = "Beat not found (missing id).";
+      return;
+    }
+
+    status.textContent = "Loading beat…";
+
+    let cachedBeat = null;
+    try{
+      const cache = sessionStorage.getItem("audiory_beat_" + beatId);
+      if(cache){
+        cachedBeat = JSON.parse(cache);
+      }
+    }catch(e){}
+
+    if(cachedBeat){
+      if ($("beatCover")) $("beatCover").innerHTML = coverHTML(cachedBeat.artwork, cachedBeat.title);
+      if ($("beatTitle")) $("beatTitle").textContent = cachedBeat.title || "Beat";
+      if ($("beatBpm")) $("beatBpm").textContent = pickBpm(cachedBeat);
+      if ($("beatKey")) $("beatKey").textContent = pickKey(cachedBeat);
+      if ($("beatDate")) $("beatDate").textContent = formatDate(cachedBeat.createdAt || cachedBeat.created || cachedBeat.uploadedAt);
+
+      $("beatStatus").style.display = "none";
+      $("beatContent").style.display = "grid";
+    }
+
+    try{
+      const beat = await fetchBeatById(beatId);
+      console.log("BEAT PAGE DATA =", beat);
+
+      try{
+        sessionStorage.setItem("audiory_beat_" + beatId, JSON.stringify(beat));
+      }catch(e){}
+
+      if (!beat){
+        status.textContent = "Beat not found.";
+        return;
+      }
+
+      if (!beat.producerPlan && window.FB?.getProducerProfile){
+        try{
+          const prof = await window.FB.getProducerProfile(beat.producerId);
+          beat.producerPlan = prof?.plan || "";
+        }catch{}
+      }
+
+      $("beatCover").innerHTML = coverHTML(beat.artwork, beat.title);
+      $("beatTitle").textContent = beat.title || "Beat";
+
+      const prodName = prettyProducerName(beat);
+      const prodLink = $("beatProducerLink");
+      prodLink.innerHTML = `${prodName} ${window.AudioryVerify ? AudioryVerify.badge(beat.producerPlan) : ""}`;
+      prodLink.href = `/producer-profile/?producerId=${encodeURIComponent(String(beat.producerId||""))}`;
+
+      $("beatGenre").textContent = beat.genre ? ` • ${beat.genre}` : "";
+      $("beatBpm").textContent = pickBpm(beat);
+      $("beatKey").textContent = pickKey(beat);
+      $("beatDate").textContent = formatDate(beat.createdAt || beat.created || beat.uploadedAt);
+      $("beatPlays").textContent = Number(beat.plays || 0);
+      renderBeatExtraMeta(beat);
+
+      const playBtn = $("beatPlayBtn");
+
+      playBtn.setAttribute(
+        "data-audio-url",
+        String(beat.previewAudio || beat.audio || "")
+      );
+
+      playBtn.setAttribute(
+        "data-producer-id",
+        String(beat.producerId || "")
+      );
+
+      playBtn.setAttribute(
+        "data-beat-id",
+        String(beat.id || beatId)
+      );
+
+      const clonedBtn =
+        playBtn.cloneNode(true);
+
+      playBtn.parentNode.replaceChild(
+        clonedBtn,
+        playBtn
+      );
+
+      playBtn.addEventListener("click", async () => {
+
+        const pid = String(beat.producerId || "");
+        const bid = String(beat.id || beatId);
+        const anaKey = `${pid}:${bid}`;
+
+        if (!pid || !bid) return;
+
+        if (window.__ANA_SENT__.play[anaKey]) return;
+
+        window.__ANA_SENT__.play[anaKey] = 1;
+
+        try {
+
+          logAnalyticsEvent({
+            producerId: pid,
+            type: "beat_play",
+            beatId: bid
+          });
+
+        } catch(e){
+          console.warn("analytics failed", e);
+        }
+
+        try {
+
+          const { doc, updateDoc, increment } = window.FB;
+
+          const ref =
+            doc(window.FB.db, "beats", bid);
+
+          await updateDoc(ref, {
+            plays: increment(1)
+          });
+
+          const currentPlays =
+            Number($("beatPlays").textContent || 0);
+
+          $("beatPlays").textContent =
+            currentPlays + 1;
+
+        } catch(e){
+
+          console.error("play increment failed", e);
+
+        }
+
+      });
+
+      const pillWrap = $("beatPricePillWrap");
+      if (pillWrap){
+        const bId = String(beat.id||beatId);
+        const pId = String(beat.producerId||"");
+        if (isFreeBeat(beat)){
+          pillWrap.innerHTML = `<button class="pb-pill free" type="button" aria-label="Free">⬇️ Free</button>`;
+        } else {
+          pillWrap.innerHTML = `
+            <button class="pb-pill price-pill" type="button"
+              data-producer-id="${pId}"
+              data-beat-id="${bId}"
+              aria-label="Choose license">
+              ${lockIconHTML()}
+              <span>${money(beat.price || 0)}</span>
+            </button>
+          `;
+        }
+      }
+
+      renderLicenses(beat);
+
+      let list = [];
+      try{
+        if(window.FB && typeof window.FB.fetchProducerBeats === "function"){
+          list = await window.FB.fetchProducerBeats(beat.producerId, 8);
+        }
+      }catch(e){}
+
+      renderMoreFromProducer(list, beat);
+
+      status.style.display = "none";
+      content.style.display = "grid";
+
+      $("backToMarket")?.addEventListener("click", ()=>{ location.href = "/marketplace/"; });
+
+      const producerId = String(beat.producerId||"");
+      const viewKey = `${producerId}:${String(beat.id||beatId)}`;
+      if (producerId && (beat.id || beatId) && !window.__ANA_SENT__.view[viewKey]){
+        window.__ANA_SENT__.view[viewKey] = 1;
+        logAnalyticsEvent({ producerId, type:"page_view", beatId: String(beat.id||beatId) });
+      }
+
+    }catch(err){
+      console.error(err);
+      status.textContent = "Failed to load beat. Check console.";
+    }
+  }
+
+  window.addEventListener("firebase-ready", ()=> loadBeatPage());
+</script>
+
+<script>
+  const pbPayBackdrop = document.getElementById("pbPayBackdrop");
+  const pbPayModal = document.getElementById("pbPayModal");
+  const pbPayClose = document.getElementById("pbPayClose");
+
+  const pbPayTitle = document.getElementById("pbPayTitle");
+  const pbPaySub = document.getElementById("pbPaySub");
+  const pbPayAmountA = document.getElementById("pbPayAmountA");
+  const pbPayAmountB = document.getElementById("pbPayAmountB");
+
+  const pbPayWithPaypal = document.getElementById("pbPayWithPaypal");
+  const pbPayWithMpesa = document.getElementById("pbPayWithMpesa");
+
+  const pbMpesaBox = document.getElementById("pbMpesaBox");
+  const pbMpesaPhone = document.getElementById("pbMpesaPhone");
+  const pbPayStatus = document.getElementById("pbPayStatus");
+  const pbSendStkPush = document.getElementById("pbSendStkPush");
+
+  function openPayModal(selected){
+    window.__PB_SELECTED__ = selected;
+
+    const usd = Number(selected?.amountUsd || 0);
+    pbPayTitle.textContent = "Choose payment method";
+    pbPaySub.textContent = `${selected.title || "Beat"}`;
+
+    pbPayAmountA.textContent = `$${usd.toFixed(2)}`;
+    pbPayAmountB.textContent = `$${usd.toFixed(2)}`;
+
+    pbPayStatus.textContent = "";
+    pbMpesaPhone.value = "";
+    pbMpesaBox.style.display = "none";
+
+    pbPayBackdrop.style.display = "block";
+    pbPayModal.style.display = "block";
+  }
+
+  function closePayModal(){
+    pbPayBackdrop.style.display = "none";
+    pbPayModal.style.display = "none";
+    pbPayStatus.textContent = "";
+    pbMpesaPhone.value = "";
+    pbMpesaBox.style.display = "none";
+  }
+
+  if (pbPayBackdrop) pbPayBackdrop.addEventListener("click", closePayModal);
+  if (pbPayClose) pbPayClose.addEventListener("click", closePayModal);
+
+  document.addEventListener("click", (e)=>{
+    const btn = e.target.closest("[data-mpesa='1']");
+    if (!btn) return;
+
+    const selected = {
+      beatId: btn.getAttribute("data-beat-id") || "",
+      producerId: btn.getAttribute("data-producer-id") || "",
+      licenseKey: btn.getAttribute("data-license") || "basic",
+      amountUsd: Number(btn.getAttribute("data-amount-usd") || 0),
+      title: document.getElementById("beatTitle")?.textContent || "Beat"
+    };
+
+    if (!selected.beatId){
+      alert("Missing beatId.");
+      return;
+    }
+    if (!Number.isFinite(selected.amountUsd) || selected.amountUsd <= 0){
+      alert("Invalid amount.");
+      return;
+    }
+
+    openPayModal(selected);
+  });
+
+  if (pbPayWithPaypal){
+    pbPayWithPaypal.addEventListener("click", async ()=>{
+      const sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) return;
+
+      try{
+        pbPayStatus.textContent = "Opening PayPal…";
+
+        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+          method: "POST",
+          headers: { "Content-Type":"application/json" },
+          body: JSON.stringify({
+            beatId: sel.beatId,
+            licenseKey: sel.licenseKey || "basic"
+          })
+        });
+
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok) throw new Error(data?.error || "PayPal create order failed");
+
+        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+        if (!url) throw new Error("PayPal approval link missing.");
+
+        location.href = url;
+      }catch(err){
+        console.error(err);
+        pbPayStatus.textContent = "❌ " + (err?.message || String(err));
+      }
+    });
+  }
+
+  if (pbPayWithMpesa){
+    pbPayWithMpesa.addEventListener("click", ()=>{
+      pbMpesaBox.style.display = "block";
+      pbPayStatus.textContent = "";
+      setTimeout(()=> pbMpesaPhone?.focus(), 50);
+    });
+  }
+
+  if (pbSendStkPush){
+    pbSendStkPush.addEventListener("click", async ()=>{
+      try{
+        const sel = window.__PB_SELECTED__;
+        if (!sel) return;
+
+        const phone = (pbMpesaPhone?.value || "").trim();
+        if (!phone){
+          pbPayStatus.textContent = "Enter your phone number first.";
+          return;
+        }
+
+        const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+        if (!u){
+          alert("Please sign in first.");
+          location.href = "/login/";
+          return;
+        }
+
+        pbSendStkPush.disabled = true;
+        pbPayStatus.textContent = "Sending STK Push… check your phone.";
+
+        const payload = {
+          phone,
+          beatId: String(sel.beatId),
+          buyerId: String(u.uid),
+          amountUsd: Number(sel.amountUsd),
+          licenseKey: String(sel.licenseKey || "basic"),
+          producerId: String(sel.producerId || "")
+        };
+
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await r.json().catch(()=> ({}));
+        if (!r.ok){
+          throw new Error(data?.error || data?.ResponseDescription || `STK Push failed (${r.status})`);
+        }
+
+        pbPayStatus.textContent =
+          "✅ STK Push sent.\nApprove on your phone." +
+          (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+      }catch(err){
+        console.error(err);
+        pbPayStatus.textContent = "❌ " + (err?.message || String(err));
+      }finally{
+        pbSendStkPush.disabled = false;
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
