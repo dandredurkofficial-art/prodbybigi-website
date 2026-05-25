@@ -7,7 +7,7 @@
   <title>Creator Agreement | Audiory</title>
   <meta name="description" content="Audiory Creator Agreement. Terms for producers uploading and selling beats and sound kits on Audiory.">
   <meta name="robots" content="index,follow">
-  <meta name="theme-color" content="#0b1220">
+  <meta name="theme-color" content="#3b2fad">
 
   <link rel="canonical" href="https://audiory.site/creator-agreement/">
 
@@ -26,119 +26,294 @@
   <meta name="twitter:description" content="Terms for producers uploading and selling content on Audiory.">
   <meta name="twitter:image" content="https://audiory.site/audioryfavicon.webp">
 
-  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    /* Global Background - Locked to clean Light UI */
+    body {
+      background-color: #f8fafc !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      align-items: center;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    /* Elegant Gradient Top Area Banner matching Auth pages */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 380px;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 50%, #111440 100%);
+      z-index: -1;
+    }
+
+    /* Clean Navbar / Topbar */
+    .topbar {
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 20px;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .brand-logo svg {
+      height: 38px;
+      width: auto;
+      display: block;
+    }
+
+    .back-btn {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 700;
+      opacity: 0.85;
+      transition: opacity 0.2s ease;
+    }
+
+    .back-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    /* Document Card Layout matching Auth/Help Desk structure */
+    .document-card {
+      background: #ffffff !important;
+      max-width: 800px;
+      width: 90%;
+      border-radius: 16px;
+      padding: 50px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-sizing: border-box;
+      margin-bottom: 60px;
+      border: none !important;
+      color: #334155;
+      line-height: 1.6;
+    }
+
+    .document-card h1 {
+      color: #1e293b;
+      font-size: 32px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .date-sub {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 32px;
+    }
+
+    .document-card h2 {
+      color: #1e293b;
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 36px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 6px;
+    }
+
+    .document-card p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .document-card ul {
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-left: 24px;
+    }
+
+    .document-card li {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .document-card strong {
+      color: #1e293b;
+    }
+
+    /* Links inside content */
+    .document-card a {
+      color: #5533ff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .document-card a:hover {
+      text-decoration: underline;
+    }
+
+    /* Footer Styles */
+    .footer {
+      margin-top: auto;
+      width: 100%;
+      padding: 24px 20px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .footer-text {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    @media (max-width: 640px) {
+      body::before {
+        height: 260px;
+      }
+      .topbar {
+        padding: 20px 16px;
+      }
+      .document-card {
+        padding: 30px 20px;
+        width: 95%;
+      }
+      .document-card h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="container topbar-inner">
-    <div class="logo">Audiory</span></div>
-    <a href="/index.html">← Back</a>
-  </div>
-</header>
+  <header class="topbar">
+    <a href="/" class="brand-logo" aria-label="Audiory Home">
+      <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g transform="translate(2, 4)">
+          <circle cx="18" cy="18" r="17" stroke="white" stroke-width="2.5" />
+          <circle cx="18" cy="18" r="11" stroke="white" stroke-width="1" stroke-dasharray="2 2" opacity="0.4" />
+          <path d="M18 7L25 26H21.5L18 16L14.5 26H11L18 7Z" fill="white"/>
+          <circle cx="18" cy="13" r="1.5" fill="#5533ff" />
+          <path d="M13.5 20H22.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </g>
+        <text x="46" y="29" fill="white" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="900" letter-spacing="-0.5">audiory</text>
+      </svg>
+    </a>
+    <a href="/index.html" class="back-btn">← Back</a>
+  </header>
 
-<main class="container section card">
-  <h1 class="h1">Creator Agreement (Producers)</h1>
-  <p class="sub">Last updated: January 2026</p>
+  <main class="document-card">
+    <h1>Creator Agreement (Producers)</h1>
+    <div class="date-sub">Last updated: January 2026</div>
 
-  <p>
-    This Creator Agreement (“Agreement”) applies to producers, beatmakers, and creators (“Creator”, “you”)
-    who upload, publish, or sell content on Audiory (“Platform”).
-    By uploading or selling content on Audiory, you agree to this Agreement.
-  </p>
+    <p>
+      This Creator Agreement (“Agreement”) applies to producers, beatmakers, and creators (“Creator”, “you”)
+      who upload, publish, or sell content on Audiory (“Platform”).
+      By uploading or selling content on Audiory, you agree to this Agreement.
+    </p>
 
-  <h2 class="h2">1. Eligibility</h2>
-  <ul>
-    <li>You must be able to enter a binding agreement in your jurisdiction.</li>
-    <li>You must provide accurate account and payout information.</li>
-  </ul>
+    <h2>1. Eligibility</h2>
+    <ul>
+      <li>You must be able to enter a binding agreement in your jurisdiction.</li>
+      <li>You must provide accurate account and payout information.</li>
+    </ul>
 
-  <h2 class="h2">2. Ownership & Rights</h2>
-  <p>
-    You retain ownership of your content. You confirm that you own or have secured all rights necessary
-    to upload and license your beats, stems, artwork, and sound kits.
-  </p>
+    <h2>2. Ownership & Rights</h2>
+    <p>
+      You retain ownership of your content. You confirm that you own or have secured all rights necessary
+      to upload and license your beats, stems, artwork, and sound kits.
+    </p>
 
-  <h2 class="h2">3. License to Audiory</h2>
-  <p>
-    You grant Audiory a limited, non-exclusive, worldwide license to host, store, reproduce,
-    display, and distribute your content solely for operating and promoting the Platform
-    (including previews, search results, and marketing).
-  </p>
+    <h2>3. License to Audiory</h2>
+    <p>
+      You grant Audiory a limited, non-exclusive, worldwide license to host, store, reproduce,
+      display, and distribute your content solely for operating and promoting the Platform
+      (including previews, search results, and marketing).
+    </p>
 
-  <h2 class="h2">4. Content Standards</h2>
-  <p>You agree you will not upload content that:</p>
-  <ul>
-    <li>Infringes copyright, trademarks, or other rights</li>
-    <li>Contains unauthorized samples or stolen material</li>
-    <li>Is illegal, hateful, or violates applicable law</li>
-    <li>Contains malware or attempts to exploit the Platform</li>
-  </ul>
+    <h2>4. Content Standards</h2>
+    <p>You agree you will not upload content that:</p>
+    <ul>
+      <li>Infringes copyright, trademarks, or other rights</li>
+      <li>Contains unauthorized samples or stolen material</li>
+      <li>Is illegal, hateful, or violates applicable law</li>
+      <li>Contains malware or attempts to exploit the Platform</li>
+    </ul>
 
-  <h2 class="h2">5. Pricing, Licensing & Delivery</h2>
-  <ul>
-    <li>You control pricing and licensing options you publish.</li>
-    <li>Customers receive a license (not ownership) according to the license displayed at checkout.</li>
-    <li>You are responsible for making sure your license terms are accurate and clear.</li>
-  </ul>
+    <h2>5. Pricing, Licensing & Delivery</h2>
+    <ul>
+      <li>You control pricing and licensing options you publish.</li>
+      <li>Customers receive a license (not ownership) according to the license displayed at checkout.</li>
+      <li>You are responsible for making sure your license terms are accurate and clear.</li>
+    </ul>
 
-  <h2 class="h2">6. Payouts & Fees</h2>
-  <p>
-    Audiory may charge platform fees or payment processing fees. Fees and payout rules may be updated.
-    Creators are responsible for taxes and reporting required in their country.
-  </p>
+    <h2>6. Payouts & Fees</h2>
+    <p>
+      Audiory may charge platform fees or payment processing fees. Fees and payout rules may be updated.
+      Creators are responsible for taxes and reporting required in their country.
+    </p>
 
-  <p>
-    For billing and payout questions contact: <strong>billing@audiory.site</strong>
-  </p>
+    <p>
+      For billing and payout questions contact: <a href="mailto:billing@audiory.site">billing@audiory.site</a>
+    </p>
 
-  <h2 class="h2">7. Removal, Moderation & Suspension</h2>
-  <p>
-    Audiory may remove content or suspend accounts if we believe content violates this Agreement,
-    the Terms & Conditions, or applicable law, or if we receive valid legal complaints (including DMCA notices).
-  </p>
+    <h2>7. Removal, Moderation & Suspension</h2>
+    <p>
+      Audiory may remove content or suspend accounts if we believe content violates this Agreement,
+      the Terms & Conditions, or applicable law, or if we receive valid legal complaints (including DMCA notices).
+    </p>
 
-  <h2 class="h2">8. DMCA & Copyright Complaints</h2>
-  <p>
-    Copyright complaints should be directed to: <strong>legal@audiory.site</strong>
-  </p>
+    <h2>8. DMCA & Copyright Complaints</h2>
+    <p>
+      Copyright complaints should be directed to: <a href="mailto:legal@audiory.site">legal@audiory.site</a>
+    </p>
 
-  <h2 class="h2">9. Limitation of Liability</h2>
-  <p>
-    Audiory provides the Platform “as is”. We are not responsible for:
-  </p>
-  <ul>
-    <li>Unauthorized use of your content by third parties outside the Platform</li>
-    <li>Loss of revenue due to service downtime</li>
-    <li>Disputes between creators and customers</li>
-  </ul>
+    <h2>9. Limitation of Liability</h2>
+    <p>
+      Audiory provides the Platform “as is”. We are not responsible for:
+    </p>
+    <ul>
+      <li>Unauthorized use of your content by third parties outside the Platform</li>
+      <li>Loss of revenue due to service downtime</li>
+      <li>Disputes between creators and customers</li>
+    </ul>
 
-  <h2 class="h2">10. Indemnification</h2>
-  <p>
-    You agree to defend and indemnify Audiory against claims arising from your content, including
-    infringement claims, licensing disputes, or illegal uploads.
-  </p>
+    <h2>10. Indemnification</h2>
+    <p>
+      You agree to defend and indemnify Audiory against claims arising from your content, including
+      infringement claims, licensing disputes, or illegal uploads.
+    </p>
 
-  <h2 class="h2">11. Changes to this Agreement</h2>
-  <p>
-    We may update this Agreement from time to time. Continued use of the Platform means you accept the updated version.
-  </p>
+    <h2>11. Changes to this Agreement</h2>
+    <p>
+      We may update this Agreement from time to time. Continued use of the Platform means you accept the updated version.
+    </p>
 
-  <h2 class="h2">12. Contact</h2>
-  <ul>
-    <li><strong>Support:</strong> support@audiory.site</li>
-    <li><strong>Legal:</strong> legal@audiory.site</li>
-    <li><strong>Billing:</strong> billing@audiory.site</li>
-    <li><strong>Privacy:</strong> privacy@audiory.site</li>
-    <li><strong>General:</strong> contact@audiory.site</li>
-  </ul>
-</main>
+    <h2>12. Contact</h2>
+    <ul>
+      <li><strong>Support:</strong> <a href="mailto:support@audiory.site">support@audiory.site</a></li>
+      <li><strong>Legal:</strong> <a href="mailto:legal@audiory.site">legal@audiory.site</a></li>
+      <li><strong>Billing:</strong> <a href="mailto:billing@audiory.site">billing@audiory.site</a></li>
+      <li><strong>Privacy:</strong> <a href="mailto:privacy@audiory.site">privacy@audiory.site</a></li>
+      <li><strong>General:</strong> <a href="mailto:contact@audiory.site">contact@audiory.site</a></li>
+    </ul>
+  </main>
 
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory</div>
-  </div>
-</footer>
+  <footer class="footer">
+    <div class="footer-text">© 2026 Audiory. All Rights Reserved.</div>
+  </footer>
 
 </body>
 </html>
