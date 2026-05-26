@@ -681,38 +681,44 @@
       margin: 0;
     }
 
+    /* Premium Social Container */
     .social {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
+      margin-top: 4px;
     }
 
-    .social a {
+    /* Circular button styling for clean, large social icons */
+    .social a { 
       color: #64748b !important;
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 50% !important;
-      width: 40px !important;
-      height: 40px !important;
+      background: #f8fafc !important; 
+      border: 1px solid #e2e8f0 !important; 
+      border-radius: 50% !important; 
+      width: 38px !important; 
+      height: 38px !important;
       display: inline-flex !important;
       align-items: center;
       justify-content: center;
       text-decoration: none;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
     }
 
     .social svg {
       width: 18px !important;
       height: 18px !important;
-      fill: currentColor !important;
+      fill: currentColor !important; /* Forces the SVG to match our crisp text link colors */
     }
 
-    .social a:hover {
-      color: #ffffff !important;
-      background: #3b2fad !important;
+    /* Smooth branding bounce glow on hover */
+    .social a:hover { 
+      color: #ffffff !important; 
+      background: #3b2fad !important; 
       border-color: #3b2fad !important;
-      transform: translateY(-2px);
+      transform: translateY(-3px); 
+      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); 
     }
 
     /* RESPONSIVE LAYOUT SYSTEMS */
