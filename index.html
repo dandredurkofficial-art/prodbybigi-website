@@ -943,6 +943,28 @@
       border-color: #1d4ed8;
     }
 
+    /* Force homepage price pills to use blue style */
+    .trend-actions .pb-pill,
+    .chart-pill .pb-pill,
+    .price-pill {
+      background: #2563eb !important;
+      border: 1.5px solid #2563eb !important;
+      color: #ffffff !important;
+    }
+
+    .trend-actions .pb-pill:hover,
+    .chart-pill .pb-pill:hover,
+    .price-pill:hover {
+      background: #1d4ed8 !important;
+      border-color: #1d4ed8 !important;
+    }
+
+    .trend-actions .pb-pill .ic,
+    .chart-pill .pb-pill .ic,
+    .price-pill .ic {
+      color: #ffffff !important;
+    }
+
     /* Responsive scaling optimizations */
     @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
     @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
