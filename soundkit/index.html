@@ -5,176 +5,417 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sound Kit | Audiory</title>
 
-  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/global.css?v=6">
+  <link rel="stylesheet" href="/css/home.css?v=6">
   <link rel="stylesheet" href="/css/cart.css">
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    .wrap{max-width:1100px;margin:0 auto;padding:18px}
-    .cardx{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);border-radius:22px;padding:14px}
-    .grid{display:grid;grid-template-columns: 360px 1fr;gap:16px;align-items:start}
-    @media(max-width:860px){.grid{grid-template-columns:1fr}}
-    .cover{
-      aspect-ratio:1/1;border-radius:18px;overflow:hidden;
-      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
-      position:relative;
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
     }
-    .cover img{width:100%;height:100%;object-fit:cover;display:block}
-    .title{font-size:26px;font-weight:900;letter-spacing:-.02em;margin:2px 0 8px}
-    .muted{color:rgba(255,255,255,.70)}
-    .desc{margin-top:10px;line-height:1.45;color:rgba(255,255,255,.86);white-space:pre-wrap}
-    .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
-    .pill{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.12);
-      padding:10px 12px;border-radius:999px;font-weight:900;
-      display:inline-flex;gap:8px;align-items:center
+
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
     }
-    .pill.price{
-      border:1.5px solid #295dff;
-      background:transparent;
-      cursor:pointer;
-      transition:.2s;
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
     }
-    .pill.price:hover{
-      background:rgba(255,255,255,.05);
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
     }
-    .btn{
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.14);
-      color:rgba(255,255,255,.92);
-      padding:10px 14px;border-radius:999px;font-weight:900;cursor:pointer
+
+    .desktop-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
-    .btn.primary{background:#2b6cff;border-color:#2b6cff;color:#fff}
-    .loading-box{
-      margin: 14px 0;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.85);
+
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .cart-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container Spacing & Layout Structure */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+    
+    .wrap {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 18px 24px 40px;
+      box-sizing: border-box;
+    }
+    
+    .cardx {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    
+    @media(max-width:860px){
+      .grid { grid-template-columns: 1fr; gap: 20px; }
+    }
+    
+    .cover {
+      aspect-ratio: 1/1;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      position: relative;
+    }
+    
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    
+    .title {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -.02em;
+      margin: 2px 0 8px;
+    }
+    
+    .muted {
+      color: #64748b;
+    }
+    
+    .desc {
+      margin-top: 20px;
+      line-height: 1.6;
+      color: #475569;
+      font-size: 15px;
+      white-space: pre-wrap;
+    }
+    
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+      align-items: center;
+    }
+    
+    /* PILLS */
+    .pill {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #334155;
+      padding: 8px 16px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+    
+    .pill.price {
+      border: 1.5px solid #3b2fad;
+      background: rgba(59, 47, 173, 0.03);
+      color: #3b2fad;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .pill.price:hover {
+      background: rgba(59, 47, 173, 0.08);
+      transform: translateY(-1px);
+    }
+    
+    /* BUTTONS */
+    .btn {
+      height: 46px;
+      background: transparent;
+      border: 1.5px solid #e2e8f0;
+      color: #475569;
+      padding: 0 24px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #1e293b;
+    }
+    
+    .btn.primary {
+      background: #3b2fad;
+      border-color: #3b2fad;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.15);
+    }
+    
+    .btn.primary:hover {
+      background: #2d2294;
+      border-color: #2d2294;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+    
+    /* LOADING & EMPTY STATES FIX */
+    .loading-box {
+      margin: 20px 0;
+      padding: 24px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #64748b;
+      text-align: center;
+      font-size: 15px;
+      font-weight: 500;
       white-space: pre-wrap;
       word-break: break-word;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
     }
-    .hidden{display:none!important}
+    
+    .hidden { display: none !important; }
 
-    .producer{
-      margin-top:8px;
-      color:rgba(255,255,255,.72);
-      font-size:15px;
-      display:flex;
-      align-items:center;
-      gap:6px;
+    /* PRODUCER ROW */
+    .producer {
+      margin-top: 12px;
+      color: #64748b;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
     }
-    .producer a{
-      color:inherit;
-      text-decoration:none;
-      font-weight:700;
+    
+    .producer a {
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 700;
+      transition: color 0.2s ease;
     }
-    .producer a:hover{
-      text-decoration:underline;
-      color:#fff;
+    
+    .producer a:hover {
+      color: #3b2fad;
     }
-    .verify-badge{
-      width:16px;
-      height:16px;
-      display:inline-block;
-      vertical-align:middle;
-    }
-
-    .preview-btn{
-      position:absolute;
-      right:16px;
-      bottom:16px;
-
-      width:58px;
-      height:58px;
-
-      border-radius:50%;
-      border:1px solid rgba(255,255,255,.16);
-
-      background:rgba(50,50,50,.45);
-
-      backdrop-filter:blur(10px);
-      -webkit-backdrop-filter:blur(10px);
-
-      display:flex;
-      align-items:center;
-      justify-content:center;
-
-      cursor:pointer;
-      z-index:20;
-
-      box-shadow:
-        0 8px 24px rgba(0,0,0,.28),
-        inset 0 1px 0 rgba(255,255,255,.08);
-
-      transition:.18s ease;
+    
+    .verify-badge {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      vertical-align: middle;
     }
 
-    .preview-btn.disabled{
-      opacity:.55;
-      cursor:not-allowed;
+    /* PREVIEW PLAYER BUTTON */
+    .preview-btn {
+      position: absolute;
+      right: 16px;
+      bottom: 16px;
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(0, 0, 0, .42);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      cursor: pointer;
+      z-index: 20;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.2s ease;
     }
 
-    .preview-btn:hover{
-      transform:scale(1.05);
+    .preview-btn.disabled {
+      opacity: .45;
+      cursor: not-allowed;
     }
 
-    .preview-btn::before{
-      content:"▶";
-
-      color:#fff;
-
-      font-size:20px;
-      line-height:1;
-
-      margin-left:3px;
+    .preview-btn:not(.disabled):hover {
+      transform: scale(1.05);
+      background: rgba(0, 0, 0, .55);
     }
 
-    .preview-btn.playing::before{
-      content:"❚❚";
-      font-size:15px;
-      margin-left:0;
+    .preview-btn::before {
+      content: "▶";
+      font-size: 17px;
+      margin-left: 2px;
+      color: #ffffff;
     }
 
-    /* SOCIAL */
-
-    .social a{
-      display:inline-flex;
-      width:36px;
-      height:36px;
-      border-radius:999px;
-      align-items:center;
-      justify-content:center;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
+    .preview-btn.playing::before {
+      content: "❚❚";
+      font-size: 14px;
+      margin-left: 0;
     }
 
-    .social svg{
-      width:18px;
-      height:18px;
-      fill:rgba(255,255,255,.9);
+    /* Standardized Premium Footer System Match */
+    .footer {
+      width: 100%;
+      padding: 32px 20px; 
+      text-align: center;
+      border-top: 1px solid #f1f5f9; 
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
     }
 
+    .footer-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px; 
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover { 
+      color: #3b2fad; 
+    }
+
+    /* Premium Social Style Match */
+    .social {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .social a { 
+      color: #64748b !important;
+      background: #f8fafc !important; 
+      border: 1px solid #e2e8f0 !important; 
+      border-radius: 50% !important; 
+      width: 38px !important; 
+      height: 38px !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .social svg {
+      width: 18px !important;
+      height: 18px !important;
+      fill: currentColor !important;
+    }
+
+    .social a:hover { 
+      color: #ffffff !important; 
+      background: #3b2fad !important; 
+      border-color: #3b2fad !important;
+      transform: translateY(-3px); 
+      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); 
+    }
+
+    /* MOBILE BREAKPOINTS */
     @media(max-width:760px){
-
-    .preview-btn{
-      width:54px;
-      height:54px;
-      right:12px;
-      bottom:12px;
+      .cardx { padding: 16px; border-radius: 20px; }
+      .title { font-size: 24px; }
+      .desc { font-size: 14px; margin-top: 14px; }
+      .btn { height: 44px; font-size: 14px; width: 100%; }
+      .preview-btn { width: 62px; height: 62px; }
     }
-
-    .preview-btn::before{
-      font-size:18px;
-    }
-
-    .title{
-      font-size:22px;
-    }
-
-  }
   </style>
 </head>
 
@@ -197,9 +438,7 @@
       <a href="/collabs/">Collabs</a>
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
-      <a id="navDashboard" class="ghost hidden" href="#">
-        Dashboard
-      </a>
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
       <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
 
@@ -230,7 +469,9 @@
 </nav>
 
 <main class="wrap">
-  <a href="/soundkits/" class="muted" style="text-decoration:none;display:inline-block;margin:10px 0 14px;">← Back to Sound Kits</a>
+  <a href="/soundkits/" class="muted" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; margin: 10px 0 16px; font-weight:600; font-size:14px;">
+    ← Back to Sound Kits
+  </a>
 
   <div id="status" class="loading-box">Loading sound kit…</div>
 
@@ -258,13 +499,13 @@
 
         <div class="desc" id="kitDesc"></div>
 
-        <div class="row">
+        <div class="row" style="margin-top: 24px;">
           <button class="btn primary" id="addBtn" type="button">🛒 Add to cart</button>
           <button class="btn" id="detailsBtn" type="button">Details</button>
         </div>
 
-        <div class="muted" style="margin-top:10px;font-size:13px;">
-          License: <b>Sound Kit</b>
+        <div class="muted" style="margin-top:16px; font-size:13px; font-weight:500;">
+          License: <b style="color:#334155;">Sound Kit</b>
         </div>
       </div>
     </div>
@@ -304,7 +545,6 @@
   </div>
 </footer>
 
-<!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
   <div class="pb-cart-head">
@@ -331,10 +571,8 @@
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 <script>
-  window.PB_PAYPAL_CREATE_ORDER_URL =
-    "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL =
-    "https://captureorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
 </script>
   
 <script type="module" src="/js/firebase.js"></script>
@@ -373,30 +611,14 @@
       published: data.published !== false,
       createdAt: data.createdAt || 0,
       downloadUrl: data.downloadUrl || data.downloadURL || "",
-      previewAudioURL: data.previewAudioURL || "",
-
-      previewAudioURL:
-        data.previewAudioURL ||
-        data.previewUrl ||
-        data.preview ||
-        "",
-
-      producerName:
-        data.producerName ||
-        data.displayName ||
-        data.username ||
-        "",
-
-      producerPlan:
-        data.producerPlan ||
-        data.plan ||
-        "",
+      previewAudioURL: data.previewAudioURL || data.previewUrl || data.preview || "",
+      producerName: data.producerName || data.displayName || data.username || "",
+      producerPlan: data.producerPlan || data.plan || "",
     };
   }
 
   async function getKitByIdAnyCollection(kitId){
     const { doc, getDoc } = window.FB;
-
     const cols = ["soundkits", "soundKits"];
     let lastErr = null;
 
@@ -404,7 +626,6 @@
       try{
         const ref = doc(window.FB.db, col, String(kitId));
         const snap = await getDoc(ref);
-
         if (snap.exists()){
           return normalizeKit(snap.id, snap.data());
         }
@@ -413,23 +634,16 @@
         continue;
       }
     }
-
-    if (lastErr?.code === "permission-denied") {
-      return null;
-    }
-
-    if (lastErr) {
-      throw lastErr;
-    }
-
+    if (lastErr?.code === "permission-denied") return null;
+    if (lastErr) throw lastErr;
     return null;
   }
 
   async function load(){
     const status = $("status");
     const card = $("kitCard");
-
     const kitId = getKitIdFromUrl();
+
     if (!kitId){
       status.textContent = "Missing kit id.\n\nOpen this page like:\n/soundkit/?id=YOUR_KIT_ID";
       return;
@@ -452,7 +666,7 @@
       $("kitPrice").textContent = kit.price ? money(kit.price) : "Free";
       $("kitDesc").textContent = kit.description || "No description.";
 
-      // Producer name + link + verification badge
+      // Producer details
       const producerLink = $("kitProducerLink");
       const verifiedEl = $("kitVerified");
       
@@ -466,14 +680,10 @@
 
       verifiedEl.innerHTML = AudioryVerify.badge(kit.producerPlan || "");
 
-      // Cover + preview button if previewUrl exists
+      // Handle Cover image + dynamic preview player container insertion
       if(kit.cover){
-
-        console.log("PREVIEW URL =", kit.previewAudioURL);
-
         $("kitCover").innerHTML = `
           <img src="${kit.cover}" alt="${kit.title}" loading="lazy">
-
           <button
             class="preview-btn ${!kit.previewAudioURL ? 'disabled' : ''}"
             id="previewBtn"
@@ -482,12 +692,10 @@
         `;
       }
 
-      // Price pill click = add to cart
       $("pricePill").onclick = () => {
         $("addBtn").click();
       };
 
-      // Buttons
       $("detailsBtn").onclick = () => {
         alert(
           `${kit.title}\n\n${kit.description || "No description."}\n\n` +
@@ -514,48 +722,44 @@
           producerName: String(kit.producerName || ""),
           downloadUrl: String(kit.downloadUrl || "")
         });
-
         alert("Added to cart ✅");
       };
 
-      // Preview button
+      // Preview audio mechanics
       const previewBtn = $("previewBtn");
       if(previewBtn){
-
         if(!kit.previewAudioURL){
-
           previewBtn.onclick = () => {
             alert("No preview uploaded yet");
           };
-
         } else {
-        
-        let isPlaying = false;
-        let audio = new Audio(kit.previewAudioURL);
-        audio.preload = "metadata";
-        
-        previewBtn.onclick = async () => {
-          if(isPlaying){
-            audio.pause();
+          let isPlaying = false;
+          let audio = new Audio(kit.previewAudioURL);
+          audio.preload = "metadata";
+          
+          previewBtn.onclick = async () => {
+            if(isPlaying){
+              audio.pause();
+              isPlaying = false;
+              previewBtn.classList.remove("playing");
+            } else {
+              try{
+                await audio.play();
+                isPlaying = true;
+                previewBtn.classList.add("playing");
+              }catch(e){
+                console.error(e);
+              }
+            }
+          };
+          
+          audio.onended = () => {
             isPlaying = false;
             previewBtn.classList.remove("playing");
-          } else {
-            try{
-              await audio.play();
-              isPlaying = true;
-              previewBtn.classList.add("playing");
-            }catch(e){
-              console.error(e);
-            }
-          }
-        };
-        
-        audio.onended = () => {
-          isPlaying = false;
-          previewBtn.classList.remove("playing");
-        };
+          };
+        }
       }
-    }
+
       status.classList.add("hidden");
       card.classList.remove("hidden");
     }catch(err){
