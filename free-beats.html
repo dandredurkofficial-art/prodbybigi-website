@@ -1,557 +1,729 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Free Beats Download | Audiory Free Instrumentals for Artists</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Beats Download | Audiory Free Instrumentals for Artists</title>
 
-<meta name="description" content="Download free beats on Audiory. Discover free instrumentals, preview tracks instantly, and explore trap, Afrobeats, drill, amapiano, and hip hop beats from producers worldwide.">
-<meta name="keywords" content="free beats, free instrumentals, download free beats, trap beats free, afrobeats free beats, drill beats free, amapiano beats free, hip hop free beats, Audiory free beats">
-<meta name="author" content="Audiory">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://audiory.site/freebeats/">
+  <meta name="description" content="Download free beats on Audiory. Discover free instrumentals, preview tracks instantly, and explore trap, Afrobeats, drill, amapiano, and hip hop beats from producers worldwide.">
+  <meta name="keywords" content="free beats, free instrumentals, download free beats, trap beats free, afrobeats free beats, drill beats free, amapiano beats free, hip hop free beats, Audiory free beats">
+  <meta name="author" content="Audiory">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://audiory.site/freebeats/">
 
-<link rel="icon" href="/audioryfavicon.webp">
-<link rel="shortcut icon" href="/audioryfavicon.webp">
-<link rel="icon" type="image/x-icon" href="/favicon.webp">
-<link rel="apple-touch-icon" href="/audioryfavicon.webp">
+  <link rel="icon" href="/audioryfavicon.webp">
+  <link rel="shortcut icon" href="/audioryfavicon.webp">
+  <link rel="icon" type="image/x-icon" href="/favicon.webp">
+  <link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
-<meta property="og:title" content="Free Beats – Audiory">
-<meta property="og:description" content="Browse free beats on Audiory and preview instrumentals instantly. Discover free tracks from producers worldwide.">
-<meta property="og:url" content="https://audiory.site/freebeats/">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://audiory.site/og-image.jpg">
-<meta property="og:image:alt" content="Audiory Free Beats">
-<meta property="og:site_name" content="Audiory">
+  <meta property="og:title" content="Free Beats – Audiory">
+  <meta property="og:description" content="Browse free beats on Audiory and preview instrumentals instantly. Discover free tracks from producers worldwide.">
+  <meta property="og:url" content="https://audiory.site/freebeats/">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://audiory.site/og-image.jpg">
+  <meta property="og:image:alt" content="Audiory Free Beats">
+  <meta property="og:site_name" content="Audiory">
 
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Free Beats – Audiory">
-<meta name="twitter:description" content="Browse free beats on Audiory and preview instrumentals instantly.">
-<meta name="twitter:image" content="https://audiory.site/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free Beats – Audiory">
+  <meta name="twitter:description" content="Browse free beats on Audiory and preview instrumentals instantly.">
+  <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Audiory",
-  "alternateName": "Audiory Beat Marketplace",
-  "url": "https://audiory.site/",
-  "logo": "https://audiory.site/audioryfavicon.webp",
-  "sameAs": [
-    "https://www.instagram.com/audiorybeatstore",
-    "https://www.tiktok.com/@audiorybeatstore",
-    "https://x.com/audiorybeats",
-    "https://www.facebook.com/audiorybeatstore",
-    "https://youtube.com/@audiorybeatstore"
-  ]
-}
-</script>
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "CollectionPage",
-  "name": "Audiory Free Beats",
-  "url": "https://audiory.site/freebeats/",
-  "description": "Browse free beats and free instrumentals on Audiory."
-}
-</script>
-  
-<link rel="stylesheet" href="/css/global.css">
-<link rel="stylesheet" href="/css/marketplace.css">
-<link rel="stylesheet" href="/css/cart.css">
-<link rel="stylesheet" href="/css/mobile-fix.css">
-
-<style>
-/* ===================================
-AUDIORY VERIFIED BADGES
-=================================== */
-.verify-badge{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  margin-left:6px;
-  vertical-align:middle;
-}
-
-.verify-badge svg{
-  width:16px;
-  height:16px;
-  display:block;
-}
-
-.verify-pro svg{
-  color:#1d9bf0;
-}
-
-.verify-elite svg{
-  color:#fbbf24;
-}
-
-/* =========================================
-   AUDIORY FREE BEATS CLEAN CARD SYSTEM
-========================================= */
-.beats-grid{
-  display:grid;
-  grid-template-columns:repeat(2, minmax(0,1fr));
-  gap:16px 14px;
-  margin-top:16px;
-}
-
-.beat-card{
-  background:#141414 !important;
-  border:1px solid rgba(255,255,255,.08) !important;
-  border-radius:18px !important;
-  overflow:hidden;
-  box-shadow:none !important;
-  padding:0 !important;
-}
-
-.beat-cover{
-  position:relative;
-  aspect-ratio:1 / 1;
-  overflow:hidden;
-  background:#0b0b0b;
-}
-
-.beat-cover a.beat-open{
-  display:block;
-  width:100%;
-  height:100%;
-}
-
-.beat-cover img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-.play-fab{
-  position:absolute;
-  right:14px;
-  bottom:14px;
-  width:50px;
-  height:50px;
-  border-radius:50% !important;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(0,0,0,.42);
-  backdrop-filter:blur(5px);
-  -webkit-backdrop-filter:blur(5px);
-  box-shadow:none !important;
-}
-
-.play-fab .playIcon{
-  font-size:15px;
-}
-
-.beat-meta{
-  display:flex;
-  flex-direction:column;
-  gap:0;
-  padding:14px;
-}
-
-.beat-meta > div{
-  min-width:0;
-}
-
-.beat-title-link{
-  display:block;
-  color:#fff !important;
-  text-decoration:none !important;
-}
-
-.beat-title-link h3{
-  margin:0 !important;
-  color:#fff !important;
-  font-size:17px !important;
-  line-height:1.2 !important;
-  font-weight:800 !important;
-  display:-webkit-box;
-  -webkit-box-orient:vertical;
-  -webkit-line-clamp:2;
-  overflow:hidden;
-  min-height:40px;
-}
-
-.beat-meta .producer{
-  display:block;
-  margin-top:7px;
-  color:rgba(255,255,255,.62) !important;
-  font-size:14px !important;
-  line-height:1.2 !important;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-  text-decoration:none;
-}
-
-.beat-meta .producer:hover{
-  color:#fff !important;
-  text-decoration:none;
-}
-
-.beat-genre{
-  margin-top:6px;
-  color:rgba(255,255,255,.52);
-  font-size:12px;
-}
-
-.pb-pill{
-  width:100%;
-  margin-top:14px;
-  min-height:50px;
-  border-radius:14px;
-  border:1.5px solid #295dff;
-  background:transparent;
-  color:#fff;
-  font-size:17px;
-  font-weight:800;
-  justify-content:center;
-  padding:0 14px;
-  box-shadow:none;
-  transform:none;
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  cursor:pointer;
-}
-
-.pb-pill:hover{
-  background:rgba(255,255,255,.04);
-  transform:none;
-}
-
-.pb-pill .ic{
-  width:16px;
-  height:16px;
-  font-size:15px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.pb-pill.free{
-  border-color:#295dff;
-  background:transparent;
-}
-
-.pb-actions{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-top:14px;
-}
-
-.pb-actions .pb-pill{
-  margin-top:0;
-}
-
-.pb-pill.price-pill{
-  flex:1;
-}
-
-.pb-pill.download-pill{
-  width:54px;
-  min-width:54px;
-  padding:0;
-  border-color:rgba(255,255,255,.14);
-  flex-shrink:0;
-}
-
-.pb-pill.download-pill:hover{
-  border-color:#295dff;
-  background:rgba(255,255,255,.04);
-}
-
-.download-icon{
-  width:20px;
-  height:20px;
-  display:block;
-}
-
-.download-icon svg{
-  width:100%;
-  height:100%;
-  display:block;
-}
-
-/* BeatStars-style lock icon */
-.lock-icon{
-  width:16px;
-  height:16px;
-  display:inline-block;
-}
-
-.lock-icon svg{
-  width:100%;
-  height:100%;
-  display:block;
-}
-
-.beats-grid{
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:14px 12px;
-}
-
-.beat-meta{
-  padding:12px;
-}
-
-.beat-title-link h3{
-  font-size:16px !important;
-  min-height:38px;
-}
-
-.beat-meta .producer{
-  font-size:13px !important;
-}
-
-.pb-pill{
-  min-height:46px;
-  font-size:16px;
-}
-
-.play-fab{
-  width:46px;
-  height:46px;
-}
-
-.pb-pill{
-  color:#fff;
-}
-
-.pb-pill .ic{
-  color:rgba(255,255,255,.85);
-}
-
-  /* =========================
-     PAYMENT MODAL - NEW STYLE
-  ========================= */
-  .pb-pay-backdrop{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.68);
-    display:none;
-    z-index:10050;
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Audiory",
+    "alternateName": "Audiory Beat Marketplace",
+    "url": "https://audiory.site/",
+    "logo": "https://audiory.site/audioryfavicon.webp",
+    "sameAs": [
+      "https://www.instagram.com/audiorybeatstore",
+      "https://www.tiktok.com/@audiorybeatstore",
+      "https://x.com/audiorybeats",
+      "https://www.facebook.com/audiorybeatstore",
+      "https://youtube.com/@audiorybeatstore"
+    ]
   }
+  </script>
 
-  .pb-pay-modal{
-    position:fixed;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    width:min(720px, calc(100vw - 18px));
-    max-height:calc(100vh - 28px);
-    overflow:auto;
-    background:linear-gradient(180deg,#08142a 0%, #071122 100%);
-    border:1px solid rgba(255,255,255,.10);
-    border-radius:26px;
-    padding:0;
-    box-shadow:0 28px 90px rgba(0,0,0,.52);
-    display:none;
-    z-index:10051;
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Audiory Free Beats",
+    "url": "https://audiory.site/freebeats/",
+    "description": "Browse free beats and free instrumentals on Audiory."
   }
+  </script>
+    
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/marketplace.css">
+  <link rel="stylesheet" href="/css/cart.css">
+  <link rel="stylesheet" href="/css/mobile-fix.css">
 
-  .pb-pay-head{
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:12px;
-    padding:22px 24px 14px;
-    border-bottom:1px solid rgba(255,255,255,.08);
-  }
-
-  .pb-pay-title{
-    font-weight:950;
-    font-size:24px;
-    margin:0;
-    color:#fff;
-  }
-
-  .pb-pay-sub{
-    color:rgba(255,255,255,.72);
-    font-size:13px;
-    margin-top:8px;
-    line-height:1.5;
-    white-space:pre-line;
-  }
-
-  .pb-pay-close{
-    border:none;
-    background:transparent;
-    color:#fff;
-    font-size:24px;
-    cursor:pointer;
-    padding:4px 8px;
-    border-radius:10px;
-  }
-
-  .pb-pay-close:hover{
-    background:rgba(255,255,255,.08);
-  }
-
-  .pb-pay-body{
-    padding:22px 24px 24px;
-    display:grid;
-    gap:16px;
-  }
-
-  .pb-pay-methods{
-    display:grid;
-    gap:14px;
-  }
-
-  .pb-pay-btn{
-    width:100%;
-    min-height:76px;
-    border-radius:18px;
-    border:none;
-    cursor:pointer;
-    font-weight:900;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:16px;
-    padding:0 22px;
-    color:#fff;
-    font-size:17px;
-    box-shadow:none;
-  }
-
-  .pb-pay-btn.primary{
-    background:#4b86ef;
-  }
-
-  .pb-pay-btn.success{
-    background:#24c65a;
-  }
-
-  .pb-pay-btn:hover{
-    filter:brightness(1.03);
-  }
-
-  .pb-pay-btn-left{
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
-
-  .pb-pay-amount{
-    font-size:16px;
-    font-weight:900;
-    opacity:.96;
-  }
-
-  .pb-pay-phone-wrap{
-    display:none;
-    margin-top:4px;
-    padding:14px;
-    border-radius:18px;
-    border:1px solid rgba(255,255,255,.10);
-    background:rgba(255,255,255,.04);
-  }
-
-  .pb-pay-label{
-    font-size:12px;
-    font-weight:900;
-    color:rgba(255,255,255,.86);
-    margin-bottom:8px;
-  }
-
-  .pb-pay-input{
-    width:100%;
-    padding:14px 14px;
-    border-radius:14px;
-    border:1px solid rgba(255,255,255,.12);
-    background:rgba(255,255,255,.06);
-    color:#fff;
-    outline:none;
-    font-size:15px;
-  }
-
-  .pb-pay-input:focus{
-    border-color:rgba(34,197,94,.55);
-  }
-
-  .pb-pay-send{
-    margin-top:14px;
-    min-height:50px;
-    padding:0 20px;
-    border:none;
-    border-radius:14px;
-    background:#24c65a;
-    color:#fff;
-    font-size:15px;
-    font-weight:900;
-    cursor:pointer;
-  }
-
-  .pb-pay-send:hover{
-    filter:brightness(1.03);
-  }
-
-  .pb-pay-send:disabled{
-    opacity:.7;
-    cursor:not-allowed;
-  } 
-
-  .pb-pay-status{
-    min-height:18px;
-    margin-top:10px;
-    font-size:13px;
-    color:rgba(255,255,255,.78);
-    white-space:pre-line;
-  }
-
-  .mpesa-icon{
-    width:20px;
-    height:20px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    flex-shrink:0;
-  }
-
-  .mpesa-icon svg{
-    width:100%;
-    height:100%;
-    display:block;
-  }
-
-  @media (max-width: 640px){
-    .pb-pay-modal{
-      width:calc(100vw - 16px);
-      max-height:calc(100vh - 20px);
-      border-radius:24px;
+  <style>
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
     }
 
-    .pb-pay-head{
-      padding:18px 18px 12px;
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
     }
 
-    .pb-pay-title{
-      font-size:20px;
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
     }
 
-    .pb-pay-body{
-      padding:16px 18px 18px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
     }
 
-    .pb-pay-btn{
-      min-height:72px;
-      border-radius:18px;
-      padding:0 18px;
-      font-size:16px;
+    .desktop-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
     }
 
-    .pb-pay-amount{
-      font-size:14px;
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
     }
-  }
-</style>
 
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .desktop-nav a.ghost {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .cart-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container Spacing & Layout Structures */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+
+    .freebeats-page {
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 24px 60px;
+      box-sizing: border-box;
+    }
+
+    .page-title {
+      font-weight: 900;
+      font-size: 32px;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+      letter-spacing: -.02em;
+    }
+
+    .page-subtitle {
+      margin: 0 0 24px 0;
+      font-size: 16px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .cardx {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    }
+
+    .muted {
+      color: #64748b;
+    }
+
+    /* =========================================
+       AUDIORY FREE BEATS FLAT WHITE GRID SYSTEM
+    ========================================= */
+    .beats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .beat-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 20px !important;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+      padding: 0 !important;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .beat-card:hover {
+      transform: translateY(-2px);
+      border-color: #cbd5e1 !important;
+    }
+
+    .beat-cover {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #f1f5f9;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .beat-cover a.beat-open {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .beat-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .play-fab {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      width: 48px;
+      height: 48px;
+      border-radius: 50% !important;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: rgba(0, 0, 0, .45);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+      transition: all 0.2s ease;
+    }
+
+    .play-fab:hover {
+      transform: scale(1.05);
+      background: rgba(0, 0, 0, .55);
+    }
+
+    .play-fab .playIcon {
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1;
+      margin-left: 2px;
+    }
+
+    .beat-meta {
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      flex-grow: 1;
+    }
+
+    .beat-title-link {
+      display: block;
+      color: #0f172a !important;
+      text-decoration: none !important;
+    }
+
+    .beat-title-link h3 {
+      margin: 0 !important;
+      color: #0f172a !important;
+      font-size: 16px !important;
+      line-height: 1.3 !important;
+      font-weight: 800 !important;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      min-height: 42px;
+    }
+
+    .beat-meta .producer {
+      display: block;
+      margin-top: 4px;
+      color: #3b2fad !important;
+      font-size: 14px !important;
+      font-weight: 700;
+      line-height: 1.2 !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-decoration: none;
+    }
+
+    .beat-meta .producer:hover {
+      color: #2d2294 !important;
+      text-decoration: underline;
+    }
+
+    .beat-genre {
+      margin-top: 6px;
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* PRICE PILLS & ACTIONS (RE-BRANDED FLUID SYSTEM) */
+    .pb-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 14px;
+    }
+
+    .pb-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 14px;
+      border: 1.5px solid #3b2fad;
+      background: rgba(59, 47, 173, 0.03);
+      color: #3b2fad;
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      box-sizing: border-box;
+      transition: all 0.2s ease;
+    }
+
+    .pb-pill:hover {
+      background: rgba(59, 47, 173, 0.08);
+    }
+
+    .pb-pill.price-pill {
+      flex: 1;
+    }
+
+    .pb-pill.free {
+      border-color: #3b2fad;
+      background: #3b2fad;
+      color: #ffffff;
+    }
+
+    .pb-pill.free:hover {
+      background: #2d2294;
+      border-color: #2d2294;
+    }
+
+    .pb-pill.download-pill {
+      width: 44px;
+      min-width: 44px;
+      padding: 0;
+      border-color: #e2e8f0;
+      background: transparent;
+      color: #475569;
+      flex-shrink: 0;
+    }
+
+    .pb-pill.download-pill:hover {
+      border-color: #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    .download-icon {
+      width: 18px;
+      height: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .download-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      fill: currentColor;
+    }
+
+    .lock-icon {
+      width: 14px;
+      height: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .lock-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      stroke: currentColor;
+    }
+
+    /* VERIFICATION BADGES SYSTEM MATCH */
+    .verify-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .verify-badge svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+    }
+    .verify-pro svg { color: #3b2fad; }
+    .verify-elite svg { color: #fbbf24; }
+
+    /* =========================================================
+       GATEWAY OVERLAY MODAL WINDOW (FLAT LIGHT RE-SKIN)
+       ========================================================= */
+    .pb-pay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      z-index: 10050;
+    }
+
+    .pb-pay-modal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(540px, calc(100vw - 24px));
+      max-height: calc(100vh - 40px);
+      overflow: auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 0;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+      display: none;
+      z-index: 10051;
+    }
+
+    .pb-pay-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .pb-pay-title {
+      font-weight: 900;
+      font-size: 22px;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .pb-pay-sub {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+
+    .pb-pay-close {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+
+    .pb-pay-close:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+    }
+
+    .pb-pay-body {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .pb-pay-btn {
+      width: 100%;
+      min-height: 68px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 20px;
+      color: #fff;
+      font-size: 16px;
+      transition: filter 0.2s ease;
+    }
+
+    .pb-pay-btn.primary { background: #2563eb; }
+    .pb-pay-btn.success { background: #16a34a; }
+    .pb-pay-btn:hover { filter: brightness(0.94); }
+
+    .pb-pay-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pb-pay-amount {
+      font-size: 15px;
+      font-weight: 700;
+      opacity: .95;
+    }
+
+    .pb-pay-phone-wrap {
+      display: none;
+      margin-top: 4px;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+
+    .pb-pay-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+
+    .pb-pay-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0f172a;
+      outline: none;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    .pb-pay-input:focus {
+      border-color: #16a34a;
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.1);
+    }
+
+    .pb-pay-send {
+      margin-top: 12px;
+      min-height: 44px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 10px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .pb-pay-send:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .pb-pay-status {
+      min-height: 18px;
+      margin-top: 10px;
+      font-size: 13px;
+      color: #475569;
+      white-space: pre-line;
+      font-weight: 500;
+    }
+
+    .mpesa-icon {
+      width: 20px;
+      height: 20px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .mpesa-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* PREMIUM FOOTER BRAND MATCH */
+    .footer {
+      width: 100%;
+      padding: 32px 20px; 
+      text-align: center;
+      border-top: 1px solid #f1f5f9; 
+      background-color: #ffffff;
+      box-sizing: border-box;
+      margin-top: auto;
+    }
+
+    .footer-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px; 
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover { 
+      color: #3b2fad; 
+    }
+
+    .social {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-top: 4px;
+    }
+
+    .social a { 
+      color: #64748b !important;
+      background: #f8fafc !important; 
+      border: 1px solid #e2e8f0 !important; 
+      border-radius: 50% !important; 
+      width: 38px !important; 
+      height: 38px !important;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .social svg {
+      width: 18px !important;
+      height: 18px !important;
+      fill: currentColor !important;
+    }
+
+    .social a:hover { 
+      color: #ffffff !important; 
+      background: #3b2fad !important; 
+      border-color: #3b2fad !important;
+      transform: translateY(-3px); 
+      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); 
+    }
+
+    /* RESPONSIVE LAYOUT SYSTEMS */
+    @media (max-width: 1024px){
+      .beats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    }
+
+    @media (max-width: 768px){
+      .beats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .page-title { font-size: 26px; }
+    }
+
+    @media (max-width: 640px){
+      .freebeats-page { padding: 16px 16px 40px; }
+      .beats-grid { gap: 12px; }
+      .beat-card { border-radius: 16px !important; }
+      .beat-meta { padding: 12px; }
+      .beat-title-link h3 { font-size: 15px !important; min-height: 38px; }
+      .pb-pill { min-height: 40px; font-size: 13px; padding: 0 10px; border-radius: 10px; }
+      .pb-pill.download-pill { width: 40px; min-width: 40px; }
+      .play-fab { width: 42px; height: 42px; right: 10px; bottom: 10px; }
+      .play-fab .playIcon { font-size: 14px; }
+      .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
+      .pb-pay-head { padding: 16px 16px 12px; }
+      .pb-pay-title { font-size: 18px; }
+      .pb-pay-body { padding: 16px; }
+      .pb-pay-btn { min-height: 60px; font-size: 15px; }
+    }
+  </style>
 </head>
 
 <body>
