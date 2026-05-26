@@ -1,71 +1,40 @@
-<!-- /producers.html -->
+<!-- /producer-profile.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Music Producers on Audiory | Discover Beat Producers Worldwide</title>
+  <title>Producer Profile | Audiory</title>
 
-  <!-- ✅ SEO META -->
-  <meta name="description" content="Discover top music producers on Audiory. Explore producer profiles, browse beat catalogs, and find trap, Afrobeats, drill, amapiano, and hip hop producers worldwide.">
-  <meta name="keywords" content="music producers, beat producers, producer marketplace, buy beats, sell beats, hip hop producers, afrobeats producers, trap producers, drill producers, amapiano producers, Audiory">
+  <!-- ✅ SEO META (ADDED) -->
+  <meta name="description" content="View a producer profile on Audiory. Browse beats, preview tracks, and choose licenses to purchase.">
+  <meta name="keywords" content="producer profile, buy beats, producer beats, beat marketplace, music producer, Audiory">
   <meta name="author" content="Audiory">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://audiory.site/producers/">
+  <link rel="canonical" href="https://audiory.site/producer-profile/">
 
-  <!-- ✅ FAVICON -->
+  <!-- ✅ FAVICON (ADDED) -->
   <link rel="icon" href="/audioryfavicon.webp">
   <link rel="shortcut icon" href="/audioryfavicon.webp">
-  <link rel="icon" type="image/x-icon" href="/favicon.webp">
   <link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
-  <!-- ✅ OPEN GRAPH -->
-  <meta property="og:title" content="Producers – Audiory">
-  <meta property="og:description" content="Discover producers on Audiory and explore their latest beats. View profiles, browse catalogs, and find your next sound.">
-  <meta property="og:url" content="https://audiory.site/producers/">
+  <!-- ✅ OPEN GRAPH (ADDED) -->
+  <meta property="og:title" content="Producer Profile – Audiory">
+  <meta property="og:description" content="Browse beats from a producer on Audiory. Preview tracks and choose a license to purchase.">
+  <meta property="og:url" content="https://audiory.site/producer-profile/">
   <meta property="og:type" content="website">
   <meta property="og:image" content="https://audiory.site/og-image.jpg">
-  <meta property="og:image:alt" content="Audiory Producers">
+  <meta property="og:image:alt" content="Audiory Producer Profile">
   <meta property="og:site_name" content="Audiory">
 
-  <!-- ✅ TWITTER/X CARDS -->
+  <!-- ✅ TWITTER/X CARDS (ADDED) -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Producers – Audiory">
-  <meta name="twitter:description" content="Discover Audiory producers and explore their latest beats. View profiles and browse catalogs.">
+  <meta name="twitter:title" content="Producer Profile – Audiory">
+  <meta name="twitter:description" content="Browse beats from a producer on Audiory. Preview tracks and choose a license to purchase.">
   <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Audiory",
-    "alternateName": "Audiory Beat Marketplace",
-    "url": "https://audiory.site/",
-    "logo": "https://audiory.site/audioryfavicon.webp",
-    "sameAs": [
-      "https://www.instagram.com/audiorybeatstore",
-      "https://www.tiktok.com/@audiorybeatstore",
-      "https://x.com/audiorybeats",
-      "https://www.facebook.com/audiorybeatstore",
-      "https://youtube.com/@audiorybeatstore"
-    ]
-  }
-  </script>
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    "name": "Audiory Producers",
-    "url": "https://audiory.site/producers/",
-    "description": "Discover top music producers on Audiory and explore their beat catalogs."
-  }
-  </script>
-
-  <link rel="stylesheet" href="/css/global.css?v=6">
-  <link rel="stylesheet" href="/css/home.css?v=6">
+  <link rel="stylesheet" href="/css/global.css">
   <link rel="stylesheet" href="/css/cart.css">
-  <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
     /* =========================================================
@@ -73,305 +42,276 @@
        ========================================================= */
     body {
       background-color: #ffffff !important;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
       color: #334155;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       line-height: 1.6;
-      box-sizing: border-box;
     }
 
-    /* Premium Slim Header Bar Style Match */
-    .topbar {
-      width: 100%;
-      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      position: sticky;
-      top: 0;
-      z-index: 10000;
-      box-sizing: border-box;
-    }
-
-    .topbar-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      box-sizing: border-box;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: #ffffff;
-      font-weight: 900;
-      font-size: 22px;
-      letter-spacing: -0.5px;
-    }
-
-    .desktop-nav a {
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 600;
-      opacity: 0.9;
-      padding: 6px 12px;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-    }
-
-    .desktop-nav a:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .desktop-nav a.cta {
-      background: #ffffff;
-      color: #3b2fad !important;
-      opacity: 1;
-    }
-    .desktop-nav a.cta:hover {
-      background: #f1f5f9;
-    }
-
-    .page-head { padding: 24px 0 14px; }
+    .profile-head{padding:24px 0 14px}
     
-    .page-title {
-      font-weight: 900;
-      font-size: 32px;
-      color: #0f172a;
-      margin: 0 0 6px 0;
-      letter-spacing: -.02em;
-    }
-    
-    .page-sub {
-      margin: 0 0 24px 0;
-      font-size: 16px;
-      color: #64748b;
-      font-weight: 500;
-    }
-
-    /* Tools & Beautiful Search Bar */
-    .tools { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
-    
-    .search {
-      flex: 1;
-      min-width: 220px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      padding: 12px 16px;
-      border-radius: 12px;
+    .profile-card{
+      padding:24px;
+      border-radius:22px;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
     }
     
-    .search input {
-      flex: 1;
-      background: transparent;
-      border: 0;
-      outline: 0;
-      color: #0f172a;
-      font-size: 14px;
-    }
-    .search input::placeholder { color: #94a3b8; }
-
-    .pill {
-      padding: 10px 16px;
-      border-radius: 999px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      color: #475569;
-      font-weight: 700;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .pill:hover {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    /* =========================================
-       AUDIORY PRODUCERS FLAT WHITE GRID SYSTEM
-       ========================================= */
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 20px;
-      margin: 20px 0 40px;
-    }
-    @media (max-width: 900px){ .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
-    @media (max-width: 520px){ .grid{ grid-template-columns: 1fr; gap: 14px; } }
-
-    .producer-card {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 20px !important;
-      padding: 24px !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .producer-card:hover {
-      transform: translateY(-2px);
-      border-color: #cbd5e1 !important;
-    }
-
-    .producer-top { display: flex; gap: 14px; align-items: center; }
+    .top{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
     
-    .avatar {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-      color: #3b2fad;
-      overflow: hidden;
-      flex: 0 0 auto;
+    .avatar{
+      width:72px;
+      height:72px;
+      border-radius:20px;
+      overflow:hidden;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+      display:grid;
+      place-items:center;
+      flex-shrink:0;
     }
-    .avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    .pname {
-      font-weight: 800 !important;
-      font-size: 18px !important;
-      margin: 0;
-      color: #0f172a !important;
-    }
-    .pmeta {
-      color: #64748b;
-      font-size: 14px;
-      margin-top: 2px;
-    }
-
-    /* Metrics Stat Pills */
-    .producer-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-    .stat {
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #64748b;
-      font-weight: 600;
-      font-size: 12px;
-    }
-
-    /* ACTION PILLS (RE-BRANDED FLUID HOVER CODES) */
-    .producer-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: auto;
-      padding-top: 20px;
-    }
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
     
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 44px;
-      padding: 0 16px;
-      border-radius: 12px;
-      font-weight: 800;
-      font-size: 14px;
-      text-decoration: none;
-      cursor: pointer;
-      box-sizing: border-box;
-      transition: all 0.2s ease;
-      flex: 1;
+    .name{font-weight:900;font-size:24px;margin:0;color:#0f172a;letter-spacing:-.02em}
+    .sub{color:#64748b;margin-top:4px;font-size:14px;font-weight:500}
+    
+    /* Stats Counters Layout Block */
+    .stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    
+    .stat{
+      padding:12px 16px;
+      border-radius:16px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      min-width:130px;
+      box-sizing:border-box;
     }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .stat .k{color:#64748b;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em}
+    .stat .v{font-weight:900;font-size:18px;margin-top:4px;color:#0f172a}
 
-    /* Follow Button (Deep Purple Outline Variant) */
-    .btn.follow-white {
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      padding:0 18px;
+      border-radius:12px;
+      border:1px solid #cbd5e1;
+      background:#ffffff;
+      color:#475569;
+      font-weight:800;
+      font-size:14px;
+      text-decoration:none;
+      cursor:pointer;
+      transition:all 0.2s ease;
+      box-sizing:border-box;
+    }
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    /* ✅ Upgraded Brand Interactors */
+    .btn.follow-white{
       border: 1.5px solid #3b2fad;
       background: rgba(59, 47, 173, 0.03);
       color: #3b2fad;
     }
-    .btn.follow-white:hover {
+    .btn.follow-white:hover{
       background: rgba(59, 47, 173, 0.08);
     }
 
-    /* Message Button (Solid Accent Blue Variant) */
-    .btn.message-blue {
+    .btn.message-blue{
       background: #2563eb;
       border: 1.5px solid #2563eb;
       color: #ffffff;
     }
-    .btn.message-blue:hover {
+    .btn.message-blue:hover{
       background: #1d4ed8;
       border-color: #1d4ed8;
     }
 
-    /* Notice Windows */
-    .loading-box {
-      width: 100%;
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 600;
-      color: #334155;
-      box-sizing: border-box;
-      margin: 20px 0 40px;
-    }
-    .hidden { display: none !important; }
-
-    /* Standardized Footer System Match */
-    .footer {
-      width: 100%;
-      padding: 32px 20px; /* Balanced padding */
-      text-align: center;
-      border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
-      background-color: #ffffff;
-      box-sizing: border-box;
-      margin-top: auto;
+    /* ======================================================
+       BEATS PRODUCT STORE GRID SYSTEM
+       ====================================================== */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:20px 16px;
+      margin:24px 0 40px;
     }
 
-    .footer-row {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px; /* Gives elements breathing room without being huge */
-      color: #94a3b8;
-      font-size: 13px;
+    @media (max-width: 1200px){ .grid{ grid-template-columns:repeat(4,minmax(0,1fr)); } }
+    @media (max-width: 980px){ .grid{ grid-template-columns:repeat(3,minmax(0,1fr)); } }
+    @media (max-width: 768px){ .grid{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 12px; } }
+
+    .beat-card{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:12px;
+      border-radius:20px;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+      transition:transform 0.2s ease, border-color 0.2s ease;
+    }
+    .beat-card:hover{
+      transform:translateY(-2px);
+      border-color:#cbd5e1;
     }
 
-    /* Legal & Navigation Links */
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
+    .cover{
+      position:relative;
+      aspect-ratio:1 / 1;
+      overflow:hidden;
+      background:#f1f5f9;
+      border-radius:14px;
+      border:1px solid #e2e8f0;
+    }
+    .cover .beat-open{ display:block; width:100%; height:100%; }
+    .cover img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+    /* Media Play Interaction Buttons */
+    .play-fab{
+      position:absolute;
+      right:12px;
+      bottom:12px;
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,0.25);
+      background:rgba(15, 23, 42, 0.75);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      display:grid;
+      place-items:center;
+      color:#ffffff;
+      cursor:pointer;
+      transition:transform 0.2s ease, background 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .play-fab:hover{
+      transform:scale(1.05);
+      background:rgba(15, 23, 42, 0.85);
+    }
+    .play-fab .playIcon{ font-size:14px; }
+
+    .beat-meta{
+      display:flex;
+      flex-direction:column;
+      gap:0;
+      padding:4px 2px 2px;
+    }
+    .beat-meta > div{ min-width:0; }
+
+    .beat-title-link{ color:#0f172a !important; text-decoration:none !important; display:block; }
+    .beat-title-link h3{
+      margin:0 !important;
+      color:#0f172a !important;
+      font-size:16px !important;
+      line-height:1.3 !important;
+      font-weight:800 !important;
+      display:-webkit-box;
+      -webkit-box-orient:vertical;
+      -webkit-line-clamp:2;
+      overflow:hidden;
+      min-height:42px;
     }
 
-    .footer-links a {
-      color: #64748b;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s ease;
+    .beat-meta .producer{
+      display:block;
+      margin-top:6px;
+      color:#64748b !important;
+      font-size:13px !important;
+      line-weight:1.2 !important;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      text-decoration:none;
+      font-weight:500;
     }
+    .beat-meta .producer:hover{ color:#3b2fad !important; }
 
-    .footer-links a:hover { 
-      color: #3b2fad; 
+    .beat-meta .beat-genre{ margin-top:6px !important; color:#94a3b8 !important; font-size:12px !important; font-weight:600; }
+
+    /* Purchase Add-to-Cart Buttons */
+    .beat-meta .pb-pill{
+      width:100%;
+      margin-top:14px;
+      min-height:44px;
+      border-radius:12px;
+      border:1.5px solid #2563eb;
+      background:#2563eb;
+      color:#ffffff;
+      font-size:14px;
+      font-weight:800;
+      justify-content:center;
+      padding:0 14px;
+      box-shadow:none;
+      transform:none;
     }
+    .beat-meta .pb-pill:hover{
+      background:#1d4ed8;
+      border-color:#1d4ed8;
+      transform:none;
+    }
+    .beat-meta .pb-pill .ic{ color:#ffffff; width:16px; height:16px; display:inline-flex; align-items:center; justify-content:center; }
+    .beat-meta .pb-pill .ic svg{ width:100%; height:100%; display:block; }
 
-    /* Footer socials standard adjustments */
+    .pb-pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:44px;
+      width:100%;
+      padding:0 16px;
+      border-radius:12px;
+      border:1px solid #2563eb;
+      background:#2563eb;
+      color:#ffffff;
+      white-space:nowrap;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:800;
+      line-height:1;
+      box-sizing:border-box;
+      box-shadow:none;
+      transform:none;
+      cursor:pointer;
+      transition:all 0.2s ease;
+    }
+    .pb-pill:hover{ background:#1d4ed8; border-color:#1d4ed8; transform:none; }
+    
+    .pb-pill .ic{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      flex-shrink:0;
+      color:currentColor;
+    }
+    .pb-pill .ic svg{ width:100%; height:100%; display:block; }
+
+    /* Muted fallback alternate configurations */
+    .pb-pill.free{
+      border-color:#e2e8f0;
+      background:#f8fafc;
+      color:#475569;
+    }
+    .pb-pill.free:hover{
+      background:#e2e8f0;
+      color:#0f172a;
+    }
+    
+    .muted{color:#64748b}
+    .hidden{display:none !important}
+
+    .follow-note{margin-top:8px;color:#64748b;font-size:12px;min-height:16px;font-weight:500}
+
+    /* Footer Social Integration Standards */
     .social a {
       color: #64748b !important;
       background: #f8fafc !important;
@@ -393,132 +333,274 @@
     .social svg { width: 18px !important; height: 18px !important; fill: currentColor !important; }
 
     /* ======================================================
-       ✅ DM INBOX MODAL RESKIN (FLAT LIGHT OVERLAY MATCH)
+       ✅ SYSTEM GATEWAY MODAL RESKIN (FLAT OVERLAY STANDARDS)
        ====================================================== */
-    .dm-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.4);
+    .pb-pay-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15, 23, 42, 0.4);
       backdrop-filter: blur(4px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      z-index: 10050;
+      display:none;
+      z-index:10050;
     }
-    .dm-backdrop.show { display: flex; }
+
+    .pb-pay-modal{
+      position:fixed;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:min(640px, calc(100vw - 24px));
+      max-height:calc(100vh - 32px);
+      overflow:auto;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      border-radius:24px;
+      padding:0;
+      box-shadow:0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+      display:none;
+      z-index:10051;
+    }
+
+    .pb-pay-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:24px 24px 16px;
+      border-bottom:1px solid #f1f5f9;
+    }
+
+    .pb-pay-title{
+      font-weight:900;
+      font-size:22px;
+      margin:0;
+      color:#0f172a;
+      letter-spacing:-.01em;
+    }
+
+    .pb-pay-sub{
+      color:#64748b;
+      font-size:14px;
+      margin-top:6px;
+      line-height:1.5;
+      white-space:pre-line;
+    }
+
+    .pb-pay-close{
+      border:none;
+      background:transparent;
+      color:#94a3b8;
+      font-size:22px;
+      cursor:pointer;
+      padding:4px 8px;
+      border-radius:10px;
+      transition: all 0.2s ease;
+    }
+    .pb-pay-close:hover{
+      background:#f1f5f9;
+      color:#0f172a;
+    }
+
+    .pb-pay-body{
+      padding:24px;
+      display:grid;
+      gap:16px;
+      background:#f8fafc;
+    }
+
+    .pb-pay-methods{ display:grid; gap:12px; }
+
+    .pb-pay-btn{
+      width:100%;
+      min-height:72px;
+      border-radius:16px;
+      border:none;
+      cursor:pointer;
+      font-weight:800;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      padding:0 20px;
+      color:#ffffff;
+      font-size:16px;
+      box-shadow:none;
+      transition: filter 0.2s ease;
+    }
+
+    .pb-pay-btn.primary{ background:#2563eb; }
+    .pb-pay-btn.success{ background:#16a34a; }
+    .pb-pay-btn:hover{ filter:brightness(0.95); }
+
+    .pb-pay-btn-left{ display:flex; align-items:center; gap:12px; }
+    .pb-pay-amount{ font-size:15px; font-weight:800; opacity:.95; }
+
+    .pb-pay-phone-wrap{
+      display:none;
+      margin-top:4px;
+      padding:16px;
+      border-radius:16px;
+      border:1px solid #e2e8f0;
+      background:#ffffff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+
+    .pb-pay-label{ font-size:13px; font-weight:700; color:#475569; margin-bottom:8px; }
     
-    .dm-card {
-      width: min(640px, 100%);
-      border-radius: 24px;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
-      overflow: hidden;
+    .pb-pay-input{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid #cbd5e1;
+      background:#ffffff;
+      color:#0f172a;
+      outline:none;
+      font-size:15px;
+      box-sizing: border-box;
     }
-    
-    .dm-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 20px 24px;
-      border-bottom: 1px solid #f1f5f9;
+    .pb-pay-input:focus{ border-color:#16a34a; }
+
+    .pb-pay-send{
+      margin-top:14px;
+      min-height:46px;
+      padding:0 20px;
+      border:none;
+      border-radius:12px;
+      background:#16a34a;
+      color:#ffffff;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      transition: background 0.2s ease;
     }
-    .dm-title { font-weight: 900; font-size: 20px; color: #0f172a; }
-    .dm-sub { color: #64748b; font-size: 13px; margin-top: 2px; }
-    
-    .dm-body {
-      height: min(50vh, 480px);
-      overflow: auto;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: #f8fafc;
+    .pb-pay-send:hover{ background:#15803d; }
+    .pb-pay-send:disabled{ opacity:.5; cursor:not-allowed; } 
+
+    .pb-pay-status{ min-height:18px; margin-top:10px; font-size:13px; color:#64748b; white-space:pre-line; }
+
+    .mpesa-icon{ width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .mpesa-icon svg{ width:100%; height:100%; display:block; }
+
+    @media (max-width: 640px){
+      .pb-pay-modal{ width:calc(100vw - 16px); max-height:calc(100vh - 20px); border-radius:20px; }
+      .pb-pay-head{ padding:18px 20px 14px; }
+      .pb-pay-title{ font-size:20px; }
+      .pb-pay-body{ padding:20px; }
+      .pb-pay-btn{ min-height:68px; border-radius:14px; padding:0 16px; font-size:15px; }
     }
-    
-    .dm-msg {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
-      font-size: 14px;
-      color: #334155;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      word-break: break-word;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
-    }
-    /* Incoming Sender Accent Modification */
-    .dm-msg.me {
-      margin-left: auto;
-      background: #2563eb;
-      border-color: #2563eb;
-      color: #ffffff;
-    }
-    .dm-meta {
-      opacity: .7;
-      font-size: 11px;
-      margin-top: 6px;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-    }
-    .dm-msg.me .dm-meta { color: rgba(255, 255, 255, 0.85); }
-    
-    .dm-foot {
-      border-top: 1px solid #f1f5f9;
-      padding: 16px 24px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      background: #ffffff;
-    }
-    
-    .dm-input {
-      flex: 1;
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      color: #0f172a;
-      padding: 12px;
-      min-height: 44px;
-      max-height: 120px;
-      resize: vertical;
-      outline: none;
-      font-size: 14px;
-    }
-    .dm-input:focus { border-color: #3b2fad; }
 
     /* ======================================================
-       VERIFIED BADGES BRAND SYSTEM
+       ✅ INTERACTIVE DIRECT MESSAGE DRAWER RESKIN
        ====================================================== */
-    .verify-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 6px;
-      vertical-align: middle;
+    .dm-backdrop{
+      position:fixed;inset:0;background:rgba(15, 23, 42, 0.4);
+      backdrop-filter: blur(4px);
+      display:none;align-items:center;justify-content:center;
+      padding:18px;z-index:9999;
     }
-    .verify-badge svg { width: 16px; height: 16px; display: block; }
+    .dm-backdrop.show{display:flex}
+    
+    .dm-card{
+      width:min(640px, 100%);
+      border-radius:24px;
+      background:#ffffff;
+      border:1px solid #e2e8f0;
+      box-shadow:0 20px 25px -5px rgba(0,0,0,0.05), 0 10px 10px -5px rgba(0,0,0,0.02);
+      overflow:hidden;
+    }
+    
+    .dm-head{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:12px;padding:20px 24px;border-bottom:1px solid #f1f5f9;
+    }
+    .dm-title{font-weight:900;font-size:20px;color:#0f172a;}
+    .dm-sub{color:#64748b;font-size:13px;margin-top:2px}
+    
+    .dm-body{
+      height:min(50vh, 480px);
+      overflow:auto;
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      background:#f8fafc;
+    }
+    
+    .dm-msg{
+      max-width:80%;
+      padding:12px 16px;
+      border-radius:16px;
+      border:1px solid #e2e8f0;
+      background:#ffffff;
+      font-size:14px;
+      color:#334155;
+      line-height:1.4;
+      white-space:pre-wrap;
+      word-break:break-word;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+    }
+    .dm-msg.me{
+      margin-left:auto;
+      background:#2563eb;
+      border-color:#2563eb;
+      color:#ffffff;
+    }
+    
+    .dm-meta{ opacity:.7; font-size:11px; margin-top:6px; display:flex; justify-content:space-between; gap:10px; }
+    .dm-msg.me .dm-meta { color: rgba(255, 255, 255, 0.85); }
+    
+    .dm-foot{
+      border-top:1px solid #f1f5f9;
+      padding:16px 24px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+      background:#ffffff;
+    }
+    
+    .dm-input{
+      flex:1;
+      background:#ffffff;
+      border:1px solid #cbd5e1;
+      border-radius:12px;
+      color:#0f172a;
+      padding:12px;
+      min-height:44px;
+      max-height:120px;
+      resize:vertical;
+      outline:none;
+      font-size:14px;
+      box-sizing: border-box;
+    }
+    .dm-input:focus{border-color:#3b2fad;}
+    .dm-send{ white-space:nowrap; }
+
+    /* ===================================
+       AUDIORY VERIFIED ACCENT SIGNALS
+       =================================== */
+    .verify-badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+    .verify-badge svg{ width:18px; height:18px; display:block; }
     
     /* PRO (Audiory Deep Purple Check) */
-    .verify-pro svg { color: #3b2fad; }
+    .verify-pro svg{ color:#3b2fad; }
     
     /* ELITE (Premium Gold Check) */
-    .verify-elite svg { color: #fbbf24; }
+    .verify-elite svg{ color:#fbbf24; }
   </style>
 </head>
-
 <body>
 
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="brand">
       <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
-      <div class="logo">Audiory</span></div>
+      <div class="logo">Audiory</div>
     </div>
 
     <nav class="desktop-nav" aria-label="Main">
@@ -530,12 +612,13 @@
       <a href="/pricing/">Pricing</a>
       <a href="/collabs/">Collabs</a>
       <a href="https://blog.audiory.site">Blog</a>
+
       <!-- Logged OUT -->
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
       <!-- Logged IN -->
-      <a id="navDashboard" class="ghost hidden" href="/buyer-dashboard/">
+      <a id="navDashboard" class="ghost hidden" href="#">
         Dashboard
       </a>
       <button id="navSignOut" class="ghost hidden" type="button">
@@ -565,26 +648,74 @@
   <a href="/pricing/">Pricing</a>
   <a href="/collabs/">Collabs</a>
   <a href="https://blog.audiory.site">Blog</a>
-  <a id="mNavStartSelling" href="/register/" class="cta">Start Selling</a>
+  <!-- Logged OUT -->
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
   <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <!-- Logged IN -->
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
 
 <main class="container">
-  <section class="page-head">
-    <h1 class="page-title">Producers</h1>
-        <p class="page-sub">Browse Audiory producer profiles, explore catalogs, and connect with beat makers across Afrobeats, trap, drill, amapiano, R&amp;B, and hip hop.</p>
-
-    <div class="tools">
-      <div class="search">
-        <span aria-hidden="true">🔎</span>
-        <input id="producerSearch" placeholder="Search producers…" autocomplete="off" />
+  <section class="profile-head">
+    <div class="card profile-card">
+      <div class="top">
+        <div class="avatar" id="prodAvatar">PB</div>
+        <div style="flex:1;min-width:220px;">
+          <h1 class="name" id="prodName">Producer</h1>
+          <div class="sub" id="prodSub">Loading producer…</div>
+        </div>
       </div>
-      <div class="pill" id="producerCount">0 producers</div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="k">Beats</div>
+          <div class="v" id="statBeats">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Genres</div>
+          <div class="v" id="statGenres">—</div>
+        </div>
+        <div class="stat">
+          <div class="k">Latest Upload</div>
+          <div class="v" id="statLatest">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="k">Followers</div>
+          <div class="v" id="statFollowers">0</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="btn" href="/marketplace/">Browse Marketplace</a>
+
+        <!-- ✅ Message button (BLUE) -->
+        <button class="btn message-blue hidden" id="messageBtn" type="button">Message</button>
+
+        <!-- ✅ Follow button (WHITE) -->
+        <button class="btn follow-white" id="followBtn" type="button">Follow</button>
+
+        <a class="btn" href="/register/">Start Selling</a>
+      </div>
+
+      <div class="follow-note" id="followNote"></div>
     </div>
   </section>
 
-  <div id="producerStatus" class="loading-box">Loading producers…</div>
-  <div id="producerGrid" class="grid"></div>
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+      <div>
+        <div style="font-weight:950;font-size:18px;">Beats by this producer</div>
+        <div class="muted" style="margin-top:4px;">Tap price to choose license • Tap play to preview</div>
+      </div>
+      <div class="muted" id="beatsCount">0 items</div>
+    </div>
+
+    <div id="status" class="loading-box" style="margin-top:12px;">Loading beats…</div>
+    <div id="grid" class="grid"></div>
+  </section>
 </main>
 
 <footer class="footer">
@@ -641,7 +772,7 @@
   <div class="dm-card" role="dialog" aria-modal="true" aria-labelledby="dmTitle">
     <div class="dm-head">
       <div>
-        <div class="dm-title" id="dmTitle">Message</div>
+        <div class="dm-title" id="dmTitle">Messages</div>
         <div class="dm-sub" id="dmSub">Chat</div>
       </div>
       <button class="icon-btn" id="dmCloseBtn" aria-label="Close">✕</button>
@@ -651,7 +782,41 @@
 
     <div class="dm-foot">
       <textarea class="dm-input" id="dmInput" placeholder="Type a message…" rows="2"></textarea>
-      <button class="btn message-blue" id="dmSendBtn" type="button">Send</button>
+      <button class="btn message-blue dm-send" id="dmSendBtn" type="button">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- License / Checkout Modal (same ids your existing license-modal.js expects) -->
+<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
+<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
+  <div class="pb-modal-card">
+    <div class="pb-modal-head">
+      <div>
+        <div class="pb-modal-kicker">Choose License</div>
+        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
+        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
+      </div>
+      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
+    </div>
+
+    <div class="pb-licenses" id="pbLicensesGrid"></div>
+
+    <div class="pb-modal-foot">
+      <div class="pb-total">
+        <div class="pb-total-label">Total</div>
+        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
+      </div>
+
+      <div class="pb-actions">
+        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
+        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
+      </div>
+    </div>
+
+    <div class="pb-terms" id="pbTermsBox">
+      <div class="pb-terms-title">Usage</div>
+      <div class="pb-terms-grid" id="pbTermsGrid"></div>
     </div>
   </div>
 </div>
@@ -679,77 +844,682 @@
   </div>
 </aside>
 
+<!-- PAYMENT METHOD MODAL -->
+<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
+<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
+  <div class="pb-pay-head">
+    <div>
+      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
+      <div class="pb-pay-sub" id="pbPaySub">—</div>
+    </div>
+    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
+  </div>
+
+  <div class="pb-pay-body">
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
+
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
+
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 
-<script type="module" src="/js/firebase.js"></script>
+<script>
+  window.PB_PAYPAL_CREATE_ORDER_URL =
+    "https://createorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CAPTURE_ORDER_URL = 
+    "https://captureorder-f65rhsquva-uc.a.run.app";
+
+  // ✅ M-Pesa STK Push (no trailing slash)
+  window.PB_MPESA_STKPUSH_URL =
+    "https://stkpush-f65rhsquva-uc.a.run.app";
+</script>
+
+<script type="module" src="/js/firebase.js?v=21"></script>
+<script src="/js/verify.js"></script>
 <script src="/js/menu.js"></script>
+<script src="/js/player.js?v=19"></script>
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
 <script src="/js/performance.js"></script>
+<script src="/js/license-modal.js"></script>
 
 <script>
-  /* =========================
-     helpers
-  ========================= */
-  function initials(name){
-    const s = String(name||"P").trim();
-    const parts = s.split(/\s+/).filter(Boolean);
-    const a = (parts[0]||"P").slice(0,1);
-    const b = (parts[1]||"").slice(0,1);
-    return (a+b).toUpperCase();
+
+/* =========================================================
+   PRODUCER PROFILE PAYMENT MODAL
+========================================================= */
+(function(){
+  const $ = (id)=>document.getElementById(id);
+
+  const payBackdrop = $("pbPayBackdrop");
+  const payModal = $("pbPayModal");
+  const payClose = $("pbPayClose");
+  const payTitle = $("pbPayTitle");
+  const paySub = $("pbPaySub");
+  const payAmountA = $("pbPayAmountA");
+  const payAmountB = $("pbPayAmountB");
+  const btnPaypal = $("pbPayWithPaypal");
+  const btnMpesa = $("pbPayWithMpesa");
+  const mpesaBox = $("pbMpesaBox");
+  const mpesaPhone = $("pbMpesaPhone");
+  const payStatus = $("pbPayStatus");
+  const pbSendStkPush = $("pbSendStkPush");
+
+  function getBeatById(beatId){
+    return (window.__LATEST_BEATS__ || []).find(
+      b => String(b?.id || "") === String(beatId || "")
+    ) || null;
   }
 
-  function safeNameFromBeat(b){
+  function getDefaultLicenseForBeat(beat){
+    if (!beat) {
+      return {
+        licenseKey: "basic",
+        amount: 0
+      };
+    }
+
+    const lic = beat.licenses || {};
+
+    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+      return {
+        licenseKey: "basic",
+        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+      return {
+        licenseKey: "premium",
+        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+      };
+    }
+
+    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+      return {
+        licenseKey: "exclusive",
+        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+      };
+    }
+
+    return {
+      licenseKey: "basic",
+      amount: Number(beat.price || 0)
+    };
+  }
+
+  function syncSelectionFromModal(){
+    const title = (document.getElementById("pbModalTitle")?.textContent || "").trim();
+    const totalTxt = (document.getElementById("pbTotalPrice")?.textContent || "").trim();
+    const totalAmount = Number(String(totalTxt).replace(/[^0-9.]/g, "")) || 0;
+
+    const selectedCard =
+      document.querySelector('#pbLicensesGrid [aria-pressed="true"]') ||
+      document.querySelector('#pbLicensesGrid .selected') ||
+      document.querySelector('#pbLicensesGrid .active') ||
+      document.querySelector('#pbLicensesGrid [data-selected="true"]');
+
+    let licenseKey = "";
+    if (selectedCard) {
+      licenseKey =
+        selectedCard.dataset.licenseKey ||
+        selectedCard.dataset.key ||
+        "";
+    }
+
+    if (!licenseKey && selectedCard) {
+      const txt = (selectedCard.textContent || "").toLowerCase();
+      if (txt.includes("exclusive")) licenseKey = "exclusive";
+      else if (txt.includes("premium")) licenseKey = "premium";
+      else if (txt.includes("basic")) licenseKey = "basic";
+    }
+
+    if (!licenseKey) {
+      const existing = window.__PB_SELECTED__ || {};
+      licenseKey = existing.licenseKey || "basic";
+    }
+
+    window.__PB_SELECTED__ = {
+      ...(window.__PB_SELECTED__ || {}),
+      title: title || window.__PB_SELECTED__?.title || "",
+      licenseKey,
+      amount: totalAmount || window.__PB_SELECTED__?.amount || 0
+    };
+
+    console.log("✅ marketplace synced from modal", window.__PB_SELECTED__);
+  }
+
+  function openPayModal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) {
+      alert("Select a beat and license first.");
+      return;
+    }
+
+    payTitle.textContent = "Choose payment method";
+    paySub.textContent = `${sel.title || "Beat"} • License: ${sel.licenseKey || "basic"}`;
+    payAmountA.textContent = money(sel.amount || 0);
+    payAmountB.textContent = money(sel.amount || 0);
+    payStatus.textContent = "";
+    mpesaBox.style.display = "none";
+    mpesaPhone.value = "";
+
+    payBackdrop.style.display = "block";
+    payModal.style.display = "block";
+    payBackdrop.setAttribute("aria-hidden","false");
+  }
+
+  function closePayModal(){
+    payBackdrop.style.display = "none";
+    payModal.style.display = "none";
+    payBackdrop.setAttribute("aria-hidden","true");
+    mpesaBox.style.display = "none";
+    payStatus.textContent = "";
+  }
+
+  function showMpesaBox(){
+    mpesaBox.style.display = "block";
+    payStatus.textContent = "";
+    setTimeout(()=> mpesaPhone?.focus(), 50);
+  }
+
+  async function sendMpesaStkPush(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const phone = (mpesaPhone.value || "").trim();
+    if (!phone) {
+      payStatus.textContent = "Enter your phone number first.";
+      return;
+    }
+
+    const digits = phone.replace(/\D/g,"");
+    if (!(digits.startsWith("2547") || digits.startsWith("2541")) || digits.length !== 12) {
+      payStatus.textContent = "Use format: 2547XXXXXXXX";
+      return;
+    }
+
+    const amt = Number(sel.amount || 0);
+    if (!amt || amt <= 0) {
+      payStatus.textContent = "Price not detected. Try selecting the license again.";
+      return;
+    }
+
+    const u = window.FB?.auth?.currentUser || window.FB?.user || null;
+    if (!u?.uid){
+      payStatus.textContent = "Please sign in to pay with M-Pesa.";
+      setTimeout(()=> location.href="/login/", 600);
+      return;
+    }
+
+    pbSendStkPush.disabled = true;
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Sending STK Push… check your phone.";
+
+    const controller = new AbortController();
+    const t = setTimeout(()=>controller.abort(), 25000);
+
+    try{
+      const body = {
+        phone: digits,
+        beatId: String(sel.beatId),
+        buyerId: String(u.uid),
+        licenseKey: String(sel.licenseKey || "basic"),
+        amount: Math.round(amt),
+        amountUsd: Number(amt)
+      };
+
+      const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body),
+        signal: controller.signal
+      });
+
+      const data = await r.json().catch(()=> ({}));
+
+      if (!r.ok) {
+        console.error("STK push failed:", data);
+        payStatus.textContent = data?.error || data?.ResponseDescription || `STK push failed (${r.status})`;
+        return;
+      }
+
+      payStatus.textContent =
+        "✅ STK Push sent.\nApprove on your phone." +
+        (data?.orderId ? `\nOrder ID: ${data.orderId}` : "");
+
+    } catch (err){
+      console.error(err);
+      if (String(err?.name) === "AbortError"){
+        payStatus.textContent = "Timed out waiting for server. Check your STK endpoint.";
+      } else {
+        payStatus.textContent = "Error: " + (err?.message || err);
+      }
+    } finally {
+      clearTimeout(t);
+      pbSendStkPush.disabled = false;
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  async function payWithPaypal(){
+    const sel = window.__PB_SELECTED__;
+    if (!sel?.beatId) return alert("Select a beat first.");
+
+    const body = {
+      beatId: sel.beatId,
+      licenseKey: sel.licenseKey || "basic"
+    };
+
+    btnPaypal.disabled = true;
+    btnMpesa.disabled = true;
+    payStatus.textContent = "Opening PayPal…";
+
+    try{
+      const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify(body)
+      });
+
+      const data = await r.json().catch(()=> ({}));
+      if (!r.ok) {
+        console.error("PayPal createOrder failed:", data);
+        alert(data?.error || "PayPal create order failed");
+        payStatus.textContent = "";
+        return;
+      }
+
+      const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
+      if (!url) {
+        console.error("No approveUrl:", data);
+        alert("PayPal approval link missing.");
+        payStatus.textContent = "";
+        return;
+      }
+
+      location.href = url;
+    } catch (err){
+      console.error(err);
+      alert("PayPal error: " + (err?.message || err));
+      payStatus.textContent = "";
+    } finally {
+      btnPaypal.disabled = false;
+      btnMpesa.disabled = false;
+    }
+  }
+
+  payBackdrop?.addEventListener("click", closePayModal);
+  payClose?.addEventListener("click", closePayModal);
+  btnPaypal?.addEventListener("click", payWithPaypal);
+  btnMpesa?.addEventListener("click", showMpesaBox);
+  pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+
+  document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
+
+    const beatId = String(card.getAttribute("data-beat-id") || "");
+    if (!beatId) return;
+
+    const title = (
+      card.querySelector("h3")?.textContent || ""
+    ).trim();
+
+    const beat = getBeatById(beatId);
+    const fallback = getDefaultLicenseForBeat(beat);
+
+    window.__PB_SELECTED__ = {
+      beatId,
+      title: title || "",
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+
+    console.log("✅ marketplace default selection", window.__PB_SELECTED__);
+  }, true);
+
+  document.addEventListener("click", (e)=>{
+    const clickedCard = e.target.closest("#pbLicensesGrid > *");
+    if (!clickedCard) return;
+
+    setTimeout(syncSelectionFromModal, 0);
+  }, true);
+
+  const buyNowBtn = document.getElementById("pbBuyNow");
+  if (buyNowBtn) {
+    buyNowBtn.addEventListener("click", (e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+
+      let sel = window.__PB_SELECTED__;
+      if (!sel?.beatId) {
+        alert("Select a beat and license first.");
+        return;
+      }
+
+      syncSelectionFromModal();
+      sel = window.__PB_SELECTED__;
+
+      if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+        const beat = getBeatById(sel.beatId);
+        const fallback = getDefaultLicenseForBeat(beat);
+
+        window.__PB_SELECTED__ = {
+          ...sel,
+          licenseKey: fallback.licenseKey,
+          amount: fallback.amount
+        };
+
+        sel = window.__PB_SELECTED__;
+      }
+
+      if (!sel?.amount || sel.amount <= 0) {
+        alert("Select a license first.");
+        return;
+      }
+
+      openPayModal();
+    }, true);
+  }
+})();
+
+  function money(n){ const v=Number(n||0); return "$"+(isFinite(v)?v.toFixed(2):"0.00"); }
+  function coverHTML(url, title){
+    if (url) return `<img src="${url}" alt="${title||"Beat"}" loading="lazy" />`;
+    const initials = String(title||"B").trim().slice(0,2).toUpperCase();
+    return `<div style="height:100%;width:100%;display:grid;place-items:center;font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function beatPageUrl(b){
+    const id = String(b?.id || "");
+    return "/beat/?id=" + encodeURIComponent(id);
+  }
+
+  function producerPageUrl(b){
+    const pid = String(b?.producerId || "");
+    return "/producer-profile/?producerId=" + encodeURIComponent(pid);
+  }
+
+  function pillHTML(b){
+    return `
+      <button class="pb-pill price-pill" type="button" aria-label="Choose license">
+        <span class="ic">
+          <svg viewBox="0 0 24 24" fill="none">
+            <rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </span>
+        <span>${money(b.price)}</span>
+      </button>
+    `;
+  }
+
+  function getProducerIdFromURL(){
+    const u = new URL(location.href);
+    return (u.searchParams.get("producerId") || "").trim();
+  }
+
+  function getBeatPremiereTime(b){
+    if (b?.premiereAt?.toMillis) return b.premiereAt.toMillis();
+    if (b?.premiereAt?.seconds) return b.premiereAt.seconds * 1000;
+
+    const n = Number(b?.premiereAt || b?.releaseAt || 0);
+    if (Number.isFinite(n) && n > 0) return n;
+
+    // fallback from dashboard fields: date + time
+    if (b?.date && b?.time){
+      const d = new Date(`${b.date}T${b.time}:00`);
+      if (!isNaN(d.getTime())) return d.getTime();
+    }
+
+    return 0;
+  }
+
+  function isUpcomingPremiereBeat(b){
+    const status = String(b?.premiereStatus || "").toLowerCase();
+
+    const isPremiere =
+      b?.isPremiere === true ||
+      b?.premiere === true ||
+      b?.premiereToggle === true ||
+      b?.scheduledRelease === true ||
+      String(b?.releaseType || "").toLowerCase() === "premiere" ||
+      status === "upcoming";
+
+    const premiereAt = getBeatPremiereTime(b);
+
+    console.log("PROFILE PREMIERE CHECK:", b.title, {
+      isPremiere: b.isPremiere,
+      premiere: b.premiere,
+      premiereToggle: b.premiereToggle,
+      scheduledRelease: b.scheduledRelease,
+      releaseType: b.releaseType,
+      premiereStatus: b.premiereStatus,
+      premiereAt,
+      now: Date.now(),
+      result: isPremiere && premiereAt > Date.now()
+    });
+
+    return isPremiere && premiereAt > Date.now();
+  }
+
+  function formatPremiereCountdown(b){
+    const premiereAt = getBeatPremiereTime(b);
+    if (!premiereAt) return "Premiere soon";
+
+    const diff = Math.max(0, premiereAt - Date.now());
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+
+    if (days > 0) return `Premieres in ${days}d ${hours}h`;
+    if (hours > 0) return `Premieres in ${hours}h ${mins}m`;
+    return `Premieres in ${mins}m`;
+  }
+
+  function preSaveHTML(b){
+    return `
+      <button class="pb-pill presave-pill" type="button" data-presave="1" aria-label="Pre-save beat">
+        <span class="ic">🔔</span>
+        <span>Pre-save</span>
+      </button>
+      <div style="margin-top:8px;color:rgba(255,255,255,.62);font-size:12px;text-align:center;">
+        ${formatPremiereCountdown(b)}
+      </div>
+    `;
+  }
+
+  function prettyProducerNameFromBeat(b){
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
-    if (b.producerId) return "Producer " + String(b.producerId).slice(0,6);
-    return "Producer";
+    if (!b.producerId) return "Prod. Unknown";
+    return "Prod. " + String(b.producerId).slice(0,8);
   }
 
+  function setAvatar(name, photoURL){
+    const el = document.getElementById("prodAvatar");
+    if (!el) return;
+
+    const pic = String(photoURL || "").trim();
+
+    if (pic) {
+      const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
+      el.innerHTML = `<img src="${pic + bust}" alt="${name || "Producer"}">`;
+      return;
+    }
+
+    const initials = String(name||"PB").trim().slice(0,2).toUpperCase();
+    el.innerHTML = `<div style="font-weight:950;font-size:22px;color:rgba(255,255,255,.9)">${initials}</div>`;
+  }
+
+  function formatDate(ts){
+    const n = Number(ts||0);
+    if (!n) return "—";
+    const d = new Date(n);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+  }
+
+  function getPhotoFromBeats(mine){
+    if (!Array.isArray(mine)) return "";
+    const b = mine.find(x =>
+      (x && (x.producerPhotoURL || x.producerAvatar || x.producerPhoto || x.photoURL))
+    );
+    if (!b) return "";
+    return b.producerPhotoURL || b.producerAvatar || b.producerPhoto || b.photoURL || "";
+  }
+
+  /* ======================================================
+     ✅ ANALYTICS (REAL) -> analyticsEvents
+  ====================================================== */
   async function track(eventName, props = {}){
     try{
       if (!window.FB || typeof window.FB.trackEvent !== "function") return;
-      await window.FB.trackEvent(eventName, { page:"producers", ...props });
-    }catch{}
+      await window.FB.trackEvent(eventName, {
+        page: "producer-profile",
+        producerId: getProducerIdFromURL(),
+        ...props
+      });
+    }catch(e){
+      // ignore analytics errors
+    }
   }
 
-  function escapeHtml(s){
-    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  /* ======================================================
+     ✅ FOLLOW (uses firebase.js helpers)
+  ====================================================== */
+  function setFollowUI({ isFollowing, disabled=false, note="" }){
+    const btn = document.getElementById("followBtn");
+    const noteEl = document.getElementById("followNote");
+    if (!btn) return;
+
+    btn.disabled = !!disabled;
+    btn.textContent = isFollowing ? "Following" : "Follow";
+    if (noteEl) noteEl.textContent = note || "";
   }
 
-  /* =========================
-     VERIFIED BADGE
-  ========================= */
+  async function refreshFollowers(pid){
+    const el = document.getElementById("statFollowers");
+    try{
+      const n = await window.FB.getProducerFollowerCount(pid, { fast: true });
+      if (el) el.textContent = String(Number.isFinite(n) ? n : 0);
+      return n;
+    }catch{
+      if (el) el.textContent = "0";
+      return 0;
+    }
+  }
 
-  function getVerificationBadge(plan){
+  async function initFollowUI(pid){
+    const btn = document.getElementById("followBtn");
+    if (!btn) return;
 
-    const p = String(plan || "").toLowerCase();
+    await refreshFollowers(pid);
 
-    if(p === "pro"){
-      return `
-      <span class="verify-badge verify-pro" title="Pro Verified">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.5 12l-2.1-2.4.3-3.2-3.1-.7L16 2.8l-3 1.7-3-1.7-1.6 2.9-3.1.7.3 3.2L1.5 12l2.1 2.4-.3 3.2 3.1.7L8 21.2l3-1.7 3 1.7 1.6-2.9 3.1-.7-.3-3.2L22.5 12zM10.2 15.3l-2.5-2.5 1.1-1.1 1.4 1.4 4-4 1.1 1.1-5.1 5.1z"/>
-        </svg>
-      </span>`;
+    const user = window.FB?.auth?.currentUser || null;
+    if (!user){
+      setFollowUI({ isFollowing:false, note:"Sign in to follow this producer." });
+      return;
+    }
+    if (user.uid === pid){
+      setFollowUI({ isFollowing:false, note:"This is your producer profile." });
+      btn.disabled = true;
+      return;
     }
 
-    if(p === "elite"){
-      return `
-      <span class="verify-badge verify-elite" title="Elite Verified">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M22.5 12l-2.1-2.4.3-3.2-3.1-.7L16 2.8l-3 1.7-3-1.7-1.6 2.9-3.1.7.3 3.2L1.5 12l2.1 2.4-.3 3.2 3.1.7L8 21.2l3-1.7 3 1.7 1.6-2.9 3.1-.7-.3-3.2L22.5 12zM10.2 15.3l-2.5-2.5 1.1-1.1 1.4 1.4 4-4 1.1 1.1-5.1 5.1z"/>
-        </svg>
-      </span>`;
-    }
-
-    return "";
+    const following = await window.FB.isFollowingProducer(pid);
+    setFollowUI({ isFollowing: following, note:"" });
   }
 
-  /* =========================
-     DM (Inbox)
-  ========================= */
+  async function toggleFollow(pid){
+    const btn = document.getElementById("followBtn");
+    const user = window.FB?.auth?.currentUser || null;
+
+    if (!user){
+      const ret = encodeURIComponent(location.pathname + location.search);
+      location.href = "/login/?return=" + ret;
+      return;
+    }
+    if (user.uid === pid){
+      setFollowUI({ isFollowing:false, note:"You can’t follow yourself." });
+      return;
+    }
+
+    try{
+      const currently = await window.FB.isFollowingProducer(pid);
+      setFollowUI({ isFollowing: currently, disabled:true, note:"Updating…" });
+
+      if (currently){
+        await window.FB.unfollowProducer(pid);
+        setFollowUI({ isFollowing:false, disabled:false, note:"Unfollowed." });
+        try{
+          await track("follow", { action: "unfollow", targetUid: pid });
+        }catch(err){
+          console.warn("follow analytics failed", err);
+        }
+      } else {
+        await window.FB.followProducer(pid);
+        setFollowUI({ isFollowing:true, disabled:false, note:"Followed ✅" });
+        try{
+          await track("follow", { action: "follow", targetUid: pid });
+        }catch(err){
+          console.warn("follow analytics failed", err);
+        }
+      }
+
+      await refreshFollowers(pid);
+    }catch(err){
+      console.error("toggleFollow error:", err);
+      const noteEl = document.getElementById("followNote");
+      const msg = err?.code === "permission-denied"
+        ? "Permission denied. We need Firestore rules for follows."
+        : ("Failed: " + (err?.message || err));
+      if (noteEl) noteEl.textContent = msg;
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  /* ======================================================
+     ✅ DM (Inbox) -> threads
+     Requires firebase.js functions:
+       FB.ensureThread({ otherUid })
+       FB.listenThreadMessages(threadId, cb)
+       FB.sendMessage({ otherUid, text })
+       FB.markThreadRead(threadId)
+  ====================================================== */
   let __dmUnsub = null;
   let __dmThreadId = "";
   let __dmOtherUid = "";
@@ -767,6 +1537,7 @@
     __dmUnsub = null;
     __dmThreadId = "";
   }
+
   function fmtTime(value){
     if (!value) return "";
 
@@ -787,6 +1558,7 @@
       minute:"2-digit"
     });
   }
+
   function renderMessages(list){
     const body = document.getElementById("dmBody");
     if (!body) return;
@@ -797,8 +1569,9 @@
     (list || []).forEach(m=>{
       const wrap = document.createElement("div");
       wrap.className = "dm-msg" + (m.senderId === me ? " me" : "");
+      const safeText = String(m.text || "");
       wrap.innerHTML = `
-        <div>${escapeHtml(m.text || "")}</div>
+        <div>${safeText.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
         <div class="dm-meta">
           <span>${m.senderId === me ? "You" : (__dmOtherName || "Them")}</span>
           <span>${fmtTime(m.createdAt)}</span>
@@ -807,61 +1580,62 @@
       body.appendChild(wrap);
     });
 
+    // scroll to bottom
     body.scrollTop = body.scrollHeight;
   }
+
   async function startDM({ otherUid, otherName }){
-
     const user = window.FB?.auth?.currentUser || null;
-
     if (!user){
       const ret = encodeURIComponent(location.pathname + location.search);
       location.href = "/login/?return=" + ret;
       return;
     }
-
     if (user.uid === otherUid){
-      alert("You can’t message yourself.");
+      document.getElementById("followNote").textContent = "You can’t message yourself.";
       return;
     }
 
     __dmOtherUid = otherUid;
     __dmOtherName = otherName || "User";
 
-    document.getElementById("dmTitle").textContent = "Message";
-    document.getElementById("dmSub").textContent = "Chat with " + __dmOtherName;
+    const title = document.getElementById("dmTitle");
+    const sub = document.getElementById("dmSub");
+    if (title) title.textContent = "Message";
+    if (sub) sub.textContent = "Chat with " + __dmOtherName;
 
     openDM();
 
+    // ensure thread + listen
     if (!window.FB || typeof window.FB.ensureThread !== "function"){
-      renderMessages([{ text:"Inbox not ready", fromUid:"system", createdAt:Date.now() }]);
+      renderMessages([{ text: "Inbox is not ready yet. Please update /js/firebase.js with threads helpers.", fromUid: "system", createdAt: Date.now() }]);
       return;
     }
 
-    // create or get thread
-    const threadId = await window.FB.ensureThread({ otherUid });
-
-    __dmThreadId = threadId;
+    const t = await window.FB.ensureThread({ otherUid });
+    __dmThreadId = t;
 
     if (!__dmThreadId){
-      renderMessages([{ text:"Could not open thread.", fromUid:"system", createdAt:Date.now() }]);
+      renderMessages([{ text: "Could not open thread.", fromUid: "system", createdAt: Date.now() }]);
       return;
     }
 
     try{ await window.FB.markThreadRead(__dmThreadId); }catch{}
 
-    if (typeof __dmUnsub === "function"){
-      try{ __dmUnsub(); }catch{}
-    }
-
-    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId,{
-      onData:(msgs)=>{
+    if (typeof __dmUnsub === "function") { try{ __dmUnsub(); }catch{} }
+    __dmUnsub = window.FB.listenThreadMessages(__dmThreadId, {
+      onData: (msgs) => {
         renderMessages(msgs || []);
       }
     });
 
-    await track("open_inbox",{ targetUid: otherUid });
+    try{
+      await track("open_inbox", { targetUid: otherUid });
+    }catch(e){
+      console.warn("open_inbox analytics failed", e);
+    }
   }
-  
+
   async function sendDM(){
     const input = document.getElementById("dmInput");
     const btn = document.getElementById("dmSendBtn");
@@ -886,6 +1660,7 @@
       input?.focus();
     }
   }
+
   function wireDMUI(){
     document.getElementById("dmCloseBtn")?.addEventListener("click", closeDM);
     document.getElementById("dmBackdrop")?.addEventListener("click", (e)=>{
@@ -900,239 +1675,283 @@
     });
   }
 
-  /* =========================
-     UI render
-  ========================= */
-  function avatarHTML({ name, photoURL }){
-    const pic = String(photoURL || "").trim();
-    if (pic) {
-      const bust = (pic.includes("?") ? "&" : "?") + "v=" + Date.now();
-      return `<img src="${pic + bust}" alt="${escapeHtml(name)}" loading="lazy">`;
+  async function loadProducerProfile(){
+    const pid = getProducerIdFromURL();
+    const status = document.getElementById("status");
+    const grid = document.getElementById("grid");
+    const beatsCount = document.getElementById("beatsCount");
+
+    if (!pid){
+      document.getElementById("prodName").textContent = "Producer";
+      document.getElementById("prodSub").textContent = "Missing producerId in URL.";
+      setAvatar("PB");
+      status.textContent = "Open a producer from Marketplace (click producer name).";
+      return;
     }
-    return escapeHtml(initials(name));
-  }
 
-  async function hydrateProducerExtras(p){
+    /* =====================================
+       ✅ REAL PROFILE VIEW COUNTER (Audiory)
+    ===================================== */
 
-    /* photo + displayName from users/{uid} */
     try{
-      if (window.FB && typeof window.FB.getProducerProfile === "function"){
-        const prof = await window.FB.getProducerProfile(p.id);
 
-        if (prof){
+      const user = window.FB?.auth?.currentUser || null;
 
-          const profName =
-            (prof?.displayName && String(prof.displayName).trim())
-            ? String(prof.displayName).trim()
-            : ((prof?.firstName || prof?.lastName)
-              ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim()
-              : "");
+      // don't count self views
+      if(!user || user.uid !== pid){
 
-          if (profName) p.name = profName;
-
-          p.photoURL = prof?.photoURL || "";
-
-          /* verification plan */
-          p.plan = prof?.plan || "";
-        }
-      }
-    }catch(e){
-      console.warn("profile load failed", e);
-    }
-
-    /* followers count */
-    try{
-      if (window.FB && typeof window.FB.getProducerFollowerCount === "function"){
-        p.followers = await window.FB.getProducerFollowerCount(p.id, { fast:true });
-      }
-    }catch(e){
-      console.warn("followers load failed", e);
-    }
-  }
-
-  async function canShowActionButtons(pid){
-    const user = window.FB?.auth?.currentUser || null;
-    if (!user) return { canFollow:true, canMessage:true, isSelf:false };
-    const isSelf = user.uid === pid;
-    return { canFollow: !isSelf, canMessage: !isSelf, isSelf };
-  }
-
-  async function renderProducers(list){
-    const grid = document.getElementById("producerGrid");
-    const count = document.getElementById("producerCount");
-    grid.innerHTML = "";
-    count.textContent = `${list.length} producer${list.length===1?"":"s"}`;
-
-    // render
-    list.forEach((p)=>{
-      const el = document.createElement("div");
-      el.className = "card producer-card";
-      el.setAttribute("data-pid", p.id);
-
-      el.innerHTML = `
-        <div class="producer-top">
-          <div class="avatar" id="av_${p.id}" aria-hidden="true">${escapeHtml(initials(p.name))}</div>
-          <div style="min-width:0;">
-            <p class="pname" id="nm_${p.id}">${escapeHtml(p.name)}</p>
-            <p class="pmeta" id="mt_${p.id}">${p.beatCount} beat${p.beatCount===1?"":"s"}</p>
-
-            <div class="producer-stats">
-              <div class="stat" id="fl_${p.id}">Followers: —</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="producer-actions">
-          <a class="btn primary" href="/producer-profile/?producerId=${encodeURIComponent(p.id)}">View Profile</a>
-          <a class="btn" href="/marketplace/?producerId=${encodeURIComponent(p.id)}">View Beats</a>
-
-          <button class="btn follow-white hidden" type="button" id="fb_${p.id}">Follow</button>
-          <button class="btn message-blue hidden" type="button" id="mb_${p.id}">Message</button>
-        </div>
-      `;
-      grid.appendChild(el);
-    });
-
-    // hydrate extras async (photos, followers, follow state)
-    for (const p of list){
-      await hydrateProducerExtras(p);
-
-      const av = document.getElementById("av_" + p.id);
-      const nm = document.getElementById("nm_" + p.id);
-      const fl = document.getElementById("fl_" + p.id);
-      const fb = document.getElementById("fb_" + p.id);
-      const mb = document.getElementById("mb_" + p.id);
-
-      if (nm) nm.innerHTML = escapeHtml(p.name) + getVerificationBadge(p.plan);
-      if (av) av.innerHTML = avatarHTML({ name: p.name, photoURL: p.photoURL });
-      if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
-
-      const { canFollow, canMessage } = await canShowActionButtons(p.id);
-
-      // Follow button (requires FB follow helpers)
-      if (fb && canFollow && window.FB && typeof window.FB.isFollowingProducer === "function"){
-        fb.classList.remove("hidden");
-
-        let following = false;
-        try{ following = await window.FB.isFollowingProducer(p.id); }catch{}
-        fb.textContent = following ? "Following" : "Follow";
-
-        fb.addEventListener("click", async ()=>{
-          const user = window.FB?.auth?.currentUser || null;
-          if (!user){
-            const ret = encodeURIComponent(location.pathname + location.search);
-            location.href = "/login/?return=" + ret;
-            return;
+        await window.FB.updateDoc(
+          window.FB.doc(window.FB.db, "users", pid),
+          {
+            profileViews: window.FB.increment(1)
           }
+        );
 
-          try{
-            fb.disabled = true;
+        console.log("profile view counted:", pid);
 
-            const cur = await window.FB.isFollowingProducer(p.id);
-
-            if (cur){
-              await window.FB.unfollowProducer(p.id);
-              fb.textContent = "Follow";
-              try{
-                await track("follow", { action:"unfollow", targetUid: p.id });
-              }catch(err){
-                console.warn("follow analytics failed", err);
-              }
-            } else {
-              await window.FB.followProducer(p.id);
-              fb.textContent = "Following";
-              try{
-                await track("follow", { action:"follow", targetUid: p.id });
-              }catch(err){
-                console.warn("follow analytics failed", err);
-              }
-            }
-
-            try{
-              p.followers = await window.FB.getProducerFollowerCount(p.id, { fast:true });
-              if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
-            }catch(err){
-              console.warn("followers refresh failed", err);
-            }
-
-          }catch(e){
-            alert("Follow failed: " + (e?.message || e));
-          }finally{
-            fb.disabled = false;
-          }
-        });
       }
 
-      // Message button (requires threads helpers)
-      if (mb && canMessage){
-        mb.addEventListener("click", ()=>{
-          location.href =
-            "/messages/?producerId=" +
-            encodeURIComponent(p.id) +
-            "&name=" +
-            encodeURIComponent(p.name || "Producer");
-        });
-      }
+    }catch(e){
+      console.error("profile view tracking failed", e);
     }
-  }
 
-  function applySearch(all){
-    const q = String(document.getElementById("producerSearch").value||"").trim().toLowerCase();
-    if (!q) return all;
-    return all.filter(p => p.name.toLowerCase().includes(q));
-  }
+    // buttons
+    const followBtn = document.getElementById("followBtn");
+    followBtn?.addEventListener("click", ()=> toggleFollow(pid));
 
-  async function loadProducers(){
-    const status = document.getElementById("producerStatus");
+    wireDMUI();
+
     try{
-      status.textContent = "Loading producers…";
+      status.textContent = "Loading beats…";
       status.classList.remove("hidden");
 
-      wireDMUI();
+      const beats = await window.FB.fetchBeats({ max: 200, force: true });
+      const mine = beats.filter(b => String(b.producerId||"") === String(pid));
 
-      const beats = await window.FB.fetchBeats({ max: 200 });
+      window.__LATEST_BEATS__ = mine;
 
-      const map = new Map();
-      beats.forEach((b)=>{
-        const pid = String(b.producerId||"").trim();
-        if (!pid) return;
-        const name = safeNameFromBeat(b);
+      grid.innerHTML = "";
+      beatsCount.textContent = `${mine.length} item${mine.length===1?"":"s"}`;
 
-        if (!map.has(pid)){
-          map.set(pid, { id: pid, name, beatCount: 1, photoURL:"", followers:0 });
-        } else {
-          const x = map.get(pid);
-          x.beatCount += 1;
-          if ((!x.name || x.name.startsWith("Producer ")) && name && !name.startsWith("Producer ")) x.name = name;
+      const displayName = mine[0] ? prettyProducerNameFromBeat(mine[0]) : ("Prod. " + pid.slice(0,8));
+      document.getElementById("prodName").textContent = displayName;
+      document.getElementById("prodSub").textContent = `Producer ID: ${pid}`;
+      let producerPhoto = "";
+
+      // profile (photo + name)
+      try{
+        if (window.FB && typeof window.FB.getProducerProfile === "function"){
+          const prof = await window.FB.getProducerProfile(pid);
+
+          const profName =
+            (prof?.displayName && String(prof.displayName).trim()) ? String(prof.displayName).trim()
+            : ((prof?.firstName || prof?.lastName) ? `${prof?.firstName||""} ${prof?.lastName||""}`.trim() : "");
+
+          if (profName){
+            const nameEl = document.getElementById("prodName");
+
+            nameEl.innerHTML =
+              profName +
+              AudioryVerify.badge(prof?.plan);
+          }
+
+          producerPhoto = prof?.photoURL || prof?.photoUrl || prof?.photo || "";
+          const producerPlan = prof?.plan || "";
+          mine.forEach(x => { x.producerPlan = producerPlan; });
         }
-      });
+      }catch(e){
+        console.log("getProducerProfile error:", e);
+      }
 
-      const all = Array.from(map.values())
-        .sort((a,b)=> (b.beatCount - a.beatCount) || a.name.localeCompare(b.name));
+      if (!producerPhoto) producerPhoto = getPhotoFromBeats(mine);
+      setAvatar(document.getElementById("prodName").textContent, producerPhoto);
 
-      if (!all.length){
-        status.textContent = "No producers yet.";
+      document.getElementById("statBeats").textContent = String(mine.length);
+
+      const genres = Array.from(new Set(mine.map(b => (b.genre||"").trim()).filter(Boolean)));
+      document.getElementById("statGenres").textContent = genres.length ? genres.slice(0,3).join(", ") : "—";
+
+      const latest = mine.length ? mine[0].createdAt : 0;
+      document.getElementById("statLatest").textContent = formatDate(latest);
+
+      // follow init
+      await initFollowUI(pid);
+
+      // message button rules
+      const msgBtn = document.getElementById("messageBtn");
+      const user = window.FB?.auth?.currentUser || null;
+
+      // show message button only if viewing someone else
+      if (msgBtn){
+        const isSelf = user && user.uid === pid;
+        if (!isSelf){
+          msgBtn.classList.remove("hidden");
+          msgBtn.addEventListener("click", ()=>{
+            const otherName = document.getElementById("prodName")?.textContent || "Producer";
+            location.href =
+              "/messages/?producerId=" +
+              encodeURIComponent(pid) +
+              "&name=" +
+              encodeURIComponent(otherName);
+          });
+        } else {
+          msgBtn.classList.add("hidden");
+        }
+      }
+
+      // analytics: page view
+      await track("page_view", { producerId: pid });
+
+      if (!mine.length){
+        status.textContent = "No beats from this producer yet.";
         return;
       }
 
       status.classList.add("hidden");
-      await renderProducers(all);
 
-      const input = document.getElementById("producerSearch");
-      input.addEventListener("input", async ()=>{
-        await renderProducers(applySearch(all));
+      mine.forEach((b)=>{
+        const card = document.createElement("div");
+        card.className = "card beat-card";
+        card.setAttribute("data-beat-id", b.id);
+
+        const audioUrl = b.previewAudio || b.audio || "";
+        const beatUrl = beatPageUrl(b);
+        const prodUrl = producerPageUrl(b);
+
+        card.innerHTML = `
+          <div class="cover">
+            <a class="beat-open" href="${beatUrl}" data-open-beat="1" aria-label="Open beat page">
+              ${coverHTML(b.artwork, b.title)}
+            </a>
+
+            <button
+              class="play-fab"
+              type="button"
+              data-play-btn
+              data-ignore-license="1"
+              data-beat-id="${b.id}"
+              data-producer-id="${b.producerId}"
+              data-audio-url="${audioUrl}"
+              aria-label="Play">
+              <span class="playIcon">▶</span>
+            </button>
+          </div>
+
+          <div class="beat-meta">
+            <div>
+              <a class="beat-title-link" href="${beatUrl}" data-open-beat="1">
+                <h3>${b.title}</h3>
+              </a>
+
+              <a class="producer" href="${prodUrl}">
+                ${prettyProducerNameFromBeat(b)} ${AudioryVerify.badge(b.producerPlan)}
+              </a>
+
+              <div class="beat-genre">${(b.genre || "").trim() || "Genre"}</div>
+            </div>
+
+            ${isUpcomingPremiereBeat(b) ? preSaveHTML(b) : pillHTML(b)}
+          </div>
+       `;
+
+     /* pre-save upcoming premiere */
+     card.addEventListener("click", (e)=>{
+       const preBtn = e.target.closest("[data-presave='1']");
+       if (!preBtn) return;
+
+       e.preventDefault();
+       e.stopPropagation();
+
+       alert("✅ Pre-save added. We’ll remind you when this beat premieres.");
+     });
+
+     /* open beat page when tapping card */
+     card.addEventListener("click", (e)=>{
+       if (e.target.closest("[data-play-btn]")) return;
+       if (e.target.closest("[data-free-download='1']")) return;
+       if (e.target.closest(".price-pill")) return;
+       if (e.target.closest("[data-presave='1']")) return;
+       if (e.target.closest(".beat-producer-clamp")) return;
+       if (e.target.closest("[data-open-beat='1']")) return;
+
+        window.location.href = beatUrl;
       });
 
-      await track("page_view", { producersCount: all.length });
+     /* analytics */
+     card.querySelector("[data-play-btn]")?.addEventListener("click", ()=>{
+       track("beat_play", { beatId: b.id, title: b.title });
+     });
+
+     grid.appendChild(card);
+   });
 
     }catch(err){
-      console.error("[producers] load error:", err);
-      status.textContent = "Could not load producers. Check console.";
+      console.error(err);
+      status.textContent = "Could not load producer profile. Check console + Firestore rules.";
     }
   }
 
-  window.addEventListener("firebase-ready", ()=>{
-    if (window.FB && typeof window.FB.fetchBeats === "function") loadProducers();
+  let __producerProfileLoaded = false;
+
+  window.addEventListener("firebase-ready", () => {
+    if (__producerProfileLoaded) return;
+    if (window.FB && typeof window.FB.fetchBeats === "function") {
+      __producerProfileLoaded = true;
+      loadProducerProfile();
+    }
+  });
+
+  async function goToMyDashboard() {
+    try {
+      const auth = window.FB?.auth;
+      const db = window.FB?.db;
+
+      const user = auth?.currentUser;
+      if (!user) {
+        window.location.href = "/login/";
+        return;
+      }
+
+      const snap = await window.FB.getDoc(
+        window.FB.doc(db, "users", user.uid)
+      );
+
+      const role = String(
+        snap.exists() ? (snap.data()?.role || "") : ""
+      ).toLowerCase();
+
+      if (role === "producer") {
+        window.location.href = "/dashboard/";
+        return;
+      }
+
+      if (role === "buyer") {
+        window.location.href = "/buyer-dashboard/";
+        return;
+      }
+
+      if (role === "admin") {
+        window.location.href = "/admin-dashboard/";
+        return;
+      }
+
+      window.location.href = "/buyer-dashboard/";
+    } catch (e) {
+      console.error("Dashboard redirect error:", e);
+      window.location.href = "/buyer-dashboard/";
+    }
+  }
+
+  window.addEventListener("firebase-ready", () => {
+    document.getElementById("navDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
+
+    document.getElementById("mNavDashboard")?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      await goToMyDashboard();
+    });
   });
 </script>
 
