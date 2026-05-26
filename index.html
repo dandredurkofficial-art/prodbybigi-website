@@ -5,33 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Audiory – Global Beat Marketplace | Buy & Sell Beats Online</title>
 
-  <!-- ✅ SEO META (ADDED - does not remove anything) -->
   <meta name="description" content="Audiory is a global beat marketplace where producers sell beats and artists buy high-quality instrumentals. Discover trending beats, free beats, sound kits, and top producers worldwide.">
   <meta name="author" content="Audiory">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://audiory.site/">
+  <meta name="theme-color" content="#1d1b84">
 
-  <!-- ✅ FAVICON (ADDED) -->
-  <link rel="icon" href="/audioryfavicon.webp">
+  <link rel="icon" href="/audioryfavicon.webp" type="image/webp">
   <link rel="shortcut icon" href="/audioryfavicon.webp">
-  <!-- optional fallbacks if you later add them -->
   <link rel="icon" type="image/x-icon" href="/favicon.webp">
   <link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
-  <!-- ✅ OPEN GRAPH (ADDED) -->
   <meta property="og:title" content="Audiory – Global Beat Marketplace">
   <meta property="og:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers. Your first hit starts here.">
   <meta property="og:url" content="https://audiory.site/">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://audiory.site/og-image.jpg">
+  <meta property="og:image" content="https://audiory.site/audioryfavicon.webp">
   <meta property="og:image:alt" content="Audiory – Beat Marketplace">
   <meta property="og:site_name" content="Audiory">
 
-  <!-- ✅ TWITTER/X CARDS (ADDED) -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Audiory – Global Beat Marketplace">
   <meta name="twitter:description" content="Buy and sell beats worldwide. Discover trending beats, sound kits, and top producers.">
-  <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
+  <meta name="twitter:image" content="https://audiory.site/audioryfavicon.webp">
 
   <script type="application/ld+json">
   {
@@ -61,7 +57,6 @@
   }
   </script>
 
-  <!-- small perf -->
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 
@@ -71,850 +66,862 @@
   <link rel="stylesheet" href="/css/mobile-fix.css">
 
   <style>
-    /* ✅ tighter BeatStars-style price pill */
-    .pb-pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:7px;
-
-      min-height:36px;
-      padding:0 14px;
-
-      border-radius:12px;
-      border:1px solid #295dff;
-      background:#0a0d14;
-
-      color:#ffffff;
-      white-space:nowrap;
-      text-decoration:none;
-
-      font-size:12px;
-      font-weight:800;
-      line-height:1;
-
-      box-sizing:border-box;
-      box-shadow:none;
-      transform:none;
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
     }
 
-    .pb-pill:hover{
-      background:#101521;
-      transform:none;
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
     }
 
-    .pb-pill:active{
-      transform:none;
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
     }
 
-    .pb-pill .ic{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      width:14px;
-      height:14px;
-      font-size:13px;
-      line-height:1;
-      color:#facc15;
-      flex-shrink:0;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
     }
 
-    .pb-pill.free{
-      border-color:#295dff;
-      background:#0a0d14;
+    .desktop-nav a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      opacity: 0.9;
+      padding: 6px 12px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .cart-btn {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Container Spacing */
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      box-sizing: border-box;
+    }
+
+    /* Hero section formatting */
+    .hero {
+      padding: 60px 0 30px 0;
+    }
+    .hero-card {
+      background: #ffffff !important;
+      border: none !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+    }
+    .hero-title {
+      color: #1e293b;
+      font-size: 42px;
+      font-weight: 800;
+      margin-top: 0;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+    .hero-sub {
+      color: #64748b;
+      font-size: 16px;
+      line-height: 1.6;
+      max-width: 760px;
+      margin-bottom: 24px;
+    }
+    .hero-search input {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      padding: 16px 20px;
+      border-radius: 14px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .hero-search input:focus {
+      border-color: #3b2fad;
+      outline: none;
+      background: #ffffff;
+    }
+    .hero-search button {
+      background: #3b2fad;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0 24px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* Section Typography */
+    .section {
+      margin: 40px 0;
+    }
+    .h2 {
+      color: #1e293b;
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    .see-all {
+      color: #3b2fad;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .see-all:hover {
+      text-decoration: underline;
+    }
+
+    /* General Cards Fallback */
+    .card {
+      background: #ffffff;
+      border: 1px solid #f1f5f9;
+      border-radius: 18px;
+      box-sizing: border-box;
+    }
+
+    /* Buttons / Custom Navigation Links Layout */
+    .play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f1f5f9;
+      color: #334155;
+      padding: 10px 18px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .play-btn:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* Genres Section */
+    .genres-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .card.genre {
+      position: relative;
+      overflow: hidden;
+      border-radius: 16px;
+      height: 100px;
+      display: block;
+      text-decoration: none;
+    }
+    .card.genre img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.6);
+      transition: transform 0.3s ease;
+    }
+    .card.genre:hover img {
+      transform: scale(1.05);
+    }
+    .card.genre .gname {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 16px;
+    }
+
+    /* Producers Promo Box */
+    .producers-promo {
+      background: #f8fafc !important;
+      border: 1px solid #e2e8f0 !important;
+      padding: 36px !important;
+    }
+    .producers-promo .kicker {
+      color: #3b2fad;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .producers-promo h3 {
+      color: #1e293b;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 6px 0 24px 0;
+    }
+    .promo-item {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .promo-icon {
+      font-size: 24px;
+    }
+    .promo-item h4 {
+      color: #1e293b;
+      margin: 0 0 4px 0;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .promo-item p {
+      color: #64748b;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* ✅ Tighter BeatStars-style price pill */
+    .pb-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1.5px solid #3b2fad;
+      background: #ffffff;
+      color: #3b2fad;
+      white-space: nowrap;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1;
+      box-sizing: border-box;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .pb-pill:hover {
+      background: #3b2fad;
+      color: #ffffff;
+    }
+
+    .pb-pill .ic {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      font-size: 13px;
+      line-height: 1;
+      color: #3b2fad;
+      flex-shrink: 0;
+    }
+    .pb-pill:hover .ic {
+      color: #ffffff;
+    }
+
+    .pb-pill.free {
+      border-color: #1e293b;
+      background: #1e293b;
+      color: #ffffff;
+    }
+    .pb-pill.free .ic {
+      color: #ffffff;
+    }
+    .pb-pill.free:hover {
+      background: #334155;
+      border-color: #334155;
     }
 
     /* BeatStars-style lock icon */
-    .lock-icon{
-      width:16px;
-      height:16px;
-      display:inline-block;
+    .lock-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+    }
+    .lock-icon svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    .lock-icon svg{
-      width:100%;
-      height:100%;
-      display:block;
-    }
     /* Beat card layout fix */
-    .chart-card{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
+    .chart-card {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .chart-text {
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
-    /* text area */
-    .chart-text{
-      min-width:0;
-      flex:1;
-      display:flex;
-      flex-direction:column;
-    }
-
-    /* title clamp */
+    /* Text Clamp UI adjustments */
     .trend-meta .t,
-    .home-title-clamp{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
+    .home-title-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
       line-clamp: 2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-
-    /* producer line */
     .trend-meta .p,
-    .home-producer-clamp{
-      display:block;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .home-producer-clamp {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* row that contains text + price */
-    .chart-meta-row{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:10px;
-      margin-top:2px;
+    .chart-meta-row {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 2px;
+    }
+    .chart-pill {
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-end;
     }
 
-    /* price pill container */
-    .chart-pill{
-      flex-shrink:0;
-      display:flex;
-      align-items:flex-end;
+    .home-title-clamp {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 800 !important;
+      font-size: 16px !important;
+      line-height: 1.2 !important;
+      margin: 0;
+    }
+    .home-producer-clamp {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-size: 13px !important;
+      line-height: 1.2 !important;
+      margin-top: 6px !important;
+      opacity: .82;
     }
 
-    .home-title-clamp{
-      display:-webkit-box;
-      -webkit-line-clamp:2;
-      -webkit-box-orient:vertical;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      font-weight:800 !important;
-      font-size:12.5px !important;
-      line-height:1.2 !important;
-      margin:0;
+    .producer-link {
+      color: #64748b !important;
+      text-decoration: none;
+    }
+    .producer-link:hover { 
+      text-decoration: none;
+      color: #3b2fad !important;
     }
 
-    .home-producer-clamp{
-      display:block;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-      font-size:11.5px !important;
-      line-height:1.2 !important;
-      margin-top:4px !important;
-      opacity:.82;
+    /* ✅ Free download modal Customizations */
+    .pb-free-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      z-index: 9998;
+    }
+    .pb-free-modal {
+      position: fixed;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(520px, calc(100vw - 24px));
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      display: none;
+      z-index: 9999;
+      color: #1e293b;
+    }
+    .pb-free-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .pb-free-title {
+      font-size: 18px;
+      font-weight: 800;
+      margin: 0;
+      color: #1e293b;
+    }
+    .pb-free-close {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 10px;
+    }
+    .pb-free-close:hover { background: #f1f5f9; }
+    .pb-free-sub {
+      color: #64748b;
+      font-size: 14px;
+      margin: 8px 0 16px;
+      line-height: 1.5;
+    }
+    .pb-free-label {
+      font-size: 13px;
+      font-weight: 700;
+      margin: 12px 0 6px;
+      color: #334155;
+    }
+    .pb-free-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #1e293b;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .pb-free-input:focus { border-color: #3b2fad; background: #ffffff; }
+    .pb-free-btn {
+      width: 100%;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      background: #3b2fad;
+      color: #fff;
+    }
+    .pb-free-btn[disabled] { opacity: .65; cursor: not-allowed; }
+    .pb-free-note {
+      margin-top: 12px;
+      color: #64748b;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .pb-free-status {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #16a34a;
+      min-height: 18px;
     }
 
-    .producer-link{
-      color:var(--muted);
-      text-decoration:none;
+    /* Fixed Support floating bubble alignment */
+    .audiory-support-fab {
+      position: fixed; right: 18px; bottom: 18px; z-index: 9999;
+      display: flex; gap: 10px; align-items: center;
+      padding: 12px 14px; border-radius: 999px;
+      background: #ffffff; color: #1e293b;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      cursor: pointer; font-family: system-ui;
     }
-    .producer-link:hover{ text-decoration:underline; }
-
-    /* ✅ Free download modal (BeatStars style) */
-    .pb-free-backdrop{
-      position:fixed; inset:0;
-      background:rgba(0,0,0,.55);
-      display:none;
-      z-index:9998;
-    }
-    .pb-free-modal{
-      position:fixed;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      width:min(520px, calc(100vw - 24px));
-      background:#0b1220;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:18px;
-      box-shadow:0 20px 70px rgba(0,0,0,.45);
-      display:none;
-      z-index:9999;
-    }
-    .pb-free-head{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      margin-bottom:10px;
-    }
-    .pb-free-title{
-      font-size:16px;
-      font-weight:900;
-      margin:0;
-    }
-    .pb-free-close{
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:18px;
-      cursor:pointer;
-      padding:6px 8px;
-      border-radius:10px;
-    }
-    .pb-free-close:hover{background:rgba(255,255,255,.08)}
-    .pb-free-sub{
-      color:rgba(255,255,255,.7);
-      font-size:13px;
-      margin:8px 0 14px;
-      line-height:1.4;
-    }
-    .pb-free-label{
-      font-size:13px;
-      font-weight:800;
-      margin:10px 0 6px;
-      color:rgba(255,255,255,.85);
-    }
-    .pb-free-input{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-    }
-    .pb-free-input:focus{border-color:rgba(59,130,246,.55)}
-    .pb-free-btn{
-      width:100%;
-      margin-top:14px;
-      padding:12px 14px;
-      border-radius:14px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      background:#3b82f6;
-      color:#fff;
-    }
-    .pb-free-btn[disabled]{opacity:.65; cursor:not-allowed}
-    .pb-free-note{
-      margin-top:10px;
-      color:rgba(255,255,255,.55);
-      font-size:12px;
-      line-height:1.35;
-    }
-    .pb-free-status{
-      margin-top:10px;
-      font-size:13px;
-      color:#22c55e;
-      min-height:18px;
-    }
-    .audiory-support-fab{
-      position:fixed; right:18px; bottom:18px; z-index:9999;
-      display:flex; gap:10px; align-items:center;
-      padding:12px 14px; border-radius:999px;
-      background:#0e111a; color:#fff;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 18px 50px rgba(0,0,0,.45);
-      cursor:pointer; font-family:system-ui;
-    }
-    .audiory-support-fab:hover{transform:translateY(-1px)}
-    .audiory-support-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
-    .audiory-support-fab b{font-size:14px}
-    .audiory-support-fab span{font-size:12px;opacity:.8}
-
-    .hero-sub{
-      margin:10px 0 0;
-      color:rgba(255,255,255,.78);
-      font-size:15px;
-      line-height:1.6;
-      max-width:760px;
-    }
-
-    @media (max-width:768px){
-      .hero-sub{
-        font-size:14px;
-        line-height:1.5;
-      }
-    }
+    .audiory-support-fab:hover { transform: translateY(-1px); box-shadow: 0 12px 35px rgba(0,0,0,0.12); }
+    .audiory-support-dot { width: 10px; height: 10px; border-radius: 50%; background: #16a34a; }
+    .audiory-support-fab b { font-size: 14px; }
+    .audiory-support-fab span { font-size: 12px; opacity: .8; }
 
     /* =========================
-       PAYMENT MODAL - NEW STYLE
+       PAYMENT MODAL - PREMIUM WHITE THEME
     ========================= */
-    .pb-pay-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,.68);
-      display:none;
-      z-index:10050;
+    .pb-pay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      display: none;
+      z-index: 10050;
+    }
+    .pb-pay-modal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: min(720px, calc(100vw - 18px));
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      padding: 0;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+      display: none;
+      z-index: 10051;
+      color: #1e293b;
+    }
+    .pb-pay-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 24px 24px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .pb-pay-title {
+      font-weight: 800;
+      font-size: 22px;
+      margin: 0;
+      color: #1e293b;
+    }
+    .pb-pay-sub {
+      color: #64748b;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    .pb-pay-close {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 10px;
+    }
+    .pb-pay-close:hover { background: #f1f5f9; }
+    .pb-pay-body {
+      padding: 24px;
+      display: grid;
+      gap: 16px;
+    }
+    .pb-pay-methods {
+      display: grid;
+      gap: 14px;
+    }
+    .pb-pay-btn {
+      width: 100%;
+      min-height: 72px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 0 22px;
+      color: #fff;
+      font-size: 16px;
+    }
+    .pb-pay-btn.primary { background: #2563eb; }
+    .pb-pay-btn.success { background: #16a34a; }
+    .pb-pay-btn:hover { filter: brightness(1.05); }
+    .pb-pay-btn-left { display: flex; align-items: center; gap: 14px; }
+    .pb-pay-amount { font-size: 16px; font-weight: 800; opacity: .95; }
+
+    .pb-pay-phone-wrap {
+      display: none;
+      margin-top: 4px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+    }
+    .pb-pay-label { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+    .pb-pay-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #1e293b;
+      outline: none;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    .pb-pay-input:focus { border-color: #16a34a; }
+    .pb-pay-send {
+      margin-top: 14px;
+      min-height: 48px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 12px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .pb-pay-send:disabled { opacity: .7; cursor: not-allowed; }
+    .pb-pay-status { min-height: 18px; margin-top: 10px; font-size: 13px; color: #475569; white-space: pre-line; }
+    .mpesa-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mpesa-icon svg { width: 100%; height: 100%; display: block; }
+
+    /* Verified Badges Colors styles unchanged */
+    .verify-badge { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle; }
+    .verify-badge svg { width: 16px; height: 16px; display: block; }
+    .verify-pro svg { color: #1d9bf0; }
+    .verify-elite svg { color: #fbbf24; }
+
+    /* Clean Card Structural Grid System */
+    .trending-strip {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      padding: 8px 2px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+    }
+    .trending-strip::-webkit-scrollbar { display: none; }
+    .trending-strip .trend-card { min-width: 200px; width: 200px; flex: 0 0 200px; scroll-snap-align: start; }
+    
+    .chart-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0,1fr));
+      gap: 20px 16px;
     }
 
-    .pb-pay-modal{
-      position:fixed;
-      left:50%;
-      top:50%;
-      transform:translate(-50%,-50%);
-      width:min(720px, calc(100vw - 18px));
-      max-height:calc(100vh - 28px);
-      overflow:auto;
-      background:linear-gradient(180deg,#08142a 0%, #071122 100%);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:26px;
-      padding:0;
-      box-shadow:0 28px 90px rgba(0,0,0,.52);
-      display:none;
-      z-index:10051;
+    .trend-card,
+    .chart-card {
+      background: #ffffff !important;
+      border: 1px solid #f1f5f9 !important;
+      border-radius: 16px !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+      overflow: hidden;
+      gap: 0 !important;
+      padding: 0 !important;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .trend-card:hover, .chart-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05) !important;
     }
 
-    .pb-pay-head{
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
-      gap:12px;
-      padding:22px 24px 14px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+    .beat-cover {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: #f8fafc;
+      border-radius: 0 !important;
+    }
+    .beat-cover .beat-open { display: block; width: 100%; height: 100%; }
+    .beat-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .play-fab {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50% !important;
+      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: none !important;
+      color: white;
+      cursor: pointer;
+    }
+    .play-fab .playIcon { font-size: 14px; color: white; }
+
+    .trend-meta,
+    .chart-meta-row {
+      padding: 14px 14px 0 14px;
+      box-sizing: border-box;
+    }
+    .chart-meta-row { display: block !important; }
+    .chart-text { display: block; min-width: 0; }
+
+    .trend-meta .t,
+    .home-title-clamp {
+      color: #1e293b !important;
+      text-decoration: none;
+      font-size: 16px !important;
+      line-height: 1.3 !important;
+      font-weight: 700 !important;
+      margin: 0 !important;
+      min-height: 42px;
     }
 
-    .pb-pay-title{
-      font-weight:950;
-      font-size:24px;
-      margin:0;
-      color:#fff;
+    .trend-actions,
+    .chart-pill {
+      padding: 14px;
+      box-sizing: border-box;
     }
+    .chart-pill { display: block !important; }
 
-    .pb-pay-sub{
-      color:rgba(255,255,255,.72);
-      font-size:13px;
-      margin-top:8px;
-      line-height:1.5;
-      white-space:pre-line;
+    /* Support Fab placement adjustment overrides */
+    .audiory-support-fab { right: 12px !important; bottom: 12px !important; transform: scale(.92); }
+
+    /* Standardized Footer System Match */
+.footer {
+  width: 100%;
+  padding: 32px 20px; /* Balanced padding */
+  text-align: center;
+  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
+  background-color: #ffffff;
+  box-sizing: border-box;
+  margin-top: auto;
+}
+
+.footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Gives elements breathing room without being huge */
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* Legal & Navigation Links */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover { 
+  color: #3b2fad; 
+}
+
+/* Premium Social Container */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+/* Beautiful, subtle circular button styling for icons */
+.social a { 
+  color: #64748b; /* Clean neutral color */
+  font-size: 16px; /* Perfect proportional icon size */
+  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
+  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
+  border-radius: 50% !important; /* Crisp, perfect circles */
+  width: 38px !important; /* Explicit standard button size */
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Smooth brand coloring glow on hover */
+.social a:hover { 
+  color: #ffffff !important; /* Icon turns clean white */
+  background: #3b2fad !important; /* Circle fills with your signature purple */
+  border-color: #3b2fad !important;
+  transform: translateY(-3px); /* Elegant premium hover lift */
+  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
+}
+
+/* Copyright line styling */
+.footer-row > span {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+    /* Smart Finder Layout Rules */
+    .smart-finder-meta { margin-top: 16px; text-align: left; }
+    .smart-finder-hint { color: #64748b; font-size: 13px; margin-bottom: 12px; }
+    .smart-finder-hint span { color: #1e293b; font-weight: 600; }
+    .smart-finder-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .smart-chip {
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
     }
+    .smart-chip:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
 
-    .pb-pay-close{
-      border:none;
-      background:transparent;
-      color:#fff;
-      font-size:24px;
-      cursor:pointer;
-      padding:4px 8px;
-      border-radius:10px;
+    .presave-wrap { width: 100%; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
+    .presave-countdown { color: #64748b; font-size: 12px; text-align: center; }
+
+    /* Responsive scaling optimizations */
+    @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media (max-width: 768px){
+      .chart-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 12px; }
+      .topbar-inner { padding: 12px 16px; }
+      .hero-title { font-size: 32px; }
+      .footer-row { text-align: center; }
     }
-
-    .pb-pay-close:hover{
-      background:rgba(255,255,255,.08);
+    @media (max-width: 640px) {
+      .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
+      .pb-pay-body { padding: 16px; }
     }
-
-    .pb-pay-body{
-      padding:22px 24px 24px;
-      display:grid;
-      gap:16px;
-    }
-
-    .pb-pay-methods{
-      display:grid;
-      gap:14px;
-    }
-
-    .pb-pay-btn{
-      width:100%;
-      min-height:76px;
-      border-radius:18px;
-      border:none;
-      cursor:pointer;
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:0 22px;
-      color:#fff;
-      font-size:17px;
-      box-shadow:none;
-    }
-
-    .pb-pay-btn.primary{
-      background:#4b86ef;
-    }
-
-    .pb-pay-btn.success{
-      background:#24c65a;
-    }
-
-    .pb-pay-btn:hover{
-      filter:brightness(1.03);
-    }
-
-    .pb-pay-btn-left{
-      display:flex;
-      align-items:center;
-      gap:14px;
-    }
-
-    .pb-pay-amount{
-      font-size:16px;
-      font-weight:900;
-      opacity:.96;
-    }
-
-    .pb-pay-phone-wrap{
-      display:none;
-      margin-top:4px;
-      padding:14px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.04);
-    }
-
-    .pb-pay-label{
-      font-size:12px;
-      font-weight:900;
-      color:rgba(255,255,255,.86);
-      margin-bottom:8px;
-    }
-
-    .pb-pay-input{
-      width:100%;
-      padding:14px 14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      outline:none;
-      font-size:15px;
-    }
-
-    .pb-pay-input:focus{
-      border-color:rgba(34,197,94,.55);
-    }
-
-    .pb-pay-send{
-      margin-top:14px;
-      min-height:50px;
-      padding:0 20px;
-      border:none;
-      border-radius:14px;
-      background:#24c65a;
-      color:#fff;
-      font-size:15px;
-      font-weight:900;
-      cursor:pointer;
-    }
-
-    .pb-pay-send:hover{
-      filter:brightness(1.03);
-    }
-
-    .pb-pay-send:disabled{
-      opacity:.7;
-      cursor:not-allowed;
-    }
-
-    .pb-pay-status{
-      min-height:18px;
-      margin-top:10px;
-      font-size:13px;
-      color:rgba(255,255,255,.78);
-      white-space:pre-line;
-    }
-
-    .mpesa-icon{
-      width:20px;
-      height:20px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      flex-shrink:0;
-    }
-
-    .mpesa-icon svg{
-      width:100%;
-      height:100%;
-      display:block;
-    }
-
-    @media (max-width: 640px){
-      .pb-pay-modal{
-        width:calc(100vw - 16px);
-        max-height:calc(100vh - 20px);
-        border-radius:24px;
-      }
-
-      .pb-pay-head{
-        padding:18px 18px 12px;
-      }
-
-      .pb-pay-title{
-        font-size:20px;
-      }
-
-      .pb-pay-body{
-        padding:16px 18px 18px;
-      }
-
-      .pb-pay-btn{
-        min-height:72px;
-        border-radius:18px;
-        padding:0 18px;
-        font-size:16px;
-      }
-
-      .pb-pay-amount{
-        font-size:14px;
-      }
-    }
-
-    .pb-pill{
-      color:#fff;
-    }
-
-    .pb-pill .ic{
-      color:rgba(255,255,255,.85);
-    }
-
-    /* ===================================
-         AUDIORY VERIFIED BADGES
-      =================================== */
-
-      .verify-badge{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        margin-left:6px;
-        vertical-align:middle;
-      }
-
-      .verify-badge svg{
-        width:16px;
-        height:16px;
-        display:block;
-      }
-
-      /* PRO (blue) */
-
-      .verify-pro svg{
-        color:#1d9bf0;
-      }
-
-      /* ELITE (gold) */
-
-      .verify-elite svg{
-        color:#fbbf24;
-      }
-
-      /* =========================================
-         AUDIORY CLEAN CARD SYSTEM
-         BeatStars-inspired mobile polish
-      ========================================= */
-
-      .trending-strip{
-        display:flex;
-        gap:16px;
-        overflow-x:auto;
-        padding:4px 2px 8px;
-        scroll-snap-type:x proximity;
-        scrollbar-width:none;
-      }
-      .trending-strip::-webkit-scrollbar{ display:none; }
-
-      .trending-strip .trend-card{
-        min-width:176px;
-        width:176px;
-        flex:0 0 176px;
-        scroll-snap-align:start;
-      }
-
-      .chart-grid{
-        display:grid;
-        grid-template-columns:repeat(5, minmax(0,1fr));
-        gap:16px 14px;
-      }
-
-      .trend-card,
-      .chart-card{
-        background:#141414 !important;
-        border:1px solid rgba(255,255,255,.08) !important;
-        border-radius:18px !important;
-        box-shadow:none !important;
-        overflow:hidden;
-        gap:0 !important;
-        padding:0 !important;
-      }
-
-      .beat-cover{
-        position:relative;
-        aspect-ratio:1 / 1;
-        overflow:hidden;
-        background:#0b0b0b;
-        border-radius:0 !important;
-      }
-
-      .beat-cover .beat-open{
-        display:block;
-        width:100%;
-        height:100%;
-      }
-
-      .beat-cover img{
-        width:100%;
-        height:100%;
-        object-fit:cover;
-        display:block;
-      }
-
-      .play-fab{
-        position:absolute;
-        right:14px;
-        bottom:14px;
-        width:50px;
-        height:50px;
-        border-radius:50% !important;
-        border:1px solid rgba(255,255,255,.14);
-        background:rgba(0,0,0,.42);
-        backdrop-filter:blur(5px);
-        -webkit-backdrop-filter:blur(5px);
-        box-shadow:none !important;
-      }
-
-      .play-fab .playIcon{
-        font-size:15px;
-      }
-
-      .trend-meta,
-      .chart-meta-row{
-        padding:14px 14px 0 14px;
-      }
-
-      .chart-meta-row{
-        display:block !important;
-      }
-
-      .chart-text{
-        display:block;
-        min-width:0;
-      }
-
-      .trend-meta .t,
-      .home-title-clamp{
-        display:-webkit-box;
-        -webkit-line-clamp:2;
-        -webkit-box-orient:vertical;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        color:#fff !important;
-        text-decoration:none;
-        font-size:17px !important;
-        line-height:1.2 !important;
-        font-weight:800 !important;
-        margin:0 !important;
-        min-height:40px;
-      }
-
-      .trend-meta .p,
-      .home-producer-clamp{
-        display:block;
-        white-space:nowrap;
-        overflow:hidden;
-        text-overflow:ellipsis;
-        color:rgba(255,255,255,.62) !important;
-        font-size:14px !important;
-        line-height:1.2 !important;
-        margin-top:7px !important;
-        margin-bottom:0 !important;
-        opacity:1 !important;
-      }
-
-      .trend-actions,
-      .chart-pill{
-        padding:14px;
-        padding-top:14px;
-      }
-
-      .chart-pill{
-        display:block !important;
-      }
-
-      .trend-actions .pb-pill,
-      .chart-pill .pb-pill{
-        width:100%;
-        min-height:50px;
-        border-radius:14px;
-        font-size:17px;
-        font-weight:800;
-        justify-content:center;
-        padding:0 14px;
-        background:transparent;
-        border:1.5px solid #295dff;
-      }
-
-      .trend-actions .pb-pill .ic,
-      .chart-pill .pb-pill .ic{
-        width:16px;
-        height:16px;
-        font-size:15px;
-      }
-
-      .producer-link{
-        color:rgba(255,255,255,.62) !important;
-        text-decoration:none;
-      }
-      .producer-link:hover{
-        text-decoration:none;
-        color:#fff !important;
-      }
-
-      /* support bubble should not cover cards */
-      .audiory-support-fab{
-        right:12px !important;
-        bottom:12px !important;
-        transform:scale(.88);
-      }
-
-      @media (max-width:1200px){
-        .chart-grid{
-          grid-template-columns:repeat(4,minmax(0,1fr));
-        }
-      }
-
-      @media (max-width:980px){
-        .chart-grid{
-          grid-template-columns:repeat(3,minmax(0,1fr));
-        }
-      }
-
-      @media (max-width:768px){
-        .chart-grid{
-          grid-template-columns:repeat(2,minmax(0,1fr));
-          gap:14px 12px;
-        }
-
-        .trending-strip{
-          gap:14px;
-        }
-
-        .trending-strip .trend-card{
-          min-width:168px;
-          width:168px;
-          flex:0 0 168px;
-        }
-
-        .trend-meta,
-        .chart-meta-row{
-          padding:12px 12px 0 12px;
-        }
-
-        .trend-actions,
-        .chart-pill{
-          padding:12px;
-          padding-top:12px;
-        }
-
-        .trend-meta .t,
-        .home-title-clamp{
-          font-size:16px !important;
-          min-height:38px;
-        }
-
-        .trend-meta .p,
-        .home-producer-clamp{
-          font-size:13px !important;
-          margin-top:6px !important;
-        }
-
-        .trend-actions .pb-pill,
-        .chart-pill .pb-pill{
-          min-height:46px;
-          font-size:16px;
-        }
-
-        .play-fab{
-          width:46px;
-          height:46px;
-        }
-
-        /* =========================
-           SMART FINDER
-        ========================= */
-        .smart-finder-wrap{
-          position:relative;
-        }
-
-        .smart-finder-meta{
-          margin-top:12px;
-        }
-
-        .smart-finder-hint{
-          color:rgba(255,255,255,.68);
-          font-size:13px;
-          line-height:1.5;
-          margin-bottom:10px;
-        }
-
-        .smart-finder-hint span{
-          color:#fff;
-          opacity:.9;
-          font-weight:700;
-        }
-
-        .smart-finder-chips{
-          display:flex;
-          gap:10px;
-          flex-wrap:wrap;
-        }
-
-        .smart-chip{
-          border:1px solid rgba(255,255,255,.12);
-          background:rgba(255,255,255,.05);
-          color:#fff;
-          border-radius:999px;
-          padding:9px 13px;
-          font-size:12px;
-          font-weight:800;
-          cursor:pointer;
-          transition:.18s ease;
-        }
-
-        .smart-chip:hover{
-          background:rgba(255,255,255,.09);
-          border-color:rgba(59,130,246,.38);
-        }
-
-        @media (max-width:640px){
-          .smart-finder-hint{
-            font-size:12px;
-          }
-
-          .smart-chip{
-            padding:8px 12px;
-            font-size:11.5px;
-          }
-
-          .presave-wrap{
-            width:100%;
-            margin-top:14px;
-            display:flex;
-            flex-direction:column;
-            gap:8px;
-          }
-
-          .presave-wrap .presave-pill{
-            width:100% !important;
-            margin-top:0 !important;
-          }
-
-          .presave-countdown{
-            color:rgba(255,255,255,.62);
-            font-size:12px;
-            text-align:center;
-            line-height:1.2;
-          }
-       }
-      
   </style>
-
 </head>
 <body>
 
-<div class="audiory-support-fab" onclick="location.href='/help/'">
-  <div class="audiory-support-dot"></div>
-  <div><b>Support</b><br><span>Get help</span></div>
-</div>
-
 <header class="topbar">
-  <div class="container topbar-inner">
+  <div class="topbar-inner">
     <div class="brand">
-      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer; margin-right:8px;">☰</button>
       <div class="logo">Audiory</div>
     </div>
 
@@ -928,17 +935,11 @@
       <a href="/collabs/">Collabs</a>
       <a href="https://blog.audiory.site">Blog</a>
 
-      <!-- Logged OUT -->
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-      <!-- Logged IN -->
-      <a id="navDashboard" class="ghost hidden" href="#">
-        Dashboard
-      </a>
-      <button id="navSignOut" class="ghost hidden" type="button">
-        Sign out
-      </button>
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button" style="background:transparent; border:none; color:white; font-weight:600; cursor:pointer;">Sign out</button>
     </nav>
 
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
@@ -962,11 +963,9 @@
   <a href="/pricing/">Pricing</a>
   <a href="/collabs/">Collabs</a>
   <a href="https://blog.audiory.site">Blog</a>
-  <!-- Logged OUT -->
   <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
   <a id="mNavSignIn" href="/login/">Sign in</a>
 
-  <!-- Logged IN -->
   <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
   <button id="mNavSignOut" class="ghost hidden">Sign out</button>
 </nav>
@@ -977,7 +976,7 @@
     <div class="card hero-card">
       <h1 class="hero-title">Your first hit starts here</h1>
       <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
-      <div class="hero-search smart-finder-wrap">
+      <div class="hero-search smart-finder-wrap" style="display:flex; gap:10px;">
         <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
         <button id="searchBtn" type="button">Search</button>
       </div>
@@ -1000,8 +999,8 @@
   </section>
 
   <section class="section">
-    <div class="card" style="padding:18px;">
-      <h2 class="h2" style="margin-bottom:12px;">Explore Audiory</h2>
+    <div class="card" style="padding:18px; border-color:#e2e8f0;">
+      <h2 class="h2" style="margin-bottom:12px; margin-top:0;">Explore Audiory</h2>
       <div style="display:flex;flex-wrap:wrap;gap:10px;">
         <a class="play-btn" href="/marketplace/">Browse Beats</a>
         <a class="play-btn" href="/freebeats/">Free Beats</a>
@@ -1014,22 +1013,22 @@
   </section>
 
   <section class="section">
-    <div class="home-row">
+    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 class="h2">Featured Beats</h2>
       <a class="see-all" href="/marketplace/?featured=1">See all →</a>
     </div>
 
-    <div id="featuredStatus" class="loading-box" style="margin-top:12px;">Loading featured beats…</div>
+    <div id="featuredStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading featured beats…</div>
     <div id="featuredStrip" class="trending-strip"></div>
   </section>
 
   <section class="section">
-    <div class="home-row">
+    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 class="h2">Trending Beats</h2>
       <a class="see-all" href="/marketplace/">See all →</a>
     </div>
 
-    <div id="homeStatus" class="loading-box" style="margin-top:12px;">Loading beats…</div>
+    <div id="homeStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading beats…</div>
     <div id="trendingStrip" class="trending-strip"></div>
   </section>
 
@@ -1061,7 +1060,7 @@
 
       <a class="card genre" href="/marketplace/?genre=R%26B">
         <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=200&q=60" alt="R&B">
-        <div class="gname">R&amp;B</div>
+        <div class="gname">R&B</div>
       </a>
 
       <a class="card genre" href="/marketplace/?genre=Hip%20Hop">
@@ -1072,7 +1071,7 @@
   </section>
 
   <section class="section">
-    <div class="home-row">
+    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 class="h2">Top Charting Beats</h2>
       <a class="see-all" href="/marketplace/">See all →</a>
     </div>
@@ -1110,9 +1109,9 @@
         </div>
       </div>
 
-      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="play-btn" href="/register/"><span class="playIcon">🚀</span><span class="playText">Start Selling</span></a>
-        <a class="play-btn" href="/login/"><span class="playIcon">🔑</span><span class="playText">Sign in</span></a>
+      <div style="margin-top:24px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="pb-pill" href="/register/" style="width:auto; min-height:48px; background:#3b2fad; color:white;"><span class="playIcon" style="margin-right:6px;">🚀</span><span class="playText">Start Selling</span></a>
+        <a class="play-btn" href="/login/" style="padding:12px 20px;"><span class="playIcon" style="margin-right:6px;">🔑</span><span class="playText">Sign in</span></a>
       </div>
     </div>
   </section>
@@ -1121,7 +1120,7 @@
 
 <footer class="footer">
   <div class="container footer-row">
-    <div>© 2026 Audiory</div>
+    <div>© 2026 Audiory. All Rights Reserved.</div>
 
     <div class="footer-links">
       <a href="/privacy/">Privacy Policy</a>
@@ -1171,7 +1170,6 @@
   </div>
 </footer>
 
-<!-- License / Checkout Modal -->
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
   <div class="pb-modal-card">
@@ -1205,7 +1203,6 @@
   </div>
 </div>
 
-<!-- Cart Drawer -->
 <div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
 <aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
   <div class="pb-cart-head">
@@ -1231,7 +1228,6 @@
   </div>
 </aside>
 
-<!-- ✅ FREE DOWNLOAD POPUP -->
 <div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
 <div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
   <div class="pb-free-head">
@@ -1258,7 +1254,6 @@
   </div>
 </div>
 
-<!-- ✅ NEW: PAYMENT METHOD MODAL -->
 <div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
 <div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
   <div class="pb-pay-head">
@@ -1282,7 +1277,7 @@
         <span class="pb-pay-btn-left">
           <span class="mpesa-icon" aria-hidden="true">
             <svg viewBox="0 0 64 64" fill="none">
-              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(0,0,0,.16)"/>
               <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
               <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
               <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
@@ -1509,7 +1504,7 @@
     const initials = String(title || "B").trim().slice(0,2).toUpperCase();
 
     return `
-      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:rgba(255,255,255,.9)">
+      <div style="height:100%;display:grid;place-items:center;font-weight:900;font-size:22px;color:#334155">
         ${initials}
       </div>
     `;
@@ -2341,11 +2336,6 @@ window.logBeatPlay = logBeatPlay;
           el.setAttribute("data-beat-id", b.id);
 
           const audioUrl = b.previewAudio || b.audio || "";
-
-          /* preload audio preview */
-
-          if(audioUrl){
-          }
 
           const beatUrl = beatPageUrl(b);
           const prodUrl = producerPageUrl(b);
