@@ -360,9 +360,11 @@
       border-radius: 12px;
       font-weight: 800;
       font-size: 14px;
-      border: 1.5px solid #3b2fad;
-      background: rgba(59, 47, 173, 0.03);
-      color: #3b2fad;
+
+      border: 1.5px solid #2563eb;
+      background: #2563eb;
+      color: #ffffff !important;
+
       cursor: pointer;
       white-space: nowrap;
       text-decoration: none;
@@ -371,7 +373,8 @@
     }
 
     .pb-pill:hover {
-      background: rgba(59, 47, 173, 0.08);
+      background: #1d4ed8;
+      border-color: #1d4ed8;
     }
 
     .pb-pill.price-pill {
@@ -379,14 +382,20 @@
     }
 
     .pb-pill.free {
-      border-color: #3b2fad;
-      background: #3b2fad;
-      color: #ffffff;
+      border-color: #2563eb;
+      background: #2563eb;
+      color: #ffffff !important;
     }
 
     .pb-pill.free:hover {
-      background: #2d2294;
-      border-color: #2d2294;
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+
+    .pb-pill .ic,
+    .pb-pill svg {
+      color: #ffffff !important;
+      stroke: currentColor;
     }
 
     .pb-pill.download-pill {
