@@ -739,11 +739,13 @@
 .beat-meta .pb-pill{
   width: 100%;
   margin-top: 14px;
-  min-height: 40px; /* Tweak height slightly to match classic layout if needed */
+  min-height: 44px;
   border-radius: 14px;
-  border: 1.5px solid #3b2fad; /* CHANGED: Uses your signature purple border from homepage */
-  background: transparent;
-  color: #3b2fad; /* CHANGED: Purple text to look identical to homepage action pill */
+
+  border: 1.5px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff !important;
+
   font-size: 15px;
   font-weight: 800;
   justify-content: center;
@@ -752,11 +754,17 @@
   transform: none;
   display: inline-flex;
   align-items: center;
+  transition: all 0.2s ease;
+}
+.beat-meta .pb-pill:hover{
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #ffffff !important;
+  transform: none;
 }
 
-.beat-meta .pb-pill:hover{
-  background: rgba(59, 47, 173, 0.05); /* CHANGED: Soft purple tint on hover */
-  transform: none;
+.beat-meta .pb-pill .ic{
+  color: #ffffff !important;
 }
 
 .beat-meta .pb-pill .ic{
