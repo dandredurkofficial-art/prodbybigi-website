@@ -185,16 +185,17 @@
     /* Beautiful Status Container for empty lists */
     .empty-beats-notice {
       width: 100%;
-      background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
+      background-color: #f8fafc !important; /* !important forces the clean light-gray background */
+      border: 1px solid #e2e8f0 !important;
       border-radius: 16px;
-      padding: 24px;
+      padding: 32px 24px; /* Slightly more vertical padding for premium breathing room */
       text-align: center;
       font-size: 15px;
       font-weight: 600;
-      color: #64748b;
+      color: #334155 !important; /* Darker slate color to ensure text is perfectly visible */
       box-sizing: border-box;
       margin: 20px 0 40px 0;
+      display: block !important; /* Ensures it isn't accidentally picking up a 'display: none' hidden utility */
     }
 
     .cardx {
