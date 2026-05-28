@@ -6,101 +6,128 @@
   <title>Verify Email | Audiory</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <style>
-    body{
-      margin:0;
-      min-height:100vh;
-      background:#0b0d12;
-      color:#fff;
-      font-family:Inter,system-ui,sans-serif;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      box-sizing:border-box;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #eef2f7 0%, #ffffff 100%);
+      color: #1e293b;
+      font-family: Inter, system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      box-sizing: border-box;
     }
-    .card{
-      width:100%;
-      max-width:460px;
-      background:#121726;
-      border:1px solid #1d2230;
-      border-radius:20px;
-      padding:28px;
-      box-sizing:border-box;
-      text-align:center;
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 36px 28px;
+      box-sizing: border-box;
+      text-align: center;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     }
-    h1{
-      margin:0 0 12px;
-      font-size:34px;
-      font-weight:800;
+    h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.5px;
     }
-    p{
-      color:#b6bfd6;
-      line-height:1.65;
-      margin:0 0 10px;
+    p {
+      color: #64748b;
+      line-height: 1.6;
+      margin: 0 0 16px;
+      font-size: 15px;
     }
-    .email{
-      margin:14px 0;
-      padding:12px 14px;
-      border-radius:12px;
-      background:#0f1219;
-      border:1px solid #1d2230;
-      font-weight:700;
-      color:#fff;
-      word-break:break-word;
+    /* Distinct Search-bar mimicking container styling */
+    .email-wrapper {
+      position: relative;
+      background: #3b30b2; /* Deep brand blue behind the main text badge */
+      border-radius: 20px;
+      padding-bottom: 5px;
+      margin: 20px 0;
     }
-    .state{
-      margin:12px 0 18px;
-      font-weight:800;
+    .email {
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: #ffffff;
+      border: 2px solid #3b30b2;
+      font-weight: 700;
+      color: #0f172a;
+      word-break: break-word;
+      font-size: 16px;
+      position: relative;
+      top: -1px;
     }
-    .actions{
-      display:grid;
-      gap:10px;
-      margin-top:14px;
+    .state {
+      margin: 12px 0 20px;
+      font-weight: 700;
+      font-size: 15px;
     }
-    button, a.btn{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:none;
-      font-weight:800;
-      cursor:pointer;
-      text-decoration:none;
-      box-sizing:border-box;
-      display:inline-flex;
-      justify-content:center;
-      align-items:center;
-      font-family:inherit;
-      font-size:15px;
+    .actions {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
     }
-    .primary{
-      background:#6cf;
-      color:#081018;
+    button, a.btn {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      box-sizing: border-box;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      font-family: inherit;
+      font-size: 15px;
+      transition: all 0.2s ease;
     }
-    .secondary{
-      background:#111827;
-      color:#fff;
-      border:1px solid #1d2230;
+    .primary {
+      background: #3b30b2; /* Navbar dark blue */
+      color: #ffffff;
     }
-    .danger{
-      background:#2a3145;
-      color:#fff;
-      border:1px solid #364055;
+    .primary:hover {
+      background: #2e2496;
     }
-    button[disabled]{
-      opacity:.65;
-      cursor:not-allowed;
+    .secondary {
+      background: #ffffff;
+      color: #3b30b2;
+      border: 2px solid #3b30b2;
     }
-    #status{
-      margin-top:14px;
-      min-height:20px;
-      color:#9ca3af;
-      font-size:13px;
-      line-height:1.5;
-      white-space:pre-wrap;
+    .secondary:hover {
+      background: #f1f0fc;
     }
-    .ok{ color:#86efac !important; }
-    .bad{ color:#fca5a5 !important; }
-    .warn{ color:#fde68a !important; }
+    .danger {
+      background: #f1f5f9;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    .danger:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
+    button[disabled] {
+      opacity: .65;
+      cursor: not-allowed;
+    }
+    #status {
+      margin-top: 16px;
+      min-height: 20px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    /* Status Colors tailored for White theme background */
+    .ok { color: #16a34a !important; font-weight: 600; }
+    .bad { color: #dc2626 !important; font-weight: 600; }
+    .warn { color: #b45309 !important; font-weight: 600; }
   </style>
 </head>
 <body>
