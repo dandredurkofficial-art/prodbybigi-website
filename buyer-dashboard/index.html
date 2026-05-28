@@ -26,7 +26,7 @@
       box-sizing: border-box;
     }
 
-    /* Premium Slim Header Bar Style Match */
+    /* --- UPDATED TOPBAR CSS BLOCK --- */
     .topbar {
       width: 100%;
       background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
@@ -43,8 +43,9 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 24px;
+      padding: 12px 24px; /* Reduced vertical padding for a slimmer header profile */
       box-sizing: border-box;
+      gap: 16px; /* Ensures items never smash into each other */
     }
 
     .brand {
@@ -56,22 +57,33 @@
       font-weight: 900;
       font-size: 22px;
       letter-spacing: -0.5px;
+      flex-shrink: 0; /* Prevents logo text clipping */
+    }
+
+    .desktop-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      flex-grow: 1; /* Lets navigation take up the flexible middle area */
+      flex-wrap: wrap; /* Allows wrap down if the window width breaks */
     }
 
     .desktop-nav a {
       color: #ffffff;
       text-decoration: none;
-      font-size: 14px;
+      font-size: 13px; /* Slightly reduced for better inline scaling */
       font-weight: 600;
       opacity: 0.9;
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
       transition: all 0.2s ease;
+      white-space: nowrap; /* Keeps link phrases together */
     }
 
     .desktop-nav a:hover {
       opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.12);
     }
 
     .desktop-nav a.cta {
@@ -83,6 +95,22 @@
       background: #f1f5f9;
     }
 
+    /* Fixes the action buttons container width and prevents truncation */
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0; /* Ensures buttons maintain structure format */
+    }
+
+    /* Compact style modifier explicitly for buttons embedded in the header */
+    .top-actions .btn {
+      padding: 6px 12px !important;
+      font-size: 13px !important;
+      border-radius: 10px !important;
+      height: auto !important;
+      line-height: 1.4 !important;
+    }
     /* Container Spacing & Grid Structures */
     .container {
       width: 100%;
