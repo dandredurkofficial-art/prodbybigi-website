@@ -2390,6 +2390,68 @@
     applyHeader(params);
     buildChips(params.genre);
 
+    document.querySelectorAll(".market-card").forEach(card => {
+      card.addEventListener("click", () => {
+
+        document.querySelectorAll(".market-card")
+          .forEach(c => c.classList.remove("active"));
+
+        card.classList.add("active");
+
+        const type = card.dataset.market;
+
+        let beats = [...window.__MARKETPLACE_BEATS__];
+
+        if (type === "new") {
+
+          beats.sort((a,b) => {
+            const ta =
+              a.createdAt?.seconds ||
+              a.createdAt ||
+              0;
+
+            const tb =
+              b.createdAt?.seconds ||
+              b.createdAt ||
+              0;
+
+            return tb - ta;
+          });
+
+        }
+
+        else if (type === "hot") {
+
+          beats.sort((a,b) =>
+            (b.playCount || 0) -
+            (a.playCount || 0)
+          );
+
+        }
+
+        else if (type === "pro") {
+
+          beats = beats.filter(b =>
+            b.producerPlan === "pro" ||
+            b.producerPlan === "elite"
+          );
+
+        }
+
+        else if (type === "exclusive") {
+
+          beats = beats.filter(b =>
+            b.licenses?.exclusive?.enabled === true
+          );
+
+        }
+
+        grid.innerHTML = "";
+
+        renderMarketplace(beats, grid);
+      });
+    });
+
     if (inp) inp.value = params.q || "";
 
     function goSearch(){
