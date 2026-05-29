@@ -1427,92 +1427,76 @@ async function loadFreeBeats(){
           </div>
 
           <div class="pb-actions">
+  ${
+    (() => {
+      const basicPrice = Number(b?.licenses?.basic?.price || 0);
 
-            ${
-              (() => {
+      if (basicPrice > 0) {
+        return `
+          <button
+            class="pb-pill price-pill"
+            type="button"
+            data-license-btn
+            data-beat-id="${b.id}">
 
-                const basicPrice =
-                  Number(b?.licenses?.basic?.price || 0);
+            <span class="ic">
+              <svg viewBox="0 0 24 24" fill="none">
+                <rect
+                  x="5"
+                  y="10"
+                  width="14"
+                  height="10"
+                  rx="2"
+                  stroke="#ffffff"
+                  stroke-width="2"/>
+                <path
+                  d="M8 10V7a4 4 0 1 1 8 0v3"
+                  stroke="#ffffff"
+                  stroke-width="2"/>
+              </svg>
+            </span>
 
-                if(basicPrice > 0){
+            <span>${money(basicPrice)}</span>
+          </button>
+        `;
+      }
 
-                  return `
-                    <button
-                      class="pb-pill price-pill"
-                      type="button"
-                      data-license-btn
-                      data-beat-id="${b.id}">
-
-                      <span class="ic">
-                        <svg viewBox="0 0 24 24" fill="none">
-
-                          <rect
-                            x="5"
-                            y="10"
-                            width="14"
-                            height="10"
-                            rx="2"
-                            stroke="currentColor"
-                            stroke-width="2"/>
-
-                          <path
-                            d="M8 10V7a4 4 0 1 1 8 0v3"
-                            stroke="currentColor"
-                            stroke-width="2"/>
-
-                        </svg>
-                      </span>
-
-                     <span>${money(basicPrice)}</span>
-
-                    </button>
-                  `;
-                }
-
-                return `
-                  <button class="pb-pill price-pill free" type="button">
-                    Free
-                  </button>
-                `;
-              })()
-            }
-            ${
-              b.freeDownload === true
-              ? `
-                <button class="pb-pill download-pill"
-                  type="button">
-
-                  <span class="download-icon">
-                    <svg viewBox="0 0 24 24" fill="none">
-                      <path
-                        d="M12 4V14"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linecap="round"/>
-
-                      <path
-                        d="M8 10L12 14L16 10"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"/>
-
-                      <path
-                        d="M5 20H19"
-                        stroke="white"
-                        stroke-width="2"
-                        stroke-linecap="round"/>
-                    </svg>
-                  </span>
-
-                </button>
-              `
-              : ``
-            }
-
-          </div>
-        </div>
+      return `
+        <button class="pb-pill price-pill free" type="button">
+          Free
+        </button>
       `;
+    })()
+  }
+  ${
+    b.freeDownload === true
+    ? `
+      <button class="pb-pill download-pill" type="button">
+        <span class="download-icon">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4V14"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"/>
+            <path
+              d="M8 10L12 14L16 10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"/>
+            <path
+              d="M5 20H19"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"/>
+          </svg>
+        </span>
+      </button>
+    `
+    : ``
+  }
+</div>
 
       grid.appendChild(card);
 
