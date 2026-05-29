@@ -714,11 +714,20 @@
       display: flex;
       gap: 16px;
       overflow-x: auto;
-      padding: 8px 2px;
-      scroll-snap-type: x proximity;
-      scrollbar-width: none;
+      overflow-y: hidden;
+      padding: 8px 2px 14px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
     }
-    .trending-strip::-webkit-scrollbar { display: none; }
+    .trending-strip::-webkit-scrollbar{
+      height:8px;
+    }
+
+    .trending-strip::-webkit-scrollbar-thumb{
+      background:#cbd5e1;
+      border-radius:999px;
+    }
     .trending-strip .trend-card { min-width: 200px; width: 200px; flex: 0 0 200px; scroll-snap-align: start; }
     
     .chart-grid {
@@ -1842,7 +1851,12 @@ window.logBeatPlay = logBeatPlay;
           <path d="M8 10V7a4 4 0 1 1 8 0v3" stroke="currentColor" stroke-width="2"/>
         </svg>
       </span>
-      <span>${money(b.price)}</span>
+      <span>${money(
+        b?.licenses?.basic?.price ??
+        b?.licenses?.premium?.price ??
+        b?.price ??
+        0
+      )}</span>
     </button>`;
   }
 
