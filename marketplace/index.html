@@ -592,9 +592,31 @@
       }
     }
 
-    @media(max-width:600px){
+    @media(max-width:768px){
+
       .market-sections{
-        grid-template-columns:1fr;
+        display:grid;
+        grid-template-columns:repeat(2,1fr);
+        gap:12px;
+      }
+
+      .market-card{
+        flex-direction:column;
+        justify-content:center;
+        text-align:center;
+        min-height:120px;
+        padding:20px 12px;
+      }
+
+      .market-icon{
+        width:48px;
+        height:48px;
+        margin-bottom:8px;
+      }
+
+      .market-text{
+        font-size:15px;
+        font-weight:700;
       }
     }
 
