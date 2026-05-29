@@ -1812,35 +1812,29 @@ window.logBeatPlay = logBeatPlay;
     });
 
     function isFreeBeat(b){
-    if (!b) return true;
-    if (b.freeDownload === true || b.isFree === true) return true;
+      if (!b) return false;
 
-    if (Number.isFinite(Number(b.price))) {
-      return Number(b.price) <= 0;
+      const lic = b.licenses || {};
+
+      const hasPaidLicense =
+        lic?.basic?.enabled === true ||
+        lic?.premium?.enabled === true ||
+        lic?.exclusive?.enabled === true;
+
+      if (hasPaidLicense) {
+        return false;
+      }
+
+      return (
+        b.freeDownload === true ||
+        b.isFree === true
+      );
     }
-
-    const lic = b.licenses || {};
-    const hasPaidLicense =
-      lic?.basic?.enabled === true ||
-      lic?.premium?.enabled === true ||
-      lic?.exclusive?.enabled === true;
-
-    if (hasPaidLicense) return false;
-    return true;
-  }
 
   function pillHTML(b){
     if (isUpcomingPremiereBeat(b)){
       return preSaveHTML(b);
     }
-
-    if (isFreeBeat(b)){
-      return `<button class="pb-pill free" type="button" data-free-download="1" aria-label="Free download">
-        <span class="ic">⬇️</span>
-        <span>Free</span>
-      </button>`;
-    }
-
     return `<button class="pb-pill price-pill" type="button" aria-label="Choose license">
       <span class="ic lock-icon">
         <svg viewBox="0 0 24 24" fill="none">
