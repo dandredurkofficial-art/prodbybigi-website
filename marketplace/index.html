@@ -539,6 +539,65 @@
       color:#fbbf24;
     }
 
+    .market-sections{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin:20px 0;
+    }
+
+    .market-card{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:18px;
+      border:1px solid #e5e7eb;
+      border-radius:18px;
+      background:#fff;
+      cursor:pointer;
+      transition:.2s ease;
+    }
+
+    .market-card:hover{
+      transform:translateY(-2px);
+      border-color:#3b2fad;
+    }
+
+    .market-icon{
+      width:52px;
+      height:52px;
+      border-radius:14px;
+      background:#3b2fad;
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    .market-icon svg{
+      width:24px;
+      height:24px;
+    }
+
+    .market-text{
+      font-size:16px;
+      font-weight:700;
+      color:#1f2937;
+    }
+
+    @media(max-width:900px){
+      .market-sections{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media(max-width:600px){
+      .market-sections{
+        grid-template-columns:1fr;
+      }
+    }
+
     /* Standardized Footer System Match */
 .footer {
   width: 100%;
@@ -1103,23 +1162,46 @@
 
   <div class="market-sections">
 
-    <button data-market="new">
-      Sparkles New Beats
-    </button>
+  <button class="market-card" data-market="new">
+    <span class="market-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3z"/>
+        <path d="M19 3l.7 2 .3.7.7.3 2 .7-2 .7-.7.3-.3.7-.7 2-.7-2-.3-.7-.7-.3-2-.7 2-.7.7-.3.3-.7.7-2z"/>
+      </svg>
+    </span>
+    <span class="market-text">New Beats</span>
+  </button>
 
-    <button data-market="hot">
-      Trending Hot Picks
-    </button>
+  <button class="market-card" data-market="hot">
+    <span class="market-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 17l6-6 4 4 8-8"/>
+        <path d="M15 7h6v6"/>
+      </svg>
+    </span>
+    <span class="market-text">Hot Picks</span>
+  </button>
 
-    <button data-market="pro">
-      Crown Top Producers
-    </button>
+  <button class="market-card" data-market="pro">
+    <span class="market-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 8l4 3 5-7 5 7 4-3-2 10H5L3 8z"/>
+      </svg>
+    </span>
+    <span class="market-text">Top Producers</span>
+  </button>
 
-    <button data-market="exclusive">
-      Gem Exclusive Licenses
-    </button>
+  <button class="market-card" data-market="exclusive">
+    <span class="market-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 8l3-4h6l3 4-6 12L6 8z"/>
+        <path d="M6 8h12"/>
+      </svg>
+    </span>
+    <span class="market-text">Exclusive Licenses</span>
+  </button>
 
-  </div>
+</div>
 
   <div id="marketStatus" class="loading-box">Loading marketplace…</div>
   <div id="beatsGrid" class="beats-grid"></div>
