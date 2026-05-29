@@ -1926,24 +1926,24 @@ window.logBeatPlay = logBeatPlay;
 
     const lic = beat.licenses || {};
 
-    if (lic?.basic?.enabled === true || Number.isFinite(Number(lic?.basic?.price))) {
+    if (Number(lic?.basic?.price || 0) > 0) {
       return {
         licenseKey: "basic",
-        amount: Number(lic?.basic?.price ?? beat.price ?? 0)
+        amount: Number(lic.basic.price)
       };
     }
 
-    if (lic?.premium?.enabled === true || Number.isFinite(Number(lic?.premium?.price))) {
+    if (Number(lic?.premium?.price || 0) > 0) {
       return {
         licenseKey: "premium",
-        amount: Number(lic?.premium?.price ?? beat.price ?? 0)
+        amount: Number(lic.premium.price)
       };
     }
 
-    if (lic?.exclusive?.enabled === true || Number.isFinite(Number(lic?.exclusive?.price))) {
+    if (Number(lic?.exclusive?.price || 0) > 0) {
       return {
         licenseKey: "exclusive",
-        amount: Number(lic?.exclusive?.price ?? beat.price ?? 0)
+        amount: Number(lic.exclusive.price)
       };
     }
 
