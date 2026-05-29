@@ -345,27 +345,25 @@ a:hover{opacity:.9}
 
 .pb-license{
   border-radius:18px;
-  border:1px solid rgba(31,41,55,.85);
-  background: rgba(17,24,39,.42);
-  padding:12px;
-  cursor:pointer;
-  transition:.14s ease;
-  position:relative;
+  padding:18px;
+  min-height:140px;
 }
 .pb-license:hover{ transform: translateY(-1px); }
 .pb-license.selected{
-  outline: 2px solid rgba(59,130,246,.65);
-  border-color: rgba(59,130,246,.35);
-  background: rgba(59,130,246,.10);
+  border:2px solid #3164f4;
+  background:#f8fbff;
+  outline:none;
 }
 .pb-license .name{
-  font-weight:900;
-  font-size:13px;
+  font-weight:800;
+  font-size:18px;
+  color:#111827;
 }
 .pb-license .price{
-  margin-top:6px;
+  margin-top:12px;
   font-weight:900;
-  font-size:14px;
+  font-size:28px;
+  color:#3164f4;
 }
 .pb-license .meta{
   margin-top:6px;
@@ -408,8 +406,9 @@ a:hover{opacity:.9}
   color: var(--text);
 }
 .pb-btn.primary{
-  border-color: rgba(59,130,246,.45);
-  background: rgba(59,130,246,.20);
+  background:#3164f4;
+  border-color:#3164f4;
+  color:#fff;
 }
 .pb-btn.ghost{
   opacity:.9;
