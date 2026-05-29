@@ -2390,10 +2390,10 @@
     applyHeader(params);
     buildChips(params.genre);
 
-    document.querySelectorAll(".market-card").forEach(card => {
+    document.querySelectorAll("[data-market]").forEach(card => {
       card.addEventListener("click", () => {
 
-        document.querySelectorAll(".market-card")
+        document.querySelectorAll("[data-market]")
           .forEach(c => c.classList.remove("active"));
 
         card.classList.add("active");
@@ -2423,7 +2423,7 @@
         else if (type === "hot") {
 
           beats.sort((a,b) =>
-            (b.playCount || 0) -
+            (b.plays || 0)
             (a.playCount || 0)
           );
 
@@ -2432,8 +2432,7 @@
         else if (type === "pro") {
 
           beats = beats.filter(b =>
-            b.producerPlan === "pro" ||
-            b.producerPlan === "elite"
+            b.producerPlan
           );
 
         }
@@ -2489,7 +2488,7 @@
         const filtered = filterBeats(beats, params);
         if(filtered.length){
           status.classList.add("hidden");
-          window.__MARKETPLACE_BEATS__ = [...filtered];
+          window.__MARKETPLACE_BEATS__ = [...beats];
           grid.innerHTML = "";
           renderMarketplace(filtered, grid);
         }
@@ -2510,15 +2509,18 @@
 
       const filtered = filterBeats(beats, params);
 
-      for (const b of filtered){
-        try{
-          if (window.FB && typeof window.FB.getProducerProfile === "function"){
-            const prof = await window.FB.getProducerProfile(b.producerId);
-            b.producerPlan = prof?.plan || "";
-          }
-        }catch{}
-      }
+      await Promise.all(
+        filtered.map(async (b) => {
+          try{
+            const prof =
+              await window.FB.getProducerProfile(
+                b.producerId
+              );
 
+            b.producerPlan = prof?.plan || "";
+          }catch{}
+        })
+      );
       grid.innerHTML = "";
 
       if(!filtered.length){
