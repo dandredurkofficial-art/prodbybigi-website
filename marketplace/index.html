@@ -2483,9 +2483,13 @@
       const cached = localStorage.getItem("audiory_cached_beats");
       if(cached){
         beats = JSON.parse(cached);
+
+        window.__MARKETPLACE_BEATS__ = [...beats];
+      }
         const filtered = filterBeats(beats, params);
         if(filtered.length){
           status.classList.add("hidden");
+          window.__MARKETPLACE_BEATS__ = [...filtered];
           grid.innerHTML = "";
           renderMarketplace(filtered, grid);
         }
@@ -2495,7 +2499,9 @@
     /* 2️⃣ FETCH FRESH BEATS */
     try{
       beats = await window.FB.fetchBeats({ max:60 });
+
       window.__LATEST_BEATS__ = beats;
+      window.__MARKETPLACE_BEATS__ = [...beats];
 
       localStorage.setItem(
         "audiory_cached_beats",
