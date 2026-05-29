@@ -39,8 +39,21 @@
 
   function isFreeBeat(beat) {
     if (!beat) return false;
-    if (beat.freeDownload === true) return true;
-    return Number(beat.price || 0) === 0;
+
+    const lic = beat.licenses || {};
+
+    const hasPaidLicense =
+      Number(lic?.basic?.price || 0) > 0 ||
+      Number(lic?.premium?.price || 0) > 0 ||
+      Number(lic?.exclusive?.price || 0) > 0;
+
+    if (hasPaidLicense) return false;
+
+    return (
+      beat.freeDownload === true ||
+      beat.isFree === true ||
+      Number(beat.price || 0) === 0
+    );
   }
 
     async function getCampaignForBeat(beatId) {
@@ -581,21 +594,6 @@
     }
 
     if (!resolveBeatId(beat)) return;
-
-    if (
-      pill &&
-      isFreeBeat(beat) &&
-      typeof window.PB_OPEN_FREE_DOWNLOAD === "function"
-    ) {
-      window.PB_OPEN_FREE_DOWNLOAD({
-        beatId: resolveBeatId(beat),
-        beatTitle: safeTitle(beat),
-        producerId: String(beat.producerId || ""),
-        producerName: String(beat.producerName || ""),
-        downloadUrl: String(beat.fullAudio || beat.audio || ""),
-      });
-      return;
-    }
 
     openModal(beat);
   });
