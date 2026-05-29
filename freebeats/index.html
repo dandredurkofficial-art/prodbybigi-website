@@ -1525,7 +1525,24 @@ async function loadFreeBeats(){
       card.querySelector(".download-pill")?.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        location.href = "/beat/?id=" + encodeURIComponent(b.id);
+
+        const url =
+          b.freeDownloadUrl ||
+          b.downloadUrl ||
+          b.audio ||
+          "";
+
+        if (!url) {
+          alert("Download not available.");
+          return;
+        }
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       });
 
       setTimeout(()=>{
