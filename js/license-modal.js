@@ -194,6 +194,9 @@
   function buildLicensesFromBeat(beat) {
     const b = beat || {};
     const lic = b.licenses || {};
+    console.log("LICENSE MODAL BEAT", b);
+    console.log("STEMS URL", b.stemsZipUrl);
+
     const stemsReady = !!b.stemsZipUrl;
 
     const list = [];
