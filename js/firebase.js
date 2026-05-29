@@ -315,6 +315,7 @@ function normalizeBeat(docId, data) {
     sales: Number(data.sales ?? data.sold ?? data.salesCount ?? 0) || 0,
     licenses: data.licenses || null,
     freeDownload: data.freeDownload === true,
+    stemsZipUrl: data.stemsZipUrl || "",
     downloadUrl: data.downloadUrl || data.freeDownloadUrl || "",
     featured: data.featured === true,
     featuredUntil: data.featuredUntil || null,
