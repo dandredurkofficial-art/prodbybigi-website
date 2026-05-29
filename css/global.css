@@ -300,7 +300,7 @@ a:hover{opacity:.9}
 
   border-radius:24px;
 
-  background:#ffffff;
+  background:#fcfcfd;
   color:#1f2937;
 
   border:1px solid #e5e7eb;
@@ -344,15 +344,26 @@ a:hover{opacity:.9}
 }
 
 .pb-license{
+  position:relative;
+
+  border:2px solid #1f2937;
+
   border-radius:18px;
   padding:18px;
-  min-height:140px;
+
+  min-height:160px;
+
+  background:#fff;
+
+  transition:.15s ease;
 }
 .pb-license:hover{ transform: translateY(-1px); }
 .pb-license.selected{
   border:2px solid #3164f4;
-  background:#f8fbff;
-  outline:none;
+  background:#eef4ff;
+
+  box-shadow:
+    0 8px 24px rgba(49,100,244,.15);
 }
 .pb-license .name{
   font-weight:800;
@@ -434,13 +445,16 @@ a:hover{opacity:.9}
 }
 .pb-term{
   border-radius:14px;
-  border:1px solid rgba(31,41,55,.7);
-  background: rgba(17,24,39,.35);
-  padding:10px;
-  color: var(--muted);
-  font-size:12px;
+  border:1px solid #dbe3f0;
+  background:#f8fafc;
+  padding:14px;
+  color:#374151;
+  font-size:14px;
+  font-weight:500;
 }
-.pb-term b{ color: var(--text); }
+.pb-term b{
+  color:#111827;
+}
 
 /* =========================
    PRICE PILL ALIGNMENT FIX
