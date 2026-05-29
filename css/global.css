@@ -383,14 +383,20 @@ a:hover{opacity:.9}
 }
 .pb-badge{
   position:absolute;
-  top:10px; right:10px;
+  top:10px;
+  right:10px;
+
   font-size:11px;
-  padding:5px 8px;
-  border-radius:999px;
-  border:1px solid rgba(59,130,246,.35);
-  background: rgba(59,130,246,.14);
-  color: var(--text);
   font-weight:800;
+
+  padding:6px 10px;
+
+  border-radius:999px;
+
+  border:1px solid #93c5fd;
+  background:#dbeafe;
+
+  color:#1e40af;
 }
 
 .pb-modal-foot{
@@ -454,6 +460,62 @@ a:hover{opacity:.9}
 }
 .pb-term b{
   color:#111827;
+}
+
+@media (max-width:768px){
+
+  .pb-modal{
+    padding:10px;
+    align-items:flex-start;
+    overflow-y:auto;
+  }
+
+  .pb-modal-card{
+    width:100%;
+    max-height:none;
+
+    margin-top:10px;
+
+    padding:18px;
+    border-radius:24px;
+  }
+
+  .pb-modal-title{
+    font-size:24px;
+    line-height:1.2;
+  }
+
+  .pb-licenses{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  .pb-license{
+    min-height:120px;
+    padding:14px;
+  }
+
+  .pb-license .name{
+    font-size:16px;
+  }
+
+  .pb-license .price{
+    font-size:22px;
+  }
+
+  .pb-modal-foot{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .pb-actions{
+    width:100%;
+  }
+
+  .pb-btn{
+    flex:1;
+    justify-content:center;
+  }
 }
 
 /* =========================
