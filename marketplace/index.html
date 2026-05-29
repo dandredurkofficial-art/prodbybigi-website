@@ -1755,18 +1755,23 @@
 
   function isFreeBeat(b){
     if (!b) return true;
-    if (b.freeDownload === true || b.isFree === true) return true;
-    if (Number.isFinite(Number(b.price))) {
-      return Number(b.price) <= 0;
-    }
-    const lic = b.licenses || {};
-    const hasPaidLicense =
-      lic?.basic?.enabled === true ||
-      lic?.premium?.enabled === true ||
-      lic?.exclusive?.enabled === true;
 
-    if (hasPaidLicense) return false;
-    return true;
+    const lic = b.licenses || {};
+
+    const hasPaidLicense =
+      (lic.basic?.enabled && Number(lic.basic?.price) > 0) ||
+      (lic.premium?.enabled && Number(lic.premium?.price) > 0) ||
+      (lic.exclusive?.enabled && Number(lic.exclusive?.price) > 0);
+
+    if (hasPaidLicense) {
+      return false;
+    }
+
+    if (b.freeDownload === true || b.isFree === true) {
+      return true;
+    }
+
+    return Number(b.price || 0) <= 0;
   }
 
   function getBeatPremiereTime(b){
