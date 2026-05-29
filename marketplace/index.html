@@ -2478,23 +2478,24 @@
     let beats = [];
 
     /* 1️⃣ SHOW CACHED BEATS INSTANTLY */
-    try{
+    try {
       const cached = localStorage.getItem("audiory_cached_beats");
-      if(cached){
+
+      if (cached) {
         beats = JSON.parse(cached);
 
         window.__MARKETPLACE_BEATS__ = [...beats];
-      }
+
         const filtered = filterBeats(beats, params);
-        if(filtered.length){
+
+        if (filtered.length) {
           status.classList.add("hidden");
-          window.__MARKETPLACE_BEATS__ = [...beats];
           grid.innerHTML = "";
           renderMarketplace(filtered, grid);
         }
       }
-    }catch(e){
-     console.error(e);
+    } catch (e) {
+      console.error(e);
     }
 
     /* 2️⃣ FETCH FRESH BEATS */
