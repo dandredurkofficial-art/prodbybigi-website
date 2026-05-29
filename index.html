@@ -1111,20 +1111,6 @@
   </section>
 
   <section class="section">
-    <div class="card" style="padding:18px; border-color:#e2e8f0;">
-      <h2 class="h2" style="margin-bottom:12px; margin-top:0;">Explore Audiory</h2>
-      <div style="display:flex;flex-wrap:wrap;gap:10px;">
-        <a class="play-btn" href="/marketplace/">Browse Beats</a>
-        <a class="play-btn" href="/freebeats/">Free Beats</a>
-        <a class="play-btn" href="/soundkits/">Sound Kits</a>
-        <a class="play-btn" href="/producers/">Top Producers</a>
-        <a class="play-btn" href="/pricing/">Pricing</a>
-        <a class="play-btn" href="/register/">Sell Beats</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
     <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
       <h2 class="h2">Featured Beats</h2>
       <a class="see-all" href="/marketplace/?featured=1">See all →</a>
@@ -1858,25 +1844,22 @@ window.logBeatPlay = logBeatPlay;
     });
 
     function isFreeBeat(b){
-      if (!b) return false;
+      if (!b) return true;
 
       const lic = b.licenses || {};
 
       const hasPaidLicense =
-        lic?.basic?.enabled === true ||
-        lic?.premium?.enabled === true ||
-        lic?.exclusive?.enabled === true;
+        Number(lic?.basic?.price || 0) > 0 ||
+        Number(lic?.premium?.price || 0) > 0 ||
+        Number(lic?.exclusive?.price || 0) > 0;
 
-      if (hasPaidLicense) {
-        return false;
-      }
+      if (hasPaidLicense) return false;
 
       return (
         b.freeDownload === true ||
         b.isFree === true
       );
     }
-
   function pillHTML(b){
     if (isUpcomingPremiereBeat(b)){
       return preSaveHTML(b);
