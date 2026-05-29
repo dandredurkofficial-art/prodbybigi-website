@@ -2423,8 +2423,8 @@
         else if (type === "hot") {
 
           beats.sort((a,b) =>
-            (b.plays || 0)
-            (a.playCount || 0)
+            (b.plays || 0) -
+            (a.plays || 0)
           );
 
         }
