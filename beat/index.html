@@ -1594,7 +1594,12 @@
               data-beat-id="${bId}"
               aria-label="Choose license">
               ${lockIconHTML()}
-              <span>${money(beat.price || 0)}</span>
+              <span>${money(
+                beat?.licenses?.basic?.price ||
+                beat?.licenses?.premium?.price ||
+                beat?.licenses?.exclusive?.price ||
+                0
+            )}</span>
             </button>
           `;
         }
