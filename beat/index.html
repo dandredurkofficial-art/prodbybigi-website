@@ -752,6 +752,28 @@
       box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); 
     }
 
+    .comment{
+      border:1px solid #e2e8f0;
+      border-radius:12px;
+      padding:12px;
+      margin-bottom:12px;
+    }
+
+    .reply{
+      margin-left:30px;
+      margin-top:10px;
+      background:#f8fafc;
+      border-radius:10px;
+      padding:10px;
+    }
+
+    .reply-btn{
+      color:#3b2fad;
+      cursor:pointer;
+      font-weight:700;
+      margin-top:8px;
+    }
+
     /* RESPONSIVE LAYOUT SYSTEMS */
     @media (max-width: 900px){
       .beat-wrap { grid-template-columns: 1fr; gap: 20px; }
@@ -923,6 +945,38 @@
         <div class="muted" style="font-size:12px;margin-top:4px;">Explore other uploads.</div>
         <div class="more-grid" id="moreGrid"></div>
       </div>
+
+      <div class="cardx" style="margin-top:14px;">
+        <div style="font-weight:900;font-size:16px;">Comments</div>
+        <div class="muted" style="font-size:12px;margin-top:4px;">
+          Share your thoughts about this beat.
+        </div>
+
+        <textarea
+          id="commentInput"
+          placeholder="Write a comment..."
+          style="
+            width:100%;
+            min-height:90px;
+            margin-top:12px;
+            padding:12px;
+            border:1px solid #e2e8f0;
+            border-radius:12px;
+            box-sizing:border-box;
+          "
+        ></textarea>
+
+        <button
+          id="postCommentBtn"
+          class="btn"
+          style="margin-top:10px;"
+          type="button">
+          Post Comment
+        </button>
+
+        <div id="commentsList" style="margin-top:20px;"></div>
+      </div>
+      
     </div>
   </section>
 </main>
@@ -1815,6 +1869,7 @@
     try{
       const beat = await fetchBeatById(beatId);
       window.__CURRENT_BEAT__ = beat;
+      loadComments(String(beat.id));
       console.log("BEAT PAGE DATA =", beat);
 
       window.__LATEST_BEATS__ = window.__LATEST_BEATS__ || [];
@@ -1985,6 +2040,87 @@
       status.textContent = "Failed to load beat. Check console.";
     }
   }
+
+  async function loadComments(beatId){
+
+    const FB = window.FB;
+    if(!FB?.db) return;
+
+    const q = FB.query(
+      FB.collection(FB.db,"beatComments"),
+      FB.where("beatId","==",beatId)
+    );
+
+    const snap = await FB.getDocs(q);
+
+    const comments = [];
+
+    snap.forEach(doc=>{
+      comments.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+
+    renderComments(comments);
+  }
+
+  function renderComments(comments){
+
+    const wrap = document.getElementById("commentsList");
+    if(!wrap) return;
+
+    const roots = comments.filter(c=>!c.parentId);
+
+    wrap.innerHTML = roots.map(c=>`
+      <div class="comment">
+        <strong>${c.username}</strong>
+        <div style="margin-top:6px;">
+          ${c.comment}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  document.addEventListener("click", async(e)=>{
+
+    if(e.target.id !== "postCommentBtn") return;
+
+    const text =
+      document.getElementById("commentInput")
+      ?.value
+      .trim();
+
+    if(!text) return;
+
+    const user = window.FB.auth.currentUser;
+
+    if(!user){
+      alert("Please sign in first.");
+      return;
+    }
+
+    await window.FB.addDoc(
+      window.FB.collection(
+        window.FB.db,
+        "beatComments"
+      ),
+      {
+        beatId:String(window.__CURRENT_BEAT__.id),
+        userId:user.uid,
+        username:user.displayName || "User",
+        comment:text,
+        createdAt:Date.now()
+      }
+    );
+
+    document.getElementById("commentInput").value="";
+
+    loadComments(
+      String(window.__CURRENT_BEAT__.id)
+    );
+
+  });
 
   window.addEventListener("firebase-ready", ()=> loadBeatPage());
 </script>
