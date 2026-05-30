@@ -1019,6 +1019,28 @@
 
     <div id="allCommentsContainer"></div>
 
+    <div id="replyComposer" style="display:none;margin-top:15px;">
+      <textarea
+        id="replyInput"
+        placeholder="Write your reply..."
+        style="
+          width:100%;
+          min-height:90px;
+          padding:12px;
+          border:1px solid #e2e8f0;
+          border-radius:12px;
+          box-sizing:border-box;
+        "
+      ></textarea>
+
+      <button
+        id="sendReplyBtn"
+        class="btn"
+        style="margin-top:10px;">
+        Send Reply
+      </button>
+    </div>
+
   </div>
 </div>
 
@@ -2124,6 +2146,12 @@
 
     const previewComments = roots.slice(0,4);
 
+    function getReplies(parentId){
+      return comments.filter(
+        x => x.parentId === parentId
+      );
+    }
+
     wrap.innerHTML = previewComments.map(c=>`
       <div class="comment">
         <strong>${c.username}</strong>
@@ -2141,6 +2169,12 @@
           class="reply-btn"
           data-comment-id="${c.id}">
           Reply
+        </div>
+
+        <div
+          class="reply-btn pin-btn"
+          data-comment-id="${c.id}">
+          📌 Pin
         </div>
       </div>
     `).join("");
@@ -2241,6 +2275,12 @@
             Reply
           </div>
 
+          <div
+            class="reply-btn pin-btn"
+            data-comment-id="${c.id}">
+            📌 Pin
+          </div>
+
         </div>
 
       `).join("");
@@ -2258,16 +2298,6 @@
     ).style.display = "none";
 
   });
-
-  document.addEventListener("click", async(e)=>{
-
-    const btn =
-      e.target.closest(".reply-btn");
-
-    if(!btn) return;
-
-    const text =
-      prompt("Write your reply");
 
     if(!text) return;
 
@@ -2326,6 +2356,102 @@
       ),
       {
         likes: window.FB.increment(1)
+      }
+    );
+
+    loadComments(
+      String(window.__CURRENT_BEAT__.id)
+    );
+
+  });
+
+  let replyingTo = null;
+
+  document.addEventListener("click",(e)=>{
+
+    const btn =
+      e.target.closest(".reply-btn");
+
+    if(!btn || btn.classList.contains("like-btn"))
+      return;
+
+    replyingTo =
+      btn.dataset.commentId;
+
+    document.getElementById(
+      "replyComposer"
+    ).style.display = "block";
+
+  });
+
+  document
+  .getElementById("sendReplyBtn")
+  ?.addEventListener("click", async()=>{
+
+    const text =
+      document.getElementById(
+        "replyInput"
+      ).value.trim();
+
+    if(!text || !replyingTo) return;
+
+    const user =
+      window.FB.auth.currentUser;
+
+    await window.FB.addDoc(
+      window.FB.collection(
+        window.FB.db,
+        "beatComments"
+      ),
+      {
+        beatId:
+          String(window.__CURRENT_BEAT__.id),
+
+        parentId:
+          replyingTo,
+
+        userId:user.uid,
+
+        username:
+          user.displayName || "User",
+
+        comment:text,
+
+        createdAt:Date.now(),
+
+        likes:0
+      }
+    );
+
+    document.getElementById(
+      "replyInput"
+    ).value="";
+
+    document.getElementById(
+      "replyComposer"
+    ).style.display="none";
+
+    loadComments(
+      String(window.__CURRENT_BEAT__.id)
+    );
+
+  });
+
+  document.addEventListener("click", async(e)=>{
+
+    const btn =
+      e.target.closest(".pin-btn");
+
+    if(!btn) return;
+
+    await window.FB.updateDoc(
+      window.FB.doc(
+        window.FB.db,
+        "beatComments",
+        btn.dataset.commentId
+      ),
+      {
+        pinned:true
       }
     );
 
