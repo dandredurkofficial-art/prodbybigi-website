@@ -1246,7 +1246,7 @@
       const enabled = cfg?.enabled === true;
       const price = cfg?.price != null ? Number(cfg.price) : null;
 
-      if (enabled || Number.isFinite(price)){
+      if (enabled)
         added++;
         const usd = Number.isFinite(price) ? price : Number(beat.price ?? 0);
 
