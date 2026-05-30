@@ -2171,11 +2171,32 @@
           Reply
         </div>
 
-        <div
-          class="reply-btn pin-btn"
-          data-comment-id="${c.id}">
-          📌 Pin
-        </div>
+        ${
+          window.FB.auth.currentUser?.uid ===
+          window.__CURRENT_BEAT__?.producerId
+          ? `
+            <div
+              class="reply-btn pin-btn"
+              data-comment-id="${c.id}">
+              📌 Pin
+            </div>
+          `
+          : ""
+        }
+
+        ${getReplies(c.id).map(r=>`
+          <div class="reply" style="
+            margin-left:24px;
+            margin-top:10px;
+            padding:10px;
+            border-left:3px solid #ddd;
+          ">
+            <strong>${r.username}</strong>
+            <div style="margin-top:4px;">
+              ${r.comment}
+            </div>
+          </div>
+        `).join("")}
       </div>
     `).join("");
 
@@ -2270,16 +2291,43 @@
           </div>
 
           <div
+            class="reply-btn like-btn"
+            data-comment-id="${c.id}">
+            ❤️ Like (${c.likes || 0})
+          </div>
+
+          ${comments
+            .filter(r => r.parentId === c.id)
+            .map(r=>`
+              <div class="reply" style="
+                margin-left:24px;
+                margin-top:10px;
+                padding:10px;
+                border-left:3px solid #ddd;
+              ">
+                <strong>${r.username}</strong>
+                <div>${r.comment}</div>
+              </div>
+            `).join("")}
+
+          <div
             class="reply-btn"
             data-comment-id="${c.id}">
             Reply
           </div>
 
-          <div
-            class="reply-btn pin-btn"
-            data-comment-id="${c.id}">
-            📌 Pin
-          </div>
+          ${
+            window.FB.auth.currentUser?.uid ===
+            window.__CURRENT_BEAT__?.producerId
+            ? `
+              <div
+                class="reply-btn pin-btn"
+                data-comment-id="${c.id}">
+                📌 Pin
+              </div>
+            `
+            : ""
+          }
 
         </div>
 
@@ -2371,7 +2419,9 @@
         userId:user.uid,
 
         username:
-          user.displayName || "User",
+          user.displayName ||
+          user.email?.split("@")[0] ||
+          "User",
 
         comment:text,
 
