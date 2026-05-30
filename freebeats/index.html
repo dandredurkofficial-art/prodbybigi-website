@@ -1383,13 +1383,13 @@ async function loadFreeBeats(){
     if(!beats.length){
       beats = await window.FB.fetchBeats({ max:60 });
 
-      window.__LATEST_BEATS__ = beats;
-
       sessionStorage.setItem(
         "audiory_free_beats",
         JSON.stringify(beats)
       );
     }
+
+    window.__LATEST_BEATS__ = beats;
 
     window.FB.fetchBeats({ max:60, force:true }).then(fresh=>{
       if(!fresh?.length) return;
