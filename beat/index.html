@@ -1329,18 +1329,20 @@
     const btn = e.target.closest(".price-pill");
     if (!btn) return;
 
-    const selected = {
-      beatId: btn.getAttribute("data-beat-id") || "",
-      producerId: btn.getAttribute("data-producer-id") || "",
-      licenseKey: btn.getAttribute("data-license") || "basic",
-      amountUsd: Number(btn.getAttribute("data-amount-usd") || 0),
-      title: document.getElementById("beatTitle")?.textContent || "Beat"
-    };
+    const beatId =
+      btn.getAttribute("data-beat-id") || "";
 
-    openPayModal(selected);
+    if (!beatId) return;
+
+    if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
+
+      window.PB_OPEN_LICENSE_MODAL({
+        beatId
+      });
+
+    }
 
   });
-
   function renderMoreFromProducer(allBeats, beat){
     const wrap = $("moreGrid");
     if (!wrap) return;
