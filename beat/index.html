@@ -1258,31 +1258,17 @@
             </div>
 
             <div class="row" style="justify-content:flex-end;">
-              <button class="pb-pill price-pill" type="button"
-                data-license="${t.key}"
-                data-producer-id="${producerId}"
-                data-beat-id="${beatId}"
-                aria-label="Choose license">
-                ${lockIconHTML()}
-                <span>${money(usd)}</span>
-              </button>
-
-              <button class="pb-pill" type="button"
-                data-mpesa="1"
+              <button class="pb-pill price-pill"
+                type="button"
                 data-license="${t.key}"
                 data-producer-id="${producerId}"
                 data-beat-id="${beatId}"
                 data-amount-usd="${usd}"
-                aria-label="Pay with M-Pesa">
-                <span class="mpesa-icon" aria-hidden="true">
-                  <svg viewBox="0 0 64 64" fill="none">
-                    <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
-                    <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-                    <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-                    <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-                  </svg>
-                </span>
-                <span>M-Pesa</span>
+                aria-label="Choose license">
+
+                ${lockIconHTML()}
+                <span>${money(usd)}</span>
+
               </button>
             </div>
           </div>
@@ -1330,6 +1316,23 @@
       `;
     }
   }
+
+  document.addEventListener("click", (e)=>{
+
+    const btn = e.target.closest(".price-pill");
+    if (!btn) return;
+
+    const selected = {
+      beatId: btn.getAttribute("data-beat-id") || "",
+      producerId: btn.getAttribute("data-producer-id") || "",
+      licenseKey: btn.getAttribute("data-license") || "basic",
+      amountUsd: Number(btn.getAttribute("data-amount-usd") || 0),
+      title: document.getElementById("beatTitle")?.textContent || "Beat"
+    };
+
+    openPayModal(selected);
+
+  });
 
   function renderMoreFromProducer(allBeats, beat){
     const wrap = $("moreGrid");
