@@ -1814,7 +1814,19 @@
 
     try{
       const beat = await fetchBeatById(beatId);
+      window.__CURRENT_BEAT__ = beat;
       console.log("BEAT PAGE DATA =", beat);
+
+      window.__LATEST_BEATS__ = window.__LATEST_BEATS__ || [];
+
+      if (
+        beat &&
+        !window.__LATEST_BEATS__.some(
+          b => String(b.id) === String(beat.id)
+        )
+      ) {
+        window.__LATEST_BEATS__.push(beat);
+      }
 
       try{
         sessionStorage.setItem("audiory_beat_" + beatId, JSON.stringify(beat));
