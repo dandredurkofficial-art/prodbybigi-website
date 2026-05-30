@@ -991,6 +991,37 @@
   </section>
 </main>
 
+<div id="commentsModal"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    z-index:99999;
+    padding:20px;
+  ">
+
+  <div
+    style="
+      max-width:800px;
+      margin:40px auto;
+      background:#fff;
+      border-radius:16px;
+      padding:20px;
+      max-height:80vh;
+      overflow:auto;
+    ">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h3>All Comments</h3>
+      <button id="closeCommentsModal" class="btn">Close</button>
+    </div>
+
+    <div id="allCommentsContainer"></div>
+
+  </div>
+</div>
+
 <div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
 <div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
   <div class="pb-modal-card">
@@ -2099,6 +2130,18 @@
         <div style="margin-top:6px;">
           ${c.comment}
         </div>
+
+        <div
+          class="reply-btn like-btn"
+          data-comment-id="${c.id}">
+          ❤️ Like (${c.likes || 0})
+        </div>
+
+        <div
+          class="reply-btn"
+          data-comment-id="${c.id}">
+          Reply
+        </div>
       </div>
     `).join("");
 
@@ -2157,6 +2200,110 @@
     );
 
     document.getElementById("commentInput").value="";
+
+    loadComments(
+      String(window.__CURRENT_BEAT__.id)
+    );
+
+  });
+
+  document
+  .getElementById("viewAllCommentsBtn")
+  ?.addEventListener("click", ()=>{
+
+    const modal =
+      document.getElementById(
+        "commentsModal"
+      );
+
+    const container =
+      document.getElementById(
+        "allCommentsContainer"
+      );
+
+    const comments =
+      window.__ALL_COMMENTS__ || [];
+
+    container.innerHTML =
+      comments.map(c=>`
+
+        <div class="comment">
+
+          <strong>${c.username}</strong>
+
+          <div style="margin-top:8px;">
+            ${c.comment}
+          </div>
+
+          <div
+            class="reply-btn"
+            data-comment-id="${c.id}">
+            Reply
+          </div>
+
+        </div>
+
+      `).join("");
+
+    modal.style.display = "block";
+
+  });
+
+  document
+  .getElementById("closeCommentsModal")
+  ?.addEventListener("click", ()=>{
+
+    document.getElementById(
+      "commentsModal"
+    ).style.display = "none";
+
+  });
+
+  document.addEventListener("click", async(e)=>{
+
+    const btn =
+      e.target.closest(".reply-btn");
+
+    if(!btn) return;
+
+    const text =
+      prompt("Write your reply");
+
+    if(!text) return;
+
+    const user =
+      window.FB.auth.currentUser;
+
+    if(!user){
+      alert("Please sign in first");
+      return;
+    }
+
+    await window.FB.addDoc(
+      window.FB.collection(
+        window.FB.db,
+        "beatComments"
+      ),
+      {
+        beatId:
+          String(window.__CURRENT_BEAT__.id),
+
+        parentId:
+          btn.dataset.commentId,
+
+        userId:user.uid,
+
+        username:
+          user.displayName ||
+          "User",
+
+        comment:text,
+
+        createdAt:Date.now(),
+
+        likes:0
+      }
+    );
 
     loadComments(
       String(window.__CURRENT_BEAT__.id)
