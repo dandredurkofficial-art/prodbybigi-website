@@ -1402,14 +1402,6 @@ async function loadFreeBeats(){
       console.log("♻️ free beats refreshed");
     });
 
-    if(cached){
-      beats = JSON.parse(cached);
-
-      window.__LATEST_BEATS__ = beats;
-
-      console.log("⚡ free beats loaded from cache");
-    }
-
     const producerCache = {};
 
     for(const b of beats){
