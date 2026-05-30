@@ -2299,48 +2299,6 @@
 
   });
 
-    if(!text) return;
-
-    const user =
-      window.FB.auth.currentUser;
-
-    if(!user){
-      alert("Please sign in first");
-      return;
-    }
-
-    await window.FB.addDoc(
-      window.FB.collection(
-        window.FB.db,
-        "beatComments"
-      ),
-      {
-        beatId:
-          String(window.__CURRENT_BEAT__.id),
-
-        parentId:
-          btn.dataset.commentId,
-
-        userId:user.uid,
-
-        username:
-          user.displayName ||
-          "User",
-
-        comment:text,
-
-        createdAt:Date.now(),
-
-        likes:0
-      }
-    );
-
-    loadComments(
-      String(window.__CURRENT_BEAT__.id)
-    );
-
-  });
-
   document.addEventListener("click", async(e)=>{
 
     const btn = e.target.closest(".like-btn");
