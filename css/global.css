@@ -465,56 +465,135 @@ a:hover{opacity:.9}
 @media (max-width:768px){
 
   .pb-modal{
-    padding:10px;
+    position:fixed;
+    inset:0;
+    display:flex;
     align-items:flex-start;
+    justify-content:center;
+    padding:8px;
     overflow-y:auto;
   }
 
   .pb-modal-card{
     width:100%;
-    max-height:none;
+    max-width:100%;
+    max-height:92vh;
+    overflow-y:auto;
 
-    margin-top:10px;
+    margin:0;
+    margin-top:8px;
 
-    padding:18px;
-    border-radius:24px;
+    padding:14px;
+    border-radius:20px;
+  }
+
+  .pb-modal-head{
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .pb-modal-kicker{
+    font-size:11px;
   }
 
   .pb-modal-title{
-    font-size:24px;
-    line-height:1.2;
+    font-size:16px;
+    line-height:1.25;
+    margin-top:2px;
+  }
+
+  .pb-modal-sub{
+    font-size:12px;
+    margin-top:4px;
   }
 
   .pb-licenses{
+    margin-top:10px;
     grid-template-columns:1fr 1fr;
-    gap:10px;
+    gap:8px;
   }
 
   .pb-license{
-    min-height:120px;
-    padding:14px;
+    min-height:auto;
+    padding:12px;
+    border-radius:14px;
   }
 
   .pb-license .name{
-    font-size:16px;
+    font-size:15px;
+    line-height:1.2;
   }
 
   .pb-license .price{
-    font-size:22px;
+    margin-top:8px;
+    font-size:18px;
+  }
+
+  .pb-license .meta{
+    font-size:11px;
+    margin-top:4px;
+  }
+
+  .pb-badge{
+    top:8px;
+    right:8px;
+    font-size:10px;
+    padding:4px 8px;
   }
 
   .pb-modal-foot{
+    margin-top:10px;
+    padding-top:10px;
+
+    display:flex;
     flex-direction:column;
     align-items:stretch;
+    gap:10px;
+  }
+
+  .pb-total-label{
+    font-size:12px;
+  }
+
+  .pb-total-price{
+    font-size:16px;
   }
 
   .pb-actions{
     width:100%;
+    display:flex;
+    gap:8px;
   }
 
   .pb-btn{
     flex:1;
+    height:48px;
+    padding:0;
+    font-size:15px;
     justify-content:center;
+    border-radius:12px;
+  }
+
+  .pb-terms{
+    margin-top:10px;
+    padding-top:10px;
+  }
+
+  .pb-terms-title{
+    font-size:13px;
+    margin-bottom:8px;
+  }
+
+  .pb-terms-grid{
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+
+  .pb-term{
+    padding:10px;
+    font-size:13px;
+    line-height:1.4;
+    border-radius:12px;
   }
 }
 /* =========================
