@@ -1325,24 +1325,20 @@
   }
 
   document.addEventListener("click", (e)=>{
+    const card = e.target.closest("[data-beat-id]");
+    if (!card) return;
+    if (!e.target.closest(".price-pill")) return;
 
-    const btn = e.target.closest(".price-pill");
-    if (!btn) return;
+    const beatId = String(card.getAttribute("data-beat-id") || "");
 
-    const beatId =
-      btn.getAttribute("data-beat-id") || "";
-
-    if (!beatId) return;
-
-    if (typeof window.PB_OPEN_LICENSE_MODAL === "function") {
-
-      window.PB_OPEN_LICENSE_MODAL({
-        beatId
-      });
-
-    }
-
-  });
+    window.__PB_SELECTED__ = {
+      beatId,
+      title,
+      licenseKey: fallback.licenseKey,
+      amount: fallback.amount
+    };
+  }, true);
+  
   function renderMoreFromProducer(allBeats, beat){
     const wrap = $("moreGrid");
     if (!wrap) return;
