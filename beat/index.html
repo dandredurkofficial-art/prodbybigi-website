@@ -1029,33 +1029,35 @@
   </div>
 
   <div class="pb-pay-body">
-    <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
-      <span class="pb-pay-btn-left">
-        <span>Pay with PayPal</span>
-      </span>
-      <span class="pb-pay-amount" id="pbPayAmountA">—</span>
-    </button>
-
-    <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
-      <span class="pb-pay-btn-left">
-        <span class="mpesa-icon" aria-hidden="true">
-          <svg viewBox="0 0 64 64" fill="none">
-            <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(255,255,255,.16)"/>
-            <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-            <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-          </svg>
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
         </span>
-        <span>Pay with M-Pesa</span>
-      </span>
-      <span class="pb-pay-amount" id="pbPayAmountB">—</span>
-    </button>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
 
-    <div class="pb-pay-phone-wrap" id="pbMpesaBox">
-      <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
-      <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
-      <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
-      <div class="pb-pay-status" id="pbPayStatus"></div>
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(0,0,0,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
+
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
     </div>
   </div>
 </div>
