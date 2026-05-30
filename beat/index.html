@@ -1241,39 +1241,46 @@
 
     let added = 0;
 
-    tiers.forEach(t=>{
+    tiers.forEach(t => {
+
       const cfg = lic?.[t.key] || null;
       const enabled = cfg?.enabled === true;
-      const price = cfg?.price != null ? Number(cfg.price) : null;
+      const price = cfg?.price != null
+        ? Number(cfg.price)
+        : null;
 
-      if (enabled)
-        added++;
-        const usd = Number.isFinite(price) ? price : Number(beat.price ?? 0);
+      if (!enabled) return;
 
-        wrap.insertAdjacentHTML("beforeend", `
-          <div class="lic">
-            <div>
-              <strong>${t.label}</strong>
-              <div class="lsub">${t.hint}</div>
-            </div>
+      added++;
 
-            <div class="row" style="justify-content:flex-end;">
-              <button class="pb-pill price-pill"
-                type="button"
-                data-license="${t.key}"
-                data-producer-id="${producerId}"
-                data-beat-id="${beatId}"
-                data-amount-usd="${usd}"
-                aria-label="Choose license">
+      const usd = Number.isFinite(price)
+        ? price
+        : Number(beat.price ?? 0);
 
-                ${lockIconHTML()}
-                <span>${money(usd)}</span>
-
-              </button>
-            </div>
+      wrap.insertAdjacentHTML("beforeend", `
+        <div class="lic">
+          <div>
+            <strong>${t.label}</strong>
+            <div class="lsub">${t.hint}</div>
           </div>
-        `);
-      }
+
+          <div class="row" style="justify-content:flex-end;">
+            <button class="pb-pill price-pill"
+              type="button"
+              data-license="${t.key}"
+              data-producer-id="${producerId}"
+              data-beat-id="${beatId}"
+              data-amount-usd="${usd}"
+              aria-label="Choose license">
+
+              ${lockIconHTML()}
+              <span>${money(usd)}</span>
+
+            </button>
+          </div>
+        </div>
+      `);
+
     });
 
     if (!added){
@@ -1532,7 +1539,7 @@
         playBtn
       );
 
-      playBtn.addEventListener("click", async () => {
+      clonedBtn.addEventListener("click", async () => {
 
         const pid = String(beat.producerId || "");
         const bid = String(beat.id || beatId);
