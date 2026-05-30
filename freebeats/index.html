@@ -1383,6 +1383,8 @@ async function loadFreeBeats(){
     if(!beats.length){
       beats = await window.FB.fetchBeats({ max:60 });
 
+      window.__LATEST_BEATS__ = beats;
+
       sessionStorage.setItem(
         "audiory_free_beats",
         JSON.stringify(beats)
@@ -1399,6 +1401,14 @@ async function loadFreeBeats(){
 
       console.log("♻️ free beats refreshed");
     });
+
+    if(cached){
+      beats = JSON.parse(cached);
+
+      window.__LATEST_BEATS__ = beats;
+
+      console.log("⚡ free beats loaded from cache");
+    }
 
     const producerCache = {};
 
