@@ -2093,7 +2093,7 @@
 
     const previewComments = roots.slice(0,4);
 
-    wrap.innerHTML = roots.map(c=>`
+    wrap.innerHTML = previewComments.map(c=>`
       <div class="comment">
         <strong>${c.username}</strong>
         <div style="margin-top:6px;">
@@ -2101,6 +2101,20 @@
         </div>
       </div>
     `).join("");
+
+    window.__ALL_COMMENTS__ = comments;
+
+    const btn =
+      document.getElementById(
+        "viewAllCommentsBtn"
+      );
+
+    if(btn){
+      btn.style.display =
+        roots.length > 4
+          ? "block"
+          : "none";
+    }
   }
 
   document.addEventListener("click", async(e)=>{
