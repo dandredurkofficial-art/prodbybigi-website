@@ -1381,8 +1381,7 @@ async function loadFreeBeats(){
     }catch(e){}
 
     if(!beats.length){
-      beats = await window.FB.fetchBeats({ max:60 });
-
+      beats = await window.FB.fetchBeats({ max:24 });
       sessionStorage.setItem(
         "audiory_free_beats",
         JSON.stringify(beats)
