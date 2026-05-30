@@ -975,6 +975,16 @@
         </button>
 
         <div id="commentsList" style="margin-top:20px;"></div>
+        <div
+          id="viewAllCommentsBtn"
+          style="
+            display:none;
+            margin-top:12px;
+          ">
+          <button class="btn">
+            View All Comments
+          </button>
+        </div>
       </div>
       
     </div>
@@ -2070,7 +2080,18 @@
     const wrap = document.getElementById("commentsList");
     if(!wrap) return;
 
-    const roots = comments.filter(c=>!c.parentId);
+    const roots =
+      comments
+        .filter(c => !c.parentId)
+        .sort((a,b)=>{
+
+          if (a.pinned && !b.pinned) return -1;
+          if (!a.pinned && b.pinned) return 1;
+
+          return b.createdAt - a.createdAt;
+        });
+
+    const previewComments = roots.slice(0,4);
 
     wrap.innerHTML = roots.map(c=>`
       <div class="comment">
@@ -2106,11 +2127,18 @@
         "beatComments"
       ),
       {
-        beatId:String(window.__CURRENT_BEAT__.id),
-        userId:user.uid,
-        username:user.displayName || "User",
-        comment:text,
-        createdAt:Date.now()
+        beatId: String(window.__CURRENT_BEAT__.id),
+        userId: user.uid,
+        username:
+          user.displayName ||
+          user.email?.split("@")[0] ||
+          "User",
+        avatar: user.photoURL || "",
+        comment: text,
+        createdAt: Date.now(),
+        likes: 0,
+        pinned: false,
+        parentId: null
       }
     );
 
