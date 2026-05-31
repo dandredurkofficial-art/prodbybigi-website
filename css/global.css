@@ -595,6 +595,23 @@ a:hover{opacity:.9}
     border-radius:12px;
   }
 }
+
+@media (max-width:768px){
+
+  .pb-modal{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:10px !important;
+  }
+
+  .pb-modal-card{
+    margin:0 !important;
+    top:auto !important;
+    transform:none !important;
+  }
+
+}
 /* =========================
    PRICE PILL ALIGNMENT FIX
 ========================= */
