@@ -1020,6 +1020,22 @@
       .hero-title { font-size: 32px; }
       .footer-row { text-align: center; }
     }
+
+    .news-spin{
+      width:18px;
+      height:18px;
+      border:2px solid rgba(59,47,173,.25);
+      border-top-color:#3b2fad;
+      border-radius:50%;
+      display:inline-block;
+      animation:newsSpin .8s linear infinite;
+    }
+
+    @keyframes newsSpin{
+      to{
+        transform:rotate(360deg);
+      }
+    }
     @media (max-width: 640px) {
       .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
       .pb-pay-body { padding: 16px; }
@@ -1276,25 +1292,27 @@
       color:white;
       border:none;
     ">
-      <h2 style="margin-top:0;color:white;">
-        Don’t Miss A Beat
-      </h2>
-
-      <p style="
-        max-width:600px;
-        margin:0 auto 20px;
-        opacity:.9;
-      ">
-        Subscribe to receive new beats, free downloads, producer updates, and exclusive offers.
-      </p>
-
       <div style="
         display:flex;
         gap:10px;
         justify-content:center;
         flex-wrap:wrap;
       ">
+
         <input
+          id="newsletterName"
+          type="text"
+          placeholder="Your name"
+          style="
+            min-width:220px;
+            padding:14px;
+            border:none;
+            border-radius:12px;
+          "
+        >
+
+        <input
+          id="newsletterEmail"
           type="email"
           placeholder="Enter your email"
           style="
@@ -1306,6 +1324,7 @@
         >
 
         <button
+          id="newsletterBtn"
           style="
             padding:14px 24px;
             border:none;
@@ -1314,10 +1333,12 @@
             color:#3b2fad;
             font-weight:800;
             cursor:pointer;
+            min-width:160px;
           "
         >
           Subscribe
         </button>
+
       </div>
     </div>
   </section>
@@ -2397,6 +2418,96 @@ window.logBeatPlay = logBeatPlay;
       await goToMyDashboard();
     });
   });
+
+  /* ==========================
+     NEWSLETTER
+  ========================== */
+  (function(){
+
+    const btn = document.getElementById("newsletterBtn");
+    const email = document.getElementById("newsletterEmail");
+    const name = document.getElementById("newsletterName");
+
+    if(!btn || !email || !name) return;
+
+    btn.addEventListener("click", async ()=>{
+
+      const fullName = String(name.value || "").trim();
+      const mail = String(email.value || "").trim().toLowerCase();
+
+      if(!fullName){
+        alert("Enter your name");
+        return;
+      }
+
+      if(!mail){
+        alert("Enter your email");
+        return;
+      }
+
+      if(!mail.includes("@")){
+        alert("Enter a valid email");
+        return;
+      }
+
+      try{
+
+        btn.disabled = true;
+
+        btn.innerHTML = `
+          <span class="news-spin"></span>
+        `;
+
+        const existing = await window.FB.getDocs(
+          window.FB.query(
+            window.FB.collection(window.FB.db,"newsletterSubscribers"),
+            window.FB.where("email","==",mail),
+            window.FB.limit(1)
+          )
+        );
+
+        if(!existing.empty){
+
+          btn.innerHTML = "✓ Subscribed";
+          btn.style.background = "#22c55e";
+          btn.style.color = "#fff";
+
+          return;
+        }
+
+        await window.FB.addDoc(
+          window.FB.collection(
+            window.FB.db,
+            "newsletterSubscribers"
+          ),
+          {
+            name: fullName,
+            email: mail,
+            createdAt: window.FB.serverTimestamp()
+          }
+        );
+
+        btn.innerHTML = "✓ Subscribed";
+        btn.style.background = "#22c55e";
+        btn.style.color = "#fff";
+
+        name.disabled = true;
+        email.disabled = true;
+
+      }catch(err){
+
+        console.error(err);
+
+        btn.disabled = false;
+        btn.innerHTML = "Subscribe";
+
+        alert("Failed to subscribe");
+
+      }
+
+    });
+
+  })();
 
   async function loadHomeBeats(){
     const status = document.getElementById("homeStatus");
