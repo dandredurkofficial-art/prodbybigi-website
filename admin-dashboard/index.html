@@ -665,6 +665,7 @@
     <button class="tab" data-tab="users">Users</button>
     <button class="tab" data-tab="orders">Orders</button>
     <button class="tab" data-tab="notifications">Notifications</button>
+    <button class="tab" data-tab="newsletter">Newsletter</button>
   </section>
 
   <div id="status" class="loading-box">Loading…</div>
@@ -696,12 +697,10 @@
 
     <div class="card panel">
       <div style="font-weight:950; font-size:14px;">Quick Actions</div>
-      <div class="sub" style="margin-top:6px;">Tip: keep kits/beats unpublished until you test checkout.</div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
         <button class="btn" id="btnReloadAll" type="button">Reload all data</button>
         <button class="btn" id="btnShowUnpublished" type="button">Show unpublished items</button>
       </div>
-      <div class="hint">Admin access is checked from Firestore: <b>/users/&lt;uid&gt;.isAdmin === true</b></div>
     </div>
   </section>
 
@@ -877,6 +876,48 @@
   </div>
 </section>
 
+<section id="view-newsletter" class="hidden">
+  <div class="card panel">
+    <div style="font-weight:950;font-size:16px;">
+      Newsletter
+    </div>
+
+    <div class="sub" style="margin-top:6px;">
+      Send emails to newsletter subscribers.
+    </div>
+
+    <div class="field">
+      <input
+        id="newsletterSubject"
+        class="mini-input wide"
+        placeholder="Newsletter subject"
+      />
+    </div>
+
+    <div class="field">
+      <textarea
+        id="newsletterMessage"
+        class="mini-input wide"
+        style="width:min(700px,100%);min-height:180px;"
+        placeholder="Write newsletter..."
+      ></textarea>
+    </div>
+
+    <div class="field">
+      <button
+        class="btn primary"
+        id="sendNewsletterBtn"
+      >
+        Send Newsletter
+      </button>
+    </div>
+
+    <div class="hint">
+      Sends to users in newsletterSubscribers collection.
+    </div>
+  </div>
+</section>
+
 </main>
 
 <footer class="footer">
@@ -950,6 +991,7 @@
   let ALL_USERS = [];
   let ALL_ORDERS= [];
   let ALL_PAYOUTS = [];
+  let ALL_SUBSCRIBERS = [];
 
   // Optional front-end gate
   const ADMIN_EMAILS = [
@@ -981,7 +1023,7 @@
     document.querySelectorAll(".tab").forEach(b=>{
       b.classList.toggle("active", b.dataset.tab === tab);
     });
-    ["overview","beats","kits","payouts","users","orders","notifications"].forEach(name=>{
+    ["overview","beats","kits","payouts","users","orders","notifications","newsletter"].forEach(name=>{
       const v = $("view-" + name);
       if (!v) return;
       v.classList.toggle("hidden", name !== tab);
@@ -1607,6 +1649,17 @@ async function sendAdminNotification(){
       }
       ALL_PAYOUTS = payoutsRes.docs.map(normalizePayout);
 
+      try{
+        const subsRes = await fetchCollectionSafe(
+          ["newsletterSubscribers"],
+          1000
+        );
+
+        ALL_SUBSCRIBERS = subsRes.docs;
+      }catch{
+        ALL_SUBSCRIBERS = [];
+      }
+
       hideStatus();
       renderOverview();
       refreshVisible();
@@ -1856,6 +1909,24 @@ async function sendAdminNotification(){
   });
 
   $("sendNotifBtn")?.addEventListener("click", sendAdminNotification);
+
+  $("sendNewsletterBtn")?.addEventListener("click", async () => {
+
+    const subject =
+      $("newsletterSubject").value.trim();
+
+    const message =
+      $("newsletterMessage").value.trim();
+
+    if(!subject || !message){
+      alert("Enter subject and message");
+      return;
+    }
+
+    alert(
+      `Ready to send to ${ALL_SUBSCRIBERS.length} subscribers`
+    );
+  });
 
   $("signOutBtn").addEventListener("click", async ()=>{
     try{
