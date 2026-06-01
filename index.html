@@ -2457,24 +2457,7 @@ window.logBeatPlay = logBeatPlay;
         btn.innerHTML = `
           <span class="news-spin"></span>
         `;
-
-        const existing = await window.FB.getDocs(
-          window.FB.query(
-            window.FB.collection(window.FB.db,"newsletterSubscribers"),
-            window.FB.where("email","==",mail),
-            window.FB.limit(1)
-          )
-        );
-
-        if(!existing.empty){
-
-          btn.innerHTML = "✓ Subscribed";
-          btn.style.background = "#22c55e";
-          btn.style.color = "#fff";
-
-          return;
-        }
-
+        
         await window.FB.addDoc(
           window.FB.collection(
             window.FB.db,
