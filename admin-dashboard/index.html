@@ -1746,19 +1746,29 @@ async function sendAdminNotification(){
   async function savePayoutMeta(payoutId){
     const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
     const note = String(getInputValue("payoutNote", payoutId) || "").trim();
-    const ref = doc(window.FB.db, "payouts", payoutId);
+    const ref = doc(window.FB.db, "payoutsRequests", payoutId);
     await updateDoc(ref, { txId, note });
   }
 
   async function approvePayout(payoutId){
-    const ref = doc(window.FB.db, "payouts", payoutId);
+    const ref = doc(window.FB.db, "payoutsRequests", payoutId);
     await updateDoc(ref, { status: "approved", approvedAt: Date.now() });
   }
 
   async function markPaid(payoutId){
     const txId = String(getInputValue("payoutTx", payoutId) || "").trim();
-    const ref = doc(window.FB.db, "payouts", payoutId);
-    await updateDoc(ref, { status: "paid", paidAt: Date.now(), txId: txId || "" });
+
+    const ref = doc(
+      window.FB.db,
+      "payoutsRequests",
+      payoutId
+    );
+
+    await updateDoc(ref,{
+      status:"paid",
+      paidAt:Date.now(),
+      txId:txId || ""
+    });
   }
 
   document.addEventListener("click", async (e)=>{
