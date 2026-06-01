@@ -1323,41 +1323,54 @@ async function sendAdminNotification(){
   }
 
   function renderOverview(){
-    const pubBeats = ALL_BEATS.filter(b=>b.published).length;
-    const pubKits  = ALL_KITS.filter(k=>k.published).length;
-    const payoutRequested = ALL_PAYOUTS.filter(p => String(p.status).toLowerCase() === "requested").length;
+    const pubBeats = ALL_BEATS.filter(b => b.published).length;
+    const pubKits  = ALL_KITS.filter(k => k.published).length;
+
+    const payoutRequested = ALL_PAYOUTS.filter(
+      p => String(p.status).toLowerCase() === "requested"
+    ).length;
 
     const totalPaidUsd = ALL_PAYOUTS
       .filter(p =>
-        ["paid","success"].includes(
+        ["paid", "success"].includes(
           String(p.status).toLowerCase()
         )
       )
       .reduce(
-        (sum,p) => sum + Number(p.amountUsd || p.amount || 0),
+        (sum, p) => sum + Number(p.amountUsd || p.amount || 0),
         0
       );
 
     const totalRequestedUsd = ALL_PAYOUTS
       .reduce(
-        (sum,p) => sum + Number(p.amountUsd || p.amount || 0),
+        (sum, p) => sum + Number(p.amountUsd || p.amount || 0),
         0
       );
 
+    // Beats
     $("statPublishedBeats").textContent = String(pubBeats);
-    $("statBeatsMini").textContent = `Total beats: ${ALL_BEATS.length}`;
+    $("statBeatsMini").textContent =
+      `Total beats: ${ALL_BEATS.length}`;
 
+    // Kits
     $("statPublishedKits").textContent = String(pubKits);
-    $("statKitsMini").textContent = `Total kits: ${ALL_KITS.length}`;
+    $("statKitsMini").textContent =
+      `Total kits: ${ALL_KITS.length}`;
 
-    $("statPayouts").textContent = String(payoutRequested);
+    // Payouts
+    $("statPayouts").textContent =
+      money(totalPaidUsd);
+
     $("statPayoutsMini").textContent =
-      `Paid: ${money(totalPaidUsd)} • Total: ${money(totalRequestedUsd)}`;
+      `${payoutRequested} pending • ${money(totalRequestedUsd)} requested`;
 
-    $("statUsers").textContent = String(ALL_USERS.length);
-    $("statUsersMini").textContent = `Profiles in /users`;
+    // Users
+    $("statUsers").textContent =
+      String(ALL_USERS.length);
+
+    $("statUsersMini").textContent =
+      `Profiles in /users`;
   }
-
   function renderBeats(){
     const q = ($("beatsSearch").value||"").trim().toLowerCase();
     const f = ($("beatsFilter").value||"").trim();
