@@ -1327,6 +1327,23 @@ async function sendAdminNotification(){
     const pubKits  = ALL_KITS.filter(k=>k.published).length;
     const payoutRequested = ALL_PAYOUTS.filter(p => String(p.status).toLowerCase() === "requested").length;
 
+    const totalPaidUsd = ALL_PAYOUTS
+      .filter(p =>
+        ["paid","success"].includes(
+          String(p.status).toLowerCase()
+        )
+      )
+      .reduce(
+        (sum,p) => sum + Number(p.amountUsd || p.amount || 0),
+        0
+      );
+
+    const totalRequestedUsd = ALL_PAYOUTS
+      .reduce(
+        (sum,p) => sum + Number(p.amountUsd || p.amount || 0),
+        0
+      );
+
     $("statPublishedBeats").textContent = String(pubBeats);
     $("statBeatsMini").textContent = `Total beats: ${ALL_BEATS.length}`;
 
@@ -1334,7 +1351,8 @@ async function sendAdminNotification(){
     $("statKitsMini").textContent = `Total kits: ${ALL_KITS.length}`;
 
     $("statPayouts").textContent = String(payoutRequested);
-    $("statPayoutsMini").textContent = `Total payouts: ${ALL_PAYOUTS.length}`;
+    $("statPayoutsMini").textContent =
+      `Paid: ${money(totalPaidUsd)} • Total: ${money(totalRequestedUsd)}`;
 
     $("statUsers").textContent = String(ALL_USERS.length);
     $("statUsersMini").textContent = `Profiles in /users`;
@@ -1643,7 +1661,10 @@ async function sendAdminNotification(){
 
       let payoutsRes = null;
       try{
-        payoutsRes = await fetchCollectionSafe(["payouts"], 400);
+        payoutsRes = await fetchCollectionSafe(
+          ["payoutsRequests","payouts"],
+          400
+        );
       }catch(e){
         payoutsRes = { name:"payouts", docs:[] };
       }
