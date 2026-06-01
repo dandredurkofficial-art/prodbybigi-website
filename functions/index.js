@@ -74,6 +74,10 @@ soundkits.publishKit;
 exports.updateKit =
 soundkits.updateKit;
 
+const newsletter = require("./newsletter");
+
+exports.sendNewsletter =
+  newsletter.sendNewsletter;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
