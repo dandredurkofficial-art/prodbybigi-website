@@ -684,7 +684,7 @@
         <div class="mini" id="statKitsMini">—</div>
       </div>
       <div class="card stat">
-        <div class="k">Payout Requests</div>
+        <div class="k">PRODUCER PAYOUTS</div>
         <div class="v" id="statPayouts">0</div>
         <div class="mini" id="statPayoutsMini">—</div>
       </div>
@@ -1362,7 +1362,7 @@ async function sendAdminNotification(){
       money(totalPaidUsd);
 
     $("statPayoutsMini").textContent =
-      `${payoutRequested} pending • ${money(totalRequestedUsd)} requested`;
+      `${money(totalPaidUsd)} paid • ${payoutRequested} pending`;
 
     // Users
     $("statUsers").textContent =
