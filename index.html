@@ -1211,7 +1211,45 @@
           <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
           <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
         </div>
-      </div>
+
+        </div>
+
+        <!-- END hero-left -->
+
+        <div class="hero-right">
+
+          <div id="heroFeaturedSlider" class="hero-featured">
+
+            <div class="hero-featured-overlay"></div>
+
+            <div class="hero-featured-content">
+
+              <span class="hero-badge">
+                FEATURED BEAT
+              </span>
+
+              <h3 id="heroSlideTitle">
+                Loading...
+              </h3>
+
+              <p id="heroSlideProducer">
+                Producer
+              </p>
+
+              <a
+                id="heroSlideLink"
+                href="#"
+                class="hero-slide-btn"
+              >
+                Listen Now →
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+
     </div>
   </section>
 
@@ -2783,6 +2821,8 @@ window.logBeatPlay = logBeatPlay;
       if(featuredBeats.length){
 
         featuredStatus.classList.add("hidden");
+
+        initHeroFeatured(featuredBeats);
 
         visibleFeatured.forEach((b)=>{
 
