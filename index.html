@@ -162,17 +162,7 @@
 
     /* Hero section formatting */
     .hero {
-      padding: 40px 0 24px;
-    }
-    .hero-layout {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 48px;
-    }
-    .hero-left {
-      flex: 1;
-      min-width: 0;
+      padding: 28px 0 16px;
     }
     .hero-card {
       background: #ffffff !important;
@@ -182,17 +172,15 @@
     }
     .hero-title {
       font-size: 48px;
-      line-height: 1.1;
-      font-weight: 800;
-      color: #1e293b;
-      margin: 0 0 16px 0;
+      line-height: 1.05;
+      max-width: 700px;
     }
     .hero-sub {
       color: #64748b;
       font-size: 16px;
       line-height: 1.6;
-      max-width: 600px;
-      margin: 0 0 28px 0;
+      max-width: 760px;
+      margin-bottom: 24px;
     }
     .hero-search input {
       background: #f8fafc;
@@ -214,106 +202,9 @@
       color: white;
       border: none;
       border-radius: 12px;
-      padding: 0 28px;
+      padding: 0 24px;
       font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s ease;
-    }
-    .hero-search button:hover {
-      background: #2c2194;
-    }
-
-    /* BeatStars Featured Hero Track Placement */
-    .hero-right-banner {
-      flex: 0 0 420px;
-      width: 420px;
-      position: relative;
-      border-radius: 20px;
-      overflow: hidden;
-      aspect-ratio: 16 / 10;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-    }
-    .hero-banner-img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .hero-banner-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to top, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.4) 60%, rgba(15, 23, 42, 0) 100%);
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .hero-banner-badge {
-      align-self: flex-start;
-      background: #3b2fad;
-      color: #ffffff;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      padding: 4px 10px;
-      border-radius: 6px;
-      margin-bottom: 10px;
-      letter-spacing: 0.5px;
-    }
-    .hero-banner-meta-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-    }
-    .hero-banner-info {
-      min-width: 0;
-    }
-    .hero-banner-title {
-      color: #ffffff;
-      font-size: 18px;
-      font-weight: 800;
-      margin: 0 0 4px 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .hero-banner-producer {
-      color: #94a3b8;
-      font-size: 14px;
-      font-weight: 600;
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .hero-banner-play {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: none;
-      color: #1e293b;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      flex-shrink: 0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-    .hero-banner-play:hover {
-      transform: scale(1.05);
-      background: #f1f5f9;
-    }
-    .hero-banner-play svg {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-      margin-left: 2px;
     }
 
     /* Section Typography */
@@ -435,7 +326,7 @@
       font-size: 14px;
     }
 
-    /* Tighter BeatStars-style price pill */
+    /* ✅ Tighter BeatStars-style price pill */
     .pb-pill {
       display: inline-flex;
       align-items: center;
@@ -577,7 +468,7 @@
       color: #3b2fad !important;
     }
 
-    /* Free download modal Customizations */
+    /* ✅ Free download modal Customizations */
     .pb-free-backdrop {
       position: fixed; inset: 0;
       background: rgba(15, 23, 42, 0.6);
@@ -919,114 +810,118 @@
     .audiory-support-fab { right: 12px !important; bottom: 12px !important; transform: scale(.92); }
 
     .trend-actions .pill,
-    .trend-actions a,
-    .buy-btn,
-    .price-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      width: 100%;
-      min-height: 44px;
-      padding: 0 16px;
-      border-radius: 12px;
-      border: 1.5px solid #2563eb;
-      background: #2563eb;
-      color: #ffffff !important;
-      font-size: 15px;
-      font-weight: 800;
-      text-decoration: none;
-      transition: all 0.2s ease;
-    }
+.trend-actions a,
+.buy-btn,
+.price-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 16px;
 
-    .trend-actions .pill:hover,
-    .trend-actions a:hover,
-    .buy-btn:hover,
-    .price-btn:hover {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-    }
+  border-radius: 12px;
+  border: 1.5px solid #2563eb;
+  background: #2563eb;
+  color: #ffffff !important;
+
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+
+  transition: all 0.2s ease;
+}
+
+.trend-actions .pill:hover,
+.trend-actions a:hover,
+.buy-btn:hover,
+.price-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
 
     /* Standardized Footer System Match */
-    .footer {
-      width: 100%;
-      padding: 32px 20px;
-      text-align: center;
-      border-top: 1px solid #f1f5f9;
-      background-color: #ffffff;
-      box-sizing: border-box;
-      margin-top: auto;
-    }
+.footer {
+  width: 100%;
+  padding: 32px 20px; /* Balanced padding */
+  text-align: center;
+  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
+  background-color: #ffffff;
+  box-sizing: border-box;
+  margin-top: auto;
+}
 
-    .footer-row {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      color: #94a3b8;
-      font-size: 13px;
-    }
+.footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Gives elements breathing room without being huge */
+  color: #94a3b8;
+  font-size: 13px;
+}
 
-    /* Legal & Navigation Links */
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
+/* Legal & Navigation Links */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
 
-    .footer-links a {
-      color: #64748b;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.2s ease;
-    }
+.footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
 
-    .footer-links a:hover { 
-      color: #3b2fad; 
-    }
+.footer-links a:hover { 
+  color: #3b2fad; 
+}
 
-    /* Premium Social Container */
-    .social {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 14px;
-      margin-top: 4px;
-    }
+/* Premium Social Container */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
 
-    .social a { 
-      color: #64748b;
-      font-size: 16px;
-      background: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 50% !important;
-      width: 38px !important;
-      height: 38px !important;
-      display: inline-flex !important;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    }
+/* Beautiful, subtle circular button styling for icons */
+.social a { 
+  color: #64748b; /* Clean neutral color */
+  font-size: 16px; /* Perfect proportional icon size */
+  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
+  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
+  border-radius: 50% !important; /* Crisp, perfect circles */
+  width: 38px !important; /* Explicit standard button size */
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
 
-    .social a:hover { 
-      color: #ffffff !important;
-      background: #3b2fad !important;
-      border-color: #3b2fad !important;
-      transform: translateY(-3px);
-      box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2);
-    }
+/* Smooth brand coloring glow on hover */
+.social a:hover { 
+  color: #ffffff !important; /* Icon turns clean white */
+  background: #3b2fad !important; /* Circle fills with your signature purple */
+  border-color: #3b2fad !important;
+  transform: translateY(-3px); /* Elegant premium hover lift */
+  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
+}
 
-    /* Copyright line styling */
-    .footer-row > span {
-      color: #94a3b8;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
-
+/* Copyright line styling */
+.footer-row > span {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
     /* Smart Finder Layout Rules */
     .smart-finder-meta { margin-top: 16px; text-align: left; }
     .smart-finder-hint { color: #64748b; font-size: 13px; margin-bottom: 12px; }
@@ -1081,14 +976,8 @@
     }
 
     /* Responsive scaling optimizations */
-    @media (max-width: 1200px){ 
-      .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } 
-      .hero-right-banner { flex: 0 0 360px; width: 360px; }
-    }
-    @media (max-width: 980px){ 
-      .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } 
-      .hero-right-banner { display: none; } /* Hides side feature layout nicely on smaller views, matching BeatStars design flow */
-    }
+    @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
+    @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
     @media (max-width: 768px){
       .smart-finder-meta{
         display:none;
@@ -1097,7 +986,6 @@
       .topbar-inner { padding: 12px 16px; }
       .hero-title { font-size: 32px; }
       .footer-row { text-align: center; }
-      .hero { padding: 28px 0 16px; }
     }
 
     .news-spin{
@@ -1182,50 +1070,29 @@
   <section class="hero">
     <div class="card hero-card hero-layout">
       <div class="hero-left">
-        <h1 class="hero-title">Your first hit starts here</h1>
-        <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
-        <div class="hero-search smart-finder-wrap" style="display:flex; gap:10px;">
-          <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
-          <button id="searchBtn" type="button">Search</button>
+      <h1 class="hero-title">Discover Your Next Hit</h1>
+      <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
+      <div class="hero-search smart-finder-wrap" style="display:flex; gap:10px;">
+        <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
+        <button id="searchBtn" type="button">Search</button>
+      </div>
+
+      <div class="smart-finder-meta">
+        <div class="smart-finder-hint">
+          Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
         </div>
 
-        <div class="smart-finder-meta">
-          <div class="smart-finder-hint">
-            Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
-          </div>
+        <div class="smart-finder-chips">
+          <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
+          <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
+          <button type="button" class="smart-chip" data-smart-fill="Afrobeats">Afrobeats</button>
+          <button type="button" class="smart-chip" data-smart-fill="Drill dark">Drill dark</button>
+          <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
+          <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
+        </div>
 
-          <div class="smart-finder-chips">
-            <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
-            <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
-            <button type="button" class="smart-chip" data-smart-fill="Afrobeats">Afrobeats</button>
-            <button type="button" class="smart-chip" data-smart-fill="Drill dark">Drill dark</button>
-            <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
-            <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
-          </div>
         </div>
       </div> 
-
-      <!-- New BeatStars Feature Track Banner Inside Flat White Concept -->
-      <div class="hero-right-banner">
-        <img class="hero-banner-img" src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=500&q=80" alt="Featured Track Artwork">
-        <div class="hero-banner-overlay">
-          <span class="hero-banner-badge">Featured Beat</span>
-          <div class="hero-banner-meta-row">
-            <div class="hero-banner-info">
-              <h3 class="hero-banner-title">SICARIO | 2+9 FREE 🎁 | DRAKE X FUTURE TYPE BEAT</h3>
-              <p class="hero-banner-producer">SWAY WASSUP 
-                <span class="verify-badge verify-pro">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                </span>
-              </p>
-            </div>
-            <button class="hero-banner-play" aria-label="Play featured track" type="button">
-              <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 
   <section class="section">
@@ -1268,7 +1135,7 @@
         <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=60" alt="Drill">
         <div class="gname">Drill</div>
       </a>
-
+      
       <a class="card genre" href="/marketplace/?genre=Amapiano">
         <img src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=200&q=60" alt="Amapiano">
         <div class="gname">Amapiano</div>
