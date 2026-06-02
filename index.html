@@ -978,8 +978,7 @@
     /* Responsive scaling optimizations */
     @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
     @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    @media (max-width: 768px){
-      .hero-layout{
+    .hero-layout{
         grid-template-columns:1fr;
       }
 
@@ -1099,7 +1098,9 @@
         font-weight:800;
         text-decoration:none;
       }
+    }
 
+    @media (max-width: 768px){
       .smart-finder-meta{
         display:none;
       }
