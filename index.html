@@ -978,23 +978,6 @@
     /* Responsive scaling optimizations */
     @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
     @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    .hero-featured{
-      position:relative;
-      margin-top:28px;
-
-      height:340px;
-
-      border-radius:24px;
-
-      overflow:hidden;
-
-      background:#0f172a;
-      background-size:cover;
-      background-position:center;
-
-      box-shadow:
-      0 20px 50px rgba(0,0,0,.12);
-    }
     @media (max-width: 768px){
       .smart-finder-meta{
         display:none;
@@ -1108,37 +1091,6 @@
           <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
         </div>
 
-        </div>
-
-        <div
-          id="heroFeaturedSlider"
-          class="hero-featured"
-        >
-          <div class="hero-featured-overlay"></div>
-
-          <div class="hero-featured-content">
-
-            <span class="hero-badge">
-              FEATURED BEAT
-            </span>
-
-            <h3 id="heroSlideTitle">
-              Loading...
-            </h3>
-
-            <p id="heroSlideProducer">
-              Producer
-            </p>
-
-            <a
-              id="heroSlideLink"
-              href="#"
-              class="hero-slide-btn"
-            >
-              Listen Now →
-            </a>
-
-          </div>
         </div>
       </div> 
   </section>
@@ -1747,56 +1699,6 @@
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
     if (!b.producerId) return "Prod. Unknown";
     return "Prod. " + String(b.producerId).slice(0,8);
-  }
-
-  function initHeroFeatured(beats){
-
-    if(!beats?.length) return;
-
-    const slider =
-      document.getElementById("heroFeaturedSlider");
-
-    const title =
-      document.getElementById("heroSlideTitle");
-
-    const producer =
-      document.getElementById("heroSlideProducer");
-
-    const link =
-      document.getElementById("heroSlideLink");
-
-    let current = 0;
-
-    function render(){
-
-      const beat = beats[current];
-
-      slider.style.backgroundImage =
-        `url(${beat.coverUrl || ""})`;
-
-      title.textContent =
-        beat.title || "Featured Beat";
-
-      producer.textContent =
-        prettyProducerName(beat);
-
-      link.href =
-      "/beat/?id=" + beat.id;
-    }
-
-    render();
-
-    setInterval(()=>{
-
-      current++;
-
-      if(current >= beats.length){
-        current = 0;
-      }
-
-      render();
-
-    },5000);
   }
 
   function coverHTML(url, title){
@@ -2711,8 +2613,6 @@ window.logBeatPlay = logBeatPlay;
       if(featuredBeats.length){
 
         featuredStatus.classList.add("hidden");
-
-        initHeroFeatured(featuredBeats);
 
         visibleFeatured.forEach((b)=>{
 
