@@ -979,6 +979,17 @@
     @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
     @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
     @media (max-width: 768px){
+      .hero-layout{
+        grid-template-columns:1fr;
+      }
+
+      .hero-featured{
+        height:300px;
+      }
+
+      .hero-featured h3{
+        font-size:28px;
+      }
       .trending-strip .trend-card{
         min-width: 170px;
         width: 170px;
@@ -1010,6 +1021,83 @@
 
       .hero-sub{
         font-size:15px;
+      }
+
+      .hero-layout{
+        display:grid;
+        grid-template-columns:1.1fr .9fr;
+        gap:32px;
+        align-items:center;
+      }
+
+      .hero-left{
+        min-width:0;
+      }
+
+      .hero-right{
+        min-width:0;
+      }
+
+      .hero-featured{
+        position:relative;
+        height:420px;
+        border-radius:24px;
+        overflow:hidden;
+        background:#111827;
+        background-size:cover;
+        background-position:center;
+      }
+
+      .hero-featured-overlay{
+        position:absolute;
+        inset:0;
+        background:
+        linear-gradient(
+          180deg,
+          rgba(0,0,0,.1),
+          rgba(0,0,0,.75)
+        );
+      }
+
+      .hero-featured-content{
+        position:absolute;
+        left:30px;
+        bottom:30px;
+        z-index:2;
+        color:white;
+      }
+
+      .hero-badge{
+        display:inline-block;
+        padding:8px 14px;
+        border-radius:999px;
+        background:#3b2fad;
+        font-size:12px;
+        font-weight:800;
+      }
+
+      .hero-featured h3{
+        margin:14px 0 8px;
+        font-size:36px;
+        line-height:1.1;
+        font-weight:900;
+      }
+
+      .hero-featured p{
+        margin:0 0 20px;
+        opacity:.9;
+      }
+
+      .hero-slide-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding:12px 18px;
+        border-radius:12px;
+        background:white;
+        color:#3b2fad;
+        font-weight:800;
+        text-decoration:none;
       }
 
       .smart-finder-meta{
@@ -1101,7 +1189,8 @@
 <main class="container">
 
   <section class="hero">
-    <div class="card hero-card">
+    <div class="card hero-card hero-layout">
+      <div class="hero-left">
       <h1 class="hero-title">Find the Sound Behind Your Next Hit</h1>
       <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
       <div class="hero-search smart-finder-wrap" style="display:flex; gap:10px;">
@@ -1730,6 +1819,56 @@
     if (b.producerName && String(b.producerName).trim()) return String(b.producerName).trim();
     if (!b.producerId) return "Prod. Unknown";
     return "Prod. " + String(b.producerId).slice(0,8);
+  }
+
+  function initHeroFeatured(beats){
+
+    if(!beats?.length) return;
+
+    const slider =
+      document.getElementById("heroFeaturedSlider");
+
+    const title =
+      document.getElementById("heroSlideTitle");
+
+    const producer =
+      document.getElementById("heroSlideProducer");
+
+    const link =
+      document.getElementById("heroSlideLink");
+
+    let current = 0;
+
+    function render(){
+
+      const beat = beats[current];
+
+      slider.style.backgroundImage =
+        `url(${beat.coverUrl || ""})`;
+
+      title.textContent =
+        beat.title || "Featured Beat";
+
+      producer.textContent =
+        prettyProducerName(beat);
+
+      link.href =
+      "/beat/?id=" + beat.id;
+    }
+
+    render();
+
+    setInterval(()=>{
+
+      current++;
+
+      if(current >= beats.length){
+        current = 0;
+      }
+
+      render();
+
+    },5000);
   }
 
   function coverHTML(url, title){
