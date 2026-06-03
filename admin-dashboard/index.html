@@ -983,8 +983,17 @@
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+  import {
+    getFunctions,
+    httpsCallable
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
   const $ = (id)=>document.getElementById(id);
   console.log("Admin dashboard script loaded");
+
+  const functions = getFunctions();
+  const sendNewsletterFn =
+    httpsCallable(functions, "sendNewsletter");
 
   let ALL_BEATS = [];
   let ALL_KITS  = [];
@@ -1954,24 +1963,65 @@ async function sendAdminNotification(){
 
   $("sendNotifBtn")?.addEventListener("click", sendAdminNotification);
 
-  $("sendNewsletterBtn")?.addEventListener("click", async () => {
+  $("sendNewsletterBtn")?.addEventListener(
+    "click",
+    async () => {
 
-    const subject =
-      $("newsletterSubject").value.trim();
+      const subject =
+        $("newsletterSubject").value.trim();
 
-    const message =
-      $("newsletterMessage").value.trim();
+      const message =
+        $("newsletterMessage").value.trim();
 
-    if(!subject || !message){
-      alert("Enter subject and message");
-      return;
+      if (!subject || !message) {
+        alert("Enter subject and message");
+        return;
+      }
+
+      const btn =
+        $("sendNewsletterBtn");
+
+      try {
+
+        btn.disabled = true;
+        btn.textContent = "Sending...";
+
+        const result =
+          await sendNewsletterFn({
+            subject,
+            html: `
+              <div style="font-family:Arial,sans-serif;">
+                ${message.replace(/\n/g,"<br>")}
+              </div>
+            `
+          });
+
+        alert(
+          `Newsletter sent to ${result.data.sentCount} subscribers`
+        );
+
+        $("newsletterSubject").value = "";
+        $("newsletterMessage").value = "";
+
+      } catch (err) {
+
+        console.error(err);
+
+        alert(
+          err?.message ||
+          "Newsletter send failed"
+        );
+
+      } finally {
+
+        btn.disabled = false;
+        btn.textContent =
+          "Send Newsletter";
+
+      }
+
     }
-
-    alert(
-      `Ready to send to ${ALL_SUBSCRIBERS.length} subscribers`
-    );
-  });
-
+  );
   $("signOutBtn").addEventListener("click", async ()=>{
     try{
       await signOut(window.FB.auth);
