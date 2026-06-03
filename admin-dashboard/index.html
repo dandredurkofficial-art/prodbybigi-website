@@ -910,6 +910,12 @@
       >
         Send Newsletter
       </button>
+
+      <div
+        id="newsletterStatus"
+        class="loading-box hidden"
+        style="margin-top:12px;"
+      ></div>
     </div>
 
     <div class="hint">
@@ -1015,6 +1021,21 @@
   }
   function hideStatus(){ $("status").classList.add("hidden"); }
 
+  function setNewsletterStatus(text){
+    const el = $("newsletterStatus");
+    if (!el) return;
+
+    el.textContent = text;
+    el.classList.remove("hidden");
+  }
+
+  function clearNewsletterStatus(){
+    const el = $("newsletterStatus");
+    if (!el) return;
+
+    el.textContent = "";
+    el.classList.add("hidden");
+  }
   function fmtDate(ts){
     const n = Number(ts||0);
     if (!n) return "—";
@@ -1974,7 +1995,9 @@ async function sendAdminNotification(){
         $("newsletterMessage").value.trim();
 
       if (!subject || !message) {
-        alert("Enter subject and message");
+        setNewsletterStatus(
+          "Please enter subject and message."
+        );
         return;
       }
 
@@ -1996,8 +2019,8 @@ async function sendAdminNotification(){
             `
           });
 
-        alert(
-          `Newsletter sent to ${result.data.sentCount} subscribers`
+        setNewsletterStatus(
+          `✅ Newsletter sent successfully to ${result.data.sentCount} subscribers.`
         );
 
         $("newsletterSubject").value = "";
@@ -2007,9 +2030,9 @@ async function sendAdminNotification(){
 
         console.error(err);
 
-        alert(
-          err?.message ||
-          "Newsletter send failed"
+        setNewsletterStatus(
+          "❌ Newsletter failed: " +
+          (err?.message || "Unknown error")
         );
 
       } finally {
