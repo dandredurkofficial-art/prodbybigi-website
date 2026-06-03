@@ -72,7 +72,7 @@ exports.sendNewsletter = onCall(
 
         try {
           await resend.emails.send({
-            from: "Audiory <newsletter@audiory.site>",
+            from: "Audiory <support@audiory.site>",
             to: email,
             subject,
             html
