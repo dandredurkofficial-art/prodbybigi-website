@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audiory Charts</title>
+<style>
+:root{--p:#6d4aff;--b:#111827;--bg:#f8fafc}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--b)}
+.header{background:#fff;padding:20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0}
+.wrap{max-width:1200px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#6d4aff,#8b5cf6);color:#fff;padding:28px;border-radius:20px}
+.tabs,.filters{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.tab,.filter{border:0;padding:10px 16px;border-radius:999px;cursor:pointer}
+.active{background:#6d4aff;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:#fff;border-radius:16px;padding:12px;border:1px solid #e5e7eb}
+.art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#ddd}
+.rank{font-weight:900;color:#6d4aff}
+.meta{font-size:13px;color:#64748b}
+</style>
+</head>
+<body>
+<div class="header"><div class="wrap"><strong>Audiory Charts</strong></div></div>
+<div class="wrap">
+<div class="hero">
+<h1>Top Charts</h1>
+<p>Discover trending beats, producers and newcomers.</p>
+</div>
+
+<div class="tabs">
+<button class="tab active" data-type="beats">Top Beats</button>
+<button class="tab" data-type="featured">Top Featured Beats</button>
+<button class="tab" data-type="producers">Top Producers</button>
+<button class="tab" data-type="newcomers">Top Newcomers</button>
+</div>
+
+<div class="filters">
+<button class="filter active">Last 7 Days</button>
+<button class="filter">Last 30 Days</button>
+<button class="filter">All Time</button>
+</div>
+
+<div id="results" class="grid"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+// USE YOUR EXISTING CONFIG
+const firebaseConfig = window.firebaseConfig || {};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let current="beats";
+
+document.querySelectorAll(".tab").forEach(btn=>{
+ btn.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  current=btn.dataset.type;
+  load();
+ };
+});
+
+async function load(){
+ const wrap=document.getElementById("results");
+ wrap.innerHTML="Loading...";
+
+ const beatSnap=await getDocs(collection(db,"beats"));
+ const userSnap=await getDocs(collection(db,"users"));
+
+ const beats=[];
+ beatSnap.forEach(d=>beats.push({id:d.id,...d.data()}));
+
+ const users=[];
+ userSnap.forEach(d=>users.push({id:d.id,...d.data()}));
+
+ if(current==="beats"){
+   beats.sort((a,b)=>(b.sales||0)-(a.sales||0)||((b.plays||0)-(a.plays||0)));
+   wrap.innerHTML=beats.slice(0,100).map((b,i)=>`
+    <div class="card">
+      <div class="rank">#${i+1}</div>
+      <img class="art" src="${b.artwork||''}">
+      <h3>${b.title||'Untitled'}</h3>
+      <div class="meta">${b.producerName||'Producer'}</div>
+      <div>▶ ${(b.plays||0)} • Sales ${(b.sales||0)}</div>
+      <p><a href="/beat/?id=${b.id}">Open Beat</a></p>
+    </div>`).join("");
+ }
+
+ if(current==="featured"){
+   const list=beats.filter(b=>b.featured===true);
+   list.sort((a,b)=>(b.sales||0)-(a.sales||0));
+   wrap.innerHTML=list.map((b,i)=>`<div class="card"><div class="rank">#${i+1}</div><img class="art" src="${b.artwork||''}"><h3>${b.title||''}</h3></div>`).join("");
+ }
+
+ if(current==="producers"){
+   users.sort((a,b)=>(b.totalSales||0)-(a.totalSales||0));
+   wrap.innerHTML=users.map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3><div>Sales ${u.totalSales||0}</div></div>`).join("");
+ }
+
+ if(current==="newcomers"){
+   users.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+   wrap.innerHTML=users.slice(0,100).map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3></div>`).join("");
+ }
+}
+load();
+</script>
+</body>
+</html>
