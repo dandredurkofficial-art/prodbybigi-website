@@ -1,495 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Charts | Audiory</title>
-    <style>
-        /* --- RESET & GLOBAL STYLES --- */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: #f8fafc;
-            color: #1e293b;
-            padding-bottom: 60px;
-        }
-
-        /* --- NAVIGATION BAR (Audiory Style) --- */
-        header {
-            background-color: #1e1b4b; /* Deep Audiory Purple/Blue Nav */
-            color: #ffffff;
-            padding: 15px 4%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        nav a {
-            color: #cbd5e1;
-            text-decoration: none;
-            margin: 0 12px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-
-        nav a:hover, nav a.active {
-            color: #ffffff;
-        }
-
-        /* --- HERO HEADER --- */
-        .charts-hero {
-            background: linear-gradient(135deg, #e0e7ff 0%, #ffffff 100%);
-            padding: 50px 4%;
-            text-align: center;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .charts-hero h1 {
-            font-size: 36px;
-            color: #1e1b4b;
-            margin-bottom: 10px;
-        }
-
-        .charts-hero p {
-            color: #64748b;
-            font-size: 16px;
-        }
-
-        /* --- FILTER TABS SYSTEM --- */
-        .filter-container {
-            max-width: 1200px;
-            margin: 30px auto 10px auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .time-tab {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            color: #64748b;
-            padding: 10px 24px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .time-tab:hover {
-            border-color: #4338ca;
-            color: #4338ca;
-        }
-
-        .time-tab.active {
-            background-color: #4338ca; /* Audiory Accent Purple */
-            color: #ffffff;
-            border-color: #4338ca;
-        }
-
-        /* --- CHART GRID LAYOUT --- */
-        .charts-grid {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-        }
-
-        @media (max-width: 900px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .chart-card {
-            background: #ffffff;
-            border-radius: 16px;
-            border: 1px solid #e2e8f0;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        }
-
-        .chart-card h2 {
-            font-size: 20px;
-            color: #1e1b4b;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        /* --- ROW ITEM LISTS --- */
-        .chart-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .chart-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 12px;
-            transition: background-color 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .chart-item:hover {
-            background-color: #f8fafc;
-            border-color: #e2e8f0;
-        }
-
-        .rank {
-            font-size: 16px;
-            font-weight: 700;
-            color: #94a3b8;
-            width: 30px;
-            text-align: center;
-        }
-
-        .chart-item:nth-child(1) .rank { color: #eab308; font-size: 18px; } /* Gold */
-        .chart-item:nth-child(2) .rank { color: #94a3b8; font-size: 17px; } /* Silver */
-        .chart-item:nth-child(3) .rank { color: #b45309; font-size: 16px; } /* Bronze */
-
-        .item-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin: 0 15px;
-            background-color: #e2e8f0;
-        }
-
-        .item-img.round {
-            border-radius: 50%;
-        }
-
-        .item-info {
-            flex-grow: 1;
-        }
-
-        .item-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 2px;
-        }
-
-        .item-subtitle {
-            font-size: 13px;
-            color: #64748b;
-        }
-
-        /* Verified Tag */
-        .verified-badge {
-            display: inline-block;
-            background-color: #e0f2fe;
-            color: #0369a1;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-left: 6px;
-            font-weight: bold;
-        }
-
-        /* Action/Price button */
-        .action-btn {
-            background-color: #f1f5f9;
-            border: none;
-            color: #4338ca;
-            padding: 8px 14px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .action-btn:hover {
-            background-color: #4338ca;
-            color: #ffffff;
-        }
-
-        /* --- JAVASCRIPT DATA STATE TOGGLE --- */
-        .time-dependent {
-            display: none;
-        }
-        .time-dependent.active-data {
-            display: flex;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Audiory Charts</title>
+<style>
+:root{--p:#6d4aff;--b:#111827;--bg:#f8fafc}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--b)}
+.header{background:#fff;padding:20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0}
+.wrap{max-width:1200px;margin:auto;padding:20px}
+.hero{background:linear-gradient(135deg,#6d4aff,#8b5cf6);color:#fff;padding:28px;border-radius:20px}
+.tabs,.filters{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.tab,.filter{border:0;padding:10px 16px;border-radius:999px;cursor:pointer}
+.active{background:#6d4aff;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:#fff;border-radius:16px;padding:12px;border:1px solid #e5e7eb}
+.art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#ddd}
+.rank{font-weight:900;color:#6d4aff}
+.meta{font-size:13px;color:#64748b}
+</style>
 </head>
 <body>
+<div class="header"><div class="wrap"><strong>Audiory Charts</strong></div></div>
+<div class="wrap">
+<div class="hero">
+<h1>Top Charts</h1>
+<p>Discover trending beats, producers and newcomers.</p>
+</div>
 
-    <header>
-        <a href="../index.html" class="logo">Audidry</a>
-        <nav>
-            <a href="#">Feed</a>
-            <a href="#">Tracks</a>
-            <a href="#">Free Beats</a>
-            <a href="#">Sound Kits</a>
-            <a href="#">Producers</a>
-            <a href="#" class="active">Top Charts</a>
-            <a href="#">Dashboard</a>
-        </nav>
-    </header>
+<div class="tabs">
+<button class="tab active" data-type="beats">Top Beats</button>
+<button class="tab" data-type="featured">Top Featured Beats</button>
+<button class="tab" data-type="producers">Top Producers</button>
+<button class="tab" data-type="newcomers">Top Newcomers</button>
+</div>
 
-    <section class="charts-hero">
-        <h1>Audiory Music Charts</h1>
-        <p>Explore the hottest tracks, premium features, and top creators across our global network.</p>
-    </section>
+<div class="filters">
+<button class="filter active">Last 7 Days</button>
+<button class="filter">Last 30 Days</button>
+<button class="filter">All Time</button>
+</div>
 
-    <div class="filter-container">
-        <button class="time-tab active" onclick="switchTimeframe('7days')">Last 7 Days</button>
-        <button class="time-tab" onclick="switchTimeframe('30days')">Last 30 Days</button>
-        <button class="time-tab" onclick="switchTimeframe('alltime')">All Time</button>
-    </div>
+<div id="results" class="grid"></div>
+</div>
 
-    <main class="charts-grid">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-        <div class="chart-card">
-            <h2>Top Featured Beats <span>🔥</span></h2>
-            <div class="chart-list">
-                <div class="time-dependent timeframe-7days active-data">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=150" class="item-img" alt="Beat Title">
-                        <div class="item-info">
-                            <div class="item-title">Sicko Mode Vibes</div>
-                            <div class="item-subtitle">Travis Scott Type Beat • TravisPro</div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                    <div class="chart-item">
-                        <div class="rank">2</div>
-                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150" class="item-img" alt="Beat Title">
-                        <div class="item-info">
-                            <div class="item-title">Redemption</div>
-                            <div class="item-subtitle">Drake Type Beat • OVO_Manny</div>
-                        </div>
-                        <button class="action-btn">$34.99</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-30days">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=150" class="item-img" alt="Beat Title">
-                        <div class="item-info">
-                            <div class="item-title">Redemption</div>
-                            <div class="item-subtitle">Drake Type Beat • OVO_Manny</div>
-                        </div>
-                        <button class="action-btn">$34.99</button>
-                    </div>
-                    <div class="chart-item">
-                        <div class="rank">2</div>
-                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=150" class="item-img" alt="Beat Title">
-                        <div class="item-info">
-                            <div class="item-title">Deep Waters</div>
-                            <div class="item-subtitle">J. Cole Type Beat • Bigi Beats</div>
-                        </div>
-                        <button class="action-btn">$5.00</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-alltime">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=150" class="item-img" alt="Beat Title">
-                        <div class="item-info">
-                            <div class="item-title">Gimme That Legacy</div>
-                            <div class="item-subtitle">Chris Brown Type Beat • Bigi Beats</div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+// USE YOUR EXISTING CONFIG
+const firebaseConfig = window.firebaseConfig || {};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        <div class="chart-card">
-            <h2>Top Beats <span>🎹</span></h2>
-            <div class="chart-list">
-                <div class="time-dependent timeframe-7days active-data">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=150" class="item-img" alt="Beat Cover">
-                        <div class="item-info">
-                            <div class="item-title">Gimme That Type Beat</div>
-                            <div class="item-subtitle">Bigi Beats <span class="verified-badge">✓</span></div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                    <div class="chart-item">
-                        <div class="rank">2</div>
-                        <img src="https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=150" class="item-img" alt="Beat Cover">
-                        <div class="item-info">
-                            <div class="item-title">On God Dancehall</div>
-                            <div class="item-subtitle">Bigi Beats <span class="verified-badge">✓</span></div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-30days">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1510915228340-29c85a43dcfe?w=150" class="item-img" alt="Beat Cover">
-                        <div class="item-info">
-                            <div class="item-title">BLAME ASAP ROCKY</div>
-                            <div class="item-subtitle">Bigi Beats <span class="verified-badge">✓</span></div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-alltime">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=150" class="item-img" alt="Beat Cover">
-                        <div class="item-info">
-                            <div class="item-title">50 Cent Type Beat</div>
-                            <div class="item-subtitle">Bigi Beats <span class="verified-badge">✓</span></div>
-                        </div>
-                        <button class="action-btn">$29.99</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+let current="beats";
 
-        <div class="chart-card">
-            <h2>Top Producers <span>👑</span></h2>
-            <div class="chart-list">
-                <div class="time-dependent timeframe-7days active-data">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="item-img round" alt="Producer">
-                        <div class="item-info">
-                            <div class="item-title">DopeBoyzMuzic <span class="verified-badge">PRO</span></div>
-                            <div class="item-subtitle">1,240 Beats Sold this week</div>
-                        </div>
-                        <button class="action-btn">View Profile</button>
-                    </div>
-                    <div class="chart-item">
-                        <div class="rank">2</div>
-                        <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150" class="item-img round" alt="Producer">
-                        <div class="item-info">
-                            <div class="item-title">Tone Jonez <span class="verified-badge">PRO</span></div>
-                            <div class="item-subtitle">983 Beats Sold this week</div>
-                        </div>
-                        <button class="action-btn">View Profile</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-30days">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150" class="item-img round" alt="Producer">
-                        <div class="item-info">
-                            <div class="item-title">Tone Jonez <span class="verified-badge">PRO</span></div>
-                            <div class="item-subtitle">4,120 Beats Sold this month</div>
-                        </div>
-                        <button class="action-btn">View Profile</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-alltime">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="item-img round" alt="Producer">
-                        <div class="item-info">
-                            <div class="item-title">Bigi Beats <span class="verified-badge">GOLD</span></div>
-                            <div class="item-subtitle">Over 50K+ Instrumentals Distributed</div>
-                        </div>
-                        <button class="action-btn">View Profile</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+document.querySelectorAll(".tab").forEach(btn=>{
+ btn.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active");
+  current=btn.dataset.type;
+  load();
+ };
+});
 
-        <div class="chart-card">
-            <h2>Top Newcomers <span>🚀</span></h2>
-            <div class="chart-list">
-                <div class="time-dependent timeframe-7days active-data">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150" class="item-img round" alt="Newcomer">
-                        <div class="item-info">
-                            <div class="item-title">Matthew May</div>
-                            <div class="item-subtitle">Joined 4 days ago • Trending #1</div>
-                        </div>
-                        <button class="action-btn">Follow</button>
-                    </div>
-                    <div class="chart-item">
-                        <div class="rank">2</div>
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150" class="item-img round" alt="Newcomer">
-                        <div class="item-info">
-                            <div class="item-title">Cobby Dollar <span class="verified-badge">✓</span></div>
-                            <div class="item-subtitle">Joined 6 days ago • 3 hot tracks</div>
-                        </div>
-                        <button class="action-btn">Follow</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-30days">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150" class="item-img round" alt="Newcomer">
-                        <div class="item-info">
-                            <div class="item-title">Cobby Dollar <span class="verified-badge">✓</span></div>
-                            <div class="item-subtitle">Rising fast this month</div>
-                        </div>
-                        <button class="action-btn">Follow</button>
-                    </div>
-                </div>
-                <div class="time-dependent timeframe-alltime">
-                    <div class="chart-item">
-                        <div class="rank">1</div>
-                        <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150" class="item-img round" alt="Newcomer">
-                        <div class="item-info">
-                            <div class="item-title">Grimmy</div>
-                            <div class="item-subtitle">Breakout producer of the year</div>
-                        </div>
-                        <button class="action-btn">Follow</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+async function load(){
+ const wrap=document.getElementById("results");
+ wrap.innerHTML="Loading...";
 
-    </main>
+ const beatSnap=await getDocs(collection(db,"beats"));
+ const userSnap=await getDocs(collection(db,"users"));
 
-    <script>
-        function switchTimeframe(timeframe) {
-            // Update Tab Active Status
-            const tabs = document.querySelectorAll('.time-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
-            
-            // Find click target event mapping
-            event.target.classList.add('active');
+ const beats=[];
+ beatSnap.forEach(d=>beats.push({id:d.id,...d.data()}));
 
-            // Hide all lists first
-            const allLists = document.querySelectorAll('.time-dependent');
-            allLists.forEach(list => list.classList.remove('active-data'));
+ const users=[];
+ userSnap.forEach(d=>users.push({id:d.id,...d.data()}));
 
-            // Show elements based on the filtered target class name
-            const selectedLists = document.querySelectorAll('.timeframe-' + timeframe);
-            selectedLists.forEach(list => list.classList.add('active-data'));
-        }
-    </script>
+ if(current==="beats"){
+   beats.sort((a,b)=>(b.sales||0)-(a.sales||0)||((b.plays||0)-(a.plays||0)));
+   wrap.innerHTML=beats.slice(0,100).map((b,i)=>`
+    <div class="card">
+      <div class="rank">#${i+1}</div>
+      <img class="art" src="${b.artwork||''}">
+      <h3>${b.title||'Untitled'}</h3>
+      <div class="meta">${b.producerName||'Producer'}</div>
+      <div>▶ ${(b.plays||0)} • Sales ${(b.sales||0)}</div>
+      <p><a href="/beat/?id=${b.id}">Open Beat</a></p>
+    </div>`).join("");
+ }
+
+ if(current==="featured"){
+   const list=beats.filter(b=>b.featured===true);
+   list.sort((a,b)=>(b.sales||0)-(a.sales||0));
+   wrap.innerHTML=list.map((b,i)=>`<div class="card"><div class="rank">#${i+1}</div><img class="art" src="${b.artwork||''}"><h3>${b.title||''}</h3></div>`).join("");
+ }
+
+ if(current==="producers"){
+   users.sort((a,b)=>(b.totalSales||0)-(a.totalSales||0));
+   wrap.innerHTML=users.map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3><div>Sales ${u.totalSales||0}</div></div>`).join("");
+ }
+
+ if(current==="newcomers"){
+   users.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+   wrap.innerHTML=users.slice(0,100).map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3></div>`).join("");
+ }
+}
+load();
+</script>
 </body>
 </html>
