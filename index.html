@@ -1083,6 +1083,43 @@
         transform:rotate(360deg);
       }
     }
+
+    @media (max-width:768px){
+
+      .topbar-inner{
+        height:72px;
+        padding:0 14px;
+      }
+
+      .logo{
+        font-size:20px;
+        font-weight:800;
+      }
+
+      .desktop-nav{
+        display:none;
+      }
+
+      .cart-btn,
+      .apps-btn{
+        width:40px;
+        height:40px;
+        border-radius:12px;
+      }
+
+      .apps-menu{
+        margin-left:8px;
+      }
+
+      .brand{
+        gap:6px;
+      }
+
+      #hamburgerBtn{
+        margin-right:4px !important;
+        font-size:18px !important;
+      }
+    }
     @media (max-width: 640px) {
       .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
       .pb-pay-body { padding: 16px; }
@@ -1116,7 +1153,13 @@
     </nav>
 
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
-      <span class="cart-ic">🛒</span>
+      <span class="cart-ic">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M3 5H5L7 16H18L21 8H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="20" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
+      </svg>
+      </span>
       <span class="cart-count" id="pbCartCount">0</span>
     </button>
     <div class="apps-menu">
