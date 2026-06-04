@@ -1,112 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Audiory Charts</title>
-<style>
-:root{--p:#6d4aff;--b:#111827;--bg:#f8fafc}
-*{box-sizing:border-box} body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--b)}
-.header{background:#fff;padding:20px;border-bottom:1px solid #e5e7eb;position:sticky;top:0}
-.wrap{max-width:1200px;margin:auto;padding:20px}
-.hero{background:linear-gradient(135deg,#6d4aff,#8b5cf6);color:#fff;padding:28px;border-radius:20px}
-.tabs,.filters{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
-.tab,.filter{border:0;padding:10px 16px;border-radius:999px;cursor:pointer}
-.active{background:#6d4aff;color:#fff}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
-.card{background:#fff;border-radius:16px;padding:12px;border:1px solid #e5e7eb}
-.art{width:100%;aspect-ratio:1;border-radius:12px;object-fit:cover;background:#ddd}
-.rank{font-weight:900;color:#6d4aff}
-.meta{font-size:13px;color:#64748b}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audiory - Top Charting Beats</title>
+    <style>
+        /* CSS STYLING - MATCHING THE FIRST SCREENSHOT */
+        :root {
+            --primary-bg: #2d2a9e; /* Purple Navbar */
+            --body-bg: #ffffff;
+            --text-main: #111111;
+            --text-muted: #777777;
+            --btn-blue: #2563eb;
+            --btn-hover: #1d4ed8;
+            --card-shadow: rgba(0, 0, 0, 0.05) 0px 4px 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            color: var(--text-main);
+        }
+
+        /* Navbar Styling */
+        header {
+            background-color: var(--primary-bg);
+            color: white;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-nav {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+        }
+
+        nav ul li a {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        nav ul li a:hover {
+            color: white;
+        }
+
+        .auth-cart {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .auth-cart a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .cart-icon {
+            position: relative;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #2563eb;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .see-all {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Beats Grid Layout */
+        .beats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        /* Card Component */
+        .beat-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            padding-top: 100%; /* 1:1 Aspect Ratio square */
+            border-radius: 12px;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+
+        .image-container img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .play-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .play-btn svg {
+            fill: white;
+            width: 14px;
+            height: 14px;
+            margin-left: 2px;
+        }
+
+        .beat-info {
+            padding: 15px 2px;
+        }
+
+        .beat-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .producer-team {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .verified-badge {
+            width: 14px;
+            height: 14px;
+            fill: #eab308; /* Yellow badge color */
+        }
+
+        .price-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background-color: var(--btn-blue);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .price-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        .price-btn svg {
+            width: 14px;
+            height: 14px;
+            fill: white;
+        }
+
+        /* Loading / Error states */
+        .status-msg {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-<div class="header"><div class="wrap"><strong>Audiory Charts</strong></div></div>
-<div class="wrap">
-<div class="hero">
-<h1>Top Charts</h1>
-<p>Discover trending beats, producers and newcomers.</p>
-</div>
 
-<div class="tabs">
-<button class="tab active" data-type="beats">Top Beats</button>
-<button class="tab" data-type="featured">Top Featured Beats</button>
-<button class="tab" data-type="producers">Top Producers</button>
-<button class="tab" data-type="newcomers">Top Newcomers</button>
-</div>
+    <header>
+        <div class="logo-nav">
+            <div class="logo">Audior<span style="color: #fff;">y</span></div>
+            <nav>
+                <ul>
+                    <li><a href="#">Feed</a></li>
+                    <li><a href="#">Tracks</a></li>
+                    <li><a href="#">Free Beats</a></li>
+                    <li><a href="#">Sound Kits</a></li>
+                    <li><a href="#">Producers</a></li>
+                    <li><a href="#">Pricing</a></li>
+                    <li><a href="#">Premieres</a></li>
+                    <li><a href="#">Collabs</a></li>
+                    <li><a href="#">Blog</a></li>
+                    <li><a href="#">Dashboard</a></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="auth-cart">
+            <a href="#">Sign out</a>
+            <div class="cart-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                <span class="cart-count">0</span>
+            </div>
+        </div>
+    </header>
 
-<div class="filters">
-<button class="filter active">Last 7 Days</button>
-<button class="filter">Last 30 Days</button>
-<button class="filter">All Time</button>
-</div>
+    <main>
+        <div class="section-header">
+            <h2>Top Charting Beats</h2>
+            <a href="#" class="see-all">See all &rarr;</a>
+        </div>
 
-<div id="results" class="grid"></div>
-</div>
+        <div class="beats-grid" id="beatsContainer">
+            <div class="status-msg">Loading latest beats...</div>
+        </div>
+    </main>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+    <script>
+        // REPLACE THESE WITH YOUR REAL FIREBASE CLOUD FUNCTION ENDPOINT DETAILS
+        const FIREBASE_PROJECT_ID = "YOUR_FIREBASE_PROJECT_ID"; 
+        const FUNCTION_NAME = "YOUR_FUNCTION_NAME"; 
+        const REGION = "us-central1"; // Change if your function is hosted somewhere else (e.g., europe-west1)
 
-// USE YOUR EXISTING CONFIG
-const firebaseConfig = window.firebaseConfig || {};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+        const API_URL = `https://${REGION}-${FIREBASE_PROJECT_ID}.cloudfunctions.net/${FUNCTION_NAME}`;
 
-let current="beats";
+        // Fetching Real Data directly from your live Firebase Cloud Function
+        async function fetchBeats() {
+            const container = document.getElementById('beatsContainer');
+            
+            try {
+                const response = await fetch(API_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                
+                const beatsData = await response.json();
+                
+                // Clear the loading message
+                container.innerHTML = '';
 
-document.querySelectorAll(".tab").forEach(btn=>{
- btn.onclick=()=>{
-  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-  btn.classList.add("active");
-  current=btn.dataset.type;
-  load();
- };
-});
+                if (beatsData.length === 0) {
+                    container.innerHTML = '<div class="status-msg">No beats found right now.</div>';
+                    return;
+                }
 
-async function load(){
- const wrap=document.getElementById("results");
- wrap.innerHTML="Loading...";
+                // Render out the real items from database
+                beatsData.forEach(beat => {
+                    const card = document.createElement('div');
+                    card.className = 'beat-card';
 
- const beatSnap=await getDocs(collection(db,"beats"));
- const userSnap=await getDocs(collection(db,"users"));
+                    card.innerHTML = `
+                        <div class="image-container">
+                            <img src="${beat.imageUrl}" alt="${beat.title}">
+                            <button class="play-btn" onclick="playBeat('${beat.audioUrl}')">
+                                <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            </button>
+                        </div>
+                        <div class="beat-info">
+                            <h3 class="beat-title">${beat.title}</h3>
+                            <div class="producer-team">
+                                <span>${beat.producerName}</span>
+                                ${beat.isVerified ? `
+                                <svg class="verified-badge" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>` : ''}
+                            </div>
+                            <button class="price-btn">
+                                <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+                                $${parseFloat(beat.price).toFixed(2)}
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
 
- const beats=[];
- beatSnap.forEach(d=>beats.push({id:d.id,...d.data()}));
+            } catch (error) {
+                console.error("Error fetching data from Firebase Cloud Function:", error);
+                container.innerHTML = `<div class="status-msg" style="color: red;">Failed to load beats. Check console logs.</div>`;
+            }
+        }
 
- const users=[];
- userSnap.forEach(d=>users.push({id:d.id,...d.data()}));
+        // Optional Audio Controller Integration Trigger
+        function playBeat(url) {
+            console.log("Streaming from target audio source:", url);
+            // If you want actual sound playback on click, you can create a global HTML5 Audio stream here.
+        }
 
- if(current==="beats"){
-   beats.sort((a,b)=>(b.sales||0)-(a.sales||0)||((b.plays||0)-(a.plays||0)));
-   wrap.innerHTML=beats.slice(0,100).map((b,i)=>`
-    <div class="card">
-      <div class="rank">#${i+1}</div>
-      <img class="art" src="${b.artwork||''}">
-      <h3>${b.title||'Untitled'}</h3>
-      <div class="meta">${b.producerName||'Producer'}</div>
-      <div>▶ ${(b.plays||0)} • Sales ${(b.sales||0)}</div>
-      <p><a href="/beat/?id=${b.id}">Open Beat</a></p>
-    </div>`).join("");
- }
-
- if(current==="featured"){
-   const list=beats.filter(b=>b.featured===true);
-   list.sort((a,b)=>(b.sales||0)-(a.sales||0));
-   wrap.innerHTML=list.map((b,i)=>`<div class="card"><div class="rank">#${i+1}</div><img class="art" src="${b.artwork||''}"><h3>${b.title||''}</h3></div>`).join("");
- }
-
- if(current==="producers"){
-   users.sort((a,b)=>(b.totalSales||0)-(a.totalSales||0));
-   wrap.innerHTML=users.map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3><div>Sales ${u.totalSales||0}</div></div>`).join("");
- }
-
- if(current==="newcomers"){
-   users.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-   wrap.innerHTML=users.slice(0,100).map((u,i)=>`<div class="card"><div class="rank">#${i+1}</div><h3>${u.displayName||u.username||'Producer'}</h3></div>`).join("");
- }
-}
-load();
-</script>
+        // Initialize Call on window load
+        window.onload = fetchBeats;
+    </script>
 </body>
 </html>
