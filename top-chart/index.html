@@ -293,51 +293,59 @@
         </div>
     </main>
 
-    <script>
-        // REPLACE THESE WITH YOUR REAL FIREBASE CLOUD FUNCTION ENDPOINT DETAILS
-        const FIREBASE_PROJECT_ID = "YOUR_FIREBASE_PROJECT_ID"; 
-        const FUNCTION_NAME = "YOUR_FUNCTION_NAME"; 
-        const REGION = "us-central1"; // Change if your function is hosted somewhere else (e.g., europe-west1)
+    <script type="module">
+        // Import the components you need from the Web SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        const API_URL = `https://${REGION}-${FIREBASE_PROJECT_ID}.cloudfunctions.net/${FUNCTION_NAME}`;
+        // TODO: Replace this configuration object with your actual Firebase Project config snippet
+        const firebaseConfig = {
+            apiKey: "AIzaSyCmsFTjDryYOTddWfScTKsnrs0cWAHnpdc",
+            authDomain: "audiory-beat-store.firebaseapp.com",
+            projectId: "audiory-beat-store",
+            storageBucket: "audiory-beat-store.firebasestorage.app",
+            messagingSenderId: "688272560511",
+            appId: "1:688272560511:web:9031e6ce215d6f08764a4a",
+            measurementId: "G-GLYGWQGS26"
+        };
 
-        // Fetching Real Data directly from your live Firebase Cloud Function
-        async function fetchBeats() {
+        // Initialize Firebase and Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fetch Data Directly from Firestore
+        async function fetchBeatsFromFirestore() {
             const container = document.getElementById('beatsContainer');
             
             try {
-                const response = await fetch(API_URL);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                
-                const beatsData = await response.json();
+                // Connects directly to your database "beats" collection
+                const querySnapshot = await getDocs(collection(db, "beats"));
                 
                 // Clear the loading message
                 container.innerHTML = '';
 
-                if (beatsData.length === 0) {
-                    container.innerHTML = '<div class="status-msg">No beats found right now.</div>';
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="status-msg">No beats found in your database.</div>';
                     return;
                 }
 
-                // Render out the real items from database
-                beatsData.forEach(beat => {
+                // Render out database items dynamically
+                querySnapshot.forEach((doc) => {
+                    const beat = doc.data();
                     const card = document.createElement('div');
                     card.className = 'beat-card';
 
                     card.innerHTML = `
                         <div class="image-container">
-                            <img src="${beat.imageUrl}" alt="${beat.title}">
-                            <button class="play-btn" onclick="playBeat('${beat.audioUrl}')">
+                            <img src="${beat.imageUrl || 'https://via.placeholder.com/250'}" alt="${beat.title}">
+                            <button class="play-btn" data-audio="${beat.audioUrl || '#'}">
                                 <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                             </button>
                         </div>
                         <div class="beat-info">
-                            <h3 class="beat-title">${beat.title}</h3>
+                            <h3 class="beat-title">${beat.title || 'Untitled Beat'}</h3>
                             <div class="producer-team">
-                                <span>${beat.producerName}</span>
+                                <span>${beat.producerName || 'Unknown Producer'}</span>
                                 ${beat.isVerified ? `
                                 <svg class="verified-badge" viewBox="0 0 24 24">
                                     <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -345,27 +353,28 @@
                             </div>
                             <button class="price-btn">
                                 <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-                                $${parseFloat(beat.price).toFixed(2)}
+                                $${beat.price ? parseFloat(beat.price).toFixed(2) : '0.00'}
                             </button>
                         </div>
                     `;
+                    
+                    // Attach audio click listener dynamically to stay module-safe
+                    card.querySelector('.play-btn').addEventListener('click', (e) => {
+                        const url = e.currentTarget.getAttribute('data-audio');
+                        console.log("Playing audio track path:", url);
+                    });
+
                     container.appendChild(card);
                 });
 
             } catch (error) {
-                console.error("Error fetching data from Firebase Cloud Function:", error);
-                container.innerHTML = `<div class="status-msg" style="color: red;">Failed to load beats. Check console logs.</div>`;
+                console.error("Firestore database connection failed:", error);
+                container.innerHTML = `<div class="status-msg" style="color: red;">Database connection error. Confirm your firebaseConfig structure and security rules.</div>`;
             }
         }
 
-        // Optional Audio Controller Integration Trigger
-        function playBeat(url) {
-            console.log("Streaming from target audio source:", url);
-            // If you want actual sound playback on click, you can create a global HTML5 Audio stream here.
-        }
-
-        // Initialize Call on window load
-        window.onload = fetchBeats;
+        // Run the fetch once DOM loads
+        document.addEventListener('DOMContentLoaded', fetchBeatsFromFirestore);
     </script>
 </body>
 </html>
