@@ -573,6 +573,69 @@
     .audiory-support-fab b { font-size: 14px; }
     .audiory-support-fab span { font-size: 12px; opacity: .8; }
 
+    .apps-menu{
+      position:relative;
+      margin-left:10px;
+    }
+
+    .apps-btn{
+      width:42px;
+      height:42px;
+      border:none;
+      border-radius:10px;
+      cursor:pointer;
+      background:rgba(255,255,255,.15);
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .apps-btn:hover{
+      background:rgba(255,255,255,.25);
+    }
+
+    .apps-dropdown{
+      position:absolute;
+      right:0;
+      top:52px;
+
+      width:220px;
+
+      background:white;
+      border-radius:16px;
+      border:1px solid #e2e8f0;
+
+      padding:10px;
+
+      box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+      display:none;
+      z-index:10000;
+    }
+
+    .apps-dropdown.show{
+      display:block;
+    }
+
+    .apps-dropdown a{
+      display:flex;
+      align-items:center;
+      gap:12px;
+
+      padding:12px;
+      border-radius:12px;
+
+      text-decoration:none;
+      color:#334155;
+      font-weight:600;
+    }
+
+    .apps-dropdown a:hover{
+      background:#f8fafc;
+      color:#3b2fad;
+    }
+
     /* =========================
        PAYMENT MODAL - PREMIUM WHITE THEME
     ========================= */
@@ -1057,6 +1120,58 @@
       <span class="cart-ic">🛒</span>
       <span class="cart-count" id="pbCartCount">0</span>
     </button>
+    <div class="apps-menu">
+      <button class="apps-btn" id="appsBtn">
+
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="5" cy="5" r="2" fill="currentColor"/>
+          <circle cx="12" cy="5" r="2" fill="currentColor"/>
+          <circle cx="19" cy="5" r="2" fill="currentColor"/>
+
+          <circle cx="5" cy="12" r="2" fill="currentColor"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          <circle cx="19" cy="12" r="2" fill="currentColor"/>
+
+          <circle cx="5" cy="19" r="2" fill="currentColor"/>
+          <circle cx="12" cy="19" r="2" fill="currentColor"/>
+          <circle cx="19" cy="19" r="2" fill="currentColor"/>
+        </svg>
+
+      </button>
+
+      <div class="apps-dropdown" id="appsDropdown">
+
+        <a href="https://help-desk.audiory.site">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3a8 8 0 0 0-8 8v2a2 2 0 0 0 2 2h2v-5H6a6 6 0 1 1 12 0h-2v5h2a2 2 0 0 0 2-2v-2a8 8 0 0 0-8-8z" fill="currentColor"/>
+          </svg>
+
+          <span>Help Desk</span>
+        </a>
+
+        <a href="https://blog.audiory.site">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2"/>
+          </svg>
+
+          <span>Blog</span>
+        </a>
+
+        <a href="/about/">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8h.01M11 11h2v5h-2z" fill="currentColor"/>
+          </svg>
+
+          <span>About</span>
+        </a>
+
+      </div>
+    </div>
   </div>
 </header>
 
