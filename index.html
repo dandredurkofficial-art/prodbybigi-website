@@ -2945,6 +2945,18 @@ window.logBeatPlay = logBeatPlay;
       status.textContent = "Could not load beats. Check Firestore rules & console.";
     }
   }
+ 
+  const appsBtn = document.getElementById("appsBtn");
+  const appsDropdown = document.getElementById("appsDropdown");
+
+  appsBtn?.addEventListener("click", (e)=>{
+    e.stopPropagation();
+    appsDropdown.classList.toggle("show");
+  });
+
+  document.addEventListener("click", ()=>{
+    appsDropdown.classList.remove("show");
+  });
 
   window.addEventListener("firebase-ready", () => {
     if (window.FB && typeof window.FB.fetchBeats === "function") loadHomeBeats();
