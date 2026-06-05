@@ -5337,10 +5337,10 @@ async function startBulkUpload(){
     setPlanChips();
   }
 
-  if (prog) prog.textContent = `Bulk upload done.`;
-  alert("Bulk upload complete!");
-  try{ await loadBeats(); }catch(e){}
-}
+  if (prog){
+    prog.innerHTML =
+      `✅ Bulk upload completed. ${keys.length} beats uploaded successfully.`;
+  }
 
 /* ===========================
    PUBLISH BEAT
