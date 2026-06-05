@@ -2447,6 +2447,38 @@
         <br><b>Artwork:</b> song1.jpg
       </div>
 
+      <!-- BULK METADATA -->
+
+      <div style="margin-top:15px;">
+        <input id="bulkTypeBeat"
+               placeholder="Type Beat Artist (e.g. Future, Drake, Burna Boy)">
+      </div>
+
+      <div style="margin-top:10px;">
+        <input id="bulkTags"
+               placeholder="Tags (comma separated)">
+      </div>
+
+      <div style="margin-top:10px;">
+        <input id="bulkMood"
+               placeholder="Mood (comma separated)">
+      </div>
+
+      <div style="margin-top:10px;">
+        <select id="bulkGenre">
+          <option value="">Select Genre</option>
+          <option value="Afrobeats">Afrobeats</option>
+          <option value="Trap">Trap</option>
+          <option value="Drill">Drill</option>
+          <option value="Amapiano">Amapiano</option>
+          <option value="R&B">R&B</option>
+          <option value="Pop">Pop</option>
+          <option value="Hip Hop">Hip Hop</option>
+          <option value="DanceHall">DanceHall</option>
+          <option value="Riddim">Riddim</option>
+        </select>
+      </div>
+
       <button class="btn2" type="button" onclick="bulkPickFiles()">Pick Bulk Files</button>
       <div id="bulkFilesStatus" class="subtle" style="margin-top:10px;"></div>
 
