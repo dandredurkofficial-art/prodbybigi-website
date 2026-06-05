@@ -5224,6 +5224,8 @@ function updateBulkStatus(){
 }
   
 async function startBulkUpload(){
+  console.log("START BULK");
+  
   if (!isPro()){
     alert("Bulk Upload is Pro/Elite only. Upgrade to Pro.");
     return;
@@ -5242,6 +5244,7 @@ async function startBulkUpload(){
 
   const prog = $("bulkProgress");
   const uid = window.currentUser.uid;
+  console.log("USER OK", uid);
   const producerName = getProducerDisplayName();
 
   for (let i=0;i<count;i++){
@@ -5255,9 +5258,14 @@ async function startBulkUpload(){
 
     if (prog) prog.textContent = `Uploading ${i+1}/${keys.length}: ${k}...`;
 
+    console.log("Processing beat", i + 1);
+    console.log("Full:", fFull.name);
+    console.log("Preview:", fPrev.name);
+
     let artUrl = "";
     if (fArt){
       const ext = extFromName(fArt.name) || ".jpg";
+      console.log("Uploading artwork...");
       const artUp = await uploadToStorage({
         file: fArt,
         path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`,
@@ -5274,6 +5282,7 @@ async function startBulkUpload(){
     }
 
     const extFull = extFromName(fFull.name) || ".mp3";
+    console.log("Uploading full audio...");
     const fullUrl = await uploadToStorage({
       file: fFull,
       path: `audiory/beats/full/${uid}/bulk_${Date.now()}_${i}${extFull}`,
@@ -5287,6 +5296,7 @@ async function startBulkUpload(){
     });
 
     const extPrev = extFromName(fPrev.name) || ".mp3";
+    console.log("Uploading preview...");
     const prevUrl = await uploadToStorage({
       file: fPrev,
       path: `audiory/beats/preview/${uid}/bulk_${Date.now()}_${i}${extPrev}`,
@@ -5299,6 +5309,7 @@ async function startBulkUpload(){
       }
     });
 
+    console.log("Saving to Firestore...");
     await window.addDoc(window.collection(window.db,"beats"),{
       title: (baseNameNoExt(fFull.name) || "Untitled Beat").trim(),
       desc: "",
@@ -5336,6 +5347,8 @@ async function startBulkUpload(){
       updatedAt: Date.now(),
       bulkUploaded: true
     });
+
+    console.log("Saving to Firestore...");
 
     beatsData.push({ producerId: uid });
     setPlanChips();
