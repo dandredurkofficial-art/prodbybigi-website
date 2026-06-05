@@ -103,6 +103,7 @@
       padding: 0 24px;
       box-sizing: border-box;
     }
+    
     .messages-page{
       padding:18px 0 28px;
     }
@@ -114,56 +115,59 @@
       min-height:calc(100vh - 220px);
     }
 
+    /* ✅ UPDATED: White modern surfaces instead of solid dark containers */
     .panel{
-      border:1px solid rgba(255,255,255,.08);
-      background:#141414;
+      border: 1px solid #e2e8f0;
+      background: #f8fafc;
       border-radius:20px;
       overflow:hidden;
     }
 
     .panel-head{
       padding:16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid #e2e8f0;
     }
 
     .panel-title{
       margin:0;
-      color:#fff;
+      color: #0f172a;
       font-size:22px;
-      font-weight:900;
+      font-weight:800;
     }
 
     .panel-sub{
       margin-top:6px;
-      color:rgba(255,255,255,.68);
+      color: #64748b;
       font-size:13px;
       line-height:1.5;
     }
 
     .thread-search-wrap{
       padding:12px 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid #e2e8f0;
     }
 
+    /* ✅ UPDATED: Accessible, clean white fields for the search system */
     .thread-search{
       width:100%;
       box-sizing:border-box;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius:14px;
-      color:#fff;
+      color: #0f172a;
       padding:12px 14px;
       outline:none;
       font-size:14px;
+      transition: all 0.2s ease;
     }
 
     .thread-search::placeholder{
-      color:rgba(255,255,255,.42);
+      color: #94a3b8;
     }
 
     .thread-search:focus{
-      border-color:rgba(41,93,255,.7);
-      box-shadow:0 0 0 3px rgba(41,93,255,.12);
+      border-color: #3b2fad;
+      box-shadow: 0 0 0 3px rgba(59, 47, 173, 0.1);
     }
 
     .threads-list{
@@ -173,25 +177,28 @@
       overflow:auto;
     }
 
+    /* ✅ UPDATED: Smooth contrast adjustments for list rows */
     .thread-item{
       border:0;
-      border-bottom:1px solid rgba(255,255,255,.06);
+      border-bottom: 1px solid #e2e8f0;
       background:transparent;
-      color:#fff;
+      color: #334155;
       text-align:left;
       padding:14px 16px;
       cursor:pointer;
       display:grid;
       gap:8px;
       width:100%;
+      transition: background 0.15s ease;
     }
 
     .thread-item:hover{
-      background:rgba(255,255,255,.04);
+      background: #f1f5f9;
     }
 
+    /* ✅ UPDATED: Uses our brand purple accent tint for selected chat items */
     .thread-item.active{
-      background:rgba(41,93,255,.14);
+      background: rgba(59, 47, 173, 0.08);
     }
 
     .thread-top{
@@ -203,8 +210,8 @@
 
     .thread-name{
       font-size:14px;
-      font-weight:900;
-      color:#fff;
+      font-weight:700;
+      color: #0f172a;
       min-width:0;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -213,7 +220,7 @@
 
     .thread-time{
       font-size:11px;
-      color:rgba(255,255,255,.48);
+      color: #64748b;
       flex-shrink:0;
     }
 
@@ -226,7 +233,7 @@
 
     .thread-snippet{
       font-size:12px;
-      color:rgba(255,255,255,.62);
+      color: #64748b;
       min-width:0;
       overflow:hidden;
       text-overflow:ellipsis;
@@ -238,7 +245,7 @@
       height:22px;
       padding:0 6px;
       border-radius:999px;
-      background:#295dff;
+      background: #3b2fad;
       color:#fff;
       font-size:11px;
       font-weight:900;
@@ -249,13 +256,13 @@
     }
 
     .empty-box{
-      border:1px dashed rgba(255,255,255,.14);
+      border: 1px dashed #cbd5e1;
       border-radius:16px;
       padding:22px;
-      color:rgba(255,255,255,.62);
+      color: #64748b;
       font-size:14px;
       text-align:center;
-      background:rgba(255,255,255,.03);
+      background: #ffffff;
       margin:16px;
     }
 
@@ -263,11 +270,12 @@
       display:grid;
       grid-template-rows:auto 1fr auto;
       min-height:calc(100vh - 220px);
+      background: #ffffff; /* Clean interior background core */
     }
 
     .chat-head{
       padding:16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid #e2e8f0;
       display:flex;
       justify-content:space-between;
       align-items:center;
@@ -277,14 +285,14 @@
 
     .chat-name{
       margin:0;
-      color:#fff;
+      color: #0f172a;
       font-size:20px;
-      font-weight:900;
+      font-weight:800;
     }
 
     .chat-meta{
       margin-top:5px;
-      color:rgba(255,255,255,.62);
+      color: #64748b;
       font-size:12px;
     }
 
@@ -294,28 +302,40 @@
       flex-wrap:wrap;
     }
 
+    /* ✅ UPDATED: Global premium look action triggers */
     .btnx{
       min-height:42px;
-      padding:0 14px;
+      padding:0 18px;
       border:none;
       border-radius:14px;
-      font-weight:900;
+      font-weight:700;
       cursor:pointer;
       color:#fff;
-      background:#295dff;
+      background: #3b2fad;
       text-decoration:none;
       display:inline-flex;
       align-items:center;
       justify-content:center;
       box-sizing:border-box;
+      transition: all 0.2s ease;
+    }
+
+    .btnx:hover{
+      background: #2c228a;
     }
 
     .btnx.ghost{
-      background:transparent;
-      border:1px solid rgba(255,255,255,.14);
-      color:#fff;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+    
+    .btnx.ghost:hover{
+      background: #f1f5f9;
+      color: #0f172a;
     }
 
+    /* ✅ UPDATED: Subtle layout brand tint logic */
     .chat-body{
       padding:16px;
       overflow:auto;
@@ -323,27 +343,31 @@
       flex-direction:column;
       gap:10px;
       background:
-        radial-gradient(circle at top right, rgba(41,93,255,.10), transparent 35%),
-        linear-gradient(180deg, rgba(255,255,255,.01), rgba(255,255,255,0));
+        radial-gradient(circle at top right, rgba(59, 47, 173, 0.03), transparent 35%),
+        linear-gradient(180deg, #ffffff, #f8fafc);
     }
 
+    /* ✅ UPDATED: Beautifully styled dark slates for incoming bubbles */
     .msg{
       max-width:min(78%, 620px);
       border-radius:18px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-      padding:12px 13px;
-      color:#fff;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      padding:12px 14px;
+      color: #334155;
       font-size:14px;
       line-height:1.5;
       white-space:pre-wrap;
       word-break:break-word;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
+    /* ✅ UPDATED: Deep premium rich corporate purple for outbound bubbles */
     .msg.me{
       margin-left:auto;
-      background:rgba(41,93,255,.18);
-      border-color:rgba(41,93,255,.30);
+      background: #3b2fad;
+      border-color: #3b2fad;
+      color: #ffffff;
     }
 
     .msg-meta{
@@ -351,15 +375,20 @@
       display:flex;
       justify-content:space-between;
       gap:12px;
-      color:rgba(255,255,255,.48);
+      color: #94a3b8;
       font-size:11px;
+    }
+    
+    .msg.me .msg-meta{
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .chat-foot{
-      border-top:1px solid rgba(255,255,255,.08);
+      border-top: 1px solid #e2e8f0;
       padding:14px 16px;
       display:grid;
       gap:10px;
+      background: #f8fafc;
     }
 
     .composer{
@@ -369,33 +398,35 @@
       align-items:end;
     }
 
+    /* ✅ UPDATED: High contrast message fields */
     .composer textarea{
       width:100%;
       box-sizing:border-box;
       min-height:52px;
       max-height:140px;
       resize:vertical;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.12);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
       border-radius:16px;
-      color:#fff;
+      color: #0f172a;
       padding:13px 14px;
       outline:none;
       font-size:14px;
       font-family:inherit;
+      transition: all 0.2s ease;
     }
 
     .composer textarea::placeholder{
-      color:rgba(255,255,255,.42);
+      color: #94a3b8;
     }
 
     .composer textarea:focus{
-      border-color:rgba(41,93,255,.7);
-      box-shadow:0 0 0 3px rgba(41,93,255,.12);
+      border-color: #3b2fad;
+      box-shadow: 0 0 0 3px rgba(59, 47, 173, 0.1);
     }
 
     .composer-note{
-      color:rgba(255,255,255,.55);
+      color: #64748b;
       font-size:12px;
     }
 
