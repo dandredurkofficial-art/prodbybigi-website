@@ -60,27 +60,21 @@
       flex-shrink: 0; /* Prevents logo text clipping */
     }
 
-    .desktop-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      flex-grow: 1; /* Lets navigation take up the flexible middle area */
-      flex-wrap: wrap; /* Allows wrap down if the window width breaks */
+    .desktop-nav{
+      display:flex;
+      align-items:center;
+      gap:8px;
     }
 
-    .desktop-nav a {
-      color: #ffffff;
-      text-decoration: none;
-      font-size: 13px; /* Slightly reduced for better inline scaling */
-      font-weight: 600;
-      opacity: 0.9;
-      padding: 6px 10px;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-      white-space: nowrap; /* Keeps link phrases together */
+    .desktop-nav a{
+      color:#fff;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:600;
+      padding:10px 12px;
+      border-radius:8px;
+      white-space:nowrap;
     }
-
     .desktop-nav a:hover {
       opacity: 1;
       background: rgba(255, 255, 255, 0.12);
