@@ -6,19 +6,16 @@
 
   <title>About Audiory | Global Beat Marketplace</title>
 
-  <!-- ✅ SEO META -->
   <meta name="description" content="Audiory is a global beat marketplace built for producers and artists. Producers sell beats, artists discover high-quality instrumentals, and creators get paid through M-Pesa and PayPal.">
   <meta name="keywords" content="Audiory, about Audiory, beat marketplace, buy beats, sell beats, producers, artists, instrumentals, M-Pesa payouts, PayPal payouts">
   <meta name="author" content="Audiory">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://audiory.site/about/">
 
-  <!-- ✅ FAVICON -->
   <link rel="icon" href="/audioryfavicon.webp">
   <link rel="shortcut icon" href="/audioryfavicon.webp">
   <link rel="apple-touch-icon" href="/audioryfavicon.webp">
 
-  <!-- ✅ OPEN GRAPH -->
   <meta property="og:title" content="About Audiory – Global Beat Marketplace">
   <meta property="og:description" content="Learn about Audiory, the beat marketplace helping producers sell beats and artists discover the right sound.">
   <meta property="og:url" content="https://audiory.site/about/">
@@ -27,13 +24,11 @@
   <meta property="og:image:alt" content="About Audiory">
   <meta property="og:site_name" content="Audiory">
 
-  <!-- ✅ TWITTER/X CARDS -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="About Audiory – Global Beat Marketplace">
   <meta name="twitter:description" content="Audiory connects producers and artists through a modern beat marketplace.">
   <meta name="twitter:image" content="https://audiory.site/og-image.jpg">
 
-  <!-- ✅ JSON-LD ORGANIZATION -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -52,7 +47,6 @@
   }
   </script>
 
-  <!-- ✅ JSON-LD WEBSITE -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -63,7 +57,6 @@
   }
   </script>
 
-  <!-- small perf -->
   <link rel="preconnect" href="https://www.gstatic.com">
   <link rel="preconnect" href="https://firestore.googleapis.com">
 
@@ -175,9 +168,9 @@
       gap:8px;
       padding:8px 12px;
       border-radius:999px;
-      background:rgba(59,130,246,.10);
-      border:1px solid rgba(59,130,246,.25);
-      color:#93c5fd;
+      background:rgba(59, 130, 246, 0.10);
+      border:1px solid rgba(59, 130, 246, 0.25);
+      color:#2563eb; /* Fixed: Made darker blue for white background readability */
       font-size:12px;
       font-weight:950;
       letter-spacing:.08em;
@@ -192,12 +185,13 @@
       font-weight:950;
       letter-spacing:-.05em;
       max-width:980px;
+      color: #0f172a; /* Fixed text color visibility */
     }
 
     .about-lead{
       margin:18px 0 0;
       max-width:760px;
-      color:var(--muted);
+      color:#475569; /* Fixed text color visibility */
       font-size:clamp(15px,2vw,18px);
       line-height:1.75;
     }
@@ -214,49 +208,62 @@
       align-items:center;
       justify-content:center;
       min-height:46px;
-      padding:0 16px;
+      padding:0 24px;
       border-radius:14px;
       font-weight:950;
       text-decoration:none;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:#fff;
+      border:1px solid #cbd5e1;
+      background:#f8fafc;
+      color:#0f172a; /* Fixed visibility for default outline buttons */
+      transition: all 0.2s ease;
+    }
+
+    .about-btn:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
     }
 
     .about-btn.primary{
-      background:#3b82f6;
-      border-color:#3b82f6;
+      background:#2563eb;
+      border-color:#2563eb;
+      color:#fff;
+    }
+    
+    .about-btn.primary:hover{
+      background:#1d4ed8;
+      border-color:#1d4ed8;
     }
 
     .about-grid{
       display:grid;
       grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:14px;
+      gap:18px;
       margin-top:24px;
     }
 
     .about-card{
-      padding:20px;
+      padding:24px;
       border-radius:22px;
-      background:rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.09);
+      background:#f8fafc; /* Fixed visual cards from transparent-white to light gray fill */
+      border:1px solid #e2e8f0;
     }
 
     .about-card h3{
-      margin:0 0 8px;
+      margin:0 0 10px;
       font-size:18px;
       font-weight:950;
+      color: #0f172a; /* Fixed heading color */
     }
 
     .about-card p{
       margin:0;
-      color:var(--muted);
+      color:#475569; /* Fixed text color spacing */
       line-height:1.65;
       font-size:14px;
     }
 
     .about-section{
-      padding:28px 0;
+      padding:42px 0;
     }
 
     .about-section-head{
@@ -265,7 +272,7 @@
       justify-content:space-between;
       gap:16px;
       flex-wrap:wrap;
-      margin-bottom:16px;
+      margin-bottom:24px;
     }
 
     .about-section h2{
@@ -274,10 +281,11 @@
       line-height:1.08;
       font-weight:950;
       letter-spacing:-.035em;
+      color: #0f172a; /* Fixed section title colors */
     }
 
     .about-section .muted-line{
-      color:var(--muted);
+      color:#475569; /* Fixed body subtext text visibility */
       max-width:620px;
       line-height:1.65;
       margin-top:8px;
@@ -296,6 +304,7 @@
       background:#f8fafc;
       color:#0f172a;
       min-height:120px;
+      border: 1px solid #e2e8f0;
     }
 
     .about-stat strong{
@@ -304,6 +313,7 @@
       font-weight:950;
       line-height:1;
       margin-bottom:10px;
+      color: #2563eb;
     }
 
     .about-stat span{
@@ -316,19 +326,19 @@
     .about-story{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:16px;
+      gap:18px;
       align-items:stretch;
     }
 
     .story-panel{
-      padding:22px;
+      padding:26px;
       border-radius:24px;
-      background:linear-gradient(180deg,rgba(59,130,246,.14),rgba(255,255,255,.035));
-      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(37, 99, 235, 0.05), rgba(248, 250, 252, 0.5)); /* Fixed transparency */
+      border:1px solid #e2e8f0;
     }
 
     .story-panel p{
-      color:#cbd5e1;
+      color:#334155; /* Fixed main paragraph story fonts */
       line-height:1.8;
       margin:0 0 14px;
     }
@@ -339,32 +349,33 @@
     }
 
     .about-list-item{
-      padding:16px;
+      padding:18px;
       border-radius:18px;
-      background:rgba(255,255,255,.045);
-      border:1px solid rgba(255,255,255,.09);
+      background:#f8fafc; /* Fixed from invisible white */
+      border:1px solid #e2e8f0;
     }
 
     .about-list-item strong{
       display:block;
       font-weight:950;
       margin-bottom:5px;
+      color: #0f172a;
     }
 
     .about-list-item span{
-      color:var(--muted);
+      color:#475569; /* Fixed descriptions list items styles */
       font-size:14px;
       line-height:1.6;
     }
 
     .about-cta{
-      margin:28px 0 16px;
-      padding:28px;
+      margin:42px 0 16px;
+      padding:36px;
       border-radius:28px;
       background:
-        radial-gradient(circle at top left, rgba(59,130,246,.28), transparent 35%),
-        linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.035));
-      border:1px solid rgba(255,255,255,.10);
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 45%),
+        linear-gradient(180deg, #f8fafc, #f1f5f9); /* Refreshed to pop on a clean solid layout */
+      border:1px solid #e2e8f0;
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -376,11 +387,12 @@
       margin:0;
       font-size:clamp(24px,4vw,40px);
       line-height:1.05;
+      color: #0f172a;
     }
 
     .about-cta p{
       margin:8px 0 0;
-      color:var(--muted);
+      color:#475569;
       max-width:650px;
       line-height:1.65;
     }
@@ -394,9 +406,14 @@
       width:38px;
       height:38px;
       border-radius:12px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.05);
-      color:#fff;
+      border:1px solid #cbd5e1;
+      background:#f8fafc;
+      color:#475569; /* Fixed standard social button templates */
+      transition: all 0.2s ease;
+    }
+    .social a:hover {
+      background: #e2e8f0;
+      color: #0f172a;
     }
     .social svg{width:18px;height:18px;fill:currentColor}
 
