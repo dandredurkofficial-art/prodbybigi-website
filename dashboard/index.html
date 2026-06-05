@@ -5250,21 +5250,43 @@ async function startBulkUpload(){
       const ext = extFromName(fArt.name) || ".jpg";
       const artUp = await uploadToStorage({
         file: fArt,
-        path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`
+        path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`,
+
+        onProgress:(p)=>{
+          if(prog){
+            prog.textContent =
+            `Uploading ${i+1}/${keys.length}: ${k} (Artwork ${p}%)`;
+          }
+        }
       });
-      artUrl = artUp.downloadURL; // ✅ correct
+
+      artUrl = artUp.downloadURL;
     }
 
     const extFull = extFromName(fFull.name) || ".mp3";
     const fullUrl = await uploadToStorage({
       file: fFull,
-      path: `audiory/beats/full/${uid}/bulk_${Date.now()}_${i}${extFull}`
+      path: `audiory/beats/full/${uid}/bulk_${Date.now()}_${i}${extFull}`,
+
+      onProgress:(p)=>{
+        if(prog){
+          prog.textContent =
+          `Uploading ${i+1}/${keys.length}: ${k} (Full Audio ${p}%)`;
+        }
+      }
     });
 
     const extPrev = extFromName(fPrev.name) || ".mp3";
     const prevUrl = await uploadToStorage({
       file: fPrev,
-      path: `audiory/beats/preview/${uid}/bulk_${Date.now()}_${i}${extPrev}`
+      path: `audiory/beats/preview/${uid}/bulk_${Date.now()}_${i}${extPrev}`,
+
+      onProgress:(p)=>{
+        if(prog){
+          prog.textContent =
+          `Uploading ${i+1}/${keys.length}: ${k} (Preview ${p}%)`;
+        }
+      }
     });
 
     await window.addDoc(window.collection(window.db,"beats"),{
@@ -5272,7 +5294,18 @@ async function startBulkUpload(){
       desc: "",
       bpm: "",
       key: "",
-      genre: "",
+      genre: $("bulkGenre")?.value || "",
+      typeBeat: $("bulkTypeBeat")?.value || "",
+
+      tags: ($("bulkTags")?.value || "")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean),
+
+      mood: ($("bulkMood")?.value || "")
+        .split(",")
+        .map(x => x.trim())
+        .filter(Boolean),
       producerName,
       artwork: artUrl,
       fullAudio: fullUrl.downloadURL,
