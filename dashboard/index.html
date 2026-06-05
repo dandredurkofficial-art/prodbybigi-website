@@ -2479,14 +2479,25 @@
         </select>
       </div>
 
-      <button class="btn2" type="button" onclick="bulkPickFiles()">Pick Bulk Files</button>
+      <button class="btn2" type="button" onclick="pickBulkFull()">
+        Select Full Beats
+      </button>
+
+      <button class="btn2" type="button" onclick="pickBulkPreview()">
+        Select Preview Beats
+      </button>
+
+      <button class="btn2" type="button" onclick="pickBulkArtwork()">
+        Select Artwork
+      </button>
+
       <div id="bulkFilesStatus" class="subtle" style="margin-top:10px;"></div>
 
       <div style="margin-top:12px;">
-        <button class="btn2" type="button" onclick="startBulkUpload()">Start Bulk Upload</button>
+        <button class="btn2" type="button" onclick="startBulkUpload()">
+          Start Bulk Upload
+        </button>
       </div>
-
-      <div id="bulkProgress" class="subtle" style="margin-top:10px;"></div>
     </div>
   </div>
 
@@ -5185,22 +5196,25 @@ async function uploadStemsZip(){
 =========================== */
 let bulkSelection = { full:[], preview:[], art:[] };
 
-async function bulkPickFiles(){
-  if (!isPro()){
-    alert("Bulk Upload is Pro/Elite only. Upgrade to Pro.");
-    return;
-  }
+async function pickBulkFull(){
+  bulkSelection.full = await pickFiles("audio/*", true);
+  updateBulkStatus();
+}
 
-  const files = await pickFiles("*/*", true);
+async function pickBulkPreview(){
+  bulkSelection.preview = await pickFiles("audio/*", true);
+  updateBulkStatus();
+}
 
-  bulkSelection = {
-    full: files.filter(f => f.type.startsWith("audio/") && !f.name.includes("_preview")),
-    preview: files.filter(f => f.type.startsWith("audio/") && f.name.includes("_preview")),
-    art: files.filter(f => f.type.startsWith("image/"))
-  };
+async function pickBulkArtwork(){
+  bulkSelection.art = await pickFiles("image/*", true);
+  updateBulkStatus();
+}
 
+function updateBulkStatus(){
   const s = $("bulkFilesStatus");
-  if (s){
+
+  if(s){
     s.innerHTML = `
       Full Beats: ${bulkSelection.full.length}<br>
       Previews: ${bulkSelection.preview.length}<br>
@@ -5208,18 +5222,7 @@ async function bulkPickFiles(){
     `;
   }
 }
-function mapByKey(files, kind){
-  const m = new Map();
-  files.forEach(f=>{
-    const bn = baseNameNoExt(f.name);
-    let key = bn;
-    if (kind === "preview"){
-      key = bn.replace(/(_preview|_tagged|_tag)/i,"").trim();
-    }
-    m.set(key.toLowerCase(), f);
-  });
-  return m;
-}
+  
 async function startBulkUpload(){
   if (!isPro()){
     alert("Bulk Upload is Pro/Elite only. Upgrade to Pro.");
@@ -5227,13 +5230,13 @@ async function startBulkUpload(){
   }
   if (!window.currentUser) return alert("Login again.");
 
-  const fullM = mapByKey(bulkSelection.full, "full");
-  const prevM = mapByKey(bulkSelection.preview, "preview");
-  const artM  = mapByKey(bulkSelection.art, "art");
+  const count = Math.min(
+    bulkSelection.full.length,
+    bulkSelection.preview.length
+  );
 
-  const keys = [...fullM.keys()].filter(k=> prevM.has(k));
-  if (!keys.length){
-    alert("No matches found. Example: song1.mp3 and song1_preview.mp3");
+  if(count === 0){
+    alert("Please select Full Beats and Preview Beats.");
     return;
   }
 
@@ -5241,13 +5244,14 @@ async function startBulkUpload(){
   const uid = window.currentUser.uid;
   const producerName = getProducerDisplayName();
 
-  for (let i=0;i<keys.length;i++){
-    const k = keys[i];
+  for (let i=0;i<count;i++){
     if (blockIfUploadLimitReached()) break;
 
-    const fFull = fullM.get(k);
-    const fPrev = prevM.get(k);
-    const fArt  = artM.get(k) || null;
+    const fFull = bulkSelection.full[i];
+    const fPrev = bulkSelection.preview[i];
+    const fArt  = bulkSelection.art[i] || null;
+
+    const k = baseNameNoExt(fFull.name);
 
     if (prog) prog.textContent = `Uploading ${i+1}/${keys.length}: ${k}...`;
 
@@ -5339,7 +5343,7 @@ async function startBulkUpload(){
 
   if (prog){
     prog.innerHTML =
-      `✅ Bulk upload completed. ${keys.length} beats uploaded successfully.`;
+      `✅ Bulk upload completed. ${count} beats uploaded successfully.`;
   }
 }
 
