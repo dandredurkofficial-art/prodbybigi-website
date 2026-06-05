@@ -5191,15 +5191,21 @@ async function bulkPickFiles(){
     return;
   }
 
-  const full = await pickFiles("audio/*", true);
-  const preview = await pickFiles("audio/*", true);
-  const art = await pickFiles("image/*", true);
+  const files = await pickFiles("*/*", true);
 
-  bulkSelection = { full, preview, art };
+  bulkSelection = {
+    full: files.filter(f => f.type.startsWith("audio/") && !f.name.includes("_preview")),
+    preview: files.filter(f => f.type.startsWith("audio/") && f.name.includes("_preview")),
+    art: files.filter(f => f.type.startsWith("image/"))
+  };
 
   const s = $("bulkFilesStatus");
   if (s){
-    s.textContent = `Selected: Full=${full.length} | Preview=${preview.length} | Artwork=${art.length}`;
+    s.innerHTML = `
+      Full Beats: ${bulkSelection.full.length}<br>
+      Previews: ${bulkSelection.preview.length}<br>
+      Artwork: ${bulkSelection.art.length}
+    `;
   }
 }
 function mapByKey(files, kind){
