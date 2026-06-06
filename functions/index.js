@@ -5270,6 +5270,19 @@ exports.secureDownload = onRequest(
       }
 
       const buyerId = String(decoded.uid || "");
+
+      const userSnap = await db.collection("users").doc(buyerId).get();
+
+      const userData = userSnap.exists
+        ? userSnap.data()
+        : {};
+
+      const buyerEmail = String(userData.email || "");
+      const buyerName = String(
+        userData.displayName ||
+        userData.name ||
+        ""
+      );
       if (!buyerId) return res.status(401).json({ error: "Auth uid missing" });
 
       // --------- INPUT ----------
@@ -5313,10 +5326,16 @@ exports.secureDownload = onRequest(
 
       await db.collection("downloadLogs").add({
         type: "beat",
+
         buyerId,
+        buyerEmail,
+        buyerName,
+
         beatId: String(beatId),
         beatTitle: String(beatData.title || ""),
+
         downloadedAt: Date.now(),
+
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"] || ""
       });
