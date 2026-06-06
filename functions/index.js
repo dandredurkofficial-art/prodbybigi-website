@@ -1469,6 +1469,7 @@ exports.createOrder = onRequest(
             ? Number(discountCampaign.discountPct || 0)
             : 0,
         });
+      }
 
       // ✅ Calculate total
       const total = resolved.reduce((sum, x) => sum + x.unitPrice * x.qty, 0);
