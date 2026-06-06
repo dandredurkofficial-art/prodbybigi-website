@@ -302,7 +302,7 @@
     });
   }
 
-  function openModal(beat) {
+  async function openModal(beat) {
     currentBeat = beat;
     resetBuyBtn();
 
@@ -329,6 +329,20 @@
     }
 
     const licenses = buildLicensesFromBeat(beat);
+    const campaign = await getCampaignForBeat(resolveBeatId(beat));
+
+    if (
+      campaign &&
+      String(campaign.type || "").trim() === "discount"
+    ) {
+      const pct = Number(campaign.discountPct || 0);
+
+      licenses.forEach((l) => {
+        l.originalPrice = l.price;
+        l.price = discountedPrice(l.price, pct);
+        l.discountPct = pct;
+      });
+    }
     selectedLicense = licenses[0];
 
     grid.innerHTML = "";
@@ -343,7 +357,23 @@
       card.innerHTML = `
         ${l.badge ? `<div class="pb-badge">${l.badge}</div>` : ""}
         <div class="name">${l.name}</div>
-        <div class="price">${money(l.price)}</div>
+        <div class="price">
+          ${
+            l.originalPrice
+              ? `
+                <span style="
+                  text-decoration:line-through;
+                  opacity:.6;
+                  font-size:13px;
+                  display:block;
+                ">
+                  ${money(l.originalPrice)}
+                </span>
+                ${money(l.price)}
+              `
+              : money(l.price)
+          }
+        </div>
         <div class="meta">${l.meta || ""}</div>
       `;
 
