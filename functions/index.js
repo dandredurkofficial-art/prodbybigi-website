@@ -1785,6 +1785,95 @@ async function processCartCapture({ cartId, captureEvent, orderId }) {
       { merge: true }
     );
 
+    // =========================
+    // BUY X GET Y BONUS UNLOCKS
+    // =========================
+
+    if (type === "beat" && id) {
+
+      const campaignSnap = await db
+        .collection("marketingCampaigns")
+        .where("type", "==", "buy_x_get_y")
+        .where("beatId", "==", id)
+        .where("status", "==", "active")
+        .limit(1)
+        .get();
+
+      if (!campaignSnap.empty) {
+
+        const campaign = campaignSnap.docs[0].data() || {};
+
+        const bonusBeatIds = Array.isArray(campaign.bonusBeatIds)
+          ? campaign.bonusBeatIds
+          : [];
+
+        for (const bonusBeatId of bonusBeatIds) {
+
+          const bonusBeatSnap = await db
+            .collection("beats")
+            .doc(String(bonusBeatId))
+            .get();
+
+          if (!bonusBeatSnap.exists) continue;
+
+          const bonusBeat = bonusBeatSnap.data() || {};
+
+          const bonusUnlockId =
+            `${unlockId}_bonus_${bonusBeatId}`;
+
+          await db.collection("unlocks").doc(bonusUnlockId).set(
+            {
+              unlockId: bonusUnlockId,
+              orderId,
+              cartId,
+
+              provider: "paypal",
+
+              paid: true,
+              status: "unlocked",
+
+              buyerId: buyerId || null,
+              buyerName,
+              buyerEmail,
+
+              producerId:
+                bonusBeat.producerId || null,
+
+              producerName:
+                bonusBeat.producerName || null,
+
+              beatId: String(bonusBeatId),
+
+              beatTitle:
+                bonusBeat.title || "Bonus Beat",
+
+              licenseKey:
+                licenseKey || "basic",
+
+              downloadPath:
+                bonusBeat.downloadPath ||
+                bonusBeat.filePath ||
+                null,
+
+              audioUrl:
+                bonusBeat.audio ||
+                bonusBeat.fullAudio ||
+                null,
+
+              receipt: providerCaptureId,
+
+              createdAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+
+              updatedAt:
+                admin.firestore.FieldValue.serverTimestamp(),
+            },
+            { merge: true }
+          );
+        }
+      }
+    }
+
     if (producerId) {
       const creditMarkerRef = db.collection("walletCredits").doc(unlockId);
       const marker = await creditMarkerRef.get();
