@@ -1401,7 +1401,7 @@ exports.createOrder = onRequest(
             id: it.beatId,
             licenseKey: "soundkit",
             title: safeStr(kit.title || kit.name || "Sound Kit"),
-            unitPrice: price,
+            unitPrice: finalPrice,
             qty: it.qty,
             producerId: safeStr(kit.producerId || ""),
           });
@@ -1420,6 +1420,37 @@ exports.createOrder = onRequest(
         const selected = lic?.[it.licenseKey] || {};
         const price = Number(selected.price ?? beat.price ?? 0);
 
+        let finalPrice = price;
+
+        const campaignSnap = await db
+          .collection("marketingCampaigns")
+          .where("beatId", "==", it.beatId)
+          .where("status", "==", "active")
+          .limit(10)
+          .get();
+
+        if (!campaignSnap.empty) {
+
+          const campaigns = campaignSnap.docs.map(d => ({
+            id: d.id,
+            ...d.data(),
+          }));
+
+          const discountCampaign = campaigns.find(
+            c => String(c.type || "").trim() === "discount"
+          );
+
+          if (discountCampaign) {
+            const pct = Number(discountCampaign.discountPct || 0);
+
+            if (pct > 0) {
+              finalPrice = Number(
+                (price * (1 - pct / 100)).toFixed(2)
+              );
+            }
+          }
+        }
+
         if (!Number.isFinite(price) || price <= 0) {
           return res.status(400).json({ error: `Invalid price for ${it.beatId} (${it.licenseKey})` });
         }
@@ -1429,11 +1460,15 @@ exports.createOrder = onRequest(
           id: it.beatId,
           licenseKey: it.licenseKey,
           title: safeStr(beat.title || "Beat"),
-          unitPrice: price,
+          unitPrice: finalPrice,
+          originalPrice: price,
           qty: it.qty,
           producerId,
+          campaignType: discountCampaign ? "discount" : null,
+          discountPct: discountCampaign
+            ? Number(discountCampaign.discountPct || 0)
+            : 0,
         });
-      }
 
       // ✅ Calculate total
       const total = resolved.reduce((sum, x) => sum + x.unitPrice * x.qty, 0);
