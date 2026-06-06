@@ -1421,6 +1421,7 @@ exports.createOrder = onRequest(
         const price = Number(selected.price ?? beat.price ?? 0);
 
         let finalPrice = price;
+        let discountCampaign = null;
 
         const campaignSnap = await db
           .collection("marketingCampaigns")
@@ -1436,7 +1437,7 @@ exports.createOrder = onRequest(
             ...d.data(),
           }));
 
-          const discountCampaign = campaigns.find(
+          discountCampaign = campaigns.find(
             c => String(c.type || "").trim() === "discount"
           );
 
