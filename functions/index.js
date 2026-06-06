@@ -5310,6 +5310,16 @@ exports.secureDownload = onRequest(
         responseDisposition: `attachment; filename="${safeStr(beatData.title || "beat")}.wav"`,
       });
 
+      await db.collection("downloadLogs").add({
+        type: "beat",
+        buyerId,
+        beatId: String(beatId),
+        beatTitle: String(beatData.title || ""),
+        downloadedAt: Date.now(),
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"] || ""
+      });
+
       return res.json({ url });
     } catch (err) {
         console.error("DOWNLOAD ERROR:", err);
@@ -5465,6 +5475,24 @@ exports.licenseDownload = onRequest({ region: "us-central1" }, async (req, res) 
         expires: Date.now() + 10 * 60 * 1000,
         responseDisposition: `attachment; filename="${beatTitle}-${lk}-license.pdf"`,
         responseType: "application/pdf",
+      });
+
+      await db.collection("downloadLogs").add({
+        type: "license",
+        buyerId,
+        buyerEmail,
+        buyerName,
+
+        beatId: finalBeatId,
+        beatTitle,
+
+        orderId: maybeOrderId,
+        licenseKey: lk,
+
+        downloadedAt: Date.now(),
+
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"] || ""
       });
       return res.json({ url });
     }
