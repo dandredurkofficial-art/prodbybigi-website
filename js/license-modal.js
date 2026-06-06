@@ -57,6 +57,14 @@
   }
 
     async function getCampaignForBeat(beatId) {
+      
+    window.__CAMPAIGN_CACHE__ =
+      window.__CAMPAIGN_CACHE__ || {};
+
+    if (window.__CAMPAIGN_CACHE__[beatId]) {
+      return window.__CAMPAIGN_CACHE__[beatId];
+    }
+      
     try {
       if (!window.collection || !window.query || !window.where || !window.getDocs || !window.db) {
         return null;
@@ -72,17 +80,26 @@
       const arr = [];
       snap.forEach(d => arr.push({ id: d.id, ...d.data() }));
 
-      if (!arr.length) return null;
-
+      if (!arr.length) {
+        window.__CAMPAIGN_CACHE__[beatId] = null;
+        return null;
+      }
       arr.sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
 
       // priority: buy_x_get_y first, then discount
       const buyGet = arr.find(x => String(x.type || "").trim() === "buy_x_get_y");
-      if (buyGet) return buyGet;
+      if (buyGet) {
+        window.__CAMPAIGN_CACHE__[beatId] = buyGet;
+        return buyGet;
+      }
 
       const discount = arr.find(x => String(x.type || "").trim() === "discount");
-      if (discount) return discount;
+      if (discount) {
+        window.__CAMPAIGN_CACHE__[beatId] = discount;
+        return discount;
+      }
 
+      window.__CAMPAIGN_CACHE__[beatId] = arr[0] || null;
       return arr[0] || null;
     } catch (e) {
       console.warn("Campaign lookup failed:", e);
