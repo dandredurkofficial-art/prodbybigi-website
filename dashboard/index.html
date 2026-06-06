@@ -2492,6 +2492,29 @@
       </button>
 
       <div id="bulkFilesStatus" class="subtle" style="margin-top:10px;"></div>
+      <div id="bulkUploadStatusCard" style="
+        display:none;
+        margin-top:12px;
+        padding:14px;
+        border-radius:12px;
+        background:#0f172a;
+        border:1px solid #23304d;
+      ">
+        <div id="bulkUploadStatusTitle" style="
+          font-weight:700;
+          color:#fff;
+          margin-bottom:8px;
+        ">
+          Preparing Upload...
+        </div>
+
+        <div id="bulkUploadStatusText" style="
+          color:#94a3b8;
+          font-size:14px;
+        ">
+          Waiting...
+        </div>
+      </div>
 
       <div style="margin-top:12px;">
         <button class="btn2" type="button" onclick="startBulkUpload()">
@@ -5243,6 +5266,13 @@ async function startBulkUpload(){
   }
 
   const prog = $("bulkProgress");
+  const statusCard = $("bulkUploadStatusCard");
+  const statusTitle = $("bulkUploadStatusTitle");
+  const statusText = $("bulkUploadStatusText");
+
+  if(statusCard){
+    statusCard.style.display = "block";
+  }
   const uid = window.currentUser.uid;
   console.log("USER OK", uid);
   const producerName = getProducerDisplayName();
@@ -5256,7 +5286,15 @@ async function startBulkUpload(){
 
     const k = baseNameNoExt(fFull.name);
 
-    if (prog) prog.textContent = `Uploading ${i+1}/${keys.length}: ${k}...`;
+    if(statusTitle){
+      statusTitle.textContent =
+        `Uploading Beat ${i + 1} of ${count}`;
+    }
+
+    if(statusText){
+      statusText.textContent =
+        fFull.name;
+    }
 
     console.log("Processing beat", i + 1);
     console.log("Full:", fFull.name);
@@ -5265,7 +5303,10 @@ async function startBulkUpload(){
     let artUrl = "";
     if (fArt){
       const ext = extFromName(fArt.name) || ".jpg";
-      console.log("Uploading artwork...");
+      if(statusText){
+        statusText.textContent =
+          `Uploading artwork for ${fFull.name}`;
+      }
       const artUp = await uploadToStorage({
         file: fArt,
         path: `audiory/artwork/${uid}/bulk_${Date.now()}_${i}${ext}`,
@@ -5282,7 +5323,10 @@ async function startBulkUpload(){
     }
 
     const extFull = extFromName(fFull.name) || ".mp3";
-    console.log("Uploading full audio...");
+    if(statusText){
+      statusText.textContent =
+        `Uploading full audio...`;
+    }
     const fullUrl = await uploadToStorage({
       file: fFull,
       path: `audiory/beats/full/${uid}/bulk_${Date.now()}_${i}${extFull}`,
@@ -5296,7 +5340,10 @@ async function startBulkUpload(){
     });
 
     const extPrev = extFromName(fPrev.name) || ".mp3";
-    console.log("Uploading preview...");
+    if(statusText){
+      statusText.textContent =
+        `Uploading preview audio...`;
+    }
     const prevUrl = await uploadToStorage({
       file: fPrev,
       path: `audiory/beats/preview/${uid}/bulk_${Date.now()}_${i}${extPrev}`,
@@ -5354,9 +5401,14 @@ async function startBulkUpload(){
     setPlanChips();
   }
 
-  if (prog){
-    prog.innerHTML =
-      `✅ Bulk upload completed. ${count} beats uploaded successfully.`;
+  if(statusTitle){
+    statusTitle.textContent =
+      "Upload Complete";
+  }
+
+  if(statusText){
+    statusText.textContent =
+      `${count} beats uploaded successfully.`;
   }
 }
 
