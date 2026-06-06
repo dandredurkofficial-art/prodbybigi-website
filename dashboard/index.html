@@ -2455,6 +2455,16 @@
       </div>
 
       <div style="margin-top:10px;">
+        <input id="bulkBpm"
+               placeholder="Bpm (e.g. 140)">
+      </div>
+
+      <div style="margin-top:10px;">
+        <input id="bulkKey"
+               placeholder="Key (e.g. B Minor)">
+      </div>
+
+      <div style="margin-top:10px;">
         <input id="bulkTags"
                placeholder="Tags (comma separated)">
       </div>
@@ -5360,8 +5370,8 @@ async function startBulkUpload(){
     await window.addDoc(window.collection(window.db,"beats"),{
       title: (baseNameNoExt(fFull.name) || "Untitled Beat").trim(),
       desc: "",
-      bpm: "",
-      key: "",
+      bpm: $("bulkBpm")?.value || "",
+      key: $("bulkKey")?.value || "",
       genre: $("bulkGenre")?.value || "",
       typeBeat: $("bulkTypeBeat")?.value || "",
 
