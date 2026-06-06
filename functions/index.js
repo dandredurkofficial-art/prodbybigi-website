@@ -3537,6 +3537,83 @@ exports.stkCallback = onRequest({ region: "us-central1" }, async (req, res) => {
           { merge: true }
         );
 
+        // =========================
+        // BUY X GET Y BONUS UNLOCKS
+        // =========================
+
+        if (beatId) {
+
+          const campaignSnap = await db
+            .collection("marketingCampaigns")
+            .where("type", "==", "buy_x_get_y")
+            .where("beatId", "==", beatId)
+            .where("status", "==", "active")
+            .limit(1)
+            .get();
+
+          if (!campaignSnap.empty) {
+
+            const campaign = campaignSnap.docs[0].data() || {};
+
+            const bonusBeatIds = Array.isArray(campaign.bonusBeatIds)
+              ? campaign.bonusBeatIds
+              : [];
+
+            for (const bonusBeatId of bonusBeatIds) {
+
+              const bonusBeatSnap = await db
+                .collection("beats")
+                .doc(String(bonusBeatId))
+                .get();
+
+              if (!bonusBeatSnap.exists) continue;
+
+              const bonusBeat = bonusBeatSnap.data() || {};
+
+              await db.collection("unlocks").doc(
+                `${orderDoc.id}_bonus_${bonusBeatId}`
+              ).set({
+                unlockId: `${orderDoc.id}_bonus_${bonusBeatId}`,
+                orderId: orderDoc.id,
+                provider: "MPESA_STK",
+
+                paid: true,
+                status: "unlocked",
+
+                buyerId,
+                buyerName: buyerName || null,
+                buyerEmail: buyerEmail || null,
+
+                beatId: String(bonusBeatId),
+                beatTitle: bonusBeat.title || "Bonus Beat",
+
+                producerId: bonusBeat.producerId || null,
+                producerName: bonusBeat.producerName || null,
+
+                licenseKey: licenseKey || "basic",
+
+                receipt: metadata.MpesaReceiptNumber || null,
+
+                downloadPath:
+                  bonusBeat.downloadPath ||
+                  bonusBeat.filePath ||
+                  null,
+
+                audioUrl:
+                  bonusBeat.audio ||
+                  bonusBeat.fullAudio ||
+                  null,
+
+                createdAt:
+                  admin.firestore.FieldValue.serverTimestamp(),
+
+                updatedAt:
+                  admin.firestore.FieldValue.serverTimestamp(),
+              });
+            }
+          }
+        }
+
         // ✅ mark order unlocked (optional)
         await orderDoc.ref.set(
           {
