@@ -770,7 +770,12 @@ onAuthStateChanged(getAuthOrThrow(), async (user) => {
       return;
     }
 
-    goAfterAuth(role);
+    console.log(
+      "AUTH LISTENER REDIRECT BLOCKED",
+      role
+    );
+
+    // goAfterAuth(role);
   } catch (e) {
     console.error(e);
   }
