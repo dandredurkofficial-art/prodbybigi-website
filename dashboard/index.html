@@ -3195,6 +3195,12 @@
 
         <button
           class="btn2"
+          onclick="test2FAEmail()">
+          Test 2FA Email
+        </button>
+
+        <button
+          class="btn2"
           id="disable2FABtn"
           type="button"
           onclick="disable2FA()"
@@ -4352,6 +4358,33 @@ async function initProducerMessagesUI(){
   }
 }
 window.initProducerMessagesUI = initProducerMessagesUI;
+
+async function test2FAEmail() {
+
+  try {
+
+    const fn =
+      window.httpsCallable(
+        window.functions,
+        "send2FACode"
+      );
+
+    const result =
+      await fn();
+
+    console.log(result);
+
+    alert("2FA email sent");
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      err?.message || err
+    );
+  }
+}
 
 function collabSubmissionStatusText(v){
   const s = String(v || "pending").toLowerCase();
