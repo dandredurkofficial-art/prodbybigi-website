@@ -484,10 +484,16 @@ window.loginUser = async function loginUser() {
         "1"
       );
 
-      alert("2FA redirect starting");
+      const status = document.getElementById("status");
 
-      location.href =
-        "/login-verify/";
+      if (status) {
+        status.innerHTML =
+          '<span style="color:#22c55e;">Verification code sent. Redirecting...</span>';
+      }
+
+      setTimeout(() => {
+        location.href = "/login-verify/";
+      }, 800);
 
       return;
     }
