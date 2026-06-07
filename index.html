@@ -165,32 +165,11 @@
       box-sizing: border-box;
     }
 
-    .hero {
-      position: relative;
-      /* Calculate height: 100% of viewport height minus topbar height */
-      height: calc(100vh - 74px); 
-      min-height: 500px; /* Safety net for short screens so content doesn't bleed */
-  
-      display: flex;
-      align-items: center;
-  
-      /* Remove rounded corners and margins to make it full-bleed */
-      border-radius: 0;
-      margin-top: 0;
-
-      background-image:
-        linear-gradient(
-          rgba(8,8,20,.65),
-          rgba(8,8,20,.75)
-        ),
-        url("https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=2000");
-
-      background-size: cover;
-      background-position: center;
-      padding-left: 0;
-      padding-right: 0;
+    .hero{
+      width:100vw;
+      margin-left:calc(50% - 50vw);
+      margin-right:calc(50% - 50vw);
     }
-
     .hero-card{
       width:100%;
       max-width:1500px;
