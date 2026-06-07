@@ -453,6 +453,14 @@ window.loginUser = async function loginUser() {
 
     const twoFactorEnabled =
       snap.data()?.twoFactorEnabled === true;
+    console.log(
+      "2FA STATUS:",
+      twoFactorEnabled
+    );
+
+    console.log(
+      snap.data()
+    );
 
     if (twoFactorEnabled) {
 
