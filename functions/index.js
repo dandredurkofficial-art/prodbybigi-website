@@ -90,6 +90,9 @@ twoFA.disable2FA;
 
 exports.send2FACode =
 twoFA.send2FACode;
+
+exports.verify2FACode =
+twoFA.verify2FACode;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
