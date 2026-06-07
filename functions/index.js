@@ -78,6 +78,15 @@ const newsletter = require("./newsletter");
 
 exports.sendNewsletter =
   newsletter.sendNewsletter;
+
+const twoFA =
+require("./2fa");
+
+exports.enable2FA =
+twoFA.enable2FA;
+
+exports.disable2FA =
+twoFA.disable2FA;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
