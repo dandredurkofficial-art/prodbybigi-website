@@ -485,6 +485,8 @@ window.loginUser = async function loginUser() {
         "/login-verify/";
 
       return;
+    }
+    
     setStatus("");
     goAfterAuth(role);
   } catch (err) {
