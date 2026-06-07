@@ -479,11 +479,12 @@ window.loginUser = async function loginUser() {
         role
       );
 
+      alert("2FA redirect starting");
+
       location.href =
         "/login-verify/";
 
       return;
-    }
     setStatus("");
     goAfterAuth(role);
   } catch (err) {
