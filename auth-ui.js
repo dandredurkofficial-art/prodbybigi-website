@@ -446,6 +446,29 @@ window.loginUser = async function loginUser() {
       return;
     }
 
+    const twoFactorEnabled =
+      snap.data()?.twoFactorEnabled === true;
+
+    if (twoFactorEnabled) {
+
+      const send2FACode =
+        window.httpsCallable(
+          window.functions,
+          "send2FACode"
+        );
+
+      await send2FACode();
+
+      localStorage.setItem(
+        "pending2FARole",
+        role
+      );
+
+      location.href =
+        "/login-verify/";
+
+      return;
+    }
     setStatus("");
     goAfterAuth(role);
   } catch (err) {
