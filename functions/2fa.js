@@ -237,3 +237,82 @@ exports.send2FACode = onCall(
     };
   }
 );
+
+/* =========================================================
+   VERIFY 2FA CODE
+========================================================= */
+
+exports.verify2FACode = onCall(
+  {
+    cors: true
+  },
+  async (request) => {
+
+    const auth = request.auth;
+
+    if (!auth) {
+      throw new HttpsError(
+        "unauthenticated",
+        "Sign in required."
+      );
+    }
+
+    const code = String(
+      request.data?.code || ""
+    ).trim();
+
+    if (!code) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Code required."
+      );
+    }
+
+    const codeHash =
+      crypto
+        .createHash("sha256")
+        .update(code)
+        .digest("hex");
+
+    const snap = await db
+      .collection("twoFactorCodes")
+      .where("uid", "==", auth.uid)
+      .where("used", "==", false)
+      .orderBy("createdAt", "desc")
+      .limit(1)
+      .get();
+
+    if (snap.empty) {
+      throw new HttpsError(
+        "not-found",
+        "No verification code found."
+      );
+    }
+
+    const docRef = snap.docs[0];
+    const data = docRef.data();
+
+    if (Date.now() > data.expiresAt) {
+      throw new HttpsError(
+        "deadline-exceeded",
+        "Code expired."
+      );
+    }
+
+    if (data.codeHash !== codeHash) {
+      throw new HttpsError(
+        "invalid-argument",
+        "Invalid code."
+      );
+    }
+
+    await docRef.ref.update({
+      used: true,
+      usedAt: Date.now()
+    });
+
+    return {
+      success: true
+    };
+  }
+);
