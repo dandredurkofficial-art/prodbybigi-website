@@ -165,15 +165,18 @@
       box-sizing: border-box;
     }
 
-    /* Hero section formatting */
-    .hero{
-      position:relative;
-      min-height:720px;
-      display:flex;
-      align-items:center;
-      border-radius:24px;
-      overflow:hidden;
-      margin-top:20px;
+    .hero {
+      position: relative;
+      /* Calculate height: 100% of viewport height minus topbar height */
+      height: calc(100vh - 74px); 
+      min-height: 500px; /* Safety net for short screens so content doesn't bleed */
+  
+      display: flex;
+      align-items: center;
+  
+      /* Remove rounded corners and margins to make it full-bleed */
+      border-radius: 0;
+      margin-top: 0;
 
       background-image:
         linear-gradient(
@@ -182,10 +185,10 @@
         ),
         url("https://images.unsplash.com/photo-1516280440614-37939bbacd81?q=80&w=2000");
 
-      background-size:cover;
-      background-position:center;
-      padding-left:0;
-      padding-right:0;
+      background-size: cover;
+      background-position: center;
+      padding-left: 0;
+      padding-right: 0;
     }
 
     .hero-card{
