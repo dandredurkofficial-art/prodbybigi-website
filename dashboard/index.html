@@ -3172,6 +3172,44 @@
     <div id="saveProfileStatus" style="margin-top:10px;color:#22c55e;font-size:13px;"></div>
 
     <div class="card" style="margin-top:14px;">
+      <h3 style="margin-top:0;">Two-Factor Authentication (2FA)</h3>
+
+      <div class="subtle">
+        Add an extra layer of security to your producer account.
+        When enabled, Audiory will require a verification code sent to your email during sign in.
+      </div>
+
+      <div id="twoFAStatus"
+           style="margin-top:12px;font-size:14px;font-weight:600;">
+        Status: Disabled
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button
+          class="primary"
+          id="enable2FABtn"
+          type="button"
+          onclick="enable2FA()">
+          Enable 2FA
+        </button>
+
+        <button
+          class="btn2"
+          id="disable2FABtn"
+          type="button"
+          onclick="disable2FA()"
+          style="display:none;">
+          Disable 2FA
+        </button>
+      </div>
+
+      <div
+        id="twoFAResult"
+        style="margin-top:10px;font-size:13px;">
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
       <h3 style="margin-top:0;">Custom Domain (Elite)</h3>
       <div class="subtle">Connect your own domain to your producer store (Elite-only).</div>
 
@@ -7621,6 +7659,8 @@ function fillSettingsForm(){
   }
 
   refreshProLocks();
+
+  update2FAUI();
 }
 async function saveProfile(){
   if(!window.currentUser) return alert("Please login again.");
@@ -7653,6 +7693,109 @@ async function saveProfile(){
 
   btn.disabled = false;
   btn.textContent = "Save Profile";
+}
+
+async function enable2FA() {
+  try {
+
+    const btn = $("enable2FABtn");
+    btn.disabled = true;
+    btn.textContent = "Enabling...";
+
+    const fn = window.httpsCallable(
+      window.functions,
+      "enable2FA"
+    );
+
+    const result = await fn();
+
+    if (result.data?.success) {
+
+      window.currentProfile = {
+        ...(window.currentProfile || {}),
+        twoFactorEnabled: true
+      };
+
+      update2FAUI();
+
+      $("twoFAResult").innerHTML =
+        '<span style="color:#22c55e;">✔ Two-Factor Authentication enabled</span>';
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+    $("twoFAResult").innerHTML =
+      '<span style="color:#ef4444;">✖ Failed to enable 2FA</span>';
+
+  }
+
+  $("enable2FABtn").disabled = false;
+  $("enable2FABtn").textContent = "Enable 2FA";
+}
+
+async function disable2FA() {
+  try {
+
+    const btn = $("disable2FABtn");
+    btn.disabled = true;
+    btn.textContent = "Disabling...";
+
+    const fn = window.httpsCallable(
+      window.functions,
+      "disable2FA"
+    );
+
+    const result = await fn();
+
+    if (result.data?.success) {
+
+      window.currentProfile = {
+        ...(window.currentProfile || {}),
+        twoFactorEnabled: false
+      };
+
+      update2FAUI();
+
+      $("twoFAResult").innerHTML =
+        '<span style="color:#22c55e;">✔ Two-Factor Authentication disabled</span>';
+    }
+
+  } catch (err) {
+
+    console.error(err);
+
+    $("twoFAResult").innerHTML =
+      '<span style="color:#ef4444;">✖ Failed to disable 2FA</span>';
+
+  }
+
+  $("disable2FABtn").disabled = false;
+  $("disable2FABtn").textContent = "Disable 2FA";
+}
+
+function update2FAUI() {
+
+  const enabled =
+    window.currentProfile?.twoFactorEnabled === true;
+
+  if (enabled) {
+
+    $("twoFAStatus").innerHTML =
+      '<span style="color:#22c55e;">Status: Enabled</span>';
+
+    $("enable2FABtn").style.display = "none";
+    $("disable2FABtn").style.display = "";
+
+  } else {
+
+    $("twoFAStatus").innerHTML =
+      '<span style="color:#f59e0b;">Status: Disabled</span>';
+
+    $("enable2FABtn").style.display = "";
+    $("disable2FABtn").style.display = "none";
+  }
 }
 
 async function uploadStoreBanner(){
