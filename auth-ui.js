@@ -479,6 +479,11 @@ window.loginUser = async function loginUser() {
         role
       );
 
+      localStorage.setItem(
+        "pending2FA",
+        "1"
+      );
+
       alert("2FA redirect starting");
 
       location.href =
@@ -756,6 +761,12 @@ onAuthStateChanged(getAuthOrThrow(), async (user) => {
 
     if (!verified) {
       goToVerifyEmail();
+      return;
+    }
+
+    if (
+      localStorage.getItem("pending2FA") === "1"
+    ) {
       return;
     }
 
