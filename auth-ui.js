@@ -22,6 +22,11 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+import {
+  getFunctions,
+  httpsCallable
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
+
 /* =========================
    APP / BACKEND URLS
 ========================= */
@@ -451,9 +456,11 @@ window.loginUser = async function loginUser() {
 
     if (twoFactorEnabled) {
 
+      const functions = getFunctions();
+
       const send2FACode =
-        window.httpsCallable(
-          window.functions,
+        httpsCallable(
+          functions,
           "send2FACode"
         );
 
