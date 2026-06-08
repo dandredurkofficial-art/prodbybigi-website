@@ -951,6 +951,8 @@
 
           p.photoURL = prof?.photoURL || "";
 
+          p.handle = prof?.handle || "";
+
           /* verification plan */
           p.plan = prof?.plan || "";
         }
@@ -1002,7 +1004,7 @@
         </div>
 
         <div class="producer-actions">
-          <a class="btn primary" href="/producer-profile/?producerId=${encodeURIComponent(p.id)}">View Profile</a>
+          <a class="btn primary" id="vp_${p.id}" href="/producer-profile/?producerId=${encodeURIComponent(p.id)}">View Profile</a>
           <a class="btn" href="/marketplace/?producerId=${encodeURIComponent(p.id)}">View Beats</a>
 
           <button class="btn follow-white hidden" type="button" id="fb_${p.id}">Follow</button>
@@ -1024,6 +1026,14 @@
 
       if (nm) nm.innerHTML = escapeHtml(p.name) + getVerificationBadge(p.plan);
       if (av) av.innerHTML = avatarHTML({ name: p.name, photoURL: p.photoURL });
+
+      const vp = document.getElementById("vp_" + p.id);
+
+      if (vp && p.handle) {
+        vp.href =
+          "/producer-profile/?handle=" +
+          encodeURIComponent(p.handle);
+      }
       if (fl) fl.textContent = "Followers: " + String(Number(p.followers || 0) || 0);
 
       const { canFollow, canMessage } = await canShowActionButtons(p.id);
