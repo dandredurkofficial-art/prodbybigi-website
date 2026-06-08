@@ -275,7 +275,7 @@ async function createBaseUserDocs({ uid, email, role, displayName }) {
     emailVerified: false,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    displayName
+    displayName: handle
   }, { merge: true });
 
   if (role === "producer") {
