@@ -1400,6 +1400,11 @@
     return (u.searchParams.get("producerId") || "").trim();
   }
 
+  function getProducerHandleFromURL(){
+    const u = new URL(location.href);
+    return (u.searchParams.get("handle") || "").trim();
+  }
+
   function getBeatPremiereTime(b){
     if (b?.premiereAt?.toMillis) return b.premiereAt.toMillis();
     if (b?.premiereAt?.seconds) return b.premiereAt.seconds * 1000;
@@ -1783,7 +1788,26 @@
   }
 
   async function loadProducerProfile(){
-    const pid = getProducerIdFromURL();
+    let pid = getProducerIdFromURL();
+
+    const handle = getProducerHandleFromURL();
+
+    if (!pid && handle) {
+
+      try {
+
+        const handleSnap = await window.FB.getDoc(
+          window.FB.doc(window.FB.db, "handles", handle)
+        );
+
+        if (handleSnap.exists()) {
+          pid = String(handleSnap.data().uid || "");
+        }
+
+      } catch (e) {
+        console.error("handle lookup failed", e);
+      }
+    }
     const status = document.getElementById("status");
     const grid = document.getElementById("grid");
     const beatsCount = document.getElementById("beatsCount");
