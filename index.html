@@ -222,6 +222,53 @@
       cursor: pointer;
     }
 
+    .hero-actions{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:16px;
+    }
+
+    .hero-action-btn{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+
+      height:58px;
+      border-radius:16px;
+
+      text-decoration:none;
+      font-weight:800;
+      font-size:16px;
+
+      transition:.2s ease;
+    }
+
+    .hero-action-btn svg{
+      width:20px;
+      height:20px;
+    }
+
+    .hero-action-btn.explore{
+      background:#3b2fad;
+      color:#fff;
+    }
+
+    .hero-action-btn.explore:hover{
+      background:#2f2497;
+    }
+
+    .hero-action-btn.sell{
+      background:#ffffff;
+      color:#3b2fad;
+      border:2px solid #3b2fad;
+    }
+
+    .hero-action-btn.sell:hover{
+      background:#f8f7ff;
+    }
+
     /* Section Typography */
     .section {
       margin: 40px 0;
