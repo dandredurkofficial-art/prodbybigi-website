@@ -2086,7 +2086,7 @@
   }
   function producerPageUrl(b){
     const pid = String(b?.producerId || "");
-    return "/producer-profile/?handle=" + handle
+    return "/producer-profile/?producerId=" + encodeURIComponent(pid);
   }
 
   function getBeatPremiereTime(b){
