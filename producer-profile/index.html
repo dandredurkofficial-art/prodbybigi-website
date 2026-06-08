@@ -1866,7 +1866,7 @@
 
       const displayName = mine[0] ? prettyProducerNameFromBeat(mine[0]) : ("Prod. " + pid.slice(0,8));
       document.getElementById("prodName").textContent = displayName;
-      document.getElementById("prodSub").textContent = `Producer ID: ${pid}`;
+      document.getElementById("prodSub").style.display = "none";
       let producerPhoto = "";
 
       // profile (photo + name)
