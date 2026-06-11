@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Audiory Profile</title>
+
+<link rel="icon" href="/audioryfavicon.webp" />
+<link rel="shortcut icon" href="/audioryfavicon.webp" />
+<link rel="icon" type="image/x-icon" href="/favicon.webp" />
+<link rel="apple-touch-icon" href="/audioryfavicon.webp" />
+
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+
+<link rel="stylesheet" href="/css/global.css?v=6">
+<link rel="stylesheet" href="/css/home.css?v=6">
+<link rel="stylesheet" href="/css/cart.css">
+<link rel="stylesheet" href="/css/mobile-fix.css">
+
+<style>
+
+    /* =========================================================
+       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
+       ========================================================= */
+    body {
+      background-color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      color: #334155;
+      line-height: 1.6;
+      box-sizing: border-box;
+    }
+
+    /* Premium Slim Header Bar Style Match */
+    .topbar {
+      width: 100%;
+      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      box-sizing: border-box;
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      box-sizing: border-box;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #ffffff;
+      font-weight: 900;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    /* Hamburger hidden by default on desktop view */
+    #hamburgerBtn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      margin-right: 4px;
+      padding: 4px;
+    }
+
+    .desktop-nav a{
+      color:#fff;
+      text-decoration:none;
+      font-size:14px;
+      font-weight:600;
+      padding:10px 12px;
+      border-radius:8px;
+      white-space:nowrap;
+    }
+
+    .desktop-nav a:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .desktop-nav a.cta {
+      background: #ffffff;
+      color: #3b2fad !important;
+      opacity: 1;
+    }
+    .desktop-nav a.cta:hover {
+      background: #f1f5f9;
+    }
+
+    .desktop-nav .ghost,
+    .desktop-nav button.ghost {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 12px;
+      cursor: pointer;
+      border-radius: 8px;
+    }
+
+    .desktop-nav .ghost:hover,
+    .desktop-nav button.ghost:hover {
+      background: rgba(255,255,255,.1);
+    }
+
+    .cart-btn{
+      width:48px;
+      height:48px;
+      border:none;
+      border-radius:14px;
+      background:rgba(255,255,255,.12);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      color:#fff;
+    }
+
+    .pb-cart
+    .pb-cart-backdrop
+    .pb-cart-head
+    .pb-cart-body
+    .pb-cart-foot
+    /* Mobile Sidebar & Drawer Engine Defaults (Keeps layouts clean) */
+    .menu-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 100000;
+      display: none;
+    }
+    .menu-backdrop.active {
+      display: block;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #ffffff;
+      z-index: 100001;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      box-sizing: border-box;
+      transition: left 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      left: 0;
+    }
+
+    .mobile-menu .menu-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .mobile-menu .menu-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .mobile-menu .menu-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .mobile-menu a, .mobile-menu button {
+      padding: 12px 16px;
+      color: #334155;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-align: left;
+    }
+    .mobile-menu a:hover {
+      background: #f8fafc;
+      color: #3b2fad;
+    }
+    .mobile-menu a.cta {
+      background: #3b2fad;
+      color: #ffffff !important;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    /* Container Spacing */
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      box-sizing: border-box;
+    }
+
+   .audiory-profile-page{
+    max-width:1400px;
+    margin:0 auto;
+    padding:40px;
+}
+
+.profile-hero{
+    position:relative;
+    height:380px;
+    border-radius:24px;
+    overflow:hidden;
+    margin-bottom:120px;
+}
+
+.profile-banner{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+
+.profile-overlay{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+        to top,
+        rgba(0,0,0,.8),
+        rgba(0,0,0,.2)
+    );
+}
+
+.profile-card{
+    position:absolute;
+    left:60px;
+    bottom:-70px;
+    display:flex;
+    gap:24px;
+    align-items:flex-end;
+}
+
+.profile-avatar{
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    object-fit:cover;
+    border:5px solid white;
+}
+
+.profile-meta h1{
+    color:white;
+    font-size:48px;
+    margin:0;
+}
+
+.profile-stats{
+    color:white;
+    margin-top:10px;
+}
+
+.profile-actions{
+    display:flex;
+    gap:12px;
+    margin-top:15px;
+}
+
+.follow-btn,
+.message-btn{
+    border:none;
+    padding:12px 24px;
+    border-radius:12px;
+    cursor:pointer;
+}
+
+.follow-btn{
+    background:#4338ca;
+    color:white;
+}
+
+.message-btn{
+    background:white;
+}
+
+.social-links{
+    display:flex;
+    gap:15px;
+    margin-top:18px;
+}
+
+.social-links a{
+    color:white;
+    font-size:20px;
+}
+
+.playlist-section{
+    margin-top:80px;
+}
+
+.playlists-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:32px;
+}
+
+.playlist-card{
+    text-decoration:none;
+    color:inherit;
+}
+
+.playlist-cover-stack{
+    position:relative;
+    height:260px;
+    margin-bottom:16px;
+}
+
+.stack-2,
+.stack-3{
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    background:#1e293b;
+}
+
+.stack-2{
+    transform:translateY(-8px);
+    left:8px;
+}
+
+.stack-3{
+    transform:translateY(-16px);
+    left:16px;
+}
+
+.playlist-cover-stack img{
+    position:relative;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    border-radius:18px;
+    z-index:5;
+}
+
+@media(max-width:768px){
+
+    .profile-card{
+        left:25px;
+        right:25px;
+        bottom:-120px;
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .profile-hero{
+        margin-bottom:180px;
+    }
+
+    .profile-avatar{
+        width:110px;
+        height:110px;
+    }
+
+    .profile-meta h1{
+        font-size:34px;
+    }
+
+    .audiory-profile-page{
+        padding:20px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <button id="hamburgerBtn" aria-label="Open Menu">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/premieres/">Premieres</a>
+      <a href="/collabs/">Collabs</a>
+      <a href="https://blog.audiory.site">Blog</a>
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M3 5H5L7 16H18L21 8H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="20" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
+      </svg>
+      </span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+
+  <a href="/">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/premieres/">Premieres</a>
+  <a href="/collabs/">Collabs</a>
+  <a href="https://blog.audiory.site">Blog</a>
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden" style="background:transparent; border:none; font-weight:600; text-align:left; cursor:pointer;">Sign out</button>
+</nav>
