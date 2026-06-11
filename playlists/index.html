@@ -506,6 +506,38 @@
     </div>
 </footer>
 
+<!-- Standard DOM Script Block: Ensures critical navigation layout triggers work instantly -->
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const burger = document.getElementById('hamburgerBtn');
+    const closeBtn = document.getElementById('menuCloseBtn');
+    const backdrop = document.getElementById('menuBackdrop');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const cartBtn = document.getElementById('pbCartBtn');
+
+    // Drawer helper visibility switcher 
+    const toggleMenu = (open) => {
+        if(mobileMenu && backdrop) {
+            mobileMenu.classList.toggle('active', open);
+            backdrop.classList.toggle('active', open);
+        }
+    };
+
+    if(burger) burger.addEventListener('click', () => toggleMenu(true));
+    if(closeBtn) closeBtn.addEventListener('click', () => toggleMenu(false));
+    if(backdrop) backdrop.addEventListener('click', () => toggleMenu(false));
+
+    // Cart Navigation Event Hook
+    if(cartBtn) {
+        cartBtn.addEventListener('click', function() {
+            // Placeholder: Replace this with your slide-out cart action or window.location redirect string
+            alert("Cart item list opened successfully!");
+        });
+    }
+  });
+</script>
+
+<!-- Asynchronous Remote DB Module Layer -->
 <script type="module">
 import {
     getFirestore,
@@ -518,23 +550,8 @@ import {
 const db = getFirestore();
 const grid = document.getElementById("playlistsGrid");
 
-// Basic Client Interactivity for Menu triggers
-const burger = document.getElementById('hamburgerBtn');
-const closeBtn = document.getElementById('menuCloseBtn');
-const backdrop = document.getElementById('menuBackdrop');
-const mobileMenu = document.getElementById('mobileMenu');
-
-if(burger && closeBtn && backdrop && mobileMenu) {
-    const toggleMenu = (open) => {
-        mobileMenu.classList.toggle('active', open);
-        backdrop.classList.toggle('active', open);
-    };
-    burger.addEventListener('click', () => toggleMenu(true));
-    closeBtn.addEventListener('click', () => toggleMenu(false));
-    backdrop.addEventListener('click', () => toggleMenu(false));
-}
-
 async function loadPlaylists(){
+    if(!grid) return;
     try{
         const q = query(
             collection(db,"playlists"),
@@ -567,7 +584,7 @@ async function loadPlaylists(){
 
         grid.innerHTML = html || "<p>No playlists available.</p>";
     }catch(error){
-        console.error(error);
+        console.error("Firestore loading error: ", error);
         grid.innerHTML = "<p>Failed to load playlists.</p>";
     }
 }
