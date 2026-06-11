@@ -313,69 +313,86 @@
     /* =========================================================
        AUDIORY OFFICIAL FOOTER BRAND STYLE
        ========================================================= */
-    .audiory-footer {
-        background-color: #ffffff;
-        padding: 60px 24px 40px 24px;
-        border-top: 1px solid #f1f5f9;
-        margin-top: auto;
-        text-align: center;
-        box-sizing: border-box;
-    }
+    .footer {
+  width: 100%;
+  padding: 32px 20px; /* Balanced padding */
+  text-align: center;
+  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
+  background-color: #ffffff;
+  box-sizing: border-box;
+  margin-top: auto;
+}
 
-    .footer-copyright {
-        color: #94a3b8;
-        font-size: 14px;
-        font-weight: 500;
-        margin-bottom: 24px;
-    }
+.footer-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px; /* Gives elements breathing room without being huge */
+  color: #94a3b8;
+  font-size: 13px;
+}
 
-    .footer-links {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 20px;
-        margin-bottom: 32px;
-    }
+/* Legal & Navigation Links */
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
 
-    .footer-links a {
-        color: #64748b;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 600;
-        transition: color 0.2s ease;
-    }
+.footer-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
 
-    .footer-links a:hover {
-        color: #3b2fad;
-    }
+.footer-links a:hover { 
+  color: #3b2fad; 
+}
 
-    .footer-socials {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 16px;
-    }
+/* Premium Social Container */
+.social {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
 
-    .social-icon-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 42px;
-        height: 42px;
-        border: 1px solid #e2e8f0;
-        border-radius: 50%;
-        color: #64748b;
-        text-decoration: none;
-        transition: all 0.2s ease;
-        background: #ffffff;
-    }
+/* Beautiful, subtle circular button styling for icons */
+.social a { 
+  color: #64748b; /* Clean neutral color */
+  font-size: 16px; /* Perfect proportional icon size */
+  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
+  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
+  border-radius: 50% !important; /* Crisp, perfect circles */
+  width: 38px !important; /* Explicit standard button size */
+  height: 38px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
 
-    .social-icon-btn:hover {
-        border-color: #cbd5e1;
-        color: #0f172a;
-        transform: translateY(-2px);
-    }
+/* Smooth brand coloring glow on hover */
+.social a:hover { 
+  color: #ffffff !important; /* Icon turns clean white */
+  background: #3b2fad !important; /* Circle fills with your signature purple */
+  border-color: #3b2fad !important;
+  transform: translateY(-3px); /* Elegant premium hover lift */
+  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
+}
+
+/* Copyright line styling */
+.footer-row > span {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
 
     /* Responsive Viewport Shifts */
     @media(max-width:992px) {
@@ -571,14 +588,6 @@
 <script src="/js/cart-ui.js"></script>
 <script src="/js/performance.js"></script>
 <script src="/js/license-modal.js"></script>
-
-<script>
-  function money(n){
-    const v = Number(n);
-    if (!Number.isFinite(v)) return "$0.00";
-    return "$" + v.toFixed(2);
-  }
-}
 
 <!-- Asynchronous Remote DB Module Layer -->
 <script type="module">
