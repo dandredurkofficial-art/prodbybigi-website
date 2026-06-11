@@ -201,7 +201,115 @@
 </head>
 <body>
 
-<!-- YOUR EXISTING NAVBAR HERE -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer; margin-right:8px;">☰</button>
+      <div class="logo">Audiory</div>
+    </div>
+
+    <nav class="desktop-nav" aria-label="Main">
+      <a href="/">Feed</a>
+      <a href="/marketplace/">Tracks</a>
+      <a href="/freebeats/">Free Beats</a>
+      <a href="/soundkits/">Sound Kits</a>
+      <a href="/producers/">Producers</a>
+      <a href="/pricing/">Pricing</a>
+      <a href="/premieres/">Premieres</a>
+      <a href="/collabs/">Collabs</a>
+
+      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
+      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
+
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button" style="background:transparent; border:none; color:white; font-weight:600; cursor:pointer;">Sign out</button>
+    </nav>
+
+    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
+      <span class="cart-ic">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M3 5H5L7 16H18L21 8H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="9" cy="20" r="1.5" fill="currentColor"/>
+      <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
+      </svg>
+      </span>
+      <span class="cart-count" id="pbCartCount">0</span>
+    </button>
+    <div class="apps-menu">
+      <button class="apps-btn" id="appsBtn">
+
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <circle cx="5" cy="5" r="2" fill="currentColor"/>
+          <circle cx="12" cy="5" r="2" fill="currentColor"/>
+          <circle cx="19" cy="5" r="2" fill="currentColor"/>
+
+          <circle cx="5" cy="12" r="2" fill="currentColor"/>
+          <circle cx="12" cy="12" r="2" fill="currentColor"/>
+          <circle cx="19" cy="12" r="2" fill="currentColor"/>
+
+          <circle cx="5" cy="19" r="2" fill="currentColor"/>
+          <circle cx="12" cy="19" r="2" fill="currentColor"/>
+          <circle cx="19" cy="19" r="2" fill="currentColor"/>
+        </svg>
+
+      </button>
+
+      <div class="apps-dropdown" id="appsDropdown">
+
+        <a href="https://help-desk.audiory.site">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3a8 8 0 0 0-8 8v2a2 2 0 0 0 2 2h2v-5H6a6 6 0 1 1 12 0h-2v5h2a2 2 0 0 0 2-2v-2a8 8 0 0 0-8-8z" fill="currentColor"/>
+          </svg>
+
+          <span>Help Desk</span>
+        </a>
+
+        <a href="https://blog.audiory.site">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2"/>
+          </svg>
+
+          <span>Blog</span>
+        </a>
+
+        <a href="/about/">
+
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 8h.01M11 11h2v5h-2z" fill="currentColor"/>
+          </svg>
+
+          <span>About</span>
+        </a>
+
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
+  <div class="menu-head">
+    <div class="menu-title">Menu</div>
+    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+  </div>
+  <a href="/">Feed</a>
+  <a href="/marketplace/">Tracks</a>
+  <a href="/freebeats/">Free Beats</a>
+  <a href="/soundkits/">Sound Kits</a>
+  <a href="/producers/">Producers</a>
+  <a href="/pricing/">Pricing</a>
+  <a href="/premieres/">Premieres</a>
+  <a href="/collabs/">Collabs</a>
+  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
+  <a id="mNavSignIn" href="/login/">Sign in</a>
+
+  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
+  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+</nav>
 
 <main class="playlists-page">
 
