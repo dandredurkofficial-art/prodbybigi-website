@@ -37,7 +37,7 @@
     }
 
     .topbar-inner {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -57,10 +57,22 @@
       letter-spacing: -0.5px;
     }
 
+    /* Hamburger hidden by default on desktop view */
+    #hamburgerBtn {
+      display: none;
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      margin-right: 4px;
+      padding: 4px;
+    }
+
     .desktop-nav{
       display:flex;
       align-items:center;
-      gap:8px;
+      gap:6px;
     }
 
     .desktop-nav a{
@@ -87,6 +99,25 @@
       background: #f1f5f9;
     }
 
+    /* Dynamic authentication helper states */
+    .ghost.hidden, .hidden {
+      display: none !important;
+    }
+
+    .desktop-nav button.ghost {
+      background: transparent;
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 10px 12px;
+      border-radius: 8px;
+    }
+    .desktop-nav button.ghost:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     .cart-btn {
       background: rgba(255, 255, 255, 0.15);
       border: none;
@@ -99,6 +130,78 @@
       gap: 6px;
     }
 
+    /* Mobile Sidebar & Drawer Engine Defaults (Keeps layouts clean) */
+    .menu-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 100000;
+      display: none;
+    }
+    .menu-backdrop.active {
+      display: block;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -280px;
+      width: 280px;
+      height: 100vh;
+      background: #ffffff;
+      z-index: 100001;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      box-sizing: border-box;
+      transition: left 0.3s ease-in-out;
+    }
+    .mobile-menu.active {
+      left: 0;
+    }
+
+    .mobile-menu .menu-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .mobile-menu .menu-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .mobile-menu .menu-close-btn {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      color: #64748b;
+      cursor: pointer;
+    }
+    .mobile-menu a, .mobile-menu button {
+      padding: 12px 16px;
+      color: #334155;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-align: left;
+    }
+    .mobile-menu a:hover {
+      background: #f8fafc;
+      color: #3b2fad;
+    }
+    .mobile-menu a.cta {
+      background: #3b2fad;
+      color: #ffffff !important;
+      text-align: center;
+      margin-top: 16px;
+    }
+
     /* Container Spacing */
     .container {
       width: 100%;
@@ -108,20 +211,47 @@
       box-sizing: border-box;
     }
 
-    .playlists-grid{
+    .playlists-page {
+        max-width: 1400px;
+        width: 100%;
+        margin: 40px auto;
+        padding: 0 24px;
+        box-sizing: border-box;
+        flex: 1;
+    }
+
+    .playlists-header {
+        margin-bottom: 40px;
+    }
+
+    .playlists-header h1 {
+        font-size: 40px;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 12px 0;
+        letter-spacing: -0.5px;
+    }
+
+    .playlists-header p {
+        font-size: 16px;
+        color: #64748b;
+        margin: 0;
+    }
+
+    .playlists-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: 32px;
     }
 
-    .playlist-card{
+    .playlist-card {
         text-decoration: none;
         color: inherit;
         display: flex;
         flex-direction: column;
     }
 
-    .playlist-cover{
+    .playlist-cover {
         position: relative;
         border-radius: 16px;
         overflow: hidden;
@@ -130,18 +260,18 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
-    .playlist-cover img{
+    .playlist-cover img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .playlist-card:hover .playlist-cover img{
+    .playlist-card:hover .playlist-cover img {
         transform: scale(1.04);
     }
 
-    .playlist-info h3{
+    .playlist-info h3 {
         font-size: 18px;
         font-weight: 700;
         margin: 0 0 6px 0;
@@ -151,7 +281,7 @@
         text-overflow: ellipsis;
     }
 
-    .playlist-owner{
+    .playlist-owner {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -174,7 +304,7 @@
         font-weight: bold;
     }
 
-    .track-count{
+    .track-count {
         color: #94a3b8;
         font-size: 13px;
         font-weight: 500;
@@ -247,6 +377,16 @@
         transform: translateY(-2px);
     }
 
+    /* Responsive Viewport Shifts */
+    @media(max-width:992px) {
+        #hamburgerBtn {
+            display: block; /* Hamburger reveals on smaller breakpoints */
+        }
+        .desktop-nav {
+            display: none; /* Desktop menu collapses safely away */
+        }
+    }
+
     @media(max-width:768px){
         .playlists-header h1{
             font-size:32px;
@@ -264,9 +404,9 @@
 <body>
 
 <header class="topbar">
-  <div class="container topbar-inner">
+  <div class="topbar-inner">
     <div class="brand">
-      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <button id="hamburgerBtn" aria-label="Open Menu">☰</button>
       <div class="logo">Audiory</div>
     </div>
 
@@ -283,12 +423,8 @@
       <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
       <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
 
-      <a id="navDashboard" class="ghost hidden" href="#">
-        Dashboard
-      </a>
-      <button id="navSignOut" class="ghost hidden" type="button">
-        Sign out
-      </button>
+      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
+      <button id="navSignOut" class="ghost hidden" type="button">Sign out</button>
     </nav>
 
     <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
@@ -304,11 +440,12 @@
   </div>
 </header>
 
+<!-- Pop-out UI Mobile Drawer System Components -->
 <div class="menu-backdrop" id="menuBackdrop"></div>
 <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
   <div class="menu-head">
     <div class="menu-title">Menu</div>
-    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
+    <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close Mobile Menu">✕</button>
   </div>
   <a href="/">Feed</a>
   <a href="/marketplace/">Tracks</a>
@@ -323,7 +460,7 @@
   <a id="mNavSignIn" href="/login/">Sign in</a>
 
   <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
-  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
+  <button id="mNavSignOut" class="ghost hidden" style="background:transparent; border:none; font-weight:600; text-align:left; cursor:pointer;">Sign out</button>
 </nav>
 
 <main class="playlists-page">
@@ -333,7 +470,8 @@
     </div>
 
     <div class="playlists-grid" id="playlistsGrid">
-        </div>
+        <!-- Render targets dynamic items here -->
+    </div>
 </main>
 
 <footer class="audiory-footer">
@@ -379,6 +517,22 @@ import {
 
 const db = getFirestore();
 const grid = document.getElementById("playlistsGrid");
+
+// Basic Client Interactivity for Menu triggers
+const burger = document.getElementById('hamburgerBtn');
+const closeBtn = document.getElementById('menuCloseBtn');
+const backdrop = document.getElementById('menuBackdrop');
+const mobileMenu = document.getElementById('mobileMenu');
+
+if(burger && closeBtn && backdrop && mobileMenu) {
+    const toggleMenu = (open) => {
+        mobileMenu.classList.toggle('active', open);
+        backdrop.classList.toggle('active', open);
+    };
+    burger.addEventListener('click', () => toggleMenu(true));
+    closeBtn.addEventListener('click', () => toggleMenu(false));
+    backdrop.addEventListener('click', () => toggleMenu(false));
+}
 
 async function loadPlaylists(){
     try{
