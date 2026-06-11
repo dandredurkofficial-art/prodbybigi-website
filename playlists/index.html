@@ -630,7 +630,45 @@ async function loadPlaylists(){
     }
 }
 
-loadPlaylists();
+grid.innerHTML = `
+<a class="playlist-card" href="/playlist/?slug=trap-beats">
+  <div class="playlist-cover">
+    <img src="/images/playlist1.jpg">
+  </div>
+
+  <div class="playlist-info">
+    <h3>Trap Beats</h3>
+
+    <div class="playlist-owner">
+      <span>Audiory</span>
+      <span class="verified-badge">✓</span>
+    </div>
+
+    <div class="track-count">
+      42 Tracks
+    </div>
+  </div>
+</a>
+
+<a class="playlist-card" href="/playlist/?slug=drill-beats">
+  <div class="playlist-cover">
+    <img src="/images/playlist2.jpg">
+  </div>
+
+  <div class="playlist-info">
+    <h3>Drill Beats</h3>
+
+    <div class="playlist-owner">
+      <span>Audiory</span>
+      <span class="verified-badge">✓</span>
+    </div>
+
+    <div class="track-count">
+      28 Tracks
+    </div>
+  </div>
+</a>
+`;
 </script>
 
 </body>
