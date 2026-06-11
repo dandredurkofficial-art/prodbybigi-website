@@ -578,66 +578,17 @@
 <script src="/js/menu.js"></script>
 <script src="/js/player.js?v=19"></script>
     
-<!-- Asynchronous Remote DB Module Layer -->
-<script type="module">
-import {
-    getFirestore,
-    collection,
-    getDocs,
-    query,
-    orderBy
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const db = getFirestore();
+<script>
 const grid = document.getElementById("playlistsGrid");
-
-async function loadPlaylists(){
-    if(!grid) return;
-    try{
-        const q = query(
-            collection(db,"playlists"),
-            orderBy("createdAt","desc")
-        );
-
-        const snap = await getDocs(q);
-        let html = "";
-
-        snap.forEach(doc=>{
-            const playlist = doc.data();
-            html += `
-            <a class="playlist-card" href="/playlist/?slug=${playlist.slug}">
-                <div class="playlist-cover">
-                    <img src="${playlist.coverUrl}" alt="${playlist.title}">
-                </div>
-                <div class="playlist-info">
-                    <h3>${playlist.title}</h3>
-                    <div class="playlist-owner">
-                        <span>Audiory</span>
-                        <span class="verified-badge">✓</span>
-                    </div>
-                    <div class="track-count">
-                        ${playlist.trackCount || 0} Tracks
-                    </div>
-                </div>
-            </a>
-            `;
-        });
-
-        grid.innerHTML = html || "<p>No playlists available.</p>";
-    }catch(error){
-        console.error("Firestore loading error: ", error);
-        grid.innerHTML = "<p>Failed to load playlists.</p>";
-    }
-}
 
 grid.innerHTML = `
 <a class="playlist-card" href="/playlist/?slug=trap-beats">
   <div class="playlist-cover">
-    <img src="/images/playlist1.jpg">
+    <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600">
   </div>
 
   <div class="playlist-info">
-    <h3>Trap Beats</h3>
+    <h3>Trap Essentials</h3>
 
     <div class="playlist-owner">
       <span>Audiory</span>
@@ -652,11 +603,11 @@ grid.innerHTML = `
 
 <a class="playlist-card" href="/playlist/?slug=drill-beats">
   <div class="playlist-cover">
-    <img src="/images/playlist2.jpg">
+    <img src="https://images.unsplash.com/photo-1516280440614-37939bbacd81?w=600">
   </div>
 
   <div class="playlist-info">
-    <h3>Drill Beats</h3>
+    <h3>Drill Collection</h3>
 
     <div class="playlist-owner">
       <span>Audiory</span>
@@ -668,8 +619,26 @@ grid.innerHTML = `
     </div>
   </div>
 </a>
+
+<a class="playlist-card" href="/playlist/?slug=afrobeats">
+  <div class="playlist-cover">
+    <img src="https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600">
+  </div>
+
+  <div class="playlist-info">
+    <h3>Afrobeats Vibes</h3>
+
+    <div class="playlist-owner">
+      <span>Audiory</span>
+      <span class="verified-badge">✓</span>
+    </div>
+
+    <div class="track-count">
+      31 Tracks
+    </div>
+  </div>
+</a>
 `;
 </script>
-
 </body>
 </html>
