@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Audiory Playlists</title>
+
+<link rel="stylesheet" href="/css/style.css">
+
+<style>
+
+.playlists-page{
+    max-width:1400px;
+    margin:40px auto;
+    padding:0 20px;
+}
+
+.playlists-header{
+    margin-bottom:40px;
+}
+
+.playlists-header h1{
+    font-size:48px;
+    font-weight:800;
+    color:#1e293b;
+    margin-bottom:12px;
+}
+
+.playlists-header p{
+    font-size:18px;
+    color:#64748b;
+}
+
+.playlists-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:28px;
+}
+
+.playlist-card{
+    text-decoration:none;
+    color:inherit;
+}
+
+.playlist-cover{
+    position:relative;
+    border-radius:20px;
+    overflow:hidden;
+    aspect-ratio:1/1;
+    margin-bottom:16px;
+}
+
+.playlist-cover img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:.3s;
+}
+
+.playlist-card:hover .playlist-cover img{
+    transform:scale(1.05);
+}
+
+.playlist-info h3{
+    font-size:24px;
+    font-weight:700;
+    margin-bottom:8px;
+    color:#1e293b;
+}
+
+.playlist-owner{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#64748b;
+    font-size:15px;
+    margin-bottom:8px;
+}
+
+.playlist-owner i{
+    color:#fbbf24;
+}
+
+.track-count{
+    color:#64748b;
+    font-size:15px;
+}
+
+@media(max-width:768px){
+
+    .playlists-header h1{
+        font-size:34px;
+    }
+
+    .playlists-grid{
+        grid-template-columns:1fr;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+<!-- YOUR EXISTING NAVBAR HERE -->
+
+<main class="playlists-page">
+
+<div class="playlists-header">
+    <h1>Playlists</h1>
+    <p>Discover curated beat collections from Audiory.</p>
+</div>
+
+<div class="playlists-grid" id="playlistsGrid">
+
+</div>
+
+</main>
+
+<script type="module">
+
+import {
+    getFirestore,
+    collection,
+    getDocs,
+    query,
+    orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const db = getFirestore();
+
+const grid = document.getElementById("playlistsGrid");
+
+async function loadPlaylists(){
+
+    try{
+
+        const q = query(
+            collection(db,"playlists"),
+            orderBy("createdAt","desc")
+        );
+
+        const snap = await getDocs(q);
+
+        let html = "";
+
+        snap.forEach(doc=>{
+
+            const playlist = doc.data();
+
+            html += `
+            <a class="playlist-card"
+               href="/playlist/?slug=${playlist.slug}">
+
+                <div class="playlist-cover">
+                    <img src="${playlist.coverUrl}">
+                </div>
+
+                <div class="playlist-info">
+
+                    <h3>${playlist.title}</h3>
+
+                    <div class="playlist-owner">
+
+                        <span>Audiory</span>
+                        <span>✔️</span>
+
+                    </div>
+
+                    <div class="track-count">
+
+                        ${playlist.trackCount || 0} Tracks
+
+                    </div>
+
+                </div>
+
+            </a>
+            `;
+        });
+
+        grid.innerHTML = html;
+
+    }catch(error){
+
+        console.error(error);
+
+        grid.innerHTML =
+        "<p>Failed to load playlists.</p>";
+
+    }
+
+}
+
+loadPlaylists();
+
+</script>
+
+</body>
+</html>
