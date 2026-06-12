@@ -345,6 +345,10 @@
       buyBtn.textContent = "Buy now";
     }
 
+    backdrop.classList.add("open");
+    modal.classList.add("open");
+    document.body.classList.add("no-scroll");
+
     const licenses = buildLicensesFromBeat(beat);
     const campaign = await getCampaignForBeat(resolveBeatId(beat));
 
