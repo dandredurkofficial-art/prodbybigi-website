@@ -1639,15 +1639,49 @@
         FreeDL.open(b);
       });
 
-      card.addEventListener("click", (e)=>{
+      card.addEventListener("click", async (e)=>{
         const remind = e.target.closest("[data-remind='1']");
         if (!remind) return;
+
         e.preventDefault();
         e.stopPropagation();
 
-        const key = `audiory_remind_${b.id}`;
-        localStorage.setItem(key, "1");
-        remind.textContent = "✅ Reminder Saved";
+        try {
+
+          const user = window.FB.auth.currentUser;
+
+          if (!user) {
+            alert("Please sign in first.");
+            return;
+          }
+
+          remind.disabled = true;
+          remind.textContent = "Saving...";
+
+          await window.FB.addDoc(
+            window.FB.collection(window.FB.db, "premiereReminders"),
+            {
+              beatId: String(b.id || ""),
+              beatTitle: String(b.title || ""),
+              producerId: String(b.producerId || ""),
+              userId: user.uid,
+              email: user.email || "",
+              createdAt: Date.now()
+            }
+          );
+
+          remind.textContent = " Reminder Saved";
+
+        } catch (err) {
+
+          console.error(err);
+
+          remind.disabled = false;
+          remind.textContent = " Remind Me";
+
+          alert("Failed to save reminder.");
+
+        }
       });
 
       card.addEventListener("click", (e)=>{
