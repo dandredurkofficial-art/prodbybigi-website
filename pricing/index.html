@@ -1268,6 +1268,59 @@
 
         }
       }
+
+      /* -------------------------------------------------
+         PAYPAL RETURN HANDLER
+      --------------------------------------------------*/
+
+      const params = new URLSearchParams(window.location.search);
+
+      const subscriptionId =
+        params.get("subscription_id") ||
+        params.get("subscriptionId");
+
+      if (user && subscriptionId) {
+
+        try {
+
+          const idToken = await user.getIdToken();
+
+          const r = await fetch(window.PB_VERIFY_SUBSCRIPTION_URL, {
+
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": "Bearer " + idToken
+            },
+
+            body: JSON.stringify({
+              subscriptionId
+            })
+
+          });
+
+          const data = await r.json();
+
+          if (!r.ok) {
+            throw new Error(data.error || "Subscription verification failed.");
+          }
+
+          if (data.ok) {
+
+            window.location.replace("/dashboard/");
+
+          }
+
+        } catch (e) {
+
+          console.error(e);
+
+          alert(e.message || "Failed to verify your subscription.");
+
+        }
+
+      }
     });
   })();
 </script>
