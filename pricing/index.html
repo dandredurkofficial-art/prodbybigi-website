@@ -569,33 +569,34 @@
       color:#fff;
     }
 
-    /* ======================================================
-       ✅ SYSTEM GATEWAY MODAL RESKIN (FLAT OVERLAY STANDARDS)
-       ====================================================== */
+    /* =========================
+       PAYMENT MODAL - PREMIUM WHITE THEME
+    ========================= */
     .pb-pay-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.4);
+      background: rgba(15, 23, 42, 0.6);
       backdrop-filter: blur(4px);
       display: none;
       z-index: 10050;
     }
-
     .pb-pay-modal {
       position: fixed;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: min(520px, calc(100vw - 24px));
+      width: min(720px, calc(100vw - 18px));
+      max-height: calc(100vh - 28px);
+      overflow: auto;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 24px;
       padding: 0;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.15);
       display: none;
       z-index: 10051;
+      color: #1e293b;
     }
-
     .pb-pay-head {
       display: flex;
       align-items: flex-start;
@@ -604,79 +605,58 @@
       padding: 24px 24px 16px;
       border-bottom: 1px solid #f1f5f9;
     }
-
     .pb-pay-title {
-      font-weight: 900;
-      font-size: 20px;
+      font-weight: 800;
+      font-size: 22px;
       margin: 0;
-      color: #0f172a;
-      letter-spacing: -0.01em;
+      color: #1e293b;
     }
-
     .pb-pay-sub {
       color: #64748b;
-      font-size: 13px;
-      margin-top: 4px;
-      line-height: 1.4;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;
+      white-space: pre-line;
     }
-
     .pb-pay-close {
       border: none;
       background: transparent;
-      color: #94a3b8;
-      font-size: 20px;
+      color: #64748b;
+      font-size: 22px;
       cursor: pointer;
       padding: 4px 8px;
       border-radius: 10px;
-      transition: all 0.2s ease;
     }
-    .pb-pay-close:hover {
-      background: #f1f5f9;
-      color: #0f172a;
-    }
-
+    .pb-pay-close:hover { background: #f1f5f9; }
     .pb-pay-body {
       padding: 24px;
       display: grid;
-      gap: 14px;
-      background: #f8fafc;
+      gap: 16px;
     }
-
+    .pb-pay-methods {
+      display: grid;
+      gap: 14px;
+    }
     .pb-pay-btn {
       width: 100%;
-      min-height: 64px;
-      border-radius: 14px;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
-      color: #334155;
+      min-height: 72px;
+      border-radius: 16px;
+      border: none;
       cursor: pointer;
       font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 0 18px;
-      font-size: 15px;
-      transition: all 0.2s ease;
+      gap: 16px;
+      padding: 0 22px;
+      color: #fff;
+      font-size: 16px;
     }
-    .pb-pay-btn:hover {
-      background: #f1f5f9;
-      border-color: #cbd5e1;
-    }
-
-    .pb-pay-btn.primary {
-      border-color: #2563eb;
-      background: #2563eb;
-      color: #ffffff;
-    }
-    .pb-pay-btn.primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
-
-    .pb-pay-btn.success {
-      border-color: #16a34a;
-      background: #16a34a;
-      color: #ffffff;
-    }
-    .pb-pay-btn.success:hover { background: #15803d; border-color: #15803d; }
+    .pb-pay-btn.primary { background: #2563eb; }
+    .pb-pay-btn.success { background: #16a34a; }
+    .pb-pay-btn:hover { filter: brightness(1.05); }
+    .pb-pay-btn-left { display: flex; align-items: center; gap: 14px; }
+    .pb-pay-amount { font-size: 16px; font-weight: 800; opacity: .95; }
 
     .pb-pay-phone-wrap {
       display: none;
@@ -684,35 +664,37 @@
       padding: 16px;
       border-radius: 16px;
       border: 1px solid #e2e8f0;
-      background: #ffffff;
+      background: #f8fafc;
     }
-
-    .pb-pay-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: #475569;
-      margin-bottom: 8px;
-    }
-
+    .pb-pay-label { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; }
     .pb-pay-input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 12px;
       border-radius: 12px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid #e2e8f0;
       background: #ffffff;
-      color: #0f172a;
+      color: #1e293b;
       outline: none;
       font-size: 15px;
       box-sizing: border-box;
     }
     .pb-pay-input:focus { border-color: #16a34a; }
-
-    .pb-pay-status {
-      min-height: 16px;
-      margin-top: 8px;
-      font-size: 12px;
-      color: #64748b;
+    .pb-pay-send {
+      margin-top: 14px;
+      min-height: 48px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 12px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
     }
+    .pb-pay-send:disabled { opacity: .7; cursor: not-allowed; }
+    .pb-pay-status { min-height: 18px; margin-top: 10px; font-size: 13px; color: #475569; white-space: pre-line; }
+    .mpesa-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .mpesa-icon svg { width: 100%; height: 100%; display: block; }
 
     /* Responsive Adapters */
     @media (max-width: 920px) {
@@ -954,7 +936,6 @@
   </div>
 </footer>
 
-<!-- Payment Modal -->
 <div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
 <div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
   <div class="pb-pay-head">
@@ -966,24 +947,39 @@
   </div>
 
   <div class="pb-pay-body">
-    <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
-      <span>Pay with PayPal</span>
-      <span id="pbPayAmountA">—</span>
-    </button>
+    <div class="pb-pay-methods">
+      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
+        <span class="pb-pay-btn-left">
+          <span>Pay with PayPal</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
+      </button>
 
-    <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
-      <span>Pay with M-Pesa</span>
-      <span id="pbPayAmountB">—</span>
-    </button>
+      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
+        <span class="pb-pay-btn-left">
+          <span class="mpesa-icon" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none">
+              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(0,0,0,.16)"/>
+              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>Pay with M-Pesa</span>
+        </span>
+        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+      </button>
 
-    <div class="pb-pay-phone-wrap" id="pbMpesaBox">
-      <div class="pb-pay-label">M-Pesa Phone (2547XXXXXXXX)</div>
-      <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
-      <div class="pb-pay-status" id="pbPayStatus"></div>
+      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
+        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
+        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
+        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
+        <div class="pb-pay-status" id="pbPayStatus"></div>
+      </div>
     </div>
   </div>
 </div>
-
+  
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 
