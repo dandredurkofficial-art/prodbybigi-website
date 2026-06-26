@@ -979,6 +979,9 @@
     </div>
   </div>
 </div>
+
+<!-- Hidden PayPal button -->
+<div id="paypal-button-container" style="display:none;"></div>
   
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
@@ -991,6 +994,7 @@
 </script>
 
 <script type="module" src="/js/firebase.js"></script>
+<script src="https://www.paypal.com/sdk/js?client-id=ATmYnARn-J4UJtht9AXSV_GffDrNgMSWQXWzdNxix2_ENz6WJNhRIoCS6C5AhP13s8Uat5_wVS7NqOB-&vault=true&intent=subscription"></script>
 <script src="/js/menu.js"></script>
 <script src="/js/cart.js"></script>
 <script src="/js/cart-ui.js"></script>
@@ -1000,6 +1004,45 @@
     const v = Number(n);
     if (!Number.isFinite(v)) return "$0.00";
     return "$" + v.toFixed(2);
+  }
+
+  function renderPayPalButton(plan){
+
+    const planIds = {
+      starter:"P-0DG10730Y03521241NH46SIY",
+      pro:    "P-8DL33053SW9633024NH46UPY",
+      elite:  "P-399462291E201212SNH46VZA",
+    };
+
+    const planId = planIds[plan];
+
+    document.getElementById("paypal-button-container").innerHTML = "";
+
+    paypal.Buttons({
+
+      style:{
+        layout:"vertical",
+        shape:"rect",
+        color:"blue",
+        label:"subscribe"
+      },
+
+      createSubscription(data, actions){
+        return actions.subscription.create({
+          plan_id: planId
+        });
+      },
+
+      onApprove(data){
+
+        location.href =
+          "/pricing/?subscription_id=" +
+          data.subscriptionID;
+
+      }
+
+    }).render("#paypal-button-container");
+
   }
 
   async function goToMyDashboard() {
@@ -1100,51 +1143,28 @@
     }
 
     async function payWithPaypal(){
-      const selected = window.__PB_SELECTED_PLAN__;
-      if (!selected?.plan) return;
 
-      const user = window.FB?.auth?.currentUser || null;
-      if (!user){
-        location.href = "/login/?next=" + encodeURIComponent("/pricing/?plan=" + selected.plan);
+      const selected = window.__PB_SELECTED_PLAN__;
+      if(!selected?.plan) return;
+
+      const user = window.FB?.auth?.currentUser;
+      if(!user){
+        location.href="/login/?next="+encodeURIComponent("/pricing/?plan="+selected.plan);
         return;
       }
 
-      payStatus.textContent = "Opening PayPal...";
-      btnPaypal.disabled = true;
-      btnMpesa.disabled = true;
+      closePayModal();
 
-      try{
-        const body = {
-          uid: user.uid,
-          email: user.email || "",
-          plan: selected.plan,
-          amount: Number(selected.amount || 0)
-        };
+      renderPayPalButton(selected.plan);
 
-        const r = await fetch(window.PB_PLAN_PAYPAL_CREATE_URL, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(body)
-        });
+      setTimeout(()=>{
 
-        const data = await r.json().catch(()=> ({}));
+        document
+          .querySelector("#paypal-button-container button")
+          ?.click();
 
-        if (!r.ok){
-          throw new Error(data?.error || "Failed to create PayPal subscription.");
-        }
+      },500);
 
-        if (!data?.approveUrl){
-          throw new Error("Missing PayPal approval URL.");
-        }
-
-        location.href = data.approveUrl;
-      } catch(err){
-        console.error(err);
-        payStatus.textContent = err?.message || "PayPal failed.";
-      } finally {
-        btnPaypal.disabled = false;
-        btnMpesa.disabled = false;
-      }
     }
 
     async function payWithMpesa(){
