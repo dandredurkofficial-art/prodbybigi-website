@@ -1236,6 +1236,38 @@
         e.preventDefault();
         await goToMyDashboard();
       });
+
+      // Automatically reopen payment modal after login/register
+      const params = new URLSearchParams(window.location.search);
+      const selectedPlan = params.get("plan");
+
+      const user = window.FB?.auth?.currentUser;
+
+      if (user && selectedPlan) {
+
+        const plans = {
+          starter: 15,
+          pro: 39,
+          elite: 65
+        };
+
+        const amount = plans[selectedPlan.toLowerCase()];
+
+        if (amount) {
+
+          // wait a moment so Firebase/Auth/UI finish loading
+          setTimeout(() => {
+            openPayModal(selectedPlan.toLowerCase(), amount);
+
+            // Remove ?plan= from URL so refreshing
+            // won't reopen the modal forever.
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, "", cleanUrl);
+
+          }, 400);
+
+        }
+      }
     });
   })();
 </script>
