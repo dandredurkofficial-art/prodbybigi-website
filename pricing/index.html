@@ -1205,7 +1205,7 @@
           amount: Number(selected.amount || 0)
         };
 
-        const r = await fetch(window.PB_PLAN_MPESA_URL, {
+        const r = await fetch(window.PB_MPESA_STKPUSH_URL, {
           method: "POST",
           headers: { "Content-Type":"application/json" },
           body: JSON.stringify(body)
