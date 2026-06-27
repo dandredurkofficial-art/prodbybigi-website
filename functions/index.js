@@ -93,6 +93,12 @@ twoFA.send2FACode;
 
 exports.verify2FACode =
 twoFA.verify2FACode;
+
+const premiereReminders =
+require("./premiereReminders");
+
+exports.sendPremiereReminders =
+premiereReminders.sendPremiereReminders;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
