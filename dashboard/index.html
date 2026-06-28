@@ -4950,33 +4950,90 @@ function validatePremiereBeforePublish(){
   return { ok:true, premiereAt };
 }
 
-function initializeReferralUI() {
+async function initializeReferralUI() {
 
-const referralCode = "AUDIO-XXXX";
+    try {
 
-const referralLink =
-`${window.location.origin}/register?ref=${referralCode}`;
+        // Ensure user has a referral code
+        const generateReferralCode =
+            httpsCallable(functions, "generateReferralCode");
 
-document.getElementById("referralLink").value = referralLink;
+        const generateResult =
+            await generateReferralCode();
 
-document
-.getElementById("copyReferralBtn")
-.onclick = async () => {
+        const referralCode =
+            generateResult.data.referralCode;
 
-await navigator.clipboard.writeText(referralLink);
+        // Load dashboard data
+        const getReferralDashboard =
+            httpsCallable(functions, "getReferralDashboard");
 
-const btn =
-document.getElementById("copyReferralBtn");
+        const dashboardResult =
+            await getReferralDashboard();
 
-btn.innerHTML = " Copied!";
+        const data =
+            dashboardResult.data;
 
-setTimeout(()=>{
+        // Build referral link
+        const referralLink =
+            `${window.location.origin}/register?ref=${referralCode}`;
 
-btn.innerHTML=" Copy";
+        document.getElementById("referralLink").value =
+            referralLink;
 
-},2000);
+        document.getElementById("pendingReferrals").textContent =
+            data.pendingReferrals;
 
-};
+        document.getElementById("qualifiedReferrals").textContent =
+            data.qualifiedReferrals;
+
+        document.getElementById("boostCredits").textContent =
+            data.boostCredits;
+
+        // Progress Bar
+        updateCreditsProgress(data.boostCredits);
+
+        // Copy Button
+        document.getElementById("copyReferralBtn").onclick =
+            async () => {
+
+                await navigator.clipboard.writeText(referralLink);
+
+                const btn =
+                    document.getElementById("copyReferralBtn");
+
+                btn.textContent = " Copied!";
+
+                setTimeout(() => {
+
+                    btn.textContent = " Copy";
+
+                }, 2000);
+
+            };
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+    }
+
+}
+
+function updateCreditsProgress(credits) {
+
+    const nextReward = 25;
+
+    const percent =
+        Math.min((credits / nextReward) * 100, 100);
+
+    document.getElementById("creditsProgress")
+        .style.width = percent + "%";
+
+    document.getElementById("creditsProgressText")
+        .textContent =
+        `${credits} / ${nextReward} Credits`;
 
 }
   
