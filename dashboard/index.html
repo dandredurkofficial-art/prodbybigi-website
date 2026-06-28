@@ -4945,6 +4945,36 @@ function validatePremiereBeforePublish(){
 
   return { ok:true, premiereAt };
 }
+
+function initializeReferralUI() {
+
+const referralCode = "AUDIO-XXXX";
+
+const referralLink =
+`${window.location.origin}/register?ref=${referralCode}`;
+
+document.getElementById("referralLink").value = referralLink;
+
+document
+.getElementById("copyReferralBtn")
+.onclick = async () => {
+
+await navigator.clipboard.writeText(referralLink);
+
+const btn =
+document.getElementById("copyReferralBtn");
+
+btn.innerHTML = " Copied!";
+
+setTimeout(()=>{
+
+btn.innerHTML=" Copy";
+
+},2000);
+
+};
+
+}
   
 /* ===========================
    ✅ PAYPAL SUBSCRIPTIONS
