@@ -420,6 +420,43 @@ window.registerUser = async function registerUser() {
       displayName
     });
 
+    /* =========================
+       APPLY REFERRAL
+    ========================= */
+
+    try {
+
+      const referralCode = getReferralCode();
+
+      if (referralCode) {
+
+        const applyReferral = httpsCallable(
+          getFunctions(),
+          "applyReferral"
+        );
+
+        const result = await applyReferral({
+          referralCode
+        });
+
+        console.log(
+          "Referral applied:",
+          result.data
+        );
+
+        clearReferralCode();
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        "Referral error:",
+        err
+      );
+
+    }
+
     clearPendingRole();
 
     try {
