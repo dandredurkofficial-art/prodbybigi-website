@@ -37,6 +37,26 @@ const RESEND_VERIFICATION_URL = "https://resendverificationemail-f65rhsquva-uc.a
 const VERIFY_TOKEN_URL = "https://verifyemailtoken-f65rhsquva-uc.a.run.app";
 
 /* =========================
+   CAPTURE REFERRAL CODE
+========================= */
+
+(() => {
+
+  const ref = new URLSearchParams(window.location.search)
+    .get("ref");
+
+  if (ref) {
+
+    localStorage.setItem(
+      "audioryReferral",
+      ref.trim().toUpperCase()
+    );
+
+  }
+
+})();
+
+/* =========================
    HELPERS
 ========================= */
 
@@ -148,6 +168,20 @@ function setPendingRole(role) {
 
 function getPendingRole() {
   return String(localStorage.getItem("pendingRole") || "").trim();
+}
+
+/* =========================
+   REFERRAL HELPERS
+========================= */
+
+function getReferralCode() {
+  return String(
+    localStorage.getItem("audioryReferral") || ""
+  ).trim().toUpperCase();
+}
+
+function clearReferralCode() {
+  localStorage.removeItem("audioryReferral");
 }
 
 function clearPendingRole() {
