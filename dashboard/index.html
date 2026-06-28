@@ -4029,6 +4029,10 @@ function showPage(id, el){
     window.loadAdvancedAnalyticsReal();
   }
 
+  if (page === "referrals") {
+      initializeReferralUI();
+  }
+
   // ✅ Auto-load campaigns when opening marketing page
   if (id === "marketingTools" && typeof window.loadMarketingCampaigns === "function") {
     window.loadMarketingCampaigns();
