@@ -112,6 +112,9 @@ referral.generateReferralCode;
 
 exports.getReferralDashboard =
 referral.getReferralDashboard;
+
+exports.applyReferral =
+referral.applyReferral;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
