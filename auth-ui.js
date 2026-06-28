@@ -307,6 +307,13 @@ async function createBaseUserDocs({ uid, email, role, displayName }) {
     role,
     handle,
     emailVerified: false,
+
+    // Referral system
+    referralCode: null,
+    referredBy: null,
+    pendingReferrals: 0,
+    qualifiedReferrals: 0,
+    boostCredits: 0
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     displayName: handle
