@@ -172,3 +172,136 @@ exports.getReferralDashboard = onCall(async (request) => {
     };
 
 });
+
+exports.applyReferral = onCall(async (request) => {
+
+    if (!request.auth) {
+        throw new HttpsError(
+            "unauthenticated",
+            "Login required."
+        );
+    }
+
+    const uid = request.auth.uid;
+
+    const referralCode =
+        String(request.data?.referralCode || "")
+        .trim()
+        .toUpperCase();
+
+    // User didn't use a referral link.
+    if (!referralCode) {
+
+        return {
+            success: true,
+            skipped: true
+        };
+
+    }
+
+    const userRef =
+        db.collection("users").doc(uid);
+
+    const userSnap =
+        await userRef.get();
+
+    if (!userSnap.exists) {
+
+        throw new HttpsError(
+            "not-found",
+            "User not found."
+        );
+
+    }
+
+    const user =
+        userSnap.data();
+
+    // Already referred
+    if (user.referredBy) {
+
+        return {
+            success: true,
+            skipped: true
+        };
+
+    }
+
+    // Find owner of referral code
+
+    const refSnap =
+        await db.collection("users")
+        .where("referralCode","==",referralCode)
+        .limit(1)
+        .get();
+
+    if (refSnap.empty) {
+
+        return {
+            success:false,
+            reason:"invalid-code"
+        };
+
+    }
+
+    const referrerDoc =
+        refSnap.docs[0];
+
+    // Prevent self referral
+
+    if (referrerDoc.id === uid) {
+
+        return {
+            success:false,
+            reason:"self-referral"
+        };
+
+    }
+
+    const batch =
+        db.batch();
+
+    batch.update(userRef,{
+
+        referredBy:referrerDoc.id
+
+    });
+
+    batch.update(referrerDoc.ref,{
+
+        pendingReferrals:
+        admin.firestore.FieldValue.increment(1)
+
+    });
+
+    const referralRef =
+        db.collection("referrals").doc();
+
+    batch.set(referralRef,{
+
+        referrerId:
+        referrerDoc.id,
+
+        referredId:
+        uid,
+
+        referralCode,
+
+        status:"pending",
+
+        rewardIssued:false,
+
+        createdAt:
+        admin.firestore.FieldValue.serverTimestamp()
+
+    });
+
+    await batch.commit();
+
+    return{
+
+        success:true
+
+    };
+
+});
