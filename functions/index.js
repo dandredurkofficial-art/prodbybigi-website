@@ -99,6 +99,19 @@ require("./premiereReminders");
 
 exports.sendPremiereReminders =
 premiereReminders.sendPremiereReminders;
+
+/* =========================
+   REFERRAL FUNCTIONS
+========================= */
+
+const referral =
+require("./referral");
+
+exports.generateReferralCode =
+referral.generateReferralCode;
+
+exports.getReferralDashboard =
+referral.getReferralDashboard;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
