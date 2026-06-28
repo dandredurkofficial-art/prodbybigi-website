@@ -258,42 +258,30 @@ exports.applyReferral = onCall(async (request) => {
 
     }
 
-    const batch =
-        db.batch();
+    const batch = db.batch();
 
-    batch.update(userRef,{
+    // Mark who referred this user
+    batch.set(userRef, {
+      referredBy: referrerDoc.id
+    }, { merge: true });
 
-        referredBy:referrerDoc.id
+    // Safely update the referrer stats
+    batch.set(referrerDoc.ref, {
+      pendingReferrals: admin.firestore.FieldValue.increment(1),
+      qualifiedReferrals: admin.firestore.FieldValue.increment(0),
+      boostCredits: admin.firestore.FieldValue.increment(0)
+    }, { merge: true });
 
-    });
+    // Create referral record
+    const referralRef = db.collection("referrals").doc();
 
-    batch.update(referrerDoc.ref,{
-
-        pendingReferrals:
-        admin.firestore.FieldValue.increment(1)
-
-    });
-
-    const referralRef =
-        db.collection("referrals").doc();
-
-    batch.set(referralRef,{
-
-        referrerId:
-        referrerDoc.id,
-
-        referredId:
-        uid,
-
-        referralCode,
-
-        status:"pending",
-
-        rewardIssued:false,
-
-        createdAt:
-        admin.firestore.FieldValue.serverTimestamp()
-
+    batch.set(referralRef, {
+      referrerId: referrerDoc.id,
+      referredId: uid,
+      referralCode,
+      status: "pending",
+      rewardIssued: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
 
     await batch.commit();
