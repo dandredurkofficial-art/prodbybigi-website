@@ -188,23 +188,23 @@ exports.publishBeat = onCall(
      =========================== */
 
      const producerRef =
-       db.collection("producers")
+         db.collection("producers")
          .doc(uid);
 
      await producerRef.set({
 
-       beatsCount:
-         admin.firestore.FieldValue.increment(1)
+         beatsCount:
+             admin.firestore.FieldValue.increment(1)
 
      }, { merge: true });
 
      const producerSnap =
-       await producerRef.get();
+         await producerRef.get();
 
      const beatsCount =
-       Number(
-         producerSnap.data()?.beatsCount || 0
-       );
+         Number(
+             producerSnap.data()?.beatsCount || 0
+         );
 
      /* ===========================
         REFERRAL QUALIFICATION
@@ -212,9 +212,7 @@ exports.publishBeat = onCall(
 
      if (beatsCount === 3) {
 
-       // We'll build this helper next
-
-       await qualifyReferral(uid);
+         await referral.qualifyReferral(uid);
 
      }
 
