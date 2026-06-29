@@ -2,6 +2,7 @@ const { onCall, HttpsError } =
 require("firebase-functions/v2/https");
 
 const admin = require("firebase-admin");
+const referral = require("./referral");
 
 const db = admin.firestore();
 
