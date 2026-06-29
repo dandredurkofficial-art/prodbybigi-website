@@ -182,10 +182,48 @@ exports.publishBeat = onCall(
       await db.collection("beats")
       .add(payload);
 
+     /* ===========================
+        UPDATE PRODUCER STATS
+     =========================== */
+
+     const producerRef =
+       db.collection("producers")
+         .doc(uid);
+
+     await producerRef.set({
+
+       beatsCount:
+         admin.firestore.FieldValue.increment(1)
+
+     }, { merge: true });
+
+     const producerSnap =
+       await producerRef.get();
+
+     const beatsCount =
+       Number(
+         producerSnap.data()?.beatsCount || 0
+       );
+
+     /* ===========================
+        REFERRAL QUALIFICATION
+     =========================== */
+
+     if (beatsCount === 3) {
+
+       // We'll build this helper next
+
+       await qualifyReferral(uid);
+
+     }
+
     return {
 
       ok: true,
-      beatId: ref.id
+
+      beatId: ref.id,
+
+      beatsCount
 
     };
 
