@@ -293,3 +293,114 @@ exports.applyReferral = onCall(async (request) => {
     };
 
 });
+
+/* =====================================
+   QUALIFY REFERRAL
+===================================== */
+
+exports.qualifyReferral = async function qualifyReferral(uid) {
+
+    // Find pending referral
+    const referralSnap =
+        await db.collection("referrals")
+        .where("referredId", "==", uid)
+        .where("status", "==", "pending")
+        .limit(1)
+        .get();
+
+    if (referralSnap.empty) {
+
+        return false;
+
+    }
+
+    const referralDoc =
+        referralSnap.docs[0];
+
+    const referralRef =
+        referralDoc.ref;
+
+    const creditRef =
+        db.collection("creditTransactions").doc();
+
+    await db.runTransaction(async (transaction) => {
+
+        const referralSnapshot =
+            await transaction.get(referralRef);
+
+        if (!referralSnapshot.exists) {
+
+            throw new Error("Referral not found.");
+
+        }
+
+        const referral =
+            referralSnapshot.data();
+
+        // Already rewarded
+        if (
+            referral.rewardIssued === true ||
+            referral.status === "qualified"
+        ) {
+
+            return;
+
+        }
+
+        const referrerRef =
+            db.collection("users")
+            .doc(referral.referrerId);
+
+        // Mark referral as qualified
+        transaction.update(referralRef, {
+
+            status: "qualified",
+
+            rewardIssued: true,
+
+            qualifiedAt:
+                admin.firestore.FieldValue.serverTimestamp()
+
+        });
+
+        // Update referrer stats
+        transaction.set(referrerRef, {
+
+            pendingReferrals:
+                admin.firestore.FieldValue.increment(-1),
+
+            qualifiedReferrals:
+                admin.firestore.FieldValue.increment(1),
+
+            boostCredits:
+                admin.firestore.FieldValue.increment(10)
+
+        }, { merge: true });
+
+        // Credit ledger
+        transaction.set(creditRef, {
+
+            userId:
+                referral.referrerId,
+
+            credits: 10,
+
+            type: "earn",
+
+            reason: "referral_qualified",
+
+            referredUserId: uid,
+
+            referralId:
+                referralRef.id,
+
+            createdAt:
+                admin.firestore.FieldValue.serverTimestamp()
+
+        });
+
+    });
+
+    return true;
+
+};
