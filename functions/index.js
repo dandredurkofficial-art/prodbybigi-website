@@ -115,6 +115,9 @@ referral.getReferralDashboard;
 
 exports.applyReferral =
 referral.applyReferral;
+
+exports.qualifyReferral =
+referral.qualifyReferral;
 /* =========================================================
 ✅ SECRETS
 ========================================================= */
