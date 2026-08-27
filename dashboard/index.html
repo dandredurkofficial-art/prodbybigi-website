@@ -4120,7 +4120,7 @@ async function uploadToStorage({
     throw new Error("Missing storage path.");
   }
 
-  const auth = window.FB?.auth;
+  const auth = window.auth;
 
   if (!auth) {
     throw new Error(
@@ -4136,7 +4136,6 @@ async function uploadToStorage({
     );
   }
 
-  // Get the current Firebase Authentication ID token.
   const token = await user.getIdToken();
 
   const STORAGE_WORKER_URL =
@@ -4165,7 +4164,6 @@ async function uploadToStorage({
         "application/octet-stream"
     );
 
-    // Preserve Audiory's existing upload progress UI.
     xhr.upload.onprogress = (event) => {
       if (
         event.lengthComputable &&
@@ -4197,13 +4195,9 @@ async function uploadToStorage({
       ) {
         resolve({
           downloadURL: data.downloadURL,
-
           storagePath:
-            data.storagePath ||
-            data.key,
-
-          path:
-            data.key
+            data.storagePath || data.key,
+          path: data.key
         });
 
         return;
