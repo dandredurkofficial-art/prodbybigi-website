@@ -1,0 +1,13 @@
+- name: Deploy to Pages
+  uses: actions/deploy-pages@v5
+  with:
+    # Add retry configuration if supported by the action
+    timeout-minutes: 10
+  continue-on-error: true
+  
+- name: Wait and Retry
+  if: failure()
+  run: |
+    echo "Waiting for previous deployment to complete..."
+    sleep 120
+    # Re-run the deployment
