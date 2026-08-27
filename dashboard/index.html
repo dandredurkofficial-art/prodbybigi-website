@@ -4120,8 +4120,7 @@ async function uploadToStorage({
     throw new Error("Missing storage path.");
   }
 
-  const user =
-    window.auth?.currentUser;
+  const user = window.auth?.currentUser;
 
   if (!user) {
     throw new Error(
@@ -4129,11 +4128,9 @@ async function uploadToStorage({
     );
   }
 
-  // Get Firebase ID token
-  const token =
-    await user.getIdToken();
+  // Get the current Firebase Authentication ID token.
+  const token = await user.getIdToken();
 
-  // Your Worker URL
   const STORAGE_WORKER_URL =
     "https://storage.audiory.site";
 
@@ -4141,9 +4138,7 @@ async function uploadToStorage({
     `${STORAGE_WORKER_URL}/upload/${encodeURIComponent(path)}`;
 
   return await new Promise((resolve, reject) => {
-
-    const xhr =
-      new XMLHttpRequest();
+    const xhr = new XMLHttpRequest();
 
     xhr.open(
       "PUT",
@@ -4159,37 +4154,30 @@ async function uploadToStorage({
     xhr.setRequestHeader(
       "Content-Type",
       file.type ||
-      "application/octet-stream"
+        "application/octet-stream"
     );
 
-    // Upload progress
-    xhr.upload.onprogress =
-      (event) => {
+    // Preserve Audiory's existing upload progress UI.
+    xhr.upload.onprogress = (event) => {
+      if (
+        event.lengthComputable &&
+        typeof onProgress === "function"
+      ) {
+        const percent = Math.round(
+          (event.loaded / event.total) * 100
+        );
 
-        if (
-          event.lengthComputable &&
-          onProgress
-        ) {
-          const percent =
-            Math.round(
-              (event.loaded /
-                event.total) *
-              100
-            );
-
-          onProgress(percent);
-        }
-      };
+        onProgress(percent);
+      }
+    };
 
     xhr.onload = () => {
-
       let data = null;
 
       try {
-        data =
-          JSON.parse(
-            xhr.responseText
-          );
+        data = JSON.parse(
+          xhr.responseText
+        );
       } catch {
         data = null;
       }
@@ -4199,10 +4187,8 @@ async function uploadToStorage({
         xhr.status < 300 &&
         data?.success
       ) {
-
         resolve({
-          downloadURL:
-            data.downloadURL,
+          downloadURL: data.downloadURL,
 
           storagePath:
             data.storagePath ||
@@ -4242,7 +4228,6 @@ async function uploadToStorage({
     xhr.send(file);
   });
 }
-
 async function loadAdvancedAnalyticsReal(){
   if (!window.currentUser) return;
 
