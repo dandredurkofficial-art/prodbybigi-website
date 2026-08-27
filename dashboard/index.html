@@ -4120,7 +4120,15 @@ async function uploadToStorage({
     throw new Error("Missing storage path.");
   }
 
-  const user = window.auth?.currentUser;
+  const auth = window.FB?.auth;
+
+  if (!auth) {
+    throw new Error(
+      "Firebase auth not ready."
+    );
+  }
+
+  const user = auth.currentUser;
 
   if (!user) {
     throw new Error(
