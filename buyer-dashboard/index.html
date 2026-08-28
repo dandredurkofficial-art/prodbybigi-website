@@ -929,81 +929,238 @@
   }
 
   function normalizeOrder(x){
-    const beatId = x.beatId || x.beatID || x.itemId || x.itemID || "";
-    const status = (x.status || x.state || "").toString().toLowerCase().trim();
+  const beatId =
+    x.beatId ||
+    x.beatID ||
+    "";
 
-    return {
-      id: String(x.id),
-      source: "order",
-      beatId: String(beatId || ""),
-      itemTitle: String(x.itemTitle || x.title || x.beatTitle || "Beat"),
-      itemType: (x.itemType || x.type || "beat").toString().toLowerCase(),
-      status,
-      createdAt: x.createdAt || x.timestamp || null,
-      isUnlocked: isSuccessfulStatus(status),
-      licenseKey: String(x.licenseKey || x.license || "basic"),
-      downloadUrl: x.downloadUrl || x.url || null,
-      orderId: String(x.id || "")
-    };
-  }
+  const kitId =
+    x.kitId ||
+    x.soundkitId ||
+    x.soundKitId ||
+    "";
 
-  function normalizeUnlock(x){
-    const status = (x.status || "unlocked").toString().toLowerCase().trim();
+  const itemId =
+    x.itemId ||
+    x.itemID ||
+    "";
 
-    return {
-      id: String(x.id),
-      source: "unlock",
-      beatId: String(x.beatId || ""),
-      itemTitle: String(x.beatTitle || x.title || "Beat"),
-      itemType: (x.type || "beat").toString().toLowerCase(),
-      status,
-      createdAt: x.createdAt || null,
-      isUnlocked: isSuccessfulStatus(status),
-      licenseKey: String(x.licenseKey || "basic"),
-      downloadPath: x.downloadPath || null,
-      audioUrl: x.audioUrl || null,
-      orderId: x.orderId || null
-    };
-  }
+  const status =
+    (x.status || x.state || "")
+      .toString()
+      .toLowerCase()
+      .trim();
 
-  function filterPurchasedItems(items){
-    return (items || []).filter(item => {
-      if (!item) return false;
-      if (!item.beatId) return false;
-      if (!item.isUnlocked) return false;
-      return true;
-    });
-  }
+  const rawType =
+    (
+      x.itemType ||
+      x.type ||
+      (kitId ? "soundkit" : "beat")
+    )
+      .toString()
+      .toLowerCase()
+      .trim();
 
-  function dedupePurchasedItems(items){
-    const map = new Map();
+  return {
+    id: String(x.id),
 
-    (items || []).forEach(item => {
-      const key = `${item.beatId}__${item.licenseKey || "basic"}`;
-      const existing = map.get(key);
+    source: "order",
 
-      const currentTime =
-        item.createdAt?.toMillis ? item.createdAt.toMillis() : Number(item.createdAt || 0);
+    beatId: String(beatId || ""),
+    kitId: String(kitId || ""),
+    itemId: String(itemId || ""),
 
-      const existingTime =
-        existing?.createdAt?.toMillis ? existing.createdAt.toMillis() : Number(existing?.createdAt || 0);
+    itemTitle: String(
+      x.itemTitle ||
+      x.title ||
+      x.beatTitle ||
+      x.kitTitle ||
+      "Purchased item"
+    ),
 
-      if (!existing || currentTime > existingTime) {
-        map.set(key, item);
-      }
-    });
+    itemType: rawType,
 
-    return Array.from(map.values()).sort((a,b)=>{
-      const am = a.createdAt?.toMillis ? a.createdAt.toMillis() : Number(a.createdAt || 0);
-      const bm = b.createdAt?.toMillis ? b.createdAt.toMillis() : Number(b.createdAt || 0);
-      return bm - am;
-    });
-  }
+    status,
+
+    createdAt:
+      x.createdAt ||
+      x.timestamp ||
+      null,
+
+    isUnlocked:
+      isSuccessfulStatus(status),
+
+    licenseKey:
+      String(
+        x.licenseKey ||
+        x.license ||
+        "basic"
+      ),
+
+    downloadUrl:
+      x.downloadUrl ||
+      x.url ||
+      null,
+
+    orderId:
+      String(x.id || "")
+  };
+}
+
+function normalizeUnlock(x){
+  const status =
+    (x.status || "unlocked")
+      .toString()
+      .toLowerCase()
+      .trim();
+
+  const beatId =
+    x.beatId ||
+    x.beatID ||
+    "";
+
+  const kitId =
+    x.kitId ||
+    x.soundkitId ||
+    x.soundKitId ||
+    "";
+
+  const rawType =
+    (
+      x.type ||
+      (kitId ? "soundkit" : "beat")
+    )
+      .toString()
+      .toLowerCase()
+      .trim();
+
+  return {
+    id: String(x.id),
+
+    source: "unlock",
+
+    beatId: String(beatId || ""),
+    kitId: String(kitId || ""),
+
+    itemTitle: String(
+      x.beatTitle ||
+      x.kitTitle ||
+      x.title ||
+      "Purchased item"
+    ),
+
+    itemType: rawType,
+
+    status,
+
+    createdAt:
+      x.createdAt ||
+      null,
+
+    isUnlocked:
+      isSuccessfulStatus(status),
+
+    licenseKey:
+      String(
+        x.licenseKey ||
+        "basic"
+      ),
+
+    downloadPath:
+      x.downloadPath ||
+      null,
+
+    audioUrl:
+      x.audioUrl ||
+      null,
+
+    orderId:
+      x.orderId ||
+      null
+  };
+}
+  
+function filterPurchasedItems(items){
+  return (items || []).filter(item => {
+    if (!item) return false;
+
+    if (!item.isUnlocked) {
+      return false;
+    }
+
+    const type =
+      String(item.itemType || "")
+        .toLowerCase()
+        .trim();
+
+    if (type === "soundkit" || type === "sound-kit") {
+      return !!item.kitId;
+    }
+
+    return !!item.beatId;
+  });
+}
+
+function dedupePurchasedItems(items){
+  const map = new Map();
+
+  (items || []).forEach(item => {
+
+    const type =
+      String(item.itemType || "beat")
+        .toLowerCase()
+        .trim();
+
+    const itemKey =
+      type === "soundkit" ||
+      type === "sound-kit"
+        ? `kit:${item.kitId}`
+        : `beat:${item.beatId}`;
+
+    const key =
+      `${itemKey}__${item.licenseKey || "basic"}`;
+
+    const existing =
+      map.get(key);
+
+    const currentTime =
+      item.createdAt?.toMillis
+        ? item.createdAt.toMillis()
+        : Number(item.createdAt || 0);
+
+    const existingTime =
+      existing?.createdAt?.toMillis
+        ? existing.createdAt.toMillis()
+        : Number(existing?.createdAt || 0);
+
+    if (
+      !existing ||
+      currentTime > existingTime
+    ) {
+      map.set(key, item);
+    }
+  });
+
+  return Array.from(map.values()).sort((a,b)=>{
+    const am =
+      a.createdAt?.toMillis
+        ? a.createdAt.toMillis()
+        : Number(a.createdAt || 0);
+
+    const bm =
+      b.createdAt?.toMillis
+        ? b.createdAt.toMillis()
+        : Number(b.createdAt || 0);
+
+    return bm - am;
+  });
+}
 
   function renderOverview(){
     $("statOrders").textContent = String(ALL_ITEMS.length);
     $("statPaid").textContent = String(ALL_ITEMS.length);
-    $("statDownloads").textContent = String(ALL_ITEMS.filter(o => o.beatId).length);
+    $("statDownloads").textContent =
+      String(ALL_ITEMS.length);
 
     $("statOrdersMini").textContent = "Only successful purchases";
     $("statPaidMini").textContent = "Completed and unlocked";
@@ -1011,88 +1168,224 @@
   }
 
   function renderOrders(){
-    const qtxt = ($("ordersSearch").value || "").trim().toLowerCase();
+  const qtxt =
+    ($("ordersSearch").value || "")
+      .trim()
+      .toLowerCase();
 
-    const list = ALL_ITEMS.filter(o=>{
-      const hay = `${o.itemTitle} ${o.id} ${o.status} ${o.beatId}`.toLowerCase();
+  const list =
+    ALL_ITEMS.filter(o=>{
+      const hay =
+        `${o.itemTitle} ${o.id} ${o.status} ${o.beatId} ${o.kitId} ${o.itemType}`
+          .toLowerCase();
+
       return !qtxt || hay.includes(qtxt);
     });
 
-    const tb = $("ordersTbody");
+  const tb =
+    $("ordersTbody");
+
+  tb.innerHTML = "";
+
+  list.forEach(o => {
+
+    const isKit =
+      o.itemType === "soundkit" ||
+      o.itemType === "sound-kit";
+
+    const itemIdText =
+      isKit
+        ? `Sound Kit ID: ${o.kitId}`
+        : `Beat ID: ${o.beatId}`;
+
+    const tr =
+      document.createElement("tr");
+
+    tr.className = "rowcard";
+
+    tr.innerHTML = `
+      <td>
+        <div style="font-weight:950;">
+          ${o.itemTitle}
+        </div>
+
+        <div class="sub">
+          ${itemIdText}
+        </div>
+      </td>
+
+      <td>
+        <span class="pill ok">
+          ${o.status || "unlocked"}
+        </span>
+      </td>
+
+      <td>
+        ${fmtDate(o.createdAt)}
+      </td>
+
+      <td>
+        <div class="actions">
+
+          <button
+            class="btn"
+            type="button"
+            data-action="open"
+            data-id="${o.id}">
+            Open
+          </button>
+
+          <button
+            class="btn primary"
+            type="button"
+            data-action="download"
+            data-id="${o.id}">
+            Download
+          </button>
+
+          ${
+            isKit
+              ? ""
+              : `
+                <button
+                  class="btn"
+                  type="button"
+                  data-action="license"
+                  data-id="${o.id}">
+                  License PDF
+                </button>
+              `
+          }
+
+        </div>
+      </td>
+    `;
+
+    tb.appendChild(tr);
+  });
+
+  if (!list.length){
+
     tb.innerHTML = "";
 
-    list.forEach(o=>{
-      const tr = document.createElement("tr");
-      tr.className = "rowcard";
+    setStatus(
+      "No purchased items found yet."
+    );
 
-      tr.innerHTML = `
-        <td>
-          <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">${o.beatId ? `Beat ID: ${o.beatId}` : "Purchased item"}</div>
-        </td>
-        <td>
-          <span class="pill ok">${o.status || "unlocked"}</span>
-        </td>
-        <td>${fmtDate(o.createdAt)}</td>
-        <td>
-          <div class="actions">
-            <button class="btn" type="button" data-action="open" data-id="${o.id}">Open</button>
-            <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
-            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
-          </div>
-        </td>
-      `;
+  } else {
 
-      tb.appendChild(tr);
-    });
+    hideStatus();
 
-    if (!list.length){
-      tb.innerHTML = "";
-      setStatus("No purchased beats found yet.");
-    } else {
-      hideStatus();
-    }
   }
+}
 
-  function renderDownloads(){
-    const qtxt = ($("downloadsSearch").value || "").trim().toLowerCase();
+function renderDownloads(){
 
-    const list = ALL_ITEMS.filter(o=>{
-      const hay = `${o.itemTitle} ${o.itemType} ${o.beatId}`.toLowerCase();
+  const qtxt =
+    ($("downloadsSearch").value || "")
+      .trim()
+      .toLowerCase();
+
+  const list =
+    ALL_ITEMS.filter(o => {
+
+      const hay =
+        `${o.itemTitle} ${o.itemType} ${o.beatId} ${o.kitId}`
+          .toLowerCase();
+
       return !qtxt || hay.includes(qtxt);
     });
 
-    const tb = $("downloadsTbody");
-    tb.innerHTML = "";
+  const tb =
+    $("downloadsTbody");
 
-    list.forEach(o=>{
-      const tr = document.createElement("tr");
-      tr.className = "rowcard";
+  tb.innerHTML = "";
 
-      tr.innerHTML = `
-        <td>
-          <div style="font-weight:950;">${o.itemTitle}</div>
-          <div class="sub">Beat ID: ${o.beatId}</div>
-        </td>
-        <td><span class="pill">${o.itemType}</span></td>
-        <td style="text-align:right;">
-          <div class="actions" style="justify-content:flex-end;">
-            <button class="btn primary" type="button" data-action="download" data-id="${o.id}">Download</button>
-            <button class="btn" type="button" data-action="license" data-id="${o.id}">License PDF</button>
-          </div>
-        </td>
-      `;
+  list.forEach(o => {
 
-      tb.appendChild(tr);
-    });
+    const isKit =
+      o.itemType === "soundkit" ||
+      o.itemType === "sound-kit";
 
-    if (!list.length){
-      setStatus("No downloads yet.\n\nOnly successful purchases appear here.");
-    } else {
-      hideStatus();
-    }
+    const idText =
+      isKit
+        ? `Sound Kit ID: ${o.kitId}`
+        : `Beat ID: ${o.beatId}`;
+
+    const tr =
+      document.createElement("tr");
+
+    tr.className = "rowcard";
+
+    tr.innerHTML = `
+      <td>
+
+        <div style="font-weight:950;">
+          ${o.itemTitle}
+        </div>
+
+        <div class="sub">
+          ${idText}
+        </div>
+
+      </td>
+
+      <td>
+        <span class="pill">
+          ${isKit ? "soundkit" : o.itemType}
+        </span>
+      </td>
+
+      <td style="text-align:right;">
+
+        <div
+          class="actions"
+          style="justify-content:flex-end;"
+        >
+
+          <button
+            class="btn primary"
+            type="button"
+            data-action="download"
+            data-id="${o.id}">
+            Download
+          </button>
+
+          ${
+            isKit
+              ? ""
+              : `
+                <button
+                  class="btn"
+                  type="button"
+                  data-action="license"
+                  data-id="${o.id}">
+                  License PDF
+                </button>
+              `
+          }
+
+        </div>
+
+      </td>
+    `;
+
+    tb.appendChild(tr);
+  });
+
+  if (!list.length){
+
+    setStatus(
+      "No downloads yet.\n\nOnly successful purchases appear here."
+    );
+
+  } else {
+
+    hideStatus();
+
   }
-
+}
+  
   function refreshVisible(){
     const active = document.querySelector(".tab.active")?.dataset?.tab || "overview";
 
@@ -1185,19 +1478,48 @@
     if (!item) return;
 
     if (action === "open"){
-      if (!item.beatId) return alert("No beat found for this purchase.");
-      location.href = "/beat/?id=" + encodeURIComponent(item.beatId);
+
+      const isKit =
+        item.itemType === "soundkit" ||
+        item.itemType === "sound-kit";
+
+      if (isKit){
+
+        if (!item.kitId) {
+          return alert(
+            "No sound kit found for this purchase."
+          );
+        }
+
+        location.href =
+          "/soundkit/?id=" +
+          encodeURIComponent(item.kitId);
+
+        return;
+      }
+
+      if (!item.beatId) {
+        return alert(
+          "No beat found for this purchase."
+        );
+      }
+
+      location.href =
+        "/beat/?id=" +
+        encodeURIComponent(item.beatId);
+
       return;
     }
 
     if (action === "download"){
+
   try {
 
     btn.disabled = true;
     btn.textContent = "Preparing…";
 
     // --------------------------------------------------
-    // GET CURRENT FIREBASE USER
+    // CURRENT USER
     // --------------------------------------------------
 
     const user =
@@ -1209,17 +1531,118 @@
       );
     }
 
-
     // --------------------------------------------------
-    // GET FRESH FIREBASE ID TOKEN
+    // FRESH FIREBASE ID TOKEN
     // --------------------------------------------------
 
     const token =
       await user.getIdToken(true);
 
+    // --------------------------------------------------
+    // DETERMINE ITEM TYPE
+    // --------------------------------------------------
+
+    const isKit =
+      item.itemType === "soundkit" ||
+      item.itemType === "sound-kit";
 
     // --------------------------------------------------
-    // CALL CLOUDFLARE WORKER
+    // SOUND KIT
+    // --------------------------------------------------
+
+    if (isKit){
+
+      if (!item.kitId) {
+        throw new Error(
+          "Sound kit ID is missing."
+        );
+      }
+
+      const r =
+        await fetch(
+          "https://storage.audiory.site/api/secureKitDownload",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+
+              "Authorization":
+                "Bearer " + token
+            },
+
+            body:
+              JSON.stringify({
+
+                kitId:
+                  item.kitId,
+
+                unlockId:
+                  item.source === "unlock"
+                    ? item.id
+                    : null,
+
+                orderId:
+                  item.source === "order"
+                    ? item.id
+                    : (item.orderId || null)
+
+              })
+          }
+        );
+
+      if (!r.ok){
+
+        const errorData =
+          await r.json()
+            .catch(() => ({}));
+
+        throw new Error(
+          errorData?.error ||
+          `Sound-kit download failed (${r.status})`
+        );
+      }
+
+      const blob =
+        await r.blob();
+
+      if (
+        !blob ||
+        blob.size === 0
+      ){
+        throw new Error(
+          "Downloaded sound-kit file is empty."
+        );
+      }
+
+      const blobUrl =
+        URL.createObjectURL(blob);
+
+      const link =
+        document.createElement("a");
+
+      link.href =
+        blobUrl;
+
+      link.download =
+        `${item.itemTitle || "Audiory Sound Kit"}.zip`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+      setTimeout(() => {
+        URL.revokeObjectURL(blobUrl);
+      }, 60000);
+
+      return;
+    }
+
+    // --------------------------------------------------
+    // BEAT DOWNLOAD
     // --------------------------------------------------
 
     const r =
@@ -1239,21 +1662,14 @@
           body:
             JSON.stringify({
 
-              // Existing unlock ID when
-              // this item came from unlocks.
               unlockId:
                 item.source === "unlock"
                   ? item.id
                   : null,
 
-              // Always send beatId.
-              // Worker can authorize using
-              // buyerId + beatId.
               beatId:
                 item.beatId,
 
-              // Keep this for future license
-              // handling / compatibility.
               licenseKey:
                 item.licenseKey ||
                 "basic",
@@ -1267,12 +1683,7 @@
         }
       );
 
-
-    // --------------------------------------------------
-    // ERROR RESPONSE
-    // --------------------------------------------------
-
-    if (!r.ok) {
+    if (!r.ok){
 
       const errorData =
         await r.json()
@@ -1282,36 +1693,22 @@
         errorData?.error ||
         `Download failed (${r.status})`
       );
-
     }
-
-
-    // --------------------------------------------------
-    // WORKER RETURNS THE ACTUAL R2 FILE
-    // --------------------------------------------------
 
     const blob =
       await r.blob();
 
-
-    if (!blob || blob.size === 0) {
+    if (
+      !blob ||
+      blob.size === 0
+    ){
       throw new Error(
         "Downloaded file is empty."
       );
     }
 
-
-    // --------------------------------------------------
-    // CREATE TEMPORARY BROWSER URL
-    // --------------------------------------------------
-
     const blobUrl =
       URL.createObjectURL(blob);
-
-
-    // --------------------------------------------------
-    // START DOWNLOAD
-    // --------------------------------------------------
 
     const link =
       document.createElement("a");
@@ -1328,17 +1725,11 @@
 
     link.remove();
 
-
-    // --------------------------------------------------
-    // CLEAN UP
-    // --------------------------------------------------
-
     setTimeout(() => {
       URL.revokeObjectURL(blobUrl);
     }, 60000);
 
-
-  } catch(err) {
+  } catch(err){
 
     console.error(
       "Secure download error:",
