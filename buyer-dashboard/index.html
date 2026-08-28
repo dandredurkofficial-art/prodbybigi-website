@@ -840,7 +840,7 @@
 
   let ALL_ITEMS = [];
 
-  const DOWNLOAD_FN_URL = "https://securedownload-f65rhsquva-uc.a.run.app";
+  const DOWNLOAD_FN_URL = "https://storage.audiory.site/api/secureDownload";
   const LICENSE_FN_URL = "https://licensedownload-f65rhsquva-uc.a.run.app";
 
   function setStatus(text){
@@ -1191,41 +1191,174 @@
     }
 
     if (action === "download"){
-      try{
-        btn.disabled = true;
-        btn.textContent = "Preparing…";
+  try {
 
-        const token = await getIdTokenOrThrow();
+    btn.disabled = true;
+    btn.textContent = "Preparing…";
 
-        const r = await fetch(DOWNLOAD_FN_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
-          },
-          body: JSON.stringify({
-            orderId: item.source === "order" ? item.id : (item.orderId || null),
-            unlockId: item.source === "unlock" ? item.id : null,
-            beatId: item.beatId,
-            licenseKey: item.licenseKey || "basic"
-          })
-        });
+    // --------------------------------------------------
+    // GET CURRENT FIREBASE USER
+    // --------------------------------------------------
 
-        const data = await r.json().catch(()=> ({}));
+    const user =
+      window.FB?.auth?.currentUser;
 
-        if (!r.ok) throw new Error(data?.error || `Download failed (${r.status})`);
-        if (!data?.url) throw new Error("No download URL returned.");
-
-        window.location.href = data.url;
-      }catch(err){
-        alert(err?.message || String(err));
-      }finally{
-        btn.disabled = false;
-        btn.textContent = "Download";
-      }
-      return;
+    if (!user) {
+      throw new Error(
+        "Please sign in again."
+      );
     }
 
+
+    // --------------------------------------------------
+    // GET FRESH FIREBASE ID TOKEN
+    // --------------------------------------------------
+
+    const token =
+      await user.getIdToken(true);
+
+
+    // --------------------------------------------------
+    // CALL CLOUDFLARE WORKER
+    // --------------------------------------------------
+
+    const r =
+      await fetch(
+        DOWNLOAD_FN_URL,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+
+            "Authorization":
+              "Bearer " + token
+          },
+
+          body:
+            JSON.stringify({
+
+              // Existing unlock ID when
+              // this item came from unlocks.
+              unlockId:
+                item.source === "unlock"
+                  ? item.id
+                  : null,
+
+              // Always send beatId.
+              // Worker can authorize using
+              // buyerId + beatId.
+              beatId:
+                item.beatId,
+
+              // Keep this for future license
+              // handling / compatibility.
+              licenseKey:
+                item.licenseKey ||
+                "basic",
+
+              orderId:
+                item.source === "order"
+                  ? item.id
+                  : (item.orderId || null)
+
+            })
+        }
+      );
+
+
+    // --------------------------------------------------
+    // ERROR RESPONSE
+    // --------------------------------------------------
+
+    if (!r.ok) {
+
+      const errorData =
+        await r.json()
+          .catch(() => ({}));
+
+      throw new Error(
+        errorData?.error ||
+        `Download failed (${r.status})`
+      );
+
+    }
+
+
+    // --------------------------------------------------
+    // WORKER RETURNS THE ACTUAL R2 FILE
+    // --------------------------------------------------
+
+    const blob =
+      await r.blob();
+
+
+    if (!blob || blob.size === 0) {
+      throw new Error(
+        "Downloaded file is empty."
+      );
+    }
+
+
+    // --------------------------------------------------
+    // CREATE TEMPORARY BROWSER URL
+    // --------------------------------------------------
+
+    const blobUrl =
+      URL.createObjectURL(blob);
+
+
+    // --------------------------------------------------
+    // START DOWNLOAD
+    // --------------------------------------------------
+
+    const link =
+      document.createElement("a");
+
+    link.href =
+      blobUrl;
+
+    link.download =
+      `${item.itemTitle || "Audiory Beat"}.wav`;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+
+    // --------------------------------------------------
+    // CLEAN UP
+    // --------------------------------------------------
+
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+    }, 60000);
+
+
+  } catch(err) {
+
+    console.error(
+      "Secure download error:",
+      err
+    );
+
+    alert(
+      err?.message ||
+      String(err)
+    );
+
+  } finally {
+
+    btn.disabled = false;
+    btn.textContent = "Download";
+
+  }
+
+  return;
+}
     if (action === "license"){
       try{
         btn.disabled = true;
