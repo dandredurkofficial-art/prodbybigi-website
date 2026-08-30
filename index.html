@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -9,7 +9,7 @@
   <meta name="author" content="Audiory">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://audiory.site/">
-  <meta name="theme-color" content="#1d1b84">
+  <meta name="theme-color" content="#0f172a">
 
   <link rel="icon" href="/audioryfavicon.webp" type="image/webp">
   <link rel="shortcut icon" href="/audioryfavicon.webp">
@@ -60,1815 +60,588 @@
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 
-  <link rel="stylesheet" href="/css/global.css?v=6">
-  <link rel="stylesheet" href="/css/home.css?v=6">
-  <link rel="stylesheet" href="/css/cart.css">
-  <link rel="stylesheet" href="/css/mobile-fix.css">
-
+  <!-- Complete CSS Reset & Base Override (No Global CSS file needed) -->
   <style>
-    /* =========================================================
-       NEW AUDIORY BRAND VISUAL IDENTITY (FLAT WHITE & PURPLE)
-       ========================================================= */
+    *, ::before, ::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
+    svg, img {
+      max-width: 100%;
+      height: auto;
+      vertical-align: middle;
+    }
     body {
-      background-color: #ffffff !important;
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      color: #334155;
-      line-height: 1.6;
-      box-sizing: border-box;
+      background-color: #070a12;
+      background-image: 
+        radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,0.14), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(16,185,129,0.10), transparent 55%);
+      background-attachment: fixed;
     }
-
-    /* Premium Slim Header Bar Style Match */
-    .topbar {
-      width: 100%;
-      background: linear-gradient(135deg, #3b2fad 0%, #1d1b84 100%);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      position: sticky;
-      top: 0;
-      z-index: 10000;
-      box-sizing: border-box;
-    }
-
-    .topbar-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      box-sizing: border-box;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: #ffffff;
-      font-weight: 900;
-      font-size: 22px;
-      letter-spacing: -0.5px;
-    }
-
-    .desktop-nav{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-
-    .desktop-nav a{
-      color:#fff;
-      text-decoration:none;
-      font-size:14px;
-      font-weight:600;
-      padding:10px 12px;
-      border-radius:8px;
-      white-space:nowrap;
-    }
-
-    .desktop-nav a:hover {
-      opacity: 1;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    .desktop-nav a.cta {
-      background: #ffffff;
-      color: #3b2fad !important;
-      opacity: 1;
-    }
-    .desktop-nav a.cta:hover {
-      background: #f1f5f9;
-    }
-
-    .cart-btn {
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      border-radius: 8px;
-      padding: 8px 12px;
-      color: white;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    /* Container Spacing */
-    .container {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-      box-sizing: border-box;
-    }
-
-    .hero{
-      width:100%;
-      margin:0;
-      background:transparent;
-    }
-    
-    .hero-card{
-      width:100%;
-      max-width:1200px;
-      margin:0 auto;
-      padding:30px 24px 20px !important;
-      background:none !important;
-      border:none !important;
-      box-shadow:none !important;
-    }
-
-    .hero-left{
-      max-width:1100px;
-    }
-
-    .hero-title{
-      color:#1e293b !important;
-      font-size:88px;
-      line-height:.95;
-      max-width:none;
-      margin-bottom:24px;
-    }
-
-    .hero-sub{
-      color:#64748b !important;
-      font-size:22px;
-      line-height:1.7;
-      max-width:760px;
-      margin-bottom:35px;
-    }
- 
-    .hero-search input {
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: #1e293b;
-      padding: 16px 20px;
-      border-radius: 14px;
-      font-size: 16px;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    .hero-search input:focus {
-      border-color: #3b2fad;
-      outline: none;
-      background: #ffffff;
-    }
-    .hero-search button {
-      background: #3b2fad;
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 0 24px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .hero-actions{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      margin-top:16px;
-    }
-
-    .hero-action-btn{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-
-      height:58px;
-      border-radius:16px;
-
-      text-decoration:none;
-      font-weight:800;
-      font-size:16px;
-
-      transition:.2s ease;
-    }
-
-    .hero-action-btn svg{
-      width:20px;
-      height:20px;
-    }
-
-    .hero-action-btn.explore{
-      background:#3b2fad;
-      color:#fff;
-    }
-
-    .hero-action-btn.explore:hover{
-      background:#2f2497;
-    }
-
-    .hero-action-btn.sell{
-      background:#ffffff;
-      color:#3b2fad;
-      border:2px solid #3b2fad;
-    }
-
-    .hero-action-btn.sell:hover{
-      background:#f8f7ff;
-    }
-
-    /* Section Typography */
-    .section {
-      margin: 40px 0;
-    }
-    .h2 {
-      color: #1e293b;
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 16px;
-    }
-    .see-all {
-      color: #3b2fad;
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .see-all:hover {
-      text-decoration: underline;
-    }
-
-    /* General Cards Fallback */
-    .card {
-      background: #ffffff;
-      border: 1px solid #f1f5f9;
-      border-radius: 18px;
-      box-sizing: border-box;
-    }
-
-    /* Buttons / Custom Navigation Links Layout */
-    .play-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #f1f5f9;
-      color: #334155;
-      padding: 10px 18px;
-      border-radius: 12px;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
-    .play-btn:hover {
-      background: #e2e8f0;
-      color: #1e293b;
-    }
-
-    /* Genres Section */
-    .genres-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-    }
-    .card.genre {
-      position: relative;
-      overflow: hidden;
-      border-radius: 16px;
-      height: 100px;
-      display: block;
-      text-decoration: none;
-    }
-    .card.genre img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: brightness(0.6);
-      transition: transform 0.3s ease;
-    }
-    .card.genre:hover img {
-      transform: scale(1.05);
-    }
-    .card.genre .gname {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 16px;
-    }
-
-    /* Producers Promo Box */
-    .producers-promo {
-      background: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-      padding: 36px !important;
-    }
-    .producers-promo .kicker {
-      color: #3b2fad;
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 1px;
-    }
-    .producers-promo h3 {
-      color: #1e293b;
-      font-size: 28px;
-      font-weight: 800;
-      margin: 6px 0 24px 0;
-    }
-    .promo-item {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-    .promo-icon {
-      font-size: 24px;
-    }
-    .promo-item h4 {
-      color: #1e293b;
-      margin: 0 0 4px 0;
-      font-size: 16px;
-      font-weight: 700;
-    }
-    .promo-item p {
-      color: #64748b;
-      margin: 0;
-      font-size: 14px;
-    }
-
-    /* ✅ Tighter price pill */
+    /* Dynamic Script Compatibility Utilities */
     .pb-pill {
+      min-width: 96px;
+      height: 38px;
+      padding: 0 12px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 7px;
-      min-height: 44px;
-      padding: 0 16px;
-      border-radius: 12px;
-      border: 1.5px solid #2563eb;
-      background: #2563eb;
-      color: #ffffff;
+      border-radius: 14px;
       white-space: nowrap;
-      text-decoration: none;
-      font-size: 15px;
-      font-weight: 800;
-      line-height: 1;
-      box-sizing: border-box;
-      width: 100%;
-      cursor: pointer;
-      transition: all 0.2s ease;
     }
-    .pb-pill:hover {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-      color: #ffffff;
-    }
-    .pb-pill .ic {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 14px;
-      height: 14px;
-      font-size: 13px;
-      line-height: 1;
-      color: #3b2fad;
-      flex-shrink: 0;
-    }
-    .pb-pill:hover .ic {
-      color: #ffffff;
-    }
-
-    .pb-pill.free {
-      border-color: #1e293b;
-      background: #1e293b;
-      color: #ffffff;
-    }
-    .pb-pill .ic {
-      color: #ffffff;
-    }
-    .pb-pill.free:hover {
-      background: #334155;
-      border-color: #334155;
-    }
-
-    /* BeatStars-style lock icon */
-    .lock-icon {
-      width: 16px;
-      height: 16px;
-      display: inline-block;
-    }
-    .lock-icon svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    /* Beat card layout fix */
-    .chart-card {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .chart-text {
-      min-width: 0;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Text Clamp UI adjustments */
-    .trend-meta .t,
-    .home-title-clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .trend-meta .p,
-    .home-producer-clamp {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .chart-meta-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 2px;
-    }
-    .chart-pill {
-      flex-shrink: 0;
-      display: flex;
-      align-items: flex-end;
-    }
-
-    .home-title-clamp {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-weight: 800 !important;
-      font-size: 16px !important;
-      line-height: 1.2 !important;
-      margin: 0;
-    }
-    .home-producer-clamp {
-      display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      font-size: 13px !important;
-      line-height: 1.2 !important;
-      margin-top: 6px !important;
-      opacity: .82;
-    }
-
-    .producer-link {
-      color: #64748b !important;
-      text-decoration: none;
-    }
-    .producer-link:hover { 
-      text-decoration: none;
-      color: #3b2fad !important;
-    }
-
-    /* ✅ Free download modal Customizations */
-    .pb-free-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      display: none;
-      z-index: 9998;
-    }
-    .pb-free-modal {
-      position: fixed;
-      left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      width: min(520px, calc(100vw - 24px));
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      display: none;
-      z-index: 9999;
-      color: #1e293b;
-    }
-    .pb-free-head {
-      display: flex; align-items: center; justify-content: space-between; gap: 10px;
-      margin-bottom: 10px;
-    }
-    .pb-free-title {
-      font-size: 18px;
-      font-weight: 800;
-      margin: 0;
-      color: #1e293b;
-    }
-    .pb-free-close {
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 6px 8px;
-      border-radius: 10px;
-    }
-    .pb-free-close:hover { background: #f1f5f9; }
-    .pb-free-sub {
-      color: #64748b;
-      font-size: 14px;
-      margin: 8px 0 16px;
-      line-height: 1.5;
-    }
-    .pb-free-label {
-      font-size: 13px;
-      font-weight: 700;
-      margin: 12px 0 6px;
-      color: #334155;
-    }
-    .pb-free-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      color: #1e293b;
-      outline: none;
-      box-sizing: border-box;
-    }
-    .pb-free-input:focus { border-color: #3b2fad; background: #ffffff; }
-    .pb-free-btn {
-      width: 100%;
-      margin-top: 18px;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      cursor: pointer;
-      font-weight: 800;
-      background: #3b2fad;
-      color: #fff;
-    }
-    .pb-free-btn[disabled] { opacity: .65; cursor: not-allowed; }
-    .pb-free-note {
-      margin-top: 12px;
-      color: #64748b;
-      font-size: 12px;
-      line-height: 1.4;
-    }
-    .pb-free-status {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #16a34a;
-      min-height: 18px;
-    }
-
-    /* Fixed Support floating bubble alignment */
-    .audiory-support-fab {
-      position: fixed; right: 18px; bottom: 18px; z-index: 9999;
-      display: flex; gap: 10px; align-items: center;
-      padding: 12px 14px; border-radius: 999px;
-      background: #ffffff; color: #1e293b;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      cursor: pointer; font-family: system-ui;
-    }
-    .audiory-support-fab:hover { transform: translateY(-1px); box-shadow: 0 12px 35px rgba(0,0,0,0.12); }
-    .audiory-support-dot { width: 10px; height: 10px; border-radius: 50%; background: #16a34a; }
-    .audiory-support-fab b { font-size: 14px; }
-    .audiory-support-fab span { font-size: 12px; opacity: .8; }
-
-    .apps-menu{
-      position:relative;
-      margin-left:10px;
-    }
-
-    .apps-btn{
-      width:42px;
-      height:42px;
-      border:none;
-      border-radius:10px;
-      cursor:pointer;
-      background:rgba(255,255,255,.15);
-      color:white;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-
-    .apps-btn:hover{
-      background:rgba(255,255,255,.25);
-    }
-
-    .apps-dropdown{
-      position:absolute;
-      right:0;
-      top:52px;
-
-      width:220px;
-
-      background:white;
-      border-radius:16px;
-      border:1px solid #e2e8f0;
-
-      padding:10px;
-
-      box-shadow:0 20px 40px rgba(0,0,0,.15);
-
-      display:none;
-      z-index:10000;
-    }
-
-    .apps-dropdown.show{
-      display:block;
-    }
-
-    .apps-dropdown a{
-      display:flex;
-      align-items:center;
-      gap:12px;
-
-      padding:12px;
-      border-radius:12px;
-
-      text-decoration:none;
-      color:#334155;
-      font-weight:600;
-    }
-
-    .apps-dropdown a:hover{
-      background:#f8fafc;
-      color:#3b2fad;
-    }
-
-    /* =========================
-       PAYMENT MODAL - PREMIUM WHITE THEME
-    ========================= */
-    .pb-pay-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.6);
-      backdrop-filter: blur(4px);
-      display: none;
-      z-index: 10050;
-    }
-    .pb-pay-modal {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: min(720px, calc(100vw - 18px));
-      max-height: calc(100vh - 28px);
-      overflow: auto;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 24px;
-      padding: 0;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.15);
-      display: none;
-      z-index: 10051;
-      color: #1e293b;
-    }
-    .pb-pay-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 24px 24px 16px;
-      border-bottom: 1px solid #f1f5f9;
-    }
-    .pb-pay-title {
-      font-weight: 800;
-      font-size: 22px;
-      margin: 0;
-      color: #1e293b;
-    }
-    .pb-pay-sub {
-      color: #64748b;
-      font-size: 14px;
-      margin-top: 6px;
-      line-height: 1.5;
-      white-space: pre-line;
-    }
-    .pb-pay-close {
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 22px;
-      cursor: pointer;
-      padding: 4px 8px;
-      border-radius: 10px;
-    }
-    .pb-pay-close:hover { background: #f1f5f9; }
-    .pb-pay-body {
-      padding: 24px;
-      display: grid;
-      gap: 16px;
-    }
-    .pb-pay-methods {
-      display: grid;
-      gap: 14px;
-    }
-    .pb-pay-btn {
-      width: 100%;
-      min-height: 72px;
-      border-radius: 16px;
-      border: none;
-      cursor: pointer;
-      font-weight: 800;
+    .beat-meta, .trend-actions, .chart-price-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      padding: 0 22px;
-      color: #fff;
-      font-size: 16px;
+      gap: 10px;
     }
-    .pb-pay-btn.primary { background: #2563eb; }
-    .pb-pay-btn.success { background: #16a34a; }
-    .pb-pay-btn:hover { filter: brightness(1.05); }
-    .pb-pay-btn-left { display: flex; align-items: center; gap: 14px; }
-    .pb-pay-amount { font-size: 16px; font-weight: 800; opacity: .95; }
-
-    .pb-pay-phone-wrap {
-      display: none;
-      margin-top: 4px;
-      padding: 16px;
-      border-radius: 16px;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-    }
-    .pb-pay-label { font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 8px; }
-    .pb-pay-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
-      color: #1e293b;
-      outline: none;
-      font-size: 15px;
-      box-sizing: border-box;
-    }
-    .pb-pay-input:focus { border-color: #16a34a; }
-    .pb-pay-send {
-      margin-top: 14px;
-      min-height: 48px;
-      padding: 0 20px;
-      border: none;
-      border-radius: 12px;
-      background: #16a34a;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .pb-pay-send:disabled { opacity: .7; cursor: not-allowed; }
-    .pb-pay-status { min-height: 18px; margin-top: 10px; font-size: 13px; color: #475569; white-space: pre-line; }
-    .mpesa-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .mpesa-icon svg { width: 100%; height: 100%; display: block; }
-
-    /* Verified Badges Colors styles unchanged */
-    .verify-badge { display: inline-flex; align-items: center; justify-content: center; margin-left: 6px; vertical-align: middle; }
-    .verify-badge svg { width: 16px; height: 16px; display: block; }
-    .verify-pro svg { color: #1d9bf0; }
-    .verify-elite svg { color: #fbbf24; }
-
-    /* Clean Card Structural Grid System */
-    .trending-strip {
-      display: flex;
-      gap: 16px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 8px 2px 14px;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: thin;
-    }
-    .trending-strip::-webkit-scrollbar{
-      height:8px;
-    }
-
-    .trending-strip::-webkit-scrollbar-thumb{
-      background:#cbd5e1;
-      border-radius:999px;
-    }
-    .trending-strip .trend-card {
-      min-width: 200px;
-      width: 200px;
-      flex: 0 0 200px;
-    }
-    
-    .chart-grid {
-      display: grid;
-      grid-template-columns: repeat(5, minmax(0,1fr));
-      gap: 20px 16px;
-    }
-
-    .trend-card,
-    .chart-card {
-      background: #ffffff !important;
-      border: 1px solid #f1f5f9 !important;
-      border-radius: 16px !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02) !important;
+    .no-scroll {
       overflow: hidden;
-      gap: 0 !important;
-      padding: 0 !important;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .trend-card:hover, .chart-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.05) !important;
-    }
-
-    .beat-cover {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      overflow: hidden;
-      background: #f8fafc;
-      border-radius: 0 !important;
-    }
-
-    .featured-badge{
-      position:absolute;
-      top:12px;
-      left:12px;
-
-      background:#3b2fad;
-      color:#fff;
-
-      padding:6px 12px;
-      border-radius:6px;
-
-      font-size:11px;
-      font-weight:800;
-      text-transform:uppercase;
-      letter-spacing:.8px;
-    }
-    .beat-cover .beat-open { display: block; width: 100%; height: 100%; }
-    .beat-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    .play-fab {
-      position: absolute;
-      right: 12px;
-      bottom: 12px;
-      width: 44px;
-      height: 44px;
-      border-radius: 50% !important;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      box-shadow: none !important;
-      color: white;
-      cursor: pointer;
-    }
-    .play-fab .playIcon { font-size: 14px; color: white; }
-
-    .trend-meta,
-    .chart-meta-row {
-      padding: 14px 14px 0 14px;
-      box-sizing: border-box;
-    }
-    .chart-meta-row { display: block !important; }
-    .chart-text { display: block; min-width: 0; }
-
-    .trend-meta .t,
-    .home-title-clamp {
-      color: #1e293b !important;
-      text-decoration: none;
-      font-size: 16px !important;
-      line-height: 1.3 !important;
-      font-weight: 700 !important;
-      margin: 0 !important;
-      min-height: 42px;
-    }
-
-    .trend-actions,
-    .chart-pill {
-      padding: 14px;
-      box-sizing: border-box;
-    }
-    .chart-pill { display: block !important; }
-
-    /* Support Fab placement adjustment overrides */
-    .audiory-support-fab { right: 12px !important; bottom: 12px !important; transform: scale(.92); }
-
-    .trend-actions .pill,
-.trend-actions a,
-.buy-btn,
-.price-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  width: 100%;
-  min-height: 44px;
-  padding: 0 16px;
-
-  border-radius: 12px;
-  border: 1.5px solid #2563eb;
-  background: #2563eb;
-  color: #ffffff !important;
-
-  font-size: 15px;
-  font-weight: 800;
-  text-decoration: none;
-
-  transition: all 0.2s ease;
-}
-
-.trend-actions .pill:hover,
-.trend-actions a:hover,
-.buy-btn:hover,
-.price-btn:hover {
-  background: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-    /* Standardized Footer System Match */
-.footer {
-  width: 100%;
-  padding: 32px 20px; /* Balanced padding */
-  text-align: center;
-  border-top: 1px solid #f1f5f9; /* Clean, soft edge line */
-  background-color: #ffffff;
-  box-sizing: border-box;
-  margin-top: auto;
-}
-
-.footer-row {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px; /* Gives elements breathing room without being huge */
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-/* Legal & Navigation Links */
-.footer-links {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-}
-
-.footer-links a {
-  color: #64748b;
-  text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.footer-links a:hover { 
-  color: #3b2fad; 
-}
-
-/* Premium Social Container */
-.social {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-  margin-top: 4px;
-}
-
-/* Beautiful, subtle circular button styling for icons */
-.social a { 
-  color: #64748b; /* Clean neutral color */
-  font-size: 16px; /* Perfect proportional icon size */
-  background: #f8fafc !important; /* Soft premium off-white/gray circle background */
-  border: 1px solid #e2e8f0 !important; /* Extremely light border outline */
-  border-radius: 50% !important; /* Crisp, perfect circles */
-  width: 38px !important; /* Explicit standard button size */
-  height: 38px !important;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-}
-
-/* Smooth brand coloring glow on hover */
-.social a:hover { 
-  color: #ffffff !important; /* Icon turns clean white */
-  background: #3b2fad !important; /* Circle fills with your signature purple */
-  border-color: #3b2fad !important;
-  transform: translateY(-3px); /* Elegant premium hover lift */
-  box-shadow: 0 4px 12px rgba(59, 47, 173, 0.2); /* Soft purple shadow glow */
-}
-
-/* Copyright line styling */
-.footer-row > span {
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-    /* Smart Finder Layout Rules */
-    .smart-finder-meta { margin-top: 16px; text-align: left; }
-    .smart-finder-hint { color: #64748b; font-size: 13px; margin-bottom: 12px; }
-    .smart-finder-hint span { color: #1e293b; font-weight: 600; }
-    .smart-finder-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .smart-chip {
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      color: #475569;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .smart-chip:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
-
-    .presave-wrap { width: 100%; margin-top: 4px; display: flex; flex-direction: column; gap: 6px; }
-    .presave-countdown { color: #64748b; font-size: 12px; text-align: center; }
-
-    .pill.blue {
-      background: #2563eb;
-      border: 1px solid #2563eb;
-      color: #fff;
-    }
-
-    .pill.blue:hover {
-      background: #1d4ed8;
-      border-color: #1d4ed8;
-    }
-
-    /* Force homepage price pills to use blue style */
-    .trend-actions .pb-pill,
-    .chart-pill .pb-pill,
-    .price-pill {
-      background: #2563eb !important;
-      border: 1.5px solid #2563eb !important;
-      color: #ffffff !important;
-    }
-
-    .trend-actions .pb-pill:hover,
-    .chart-pill .pb-pill:hover,
-    .price-pill:hover {
-      background: #1d4ed8 !important;
-      border-color: #1d4ed8 !important;
-    }
-
-    .trend-actions .pb-pill .ic,
-    .chart-pill .pb-pill .ic,
-    .price-pill .ic {
-      color: #ffffff !important;
-    }
-
-    /* Responsive scaling optimizations */
-    @media (max-width: 1200px){ .chart-grid { grid-template-columns: repeat(4, minmax(0,1fr)); } }
-    @media (max-width: 980px){ .chart-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    @media (max-width: 768px){
-      .smart-finder-meta{
-        display:none;
-      }
-      .chart-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 12px; }
-      .topbar-inner { padding: 12px 16px; }
-      .hero-title { font-size: 32px; }
-      .footer-row { text-align: center; }
-    }
-
-    .news-spin{
-      width:18px;
-      height:18px;
-      border:2px solid rgba(59,47,173,.25);
-      border-top-color:#3b2fad;
-      border-radius:50%;
-      display:inline-block;
-      animation:newsSpin .8s linear infinite;
-    }
-
-    @keyframes newsSpin{
-      to{
-        transform:rotate(360deg);
-      }
-    }
-
-    @media (max-width:768px){
-
-      .topbar-inner{
-        height:72px;
-        padding:0 14px;
-      }
-
-      .logo{
-        font-size:20px;
-        font-weight:800;
-      }
-
-      .desktop-nav{
-        display:none;
-      }
-
-      .cart-btn,
-      .apps-btn{
-        width:40px;
-        height:40px;
-        border-radius:12px;
-      }
-
-      .apps-menu{
-        margin-left:8px;
-      }
-
-      .brand{
-        gap:6px;
-      }
-
-      #hamburgerBtn{
-        margin-right:4px !important;
-        font-size:18px !important;
-      }
-    }
-
-    @media (max-width:768px){
-
-      .hero{
-        min-height:auto;
-        background-position:center center;
-      }
-
-      .hero-card{
-        padding:30px 24px 20px !important;
-      }
-
-      .hero-title{
-        font-size:52px !important;
-        line-height:1.05;
-      }
-
-      .hero-sub{
-        font-size:18px !important;
-        line-height:1.6;
-      }
-
-      .hero-search{
-        flex-direction:column;
-      }
-
-      .hero-search button{
-        width:100%;
-        height:54px;
-      }
-
-      .hero-actions{
-        display:flex;
-        flex-direction:column;
-        gap:12px;
-        margin-top:16px;
-      }
-
-      .hero-action-btn{
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        gap:10px;
-
-        height:58px;
-        border-radius:16px;
-
-        text-decoration:none;
-        font-weight:800;
-        font-size:16px;
-
-        transition:.2s ease;
-      }
-
-      .hero-action-btn svg{
-        width:20px;
-        height:20px;
-      }
-
-      .hero-action-btn.explore{
-        background:#3b2fad;
-        color:#fff;
-      }
-
-      .hero-action-btn.explore:hover{
-        background:#2f2497;
-      }
-
-      .hero-action-btn.sell{
-        background:#ffffff;
-        color:#3b2fad;
-        border:2px solid #3b2fad;
-      }
-
-      .hero-action-btn.sell:hover{
-        background:#f8f7ff;
-      }
-
-      .smart-finder-chips{
-        gap:8px;
-      }
-    }
-    @media (max-width: 640px) {
-      .pb-pay-modal { width: calc(100vw - 16px); border-radius: 20px; }
-      .pb-pay-body { padding: 16px; }
     }
   </style>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
+<body class="text-slate-100 flex flex-col min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <div class="brand">
-      <button class="icon-btn" id="hamburgerBtn" aria-label="Menu" style="background:transparent; border:none; color:white; font-size:20px; cursor:pointer; margin-right:8px;">☰</button>
-      <div class="logo">Audiory</div>
-    </div>
-
-    <nav class="desktop-nav" aria-label="Main">
-      <a href="/">Feed</a>
-      <a href="/marketplace/">Tracks</a>
-      <a href="/freebeats/">Free Beats</a>
-      <a href="/soundkits/">Sound Kits</a>
-      <a href="/producers/">Producers</a>
-      <a href="/pricing/">Pricing</a>
-      <a href="/premieres/">Premieres</a>
-      <a href="/collabs/">Collabs</a>
-
-      <a id="navStartSelling" class="cta" href="/register/">Start Selling</a>
-      <a id="navSignIn" class="ghost" href="/login/">Sign in</a>
-
-      <a id="navDashboard" class="ghost hidden" href="#">Dashboard</a>
-      <button id="navSignOut" class="ghost hidden" type="button" style="background:transparent; border:none; color:white; font-weight:600; cursor:pointer;">Sign out</button>
-    </nav>
-
-    <button class="cart-btn" id="pbCartBtn" aria-label="Open cart" type="button">
-      <span class="cart-ic">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M3 5H5L7 16H18L21 8H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="9" cy="20" r="1.5" fill="currentColor"/>
-      <circle cx="18" cy="20" r="1.5" fill="currentColor"/>
-      </svg>
-      </span>
-      <span class="cart-count" id="pbCartCount">0</span>
-    </button>
-    <div class="apps-menu">
-      <button class="apps-btn" id="appsBtn">
-
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="5" cy="5" r="2" fill="currentColor"/>
-          <circle cx="12" cy="5" r="2" fill="currentColor"/>
-          <circle cx="19" cy="5" r="2" fill="currentColor"/>
-
-          <circle cx="5" cy="12" r="2" fill="currentColor"/>
-          <circle cx="12" cy="12" r="2" fill="currentColor"/>
-          <circle cx="19" cy="12" r="2" fill="currentColor"/>
-
-          <circle cx="5" cy="19" r="2" fill="currentColor"/>
-          <circle cx="12" cy="19" r="2" fill="currentColor"/>
-          <circle cx="19" cy="19" r="2" fill="currentColor"/>
-        </svg>
-
+  <!-- Global Inline Alert Banner -->
+  <div id="inlineAlert" class="hidden sticky top-0 z-50 bg-indigo-600 text-white px-4 py-3 shadow-lg">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center gap-2 text-sm font-medium">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <span id="inlineAlertMessage">Welcome to Audiory!</span>
+      </div>
+      <button onclick="document.getElementById('inlineAlert').classList.add('hidden')" class="p-1 hover:bg-indigo-700 rounded-lg transition-colors">
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
-
-      <div class="apps-dropdown" id="appsDropdown">
-
-        <a href="https://help-desk.audiory.site">
-
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M12 3a8 8 0 0 0-8 8v2a2 2 0 0 0 2 2h2v-5H6a6 6 0 1 1 12 0h-2v5h2a2 2 0 0 0 2-2v-2a8 8 0 0 0-8-8z" fill="currentColor"/>
-          </svg>
-
-          <span>Help Desk</span>
-        </a>
-
-        <a href="https://blog.audiory.site">
-
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <path d="M5 4h14v16H5z" stroke="currentColor" stroke-width="2"/>
-            <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="2"/>
-          </svg>
-
-          <span>Blog</span>
-        </a>
-
-        <a href="/about/">
-
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 8h.01M11 11h2v5h-2z" fill="currentColor"/>
-          </svg>
-
-          <span>About</span>
-        </a>
-
-      </div>
     </div>
   </div>
-</header>
 
-<div class="menu-backdrop" id="menuBackdrop"></div>
-<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile Menu">
-  <div class="menu-head">
-    <div class="menu-title">Menu</div>
-    <button class="icon-btn" id="menuCloseBtn" aria-label="Close">✕</button>
-  </div>
-  <a href="/">Feed</a>
-  <a href="/marketplace/">Tracks</a>
-  <a href="/freebeats/">Free Beats</a>
-  <a href="/soundkits/">Sound Kits</a>
-  <a href="/producers/">Producers</a>
-  <a href="/pricing/">Pricing</a>
-  <a href="/premieres/">Premieres</a>
-  <a href="/collabs/">Collabs</a>
-  <a id="mNavStartSelling" class="cta" href="/register/">Start Selling</a>
-  <a id="mNavSignIn" href="/login/">Sign in</a>
-
-  <a id="mNavDashboard" class="hidden" href="#">Dashboard</a>
-  <button id="mNavSignOut" class="ghost hidden">Sign out</button>
-</nav>
-
-<main class="container">
-
-  <section class="hero">
-    <div class="hero-card hero-layout">
-      <div class="hero-left">
-      <h1 class="hero-title">Discover Your Next Hit</h1>
-      <p class="hero-sub">Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.</p>
-      <div class="hero-search smart-finder-wrap" style="display:flex; gap:10px;">
-        <input id="searchInput" placeholder="Search by artist, mood, genre, tags... e.g. J. Cole chill trap" />
-        <button id="searchBtn" type="button">Search</button>
-      </div>
-
-      <div class="hero-actions">
-
-        <a href="/marketplace/" class="hero-action-btn explore">
-
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3L20 7V17L12 21L4 17V7L12 3Z"
-                  stroke="currentColor"
-                  stroke-width="2"/>
-            <path d="M12 12L20 7"
-                  stroke="currentColor"
-                  stroke-width="2"/>
-            <path d="M12 12L4 7"
-                  stroke="currentColor"
-                  stroke-width="2"/>
-          </svg>
-
-          Explore Beats
-        </a>
-
-        <a href="/register/" class="hero-action-btn sell">
-
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3V21"
-                  stroke="currentColor"
-                  stroke-width="2"/>
-            <path d="M3 12H21"
-                  stroke="currentColor"
-                  stroke-width="2"/>
-          </svg>
-
-          Sell Your Beats
-        </a>
-
-      </div>
-
-      <div class="smart-finder-meta">
-        <div class="smart-finder-hint">
-          Try: <span>J. Cole chill trap</span> • <span>Afrobeats happy</span> • <span>Drill dark</span>
-        </div>
-
-        <div class="smart-finder-chips">
-          <button type="button" class="smart-chip" data-smart-fill="J. Cole">J. Cole</button>
-          <button type="button" class="smart-chip" data-smart-fill="Trap">Trap</button>
-          <button type="button" class="smart-chip" data-smart-fill="Afrobeats">Afrobeats</button>
-          <button type="button" class="smart-chip" data-smart-fill="Drill dark">Drill dark</button>
-          <button type="button" class="smart-chip" data-smart-fill="chill lyrical">chill lyrical</button>
-          <button type="button" class="smart-chip" data-smart-fill="Amapiano club">Amapiano club</button>
-        </div>
-
-        </div>
-      </div> 
-  </section>
-
-  <section class="section">
-    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 class="h2">Featured Beats</h2>
-      <a class="see-all" href="/marketplace/?featured=1">See all →</a>
-    </div>
-
-    <div id="featuredStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading featured beats…</div>
-    <div id="featuredStrip" class="trending-strip"></div>
-  </section>
-
-  <section class="section">
-    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 class="h2">Trending Beats</h2>
-      <a class="see-all" href="/marketplace/">See all →</a>
-    </div>
-
-    <div id="homeStatus" class="loading-box" style="margin-top:12px; color:#64748b;">Loading beats…</div>
-    <div id="trendingStrip" class="trending-strip"></div>
-  </section>
-
-  <section class="section">
-    <div class="home-row">
-      <h2 class="h2">Popular Genres</h2>
-    </div>
-
-    <div class="genres-grid">
-      <a class="card genre" href="/marketplace/?genre=Afrobeats">
-        <img src="https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Afrobeats">
-        <div class="gname">Afrobeats</div>
-      </a>
-
-      <a class="card genre" href="/marketplace/?genre=Trap">
-        <img src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=200&q=60" alt="Trap">
-        <div class="gname">Trap</div>
-      </a>
-
-      <a class="card genre" href="/marketplace/?genre=Drill">
-        <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=60" alt="Drill">
-        <div class="gname">Drill</div>
-      </a>
-      
-      <a class="card genre" href="/marketplace/?genre=Amapiano">
-        <img src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=200&q=60" alt="Amapiano">
-        <div class="gname">Amapiano</div>
-      </a>
-
-      <a class="card genre" href="/marketplace/?genre=R%26B">
-        <img src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=200&q=60" alt="R&B">
-        <div class="gname">R&B</div>
-      </a>
-
-      <a class="card genre" href="/marketplace/?genre=Hip%20Hop">
-        <img src="https://images.unsplash.com/photo-1499415479124-43c32433a620?auto=format&fit=crop&w=200&q=60" alt="Hip Hop">
-        <div class="gname">Hip Hop</div>
-      </a>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="home-row" style="display:flex; justify-content:space-between; align-items:center;">
-      <h2 class="h2">Top Charting Beats</h2>
-      <a class="see-all" href="/marketplace/">See all →</a>
-    </div>
-    <div id="chartGrid" class="chart-grid"></div>
-  </section>
-
-  <section class="section">
-    <div class="card producers-promo">
-      <div class="kicker">For Producers</div>
-      <h3>Your music business in one place</h3>
-
-      <div class="promo-list">
-        <div class="promo-item">
-          <div class="promo-icon">⚡</div>
-          <div>
-            <h4>Manage your business</h4>
-            <p>Upload your beats, manage your store, and sell licenses in one workflow.</p>
-          </div>
-        </div>
-
-        <div class="promo-item">
-          <div class="promo-icon">📈</div>
-          <div>
-            <h4>Track your performance</h4>
-            <p>See what’s trending and grow with analytics & upgrades.</p>
-          </div>
-        </div>
-
-        <div class="promo-item">
-          <div class="promo-icon">🎯</div>
-          <div>
-            <h4>Grow your audience</h4>
-            <p>Build your producer profile and reach more artists.</p>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin-top:24px; display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="pb-pill" href="/register/" style="width:auto; min-height:48px; background:#3b2fad; color:white;"><span class="playIcon" style="margin-right:6px;">🚀</span><span class="playText">Start Selling</span></a>
-        <a class="play-btn" href="/login/" style="padding:12px 20px;"><span class="playIcon" style="margin-right:6px;">🔑</span><span class="playText">Sign in</span></a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2 class="h2">Why Buy From Audiory?</h2>
-
-    <div class="genres-grid">
-      <div class="card" style="padding:24px;">
-        <h3>🔒 Secure Licensing</h3>
-        <p>Every beat comes with clear licensing options and instant delivery.</p>
-      </div>
-
-      <div class="card" style="padding:24px;">
-        <h3>⚡ Instant Downloads</h3>
-        <p>Get your files immediately after purchase or free download.</p>
-      </div>
-
-      <div class="card" style="padding:24px;">
-        <h3>🌍 Global Producers</h3>
-        <p>Discover talented producers from around the world.</p>
-      </div>
-
-      <div class="card" style="padding:24px;">
-        <h3>💳 Multiple Payments</h3>
-        <p>Pay securely using PayPal or M-Pesa.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <h2 class="h2">Frequently Asked Questions</h2>
-
-    <div class="card" style="padding:24px;">
-
-      <details style="margin-bottom:14px;">
-        <summary><strong>How do I buy a beat?</strong></summary>
-        <p>Select a beat, choose a license, and complete payment.</p>
-      </details>
-
-      <details style="margin-bottom:14px;">
-        <summary><strong>Do I receive files instantly?</strong></summary>
-        <p>Yes. Purchased beats are delivered immediately after payment.</p>
-      </details>
-
-      <details style="margin-bottom:14px;">
-        <summary><strong>Can I download free beats?</strong></summary>
-        <p>Yes. Producers can enable free downloads on selected beats.</p>
-      </details>
-
-      <details style="margin-bottom:14px;">
-        <summary><strong>Can producers sell on Audiory?</strong></summary>
-        <p>Yes. Create an account and start uploading beats.</p>
-      </details>
-
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="card" style="
-      padding:40px;
-      text-align:center;
-      background:#3b2fad;
-      color:white;
-      border:none;
-    ">
-
-      <h2 style="
-        margin:0 0 12px;
-        font-size:34px;
-        font-weight:900;
-        color:#fff;
-      ">
-        Don’t Miss a Beat
-      </h2>
-
-      <p style="
-        margin:0 0 28px;
-        color:rgba(255,255,255,.9);
-        font-size:16px;
-      ">
-        Get new beats, free downloads, producer opportunities and exclusive updates delivered to your inbox.
-      </p>
-      
-      <div style="
-        display:flex;
-        gap:10px;
-        justify-content:center;
-        flex-wrap:wrap;
-      ">
-
-        <input
-          id="newsletterName"
-          type="text"
-          placeholder="Your name"
-          style="
-            min-width:220px;
-            padding:14px;
-            border:none;
-            border-radius:12px;
-          "
-        >
-
-        <input
-          id="newsletterEmail"
-          type="email"
-          placeholder="Enter your email"
-          style="
-            min-width:280px;
-            padding:14px;
-            border:none;
-            border-radius:12px;
-          "
-        >
-
-        <button
-          id="newsletterBtn"
-          style="
-            padding:14px 24px;
-            border:none;
-            border-radius:12px;
-            background:white;
-            color:#3b2fad;
-            font-weight:800;
-            cursor:pointer;
-            min-width:160px;
-          "
-        >
-          Subscribe
+  <!-- Header -->
+  <header class="sticky top-0 z-40 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button id="hamburgerBtn" aria-label="Menu" class="lg:hidden p-2 text-slate-400 hover:text-white focus:outline-none">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
-
-      </div>
-    </div>
-  </section>
-
-</main>
-
-<footer class="footer">
-  <div class="container footer-row">
-    <div>© 2026 Audiory. All Rights Reserved.</div>
-
-    <div class="footer-links">
-      <a href="/privacy/">Privacy Policy</a>
-      <a href="/terms/">Terms</a>
-      <a href="/cookies/">Cookies</a>
-      <a href="/cookie-settings/">Cookie Settings</a>
-      <a href="/refunds/">Refund Policy</a>
-      <a href="/dmca/">DMCA</a>
-      <a href="/creator-agreement/">Creator Agreement</a>
-    </div>
-
-    <div class="social">
-      <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Instagram">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M17.5 6.5h.01" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" title="TikTok">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 3v10.2a3.8 3.8 0 1 1-3-3.7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M14 3c1.2 2.6 3.4 4.4 6 4.7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" title="X">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </a>
-
-      <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Facebook">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M14 9h3V6h-3c-2.2 0-4 1.8-4 4v3H7v3h3v6h3v-6h3l1-3h-4v-3c0-.6.4-1 1-1Z" fill="currentColor"/>
-        </svg>
-      </a>
-
-      <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="YouTube">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 12s0-3.3-.4-4.8a2.8 2.8 0 0 0-2-2C16.9 4.7 12 4.7 12 4.7s-4.9 0-6.6.5a2.8 2.8 0 0 0-2 2C3 8.7 3 12 3 12s0 3.3.4 4.8a2.8 2.8 0 0 0 2 2c1.7.5 6.6.5 6.6.5s4.9 0 6.6-.5a2.8 2.8 0 0 0 2-2c.4-1.5.4-4.8.4-4.8Z" stroke="currentColor" stroke-width="2"/>
-          <path d="M10 9.5v5l5-2.5-5-2.5Z" fill="currentColor"/>
-        </svg>
-      </a>
-    </div>
-  </div>
-</footer>
-
-<div class="pb-modal-backdrop" id="pbModalBackdrop" aria-hidden="true"></div>
-<div class="pb-modal" id="pbLicenseModal" role="dialog" aria-modal="true" aria-labelledby="pbModalTitle">
-  <div class="pb-modal-card">
-    <div class="pb-modal-head">
-      <div>
-        <div class="pb-modal-kicker">Choose License</div>
-        <h3 id="pbModalTitle" class="pb-modal-title">Beat</h3>
-        <div class="pb-modal-sub" id="pbModalSub">Select a license to continue.</div>
-      </div>
-      <button class="icon-btn" id="pbModalClose" aria-label="Close">✕</button>
-    </div>
-
-    <div class="pb-licenses" id="pbLicensesGrid"></div>
-
-    <div class="pb-modal-foot">
-      <div class="pb-total">
-        <div class="pb-total-label">Total</div>
-        <div class="pb-total-price" id="pbTotalPrice">$0.00</div>
-      </div>
-
-      <div class="pb-actions">
-        <button class="pb-btn ghost" id="pbAddToCart" type="button">Add to Cart</button>
-        <button class="pb-btn primary" id="pbBuyNow" type="button">Buy now</button>
-      </div>
-    </div>
-
-    <div class="pb-terms" id="pbTermsBox">
-      <div class="pb-terms-title">Usage</div>
-      <div class="pb-terms-grid" id="pbTermsGrid"></div>
-    </div>
-  </div>
-</div>
-
-<div class="pb-cart-backdrop" id="pbCartBackdrop" aria-hidden="true"></div>
-<aside class="pb-cart" id="pbCartDrawer" aria-label="Cart" aria-hidden="true">
-  <div class="pb-cart-head">
-    <div>
-      <div class="pb-cart-title">Your Cart</div>
-      <div class="pb-cart-sub" id="pbCartSub">0 items</div>
-    </div>
-    <button class="pb-cart-close" id="pbCartClose" aria-label="Close cart" type="button">✕</button>
-  </div>
-
-  <div class="pb-cart-body" id="pbCartItems"></div>
-
-  <div class="pb-cart-foot">
-    <div class="pb-cart-totals">
-      <div class="muted">Total</div>
-      <div class="pb-cart-total" id="pbCartTotal">$0.00</div>
-    </div>
-
-    <div class="pb-cart-actions">
-      <button class="pb-cart-clear" id="pbCartClear" type="button">Clear</button>
-      <button class="pb-cart-checkout" id="pbCartCheckout" type="button">Checkout</button>
-    </div>
-  </div>
-</aside>
-
-<div class="pb-free-backdrop" id="pbFreeBackdrop" aria-hidden="true"></div>
-<div class="pb-free-modal" id="pbFreeModal" role="dialog" aria-modal="true">
-  <div class="pb-free-head">
-    <h3 class="pb-free-title" id="pbFreeTitle">Free Download</h3>
-    <button class="pb-free-close" id="pbFreeClose" aria-label="Close">✕</button>
-  </div>
-
-  <div class="pb-free-sub" id="pbFreeSub">
-    Enter your email address and full name to unlock your free download.
-    We will send your free track to the email address.
-  </div>
-
-  <div class="pb-free-label">Full name</div>
-  <input class="pb-free-input" id="pbFreeName" placeholder="Your full name">
-
-  <div class="pb-free-label">Email address</div>
-  <input class="pb-free-input" id="pbFreeEmail" placeholder="you@email.com" type="email">
-
-  <button class="pb-free-btn" id="pbFreeSend" type="button">Send</button>
-  <div class="pb-free-status" id="pbFreeStatus"></div>
-
-  <div class="pb-free-note">
-    By continuing, you agree to our Terms & Privacy Policy.
-  </div>
-</div>
-
-<div class="pb-pay-backdrop" id="pbPayBackdrop" aria-hidden="true"></div>
-<div class="pb-pay-modal" id="pbPayModal" role="dialog" aria-modal="true">
-  <div class="pb-pay-head">
-    <div>
-      <div class="pb-pay-title" id="pbPayTitle">Choose payment method</div>
-      <div class="pb-pay-sub" id="pbPaySub">—</div>
-    </div>
-    <button class="pb-pay-close" id="pbPayClose" aria-label="Close">✕</button>
-  </div>
-
-  <div class="pb-pay-body">
-    <div class="pb-pay-methods">
-      <button class="pb-pay-btn primary" id="pbPayWithPaypal" type="button">
-        <span class="pb-pay-btn-left">
-          <span>Pay with PayPal</span>
-        </span>
-        <span class="pb-pay-amount" id="pbPayAmountA">—</span>
-      </button>
-
-      <button class="pb-pay-btn success" id="pbPayWithMpesa" type="button">
-        <span class="pb-pay-btn-left">
-          <span class="mpesa-icon" aria-hidden="true">
-            <svg viewBox="0 0 64 64" fill="none">
-              <rect x="8" y="10" width="48" height="44" rx="10" fill="rgba(0,0,0,.16)"/>
-              <path d="M22 22h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-              <path d="M22 32h20" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
-              <path d="M22 42h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+        <a href="/" class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
+          <!-- Logo Container with strict dimensions -->
+          <span class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <svg class="w-6 h-6 flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M 50 15 L 20 85 M 50 15 L 80 85" />
+              <path d="M 32 60 Q 50 80 68 60" />
+              <path d="M 28 50 L 72 50" />
             </svg>
           </span>
-          <span>Pay with M-Pesa</span>
-        </span>
-        <span class="pb-pay-amount" id="pbPayAmountB">—</span>
+          Audiory
+        </a>
+      </div>
+
+      <nav class="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-300">
+        <a href="/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Feed</a>
+        <a href="/marketplace/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Tracks</a>
+        <a href="/freebeats/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Free Beats</a>
+        <a href="/soundkits/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Sound Kits</a>
+        <a href="/producers/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Producers</a>
+        <a href="/pricing/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Pricing</a>
+        <a href="/premieres/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Premieres</a>
+        <a href="/collabs/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Collabs</a>
+
+        <div class="h-4 w-px bg-slate-800 mx-2"></div>
+
+        <a id="navStartSelling" href="/register/" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Start Selling</a>
+        <a id="navSignIn" href="/login/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Sign in</a>
+
+        <a id="navDashboard" href="#" class="hidden px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Dashboard</a>
+        <button id="navSignOut" type="button" class="hidden px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors">Sign out</button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button id="pbCartBtn" type="button" aria-label="Open cart" class="relative p-2 text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all flex items-center gap-2 px-3">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+          <span id="pbCartCount" class="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+        </button>
+
+        <div class="relative">
+          <button id="appsBtn" class="p-2 text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all">
+            <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
+          </button>
+
+          <div id="appsDropdown" class="hidden absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl py-2 z-50">
+            <a href="https://help-desk.audiory.site" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+              <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              Help Desk
+            </a>
+            <a href="https://blog.audiory.site" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+              <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+              Blog
+            </a>
+            <a href="/about/" class="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800 transition-colors">
+              <svg class="w-5 h-5 text-indigo-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              About
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Navigation Menu -->
+  <div id="menuBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
+  <nav id="mobileMenu" aria-label="Mobile Menu" class="hidden fixed inset-y-0 left-0 w-72 bg-slate-900 border-r border-slate-800 p-6 z-50 flex flex-col gap-4 overflow-y-auto">
+    <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+      <span class="text-lg font-bold text-white">Menu</span>
+      <button id="menuCloseBtn" class="text-slate-400 hover:text-white">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <a href="/" class="text-slate-300 hover:text-white font-medium py-1">Feed</a>
+    <a href="/marketplace/" class="text-slate-300 hover:text-white font-medium py-1">Tracks</a>
+    <a href="/freebeats/" class="text-slate-300 hover:text-white font-medium py-1">Free Beats</a>
+    <a href="/soundkits/" class="text-slate-300 hover:text-white font-medium py-1">Sound Kits</a>
+    <a href="/producers/" class="text-slate-300 hover:text-white font-medium py-1">Producers</a>
+    <a href="/pricing/" class="text-slate-300 hover:text-white font-medium py-1">Pricing</a>
+    <a href="/premieres/" class="text-slate-300 hover:text-white font-medium py-1">Premieres</a>
+    <a href="/collabs/" class="text-slate-300 hover:text-white font-medium py-1">Collabs</a>
+
+    <hr class="border-slate-800 my-2" />
+
+    <a id="mNavStartSelling" href="/register/" class="w-full text-center bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors">Start Selling</a>
+    <a id="mNavSignIn" href="/login/" class="w-full text-center border border-slate-700 text-slate-300 hover:text-white font-bold py-3 rounded-xl transition-colors">Sign in</a>
+
+    <a id="mNavDashboard" href="#" class="hidden text-slate-300 hover:text-white font-medium py-1">Dashboard</a>
+    <button id="mNavSignOut" class="hidden text-left text-slate-400 hover:text-white font-medium py-1">Sign out</button>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-12">
+
+    <!-- Compact Hero Section -->
+    <section class="relative rounded-2xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 lg:p-10 overflow-hidden shadow-2xl">
+      <div class="absolute -right-20 -top-20 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl"></div>
+      
+      <div class="relative z-10 max-w-2xl space-y-4">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          Discover Your Next Hit
+        </h1>
+        <p class="text-sm sm:text-base text-slate-400 leading-normal">
+          Audiory is a global beat marketplace where producers sell beats and artists buy instrumentals, free beats, and sound kits.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+          <input id="searchInput" class="flex-grow bg-slate-950/90 border border-slate-700/60 focus:border-indigo-500 text-white px-4 py-3 rounded-xl outline-none placeholder:text-slate-500 text-sm transition-colors" placeholder="Search by artist, mood, genre, tags..." />
+          <button id="searchBtn" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            Search
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-3 pt-1">
+          <a href="/marketplace/" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Explore Beats
+          </a>
+          <a href="/register/" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition-colors">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Sell Your Beats
+          </a>
+        </div>
+
+        <div class="pt-3 border-t border-slate-800/80 space-y-1.5">
+          <p class="text-xs text-slate-500 font-medium">Try searching for:</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-smart-fill="J. Cole" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">J. Cole</button>
+            <button type="button" data-smart-fill="Trap" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">Trap</button>
+            <button type="button" data-smart-fill="Afrobeats" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">Afrobeats</button>
+            <button type="button" data-smart-fill="Drill dark" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">Drill dark</button>
+            <button type="button" data-smart-fill="chill lyrical" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">chill lyrical</button>
+            <button type="button" data-smart-fill="Amapiano club" class="text-[11px] bg-slate-800/80 hover:bg-slate-700 border border-slate-700/60 text-slate-300 px-2.5 py-1 rounded-lg transition-colors">Amapiano club</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Beats -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Featured Beats</h2>
+        <a class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" href="/marketplace/?featured=1">See all →</a>
+      </div>
+      <div id="featuredStatus" class="text-sm text-slate-500">Loading featured beats…</div>
+      <div id="featuredStrip" class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-800"></div>
+    </section>
+
+    <!-- Trending Beats -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Trending Beats</h2>
+        <a class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" href="/marketplace/">See all →</a>
+      </div>
+      <div id="homeStatus" class="text-sm text-slate-500">Loading beats…</div>
+      <div id="trendingStrip" class="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-slate-800"></div>
+    </section>
+
+    <!-- Popular Genres -->
+    <section class="space-y-4">
+      <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Popular Genres</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=Afrobeats">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.pexels.com/photos/164936/pexels-photo-164936.jpeg?auto=compress&cs=tinysrgb&w=200" alt="Afrobeats">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">Afrobeats</span>
+        </a>
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=Trap">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=200&q=60" alt="Trap">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">Trap</span>
+        </a>
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=Drill">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=200&q=60" alt="Drill">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">Drill</span>
+        </a>
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=Amapiano">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1485579149621-3123dd979885?auto=format&fit=crop&w=200&q=60" alt="Amapiano">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">Amapiano</span>
+        </a>
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=R%26B">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&w=200&q=60" alt="R&B">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">R&B</span>
+        </a>
+        <a class="group relative h-28 rounded-2xl overflow-hidden border border-slate-800" href="/marketplace/?genre=Hip%20Hop">
+          <img class="absolute inset-0 w-full h-full object-cover brightness-50 group-hover:scale-105 transition-transform duration-300" src="https://images.unsplash.com/photo-1499415479124-43c32433a620?auto=format&fit=crop&w=200&q=60" alt="Hip Hop">
+          <span class="absolute inset-0 flex items-center justify-center text-white font-black tracking-wide text-lg">Hip Hop</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Top Charting Beats Grid -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Top Charting Beats</h2>
+        <a class="text-sm font-semibold text-indigo-400 hover:text-indigo-300 transition-colors" href="/marketplace/">See all →</a>
+      </div>
+      <div id="chartGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+    </section>
+
+    <!-- Producers Promo -->
+    <section class="bg-slate-900 border border-slate-800 rounded-3xl p-8 lg:p-12 space-y-6">
+      <div class="space-y-2">
+        <span class="text-xs font-black uppercase tracking-wider text-indigo-400">For Producers</span>
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-white">Your music business in one place</h3>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-6 pt-4">
+        <div class="bg-slate-950/50 border border-slate-800/80 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center font-bold">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h4 class="font-bold text-white text-lg">Manage your business</h4>
+          <p class="text-slate-400 text-sm">Upload your beats, manage your store, and sell licenses in one workflow.</p>
+        </div>
+
+        <div class="bg-slate-950/50 border border-slate-800/80 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center font-bold">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h4 class="font-bold text-white text-lg">Track your performance</h4>
+          <p class="text-slate-400 text-sm">See what’s trending and grow with analytics & upgrades.</p>
+        </div>
+
+        <div class="bg-slate-950/50 border border-slate-800/80 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center font-bold">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <h4 class="font-bold text-white text-lg">Grow your audience</h4>
+          <p class="text-slate-400 text-sm">Build your producer profile and reach more artists.</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 pt-2">
+        <a href="/register/" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-3 rounded-xl transition-colors">Start Selling</a>
+        <a href="/login/" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-bold px-6 py-3 rounded-xl transition-colors">Sign in</a>
+      </div>
+    </section>
+
+    <!-- Why Buy Section -->
+    <section class="space-y-6">
+      <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Why Buy From Audiory?</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+          </div>
+          <h3 class="font-bold text-white">Secure Licensing</h3>
+          <p class="text-slate-400 text-sm">Every beat comes with clear licensing options and instant delivery.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3 class="font-bold text-white">Instant Downloads</h3>
+          <p class="text-slate-400 text-sm">Get your files immediately after purchase or free download.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V11a2 2 0 012-2h1.065M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+          </div>
+          <h3 class="font-bold text-white">Global Producers</h3>
+          <p class="text-slate-400 text-sm">Discover talented producers from around the world.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-3">
+          <div class="w-10 h-10 bg-indigo-600/10 text-indigo-400 rounded-xl flex items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-bold text-white">Multiple Payments</h3>
+          <p class="text-slate-400 text-sm">Pay securely using PayPal or M-Pesa.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="space-y-4">
+      <h2 class="text-xl sm:text-2xl font-bold text-white tracking-tight">Frequently Asked Questions</h2>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 divide-y divide-slate-800 space-y-4">
+        <details class="group pt-4 first:pt-0">
+          <summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">
+            <span>How do I buy a beat?</span>
+            <span class="transition group-open:rotate-180">
+              <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </summary>
+          <p class="text-slate-400 text-sm mt-3">Select a beat, choose a license, and complete payment.</p>
+        </details>
+        <details class="group pt-4">
+          <summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">
+            <span>Do I receive files instantly?</span>
+            <span class="transition group-open:rotate-180">
+              <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </summary>
+          <p class="text-slate-400 text-sm mt-3">Yes. Purchased beats are delivered immediately after payment.</p>
+        </details>
+        <details class="group pt-4">
+          <summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">
+            <span>Can I download free beats?</span>
+            <span class="transition group-open:rotate-180">
+              <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </summary>
+          <p class="text-slate-400 text-sm mt-3">Yes. Producers can enable free downloads on selected beats.</p>
+        </details>
+        <details class="group pt-4">
+          <summary class="font-semibold text-white cursor-pointer flex justify-between items-center list-none">
+            <span>Can producers sell on Audiory?</span>
+            <span class="transition group-open:rotate-180">
+              <svg class="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </span>
+          </summary>
+          <p class="text-slate-400 text-sm mt-3">Yes. Create an account and start uploading beats.</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- Newsletter Banner -->
+    <section class="bg-indigo-600 rounded-3xl p-8 sm:p-12 text-center text-white space-y-6">
+      <div class="max-w-2xl mx-auto space-y-3">
+        <h2 class="text-2xl sm:text-3xl font-black">Don’t Miss a Beat</h2>
+        <p class="text-indigo-100 text-sm sm:text-base">Get new beats, free downloads, producer opportunities and exclusive updates delivered to your inbox.</p>
+      </div>
+      
+      <div class="max-w-xl mx-auto flex flex-col sm:flex-row gap-3">
+        <input id="newsletterName" type="text" placeholder="Your name" class="bg-white/10 placeholder:text-indigo-200 border border-indigo-400/30 px-4 py-3 rounded-xl outline-none text-white text-sm focus:bg-white/20 transition-all flex-1" />
+        <input id="newsletterEmail" type="email" placeholder="Enter your email" class="bg-white/10 placeholder:text-indigo-200 border border-indigo-400/30 px-4 py-3 rounded-xl outline-none text-white text-sm focus:bg-white/20 transition-all flex-1" />
+        <button id="newsletterBtn" class="bg-white text-indigo-700 hover:bg-indigo-50 font-extrabold px-6 py-3 rounded-xl text-sm transition-colors">Subscribe</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 border-t border-slate-800 py-12 mt-auto w-full">
+    <div class="w-full max-w-7xl lg:max-w-none px-4 sm:px-6 lg:px-16 mx-auto flex flex-col items-center gap-6 text-center">
+      <div class="text-xs font-medium text-slate-500">© 2026 Audiory. All Rights Reserved.</div>
+
+      <div class="flex flex-wrap justify-center gap-6 text-xs text-slate-400 font-medium">
+        <a href="/privacy/" class="hover:text-white transition-colors">Privacy Policy</a>
+        <a href="/terms/" class="hover:text-white transition-colors">Terms</a>
+        <a href="/cookies/" class="hover:text-white transition-colors">Cookies</a>
+        <a href="/cookie-settings/" class="hover:text-white transition-colors">Cookie Settings</a>
+        <a href="/refunds/" class="hover:text-white transition-colors">Refund Policy</a>
+        <a href="/dmca/" class="hover:text-white transition-colors">DMCA</a>
+        <a href="/creator-agreement/" class="hover:text-white transition-colors">Creator Agreement</a>
+      </div>
+
+      <div class="flex justify-center items-center gap-3">
+        <a href="https://www.instagram.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="https://www.tiktok.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.82.56-1.31 1.54-1.28 2.53.02 1.02.61 1.96 1.51 2.39.92.45 2.06.37 2.91-.22.82-.55 1.28-1.52 1.25-2.51.02-5.32.01-10.64.01-15.96z"/></svg>
+        </a>
+        <a href="https://x.com/audiorybeats" target="_blank" rel="noopener noreferrer" aria-label="X" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://www.facebook.com/audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <a href="https://youtube.com/@audiorybeatstore" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700/60 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-600 transition-all">
+          <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- License Selection Modal (Fully Pure Tailwind) -->
+  <div id="pbModalBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
+  <div id="pbLicenseModal" role="dialog" aria-modal="true" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl z-50 space-y-6 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+      <div>
+        <span class="text-xs font-bold uppercase text-indigo-400 tracking-wider">Choose License</span>
+        <h3 id="pbModalTitle" class="text-xl font-bold text-white">Beat Title</h3>
+        <p id="pbModalSub" class="text-sm text-slate-400">Select a license to continue.</p>
+      </div>
+      <button id="pbModalClose" class="text-slate-400 hover:text-white p-1">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div id="pbLicensesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+    <div class="border-t border-slate-800 pt-4 flex items-center justify-between">
+      <div>
+        <div class="text-xs text-slate-500">Total</div>
+        <div id="pbTotalPrice" class="text-2xl font-black text-white">$0.00</div>
+      </div>
+      <div class="flex gap-3">
+        <button id="pbAddToCart" type="button" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold px-4 py-2.5 rounded-xl transition-colors">Add to Cart</button>
+        <button id="pbBuyNow" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-6 py-2.5 rounded-xl transition-colors">Buy now</button>
+      </div>
+    </div>
+
+    <div id="pbTermsBox" class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-xs text-slate-400 space-y-2">
+      <div class="font-bold text-slate-300">Usage Terms</div>
+      <div id="pbTermsGrid" class="grid grid-cols-2 gap-2"></div>
+    </div>
+  </div>
+
+  <!-- Cart Side Drawer -->
+  <div id="pbCartBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
+  <aside id="pbCartDrawer" aria-label="Cart" class="hidden fixed inset-y-0 right-0 w-full max-w-md bg-slate-900 border-l border-slate-800 p-6 z-50 flex flex-col justify-between shadow-2xl">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h3 class="text-xl font-bold text-white">Your Cart</h3>
+          <p id="pbCartSub" class="text-sm text-slate-400">0 items</p>
+        </div>
+        <button id="pbCartClose" type="button" class="text-slate-400 hover:text-white">
+          <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="pbCartItems" class="space-y-3 overflow-y-auto max-h-[60vh]"></div>
+    </div>
+
+    <div class="border-t border-slate-800 pt-4 space-y-4">
+      <div class="flex items-center justify-between">
+        <span class="text-slate-400 font-medium">Total</span>
+        <span id="pbCartTotal" class="text-2xl font-black text-white">$0.00</span>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <button id="pbCartClear" type="button" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl transition-colors">Clear</button>
+        <button id="pbCartCheckout" type="button" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors">Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Free Download Modal -->
+  <div id="pbFreeBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
+  <div id="pbFreeModal" role="dialog" aria-modal="true" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl z-50 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <h3 id="pbFreeTitle" class="text-xl font-bold text-white">Free Download</h3>
+      <button id="pbFreeClose" class="text-slate-400 hover:text-white">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <p id="pbFreeSub" class="text-sm text-slate-400">
+      Enter your email address and full name to unlock your free download.
+    </p>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-xs font-bold text-slate-300 mb-1">Full name</label>
+        <input id="pbFreeName" class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white px-4 py-2.5 rounded-xl outline-none text-sm" placeholder="Your full name">
+      </div>
+      <div>
+        <label class="block text-xs font-bold text-slate-300 mb-1">Email address</label>
+        <input id="pbFreeEmail" type="email" class="w-full bg-slate-950 border border-slate-800 focus:border-indigo-500 text-white px-4 py-2.5 rounded-xl outline-none text-sm" placeholder="you@email.com">
+      </div>
+    </div>
+
+    <button id="pbFreeSend" type="button" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-colors">Send Track</button>
+    <div id="pbFreeStatus" class="text-xs text-emerald-400"></div>
+
+    <p class="text-[11px] text-slate-500 text-center">
+      By continuing, you agree to our Terms & Privacy Policy.
+    </p>
+  </div>
+
+  <!-- Payment Modal -->
+  <div id="pbPayBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
+  <div id="pbPayModal" role="dialog" aria-modal="true" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-lg mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl z-50 space-y-6">
+    <div class="flex items-start justify-between border-b border-slate-800 pb-4">
+      <div>
+        <h3 id="pbPayTitle" class="text-xl font-bold text-white">Choose payment method</h3>
+        <p id="pbPaySub" class="text-sm text-slate-400">—</p>
+      </div>
+      <button id="pbPayClose" class="text-slate-400 hover:text-white">
+        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="space-y-3">
+      <button id="pbPayWithPaypal" type="button" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold p-4 rounded-2xl transition-colors flex items-center justify-between">
+        <span>Pay with PayPal</span>
+        <span id="pbPayAmountA" class="opacity-90">—</span>
       </button>
 
-      <div class="pb-pay-phone-wrap" id="pbMpesaBox">
-        <div class="pb-pay-label">Phone number (2547XXXXXXXX)</div>
-        <input class="pb-pay-input" id="pbMpesaPhone" placeholder="2547XXXXXXXX" inputmode="numeric" />
-        <button class="pb-pay-send" id="pbSendStkPush" type="button">Send STK Push</button>
-        <div class="pb-pay-status" id="pbPayStatus"></div>
+      <button id="pbPayWithMpesa" type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-4 rounded-2xl transition-colors flex items-center justify-between">
+        <span>Pay with M-Pesa</span>
+        <span id="pbPayAmountB" class="opacity-90">—</span>
+      </button>
+
+      <div id="pbMpesaBox" class="hidden bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3 mt-3">
+        <label class="block text-xs font-bold text-slate-300">Phone number (2547XXXXXXXX)</label>
+        <input id="pbMpesaPhone" inputmode="numeric" class="w-full bg-slate-900 border border-slate-800 focus:border-emerald-500 text-white px-4 py-2.5 rounded-xl outline-none text-sm" placeholder="2547XXXXXXXX" />
+        <button id="pbSendStkPush" type="button" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl transition-colors">Send STK Push</button>
+        <div id="pbPayStatus" class="text-xs text-slate-400 whitespace-pre-line"></div>
       </div>
     </div>
   </div>
-</div>
 
-<script>
+  <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
 </script>
 
