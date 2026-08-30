@@ -60,15 +60,46 @@
   <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
 
-  <!-- Global CSS Fallback Reset to Prevent SVG Blowouts -->
+  <!-- Complete CSS Reset & Base Override (No Global CSS file needed) -->
   <style>
+    *, ::before, ::after {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+    }
     svg, img {
       max-width: 100%;
       height: auto;
+      vertical-align: middle;
     }
-    header svg {
-      width: 1.5rem;
-      height: 1.5rem;
+    body {
+      background-color: #070a12;
+      background-image: 
+        radial-gradient(1200px 600px at 20% 0%, rgba(59,130,246,0.14), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(16,185,129,0.10), transparent 55%);
+      background-attachment: fixed;
+    }
+    /* Dynamic Script Compatibility Utilities */
+    .pb-pill {
+      min-width: 96px;
+      height: 38px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      white-space: nowrap;
+    }
+    .beat-meta, .trend-actions, .chart-price-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .no-scroll {
+      overflow: hidden;
     }
   </style>
 
@@ -81,7 +112,7 @@
         extend: {
           colors: {
             brand: {
-              50: '#eep2ff',
+              50: '#eef2ff',
               500: '#6366f1',
               600: '#4f46e5',
               700: '#4338ca',
@@ -92,7 +123,7 @@
     }
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 flex flex-col min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="text-slate-100 flex flex-col min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
   <!-- Global Inline Alert Banner -->
   <div id="inlineAlert" class="hidden sticky top-0 z-50 bg-indigo-600 text-white px-4 py-3 shadow-lg">
@@ -108,17 +139,16 @@
   </div>
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+  <header class="sticky top-0 z-40 w-full bg-slate-950/80 backdrop-blur-md border-b border-slate-800/80">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
         <button id="hamburgerBtn" aria-label="Menu" class="lg:hidden p-2 text-slate-400 hover:text-white focus:outline-none">
           <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
         </button>
         <a href="/" class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
-          <!-- Custom SVG Logo -->
-          <!-- WITH THIS: -->
-          <span class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden" style="width: 2.25rem; height: 2.25rem;">
-            <svg style="width: 1.5rem; height: 1.5rem;" class="flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Logo Container with strict dimensions -->
+          <span class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <svg class="w-6 h-6 flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M 50 15 L 20 85 M 50 15 L 80 85" />
               <path d="M 32 60 Q 50 80 68 60" />
               <path d="M 28 50 L 72 50" />
@@ -129,32 +159,32 @@
       </div>
 
       <nav class="hidden lg:flex items-center gap-1 text-sm font-semibold text-slate-300">
-        <a href="/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Feed</a>
-        <a href="/marketplace/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Tracks</a>
-        <a href="/freebeats/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Free Beats</a>
-        <a href="/soundkits/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Sound Kits</a>
-        <a href="/producers/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Producers</a>
-        <a href="/pricing/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Pricing</a>
-        <a href="/premieres/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Premieres</a>
-        <a href="/collabs/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Collabs</a>
+        <a href="/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Feed</a>
+        <a href="/marketplace/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Tracks</a>
+        <a href="/freebeats/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Free Beats</a>
+        <a href="/soundkits/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Sound Kits</a>
+        <a href="/producers/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Producers</a>
+        <a href="/pricing/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Pricing</a>
+        <a href="/premieres/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Premieres</a>
+        <a href="/collabs/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Collabs</a>
 
         <div class="h-4 w-px bg-slate-800 mx-2"></div>
 
         <a id="navStartSelling" href="/register/" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg transition-colors">Start Selling</a>
-        <a id="navSignIn" href="/login/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Sign in</a>
+        <a id="navSignIn" href="/login/" class="px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Sign in</a>
 
-        <a id="navDashboard" href="#" class="hidden px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800 transition-colors">Dashboard</a>
-        <button id="navSignOut" type="button" class="hidden px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">Sign out</button>
+        <a id="navDashboard" href="#" class="hidden px-3 py-2 rounded-lg hover:text-white hover:bg-slate-800/60 transition-colors">Dashboard</a>
+        <button id="navSignOut" type="button" class="hidden px-3 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors">Sign out</button>
       </nav>
 
       <div class="flex items-center gap-2">
-        <button id="pbCartBtn" type="button" aria-label="Open cart" class="relative p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 rounded-xl transition-all flex items-center gap-2 px-3">
+        <button id="pbCartBtn" type="button" aria-label="Open cart" class="relative p-2 text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all flex items-center gap-2 px-3">
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
           <span id="pbCartCount" class="bg-indigo-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
         </button>
 
         <div class="relative">
-          <button id="appsBtn" class="p-2 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-800 border border-slate-700/50 rounded-xl transition-all">
+          <button id="appsBtn" class="p-2 text-slate-300 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all">
             <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/></svg>
           </button>
 
@@ -207,7 +237,7 @@
   <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow space-y-12">
 
     <!-- Compact Hero Section -->
-    <section class="relative rounded-2xl bg-slate-900 border border-slate-800 p-6 sm:p-8 lg:p-10 overflow-hidden">
+    <section class="relative rounded-2xl bg-slate-900/90 border border-slate-800 p-6 sm:p-8 lg:p-10 overflow-hidden shadow-2xl">
       <div class="absolute -right-20 -top-20 w-72 h-72 bg-indigo-600/10 rounded-full blur-3xl"></div>
       
       <div class="relative z-10 max-w-2xl space-y-4">
@@ -484,7 +514,7 @@
     </div>
   </footer>
 
-  <!-- License Selection Modal -->
+  <!-- License Selection Modal (Fully Pure Tailwind) -->
   <div id="pbModalBackdrop" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50"></div>
   <div id="pbLicenseModal" role="dialog" aria-modal="true" class="hidden fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl z-50 space-y-6 max-h-[90vh] overflow-y-auto">
     <div class="flex items-start justify-between border-b border-slate-800 pb-4">
@@ -498,7 +528,7 @@
       </button>
     </div>
 
-    <div id="pbLicensesGrid" class="space-y-3"></div>
+    <div id="pbLicensesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
 
     <div class="border-t border-slate-800 pt-4 flex items-center justify-between">
       <div>
