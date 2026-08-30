@@ -656,6 +656,178 @@ export default {
   }
 };
 
+// ========================================================
+// FIREBASE SERVICE ACCOUNT ACCESS TOKEN
+// ========================================================
+
+function base64UrlEncode(input) {
+  const bytes =
+    input instanceof Uint8Array
+      ? input
+      : new TextEncoder().encode(input);
+
+  let binary = "";
+
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+
+  return btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function pemToArrayBuffer(pem) {
+  const base64 = String(pem || "")
+    .replace(/-----BEGIN PRIVATE KEY-----/g, "")
+    .replace(/-----END PRIVATE KEY-----/g, "")
+    .replace(/\s+/g, "");
+
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+
+  return bytes.buffer;
+}
+
+async function getFirebaseServiceAccountAccessToken(env) {
+  const projectId =
+    String(env.FIREBASE_PROJECT_ID || "").trim();
+
+  const clientEmail =
+    String(env.FIREBASE_CLIENT_EMAIL || "").trim();
+
+  const privateKey =
+    String(env.FIREBASE_PRIVATE_KEY || "")
+      .replace(/\\n/g, "\n")
+      .trim();
+
+  if (
+    !projectId ||
+    !clientEmail ||
+    !privateKey
+  ) {
+    throw new Error(
+      "Firebase service account credentials are not configured"
+    );
+  }
+
+  const now =
+    Math.floor(Date.now() / 1000);
+
+  const header = {
+    alg: "RS256",
+    typ: "JWT"
+  };
+
+  const claimSet = {
+    iss: clientEmail,
+    scope:
+      "https://www.googleapis.com/auth/datastore",
+    aud:
+      "https://oauth2.googleapis.com/token",
+    iat: now,
+    exp: now + 3600
+  };
+
+  const encodedHeader =
+    base64UrlEncode(
+      JSON.stringify(header)
+    );
+
+  const encodedClaimSet =
+    base64UrlEncode(
+      JSON.stringify(claimSet)
+    );
+
+  const unsignedToken =
+    `${encodedHeader}.${encodedClaimSet}`;
+
+  const privateKeyData =
+    await crypto.subtle.importKey(
+      "pkcs8",
+      pemToArrayBuffer(privateKey),
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        hash: "SHA-256"
+      },
+      false,
+      ["sign"]
+    );
+
+  const signature =
+    await crypto.subtle.sign(
+      "RSASSA-PKCS1-v1_5",
+      privateKeyData,
+      new TextEncoder().encode(
+        unsignedToken
+      )
+    );
+
+  const assertion =
+    `${unsignedToken}.${base64UrlEncode(
+      new Uint8Array(signature)
+    )}`;
+
+  const response =
+    await fetch(
+      "https://oauth2.googleapis.com/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type":
+            "application/x-www-form-urlencoded"
+        },
+        body:
+          new URLSearchParams({
+            grant_type:
+              "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            assertion
+          }).toString()
+      }
+    );
+
+  const text =
+    await response.text();
+
+  let data = {};
+
+  try {
+    data = text
+      ? JSON.parse(text)
+      : {};
+  } catch {
+    data = {
+      raw: text
+    };
+  }
+
+  if (!response.ok) {
+    console.error(
+      "Firebase service-account OAuth error:",
+      response.status,
+      data
+    );
+
+    throw new Error(
+      data?.error_description ||
+      data?.error ||
+      `Firebase service-account OAuth failed (${response.status})`
+    );
+  }
+
+  if (!data?.access_token) {
+    throw new Error(
+      "Firebase service-account access token missing"
+    );
+  }
+
+  return data.access_token;
+}
 
 // ============================================================
 // AUTHENTICATE FIREBASE USER
@@ -2374,37 +2546,26 @@ async function handleCreatePayPalOrder(
   //
   // ------------------------------------------------------
 
+  const firestoreAdminToken =
+    await getFirebaseServiceAccountAccessToken(env);
+
   await setFirestoreDocument(
     "paypalOrders",
     cartId,
     {
-      createdAt:
-        Date.now(),
-
-      items:
-        resolved,
-
-      total:
-        finalTotal,
-
-      currency:
-        "USD",
-
-      mode:
-        String(
-          env.PAYPAL_MODE ||
-          "sandbox"
-        )
-          .trim()
-          .toLowerCase(),
-
-      status:
-        "created",
-
-      buyerId:
-        buyerId
+      createdAt: Date.now(),
+      items: resolved,
+      total: finalTotal,
+      currency: "USD",
+      mode: String(
+        env.PAYPAL_MODE || "sandbox"
+      )
+        .trim()
+        .toLowerCase(),
+      status: "created",
+      buyerId: buyerId
     },
-    token
+    firestoreAdminToken
   );
 
 
@@ -2662,7 +2823,7 @@ async function handleCreatePayPalOrder(
       updatedAt:
         Date.now()
     },
-    token
+    firestoreAdminToken
   );
 
 
