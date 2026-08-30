@@ -66,6 +66,10 @@
       max-width: 100%;
       height: auto;
     }
+    header svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
   </style>
 
   <!-- Tailwind CSS CDN -->
@@ -112,13 +116,11 @@
         </button>
         <a href="/" class="text-xl font-black tracking-tight text-white flex items-center gap-2.5">
           <!-- Custom SVG Logo -->
-          <span class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-            <svg class="w-6 h-6 flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
-              <!-- Outer A frame -->
+          <!-- WITH THIS: -->
+          <span class="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden" style="width: 2.25rem; height: 2.25rem;">
+            <svg style="width: 1.5rem; height: 1.5rem;" class="flex-shrink-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
               <path d="M 50 15 L 20 85 M 50 15 L 80 85" />
-              <!-- Inner upside-down arc/star overlap -->
               <path d="M 32 60 Q 50 80 68 60" />
-              <!-- Crossbar -->
               <path d="M 28 50 L 72 50" />
             </svg>
           </span>
