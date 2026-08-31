@@ -408,6 +408,44 @@ export default {
     }
 
     // ========================================================
+    // PAYPAL CAPTURE ORDER
+    // POST /api/captureOrder
+    // ========================================================
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/api/captureOrder"
+    ) {
+
+      try {
+
+        return await handleCapturePayPalOrder(
+          request,
+          env,
+          corsHeaders
+        );
+
+      } catch (error) {
+
+        console.error(
+          "captureOrder ERROR:",
+          error
+        );
+
+        return json(
+          {
+            success: false,
+            error:
+              error?.message ||
+              "PayPal capture failed"
+          },
+          500,
+          corsHeaders
+        );
+      }
+    }
+
+    // ========================================================
     // FIRESTORE BACKEND FUNCTIONS
     // ========================================================
 
@@ -1893,6 +1931,383 @@ async function setFirestoreDocument(
 }
 
 // ========================================================
+// PAYPAL CAPTURE ORDER
+// POST /api/captureOrder
+// ========================================================
+
+async function handleCapturePayPalOrder(
+  request,
+  env,
+  corsHeaders
+) {
+
+  // ------------------------------------------------------
+  // AUTHENTICATION
+  // ------------------------------------------------------
+
+  const auth =
+    await getAuthenticatedUser(
+      request
+    );
+
+  if (!auth) {
+    return json(
+      {
+        success: false,
+        error:
+          "Authentication required"
+      },
+      401,
+      corsHeaders
+    );
+  }
+
+
+  // ------------------------------------------------------
+  // READ REQUEST BODY
+  // ------------------------------------------------------
+
+  let body;
+
+  try {
+
+    body =
+      await request.json();
+
+  } catch {
+
+    return json(
+      {
+        success: false,
+        error:
+          "Invalid JSON body"
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  const orderId =
+    String(
+      body?.orderId ||
+      ""
+    ).trim();
+
+  const cartId =
+    String(
+      body?.cartId ||
+      ""
+    ).trim();
+
+
+  // ------------------------------------------------------
+  // VALIDATE REQUIRED VALUES
+  // ------------------------------------------------------
+
+  if (!orderId) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "orderId is required"
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  if (!cartId) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "cartId is required"
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  // ------------------------------------------------------
+  // VERIFY CART BELONGS TO CURRENT BUYER
+  // ------------------------------------------------------
+
+  const firestoreAdminToken =
+    await getFirebaseServiceAccountAccessToken(
+      env
+    );
+
+
+  const cart =
+    await getFirestoreDocument(
+      "paypalOrders",
+      cartId,
+      firestoreAdminToken
+    );
+
+
+  if (!cart?.exists) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "Cart not found"
+      },
+      404,
+      corsHeaders
+    );
+
+  }
+
+
+  const cartData =
+    cart.data || {};
+
+
+  const cartBuyerId =
+    String(
+      cartData.buyerId ||
+      ""
+    ).trim();
+
+  const buyerId =
+    String(
+      auth.sub ||
+      ""
+    ).trim();
+
+
+  if (
+    !cartBuyerId ||
+    !buyerId ||
+    cartBuyerId !== buyerId
+  ) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "You are not authorized to capture this order"
+      },
+      403,
+      corsHeaders
+    );
+
+  }
+
+
+  // ------------------------------------------------------
+  // MAKE SURE PAYPAL ORDER MATCHES CART
+  // ------------------------------------------------------
+
+  const storedPayPalOrderId =
+    String(
+      cartData.paypalOrderId ||
+      ""
+    ).trim();
+
+
+  if (
+    storedPayPalOrderId &&
+    storedPayPalOrderId !== orderId
+  ) {
+
+    return json(
+      {
+        success: false,
+        error:
+          "PayPal order does not match cart"
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  // ------------------------------------------------------
+  // PAYPAL ACCESS TOKEN
+  // ------------------------------------------------------
+
+  const accessToken =
+    await getPayPalAccessToken(
+      env
+    );
+
+
+  // ------------------------------------------------------
+  // CAPTURE PAYPAL ORDER
+  // ------------------------------------------------------
+
+  const response =
+    await fetch(
+      `${paypalBaseUrl(env)}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+      {
+        method:
+          "POST",
+
+        headers: {
+          "Authorization":
+            `Bearer ${accessToken}`,
+
+          "Content-Type":
+            "application/json"
+        }
+      }
+    );
+
+
+  const text =
+    await response.text();
+
+
+  let data = {};
+
+  try {
+
+    data =
+      text
+        ? JSON.parse(text)
+        : {};
+
+  } catch {
+
+    data = {
+      raw: text
+    };
+
+  }
+
+
+  // ------------------------------------------------------
+  // PAYPAL CAPTURE FAILED
+  // ------------------------------------------------------
+
+  if (!response.ok) {
+
+    console.error(
+      "PayPal capture failed:",
+      response.status,
+      data
+    );
+
+    return json(
+      {
+        success: false,
+
+        error:
+          data?.message ||
+          "PayPal capture failed",
+
+        details:
+          data
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  // ------------------------------------------------------
+  // PAYPAL MUST BE COMPLETED
+  // ------------------------------------------------------
+
+  const paypalStatus =
+    String(
+      data?.status ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (
+    paypalStatus !==
+    "COMPLETED"
+  ) {
+
+    return json(
+      {
+        success: false,
+
+        error:
+          "PayPal payment was not completed",
+
+        status:
+          data?.status ||
+          null,
+
+        details:
+          data
+      },
+      400,
+      corsHeaders
+    );
+
+  }
+
+
+  // ------------------------------------------------------
+  // PROCESS PAYMENT
+  //
+  // This is the migrated equivalent of:
+  //
+  // processCartCapture({
+  //   cartId,
+  //   captureEvent: data,
+  //   orderId
+  // })
+  //
+  // from the original Firebase implementation.
+  // ------------------------------------------------------
+
+  const result =
+    await processCartCapture({
+      cartId,
+      captureEvent: data,
+      orderId,
+      env
+    });
+
+
+  // ------------------------------------------------------
+  // RESPONSE
+  // ------------------------------------------------------
+
+  return json(
+    {
+      success:
+        true,
+
+      ok:
+        true,
+
+      status:
+        data.status,
+
+      orderId,
+
+      cartId,
+
+      alreadyProcessed:
+        result?.alreadyProcessed === true
+    },
+    200,
+    corsHeaders
+  );
+}
+
+// ========================================================
 // PAYPAL CONFIG
 // ========================================================
 
@@ -2255,6 +2670,7 @@ async function handleCreatePayPalOrder(
   for (
     const item of incoming
   ) {
+
 
 
     // ====================================================
@@ -2863,6 +3279,1083 @@ async function handleCreatePayPalOrder(
     200,
     corsHeaders
   );
+}
+
+// ========================================================
+// PAYPAL CAPTURE AMOUNT PARSER
+// ========================================================
+
+function parseAmountFromPayPalEvent(
+  event
+) {
+
+  const root =
+    event || {};
+
+  // ------------------------------------------------------
+  // Direct PayPal capture response
+  // ------------------------------------------------------
+
+  const directCapture =
+    root?.purchase_units?.[0]
+      ?.payments
+      ?.captures?.[0];
+
+  if (
+    directCapture?.amount
+  ) {
+
+    return {
+      value:
+        Number(
+          directCapture.amount.value ||
+          0
+        ),
+
+      currency:
+        String(
+          directCapture.amount.currency_code ||
+          "USD"
+        )
+          .trim()
+          .toUpperCase()
+
+    };
+
+  }
+
+
+  // ------------------------------------------------------
+  // Webhook resource capture
+  // ------------------------------------------------------
+
+  const resource =
+    root?.resource ||
+    null;
+
+  if (
+    resource?.amount
+  ) {
+
+    return {
+      value:
+        Number(
+          resource.amount.value ||
+          0
+        ),
+
+      currency:
+        String(
+          resource.amount.currency_code ||
+          "USD"
+        )
+          .trim()
+          .toUpperCase()
+
+    };
+
+  }
+
+
+  // ------------------------------------------------------
+  // Webhook containing purchase_units
+  // ------------------------------------------------------
+
+  const webhookCapture =
+    resource
+      ?.purchase_units?.[0]
+      ?.payments
+      ?.captures?.[0];
+
+  if (
+    webhookCapture?.amount
+  ) {
+
+    return {
+      value:
+        Number(
+          webhookCapture.amount.value ||
+          0
+        ),
+
+      currency:
+        String(
+          webhookCapture.amount.currency_code ||
+          "USD"
+        )
+          .trim()
+          .toUpperCase()
+
+    };
+
+  }
+
+
+  // ------------------------------------------------------
+  // No PayPal amount found
+  // ------------------------------------------------------
+
+  return {
+    value: 0,
+    currency: "USD"
+  };
+
+}
+
+// ========================================================
+// PROCESS PAYPAL CAPTURE
+// Migrated from Firebase Cloud Functions
+// ========================================================
+
+async function processCartCapture({
+  cartId,
+  captureEvent,
+  orderId,
+  env
+}) {
+
+  // ------------------------------------------------------
+  // FIRESTORE ADMIN TOKEN
+  // ------------------------------------------------------
+
+  const firestoreAdminToken =
+    await getFirebaseServiceAccountAccessToken(env);
+
+
+  // ------------------------------------------------------
+  // GET CART
+  // ------------------------------------------------------
+
+  const cartSnap =
+    await getFirestoreDocument(
+      "paypalOrders",
+      cartId,
+      firestoreAdminToken
+    );
+
+  if (!cartSnap.exists) {
+    throw new Error(
+      "Cart not found in paypalOrders"
+    );
+  }
+
+  const cart =
+    cartSnap.data || {};
+
+  const items =
+    Array.isArray(cart.items)
+      ? cart.items
+      : [];
+
+  if (!items.length) {
+    throw new Error(
+      "Cart has no items"
+    );
+  }
+
+
+  // ------------------------------------------------------
+  // BUYER
+  // ------------------------------------------------------
+
+  const buyerId =
+    String(
+      cart.buyerId || ""
+    );
+
+
+  // ------------------------------------------------------
+  // PAYPAL EVENT
+  // Supports:
+  // 1. Direct capture response
+  // 2. Webhook resource payload
+  // ------------------------------------------------------
+
+  const root =
+    captureEvent || {};
+
+  const resource =
+    root?.resource || root;
+
+  const payer =
+    root?.payer ||
+    resource?.payer ||
+    {};
+
+
+  // ------------------------------------------------------
+  // PAYER EMAIL
+  // ------------------------------------------------------
+
+  const payerEmail =
+    String(
+      payer?.email_address ||
+      resource?.payer?.email_address ||
+      ""
+    ).trim();
+
+
+  // ------------------------------------------------------
+  // PAYER NAME
+  // ------------------------------------------------------
+
+  const payerGivenName =
+    String(
+      payer?.name?.given_name ||
+      ""
+    ).trim();
+
+  const payerSurname =
+    String(
+      payer?.name?.surname ||
+      ""
+    ).trim();
+
+  const buyerName =
+    `${payerGivenName} ${payerSurname}`
+      .trim() ||
+    null;
+
+  const buyerEmail =
+    payerEmail ||
+    null;
+
+
+  // ------------------------------------------------------
+  // IDEMPOTENCY
+  //
+  // Only process a PayPal order once.
+  // ------------------------------------------------------
+
+  const processedSnap =
+    await getFirestoreDocument(
+      "paypalOrderCaptures",
+      orderId,
+      firestoreAdminToken
+    );
+
+  if (processedSnap.exists) {
+
+    return {
+      ok: true,
+      alreadyProcessed: true
+    };
+
+  }
+
+
+  // ------------------------------------------------------
+  // PAYMENT AMOUNT
+  // ------------------------------------------------------
+
+  const payment =
+    parseAmountFromPayPalEvent(
+      captureEvent
+    );
+
+  const value =
+    Number(
+      payment?.value || 0
+    );
+
+  const currency =
+    String(
+      payment?.currency ||
+      cart.currency ||
+      "USD"
+    );
+
+
+  // ------------------------------------------------------
+  // PAYPAL CAPTURE ID
+  // ------------------------------------------------------
+
+  const providerCaptureId =
+    String(
+      resource?.id ||
+      root?.purchase_units?.[0]
+        ?.payments
+        ?.captures?.[0]
+        ?.id ||
+      ""
+    );
+
+
+  // ------------------------------------------------------
+  // PAYPAL STATUS
+  // ------------------------------------------------------
+
+  const providerStatus =
+    String(
+      resource?.status ||
+      root?.status ||
+      ""
+    );
+
+
+  // ------------------------------------------------------
+  // CREATE / UPDATE ORDER
+  // orders/{orderId}
+  // ------------------------------------------------------
+
+  await setFirestoreDocument(
+    "orders",
+    orderId,
+    {
+
+      buyerName,
+
+      buyerEmail,
+
+      orderId,
+
+      provider:
+        "paypal",
+
+      type:
+        "cart",
+
+      cartId,
+
+      providerEventId:
+        String(
+          root?.id || ""
+        ),
+
+      providerCaptureId,
+
+      providerStatus,
+
+      amount:
+        value ||
+        Number(
+          cart.total || 0
+        ),
+
+      currency,
+
+      buyerId:
+        buyerId ||
+        null,
+
+      status:
+        "PAID",
+
+      payerEmail,
+
+      items,
+
+      createdAt:
+        Date.now(),
+
+      updatedAt:
+        Date.now()
+
+    },
+    firestoreAdminToken
+  );
+
+
+  // ------------------------------------------------------
+  // SAVE CAPTURE MARKER
+  // paypalOrderCaptures/{orderId}
+  // ------------------------------------------------------
+
+  await setFirestoreDocument(
+    "paypalOrderCaptures",
+    orderId,
+    {
+
+      orderId,
+
+      cartId,
+
+      createdAt:
+        Date.now()
+
+    },
+    firestoreAdminToken
+  );
+
+
+  // ======================================================
+  // PROCESS EACH PURCHASED ITEM
+  // ======================================================
+
+  for (
+    let i = 0;
+    i < items.length;
+    i++
+  ) {
+
+    const item =
+      items[i] || {};
+
+
+    // ----------------------------------------------------
+    // ITEM DATA
+    // ----------------------------------------------------
+
+    const type =
+      String(
+        item.type || ""
+      );
+
+    const id =
+      String(
+        item.id || ""
+      );
+
+    const licenseKey =
+      String(
+        item.licenseKey || ""
+      );
+
+    const qty =
+      paymentToQty(
+        item.qty || 1
+      );
+
+    const producerId =
+      String(
+        item.producerId || ""
+      );
+
+
+    // ----------------------------------------------------
+    // LINE TOTAL
+    // ----------------------------------------------------
+
+    const lineTotal =
+      Number(
+        item.unitPrice || 0
+      ) * qty;
+
+
+    // ----------------------------------------------------
+    // UNLOCK ID
+    // ----------------------------------------------------
+
+    const unlockId =
+      `${orderId}__${type}__${id}__${licenseKey}__${i}`;
+
+
+    // ----------------------------------------------------
+    // GET BEAT DATA
+    // ----------------------------------------------------
+
+    let beatData =
+      null;
+
+    if (
+      type === "beat" &&
+      id
+    ) {
+
+      const beatSnap =
+        await getFirestoreDocument(
+          "beats",
+          id,
+          firestoreAdminToken
+        );
+
+      if (
+        beatSnap.exists
+      ) {
+
+        beatData =
+          beatSnap.data || {};
+
+      }
+
+    }
+
+
+    // ----------------------------------------------------
+    // TITLE
+    // ----------------------------------------------------
+
+    const itemTitle =
+      type === "beat"
+        ? String(
+            beatData?.title ||
+            item.title ||
+            "Beat"
+          )
+        : String(
+            item.title ||
+            "Sound Kit"
+          );
+
+
+    // ----------------------------------------------------
+    // PRODUCER NAME
+    // ----------------------------------------------------
+
+    let producerName =
+      String(
+        beatData?.producerName ||
+        ""
+      ).trim();
+
+
+    if (
+      !producerName &&
+      producerId
+    ) {
+
+      const producerSnap =
+        await getFirestoreDocument(
+          "users",
+          producerId,
+          firestoreAdminToken
+        );
+
+      if (
+        producerSnap.exists
+      ) {
+
+        const producerData =
+          producerSnap.data || {};
+
+        producerName =
+          String(
+            producerData.displayName ||
+            producerData.name ||
+            ""
+          ).trim();
+
+      }
+
+    }
+
+
+    if (!producerName) {
+      producerName =
+        "Producer";
+    }
+
+
+    // ----------------------------------------------------
+    // DOWNLOAD PATH
+    // ----------------------------------------------------
+
+    const downloadPath =
+      String(
+        item.downloadPath ||
+        beatData?.downloadPath ||
+        beatData?.filePath ||
+        ""
+      ).trim() ||
+      null;
+
+
+    // ----------------------------------------------------
+    // AUDIO URL
+    // ----------------------------------------------------
+
+    const audioUrl =
+      String(
+        item.audioUrl ||
+        beatData?.audio ||
+        ""
+      ).trim() ||
+      null;
+
+
+    // ====================================================
+    // CREATE UNLOCK
+    // ====================================================
+
+    await setFirestoreDocument(
+      "unlocks",
+      unlockId,
+      {
+
+        unlockId,
+
+        orderId,
+
+        cartId,
+
+        provider:
+          "paypal",
+
+        type,
+
+        buyerId:
+          buyerId ||
+          null,
+
+        buyerName,
+
+        buyerEmail,
+
+        producerId:
+          producerId ||
+          null,
+
+        producerName,
+
+        beatId:
+          type === "beat"
+            ? id
+            : null,
+
+        beatTitle:
+          itemTitle ||
+          null,
+
+        kitId:
+          type === "soundkit"
+            ? id
+            : null,
+
+        licenseKey:
+          licenseKey ||
+          null,
+
+        downloadPath,
+
+        audioUrl,
+
+        qty,
+
+        amount:
+          lineTotal,
+
+        receipt:
+          providerCaptureId,
+
+        payerEmail,
+
+        transactionDate:
+          Date.now(),
+
+        status:
+          "unlocked",
+
+        paid:
+          true,
+
+        createdAt:
+          Date.now(),
+
+        updatedAt:
+          Date.now()
+
+      },
+      firestoreAdminToken
+    );
+
+
+    // ====================================================
+    // BUY X GET Y BONUS UNLOCKS
+    // ====================================================
+
+    if (
+      type === "beat" &&
+      id
+    ) {
+
+      const campaigns =
+        await queryFirestore(
+          "marketingCampaigns",
+          "beatId",
+          "EQUAL",
+          id,
+          firestoreAdminToken,
+          25
+        );
+
+
+      for (
+        const campaignDoc of campaigns
+      ) {
+
+        const campaign =
+          campaignDoc.data || {};
+
+
+        if (
+          String(
+            campaign.type || ""
+          ) !==
+          "buy_x_get_y"
+        ) {
+          continue;
+        }
+
+
+        if (
+          String(
+            campaign.status || ""
+          ) !==
+          "active"
+        ) {
+          continue;
+        }
+
+
+        const bonusBeatIds =
+          Array.isArray(
+            campaign.bonusBeatIds
+          )
+            ? campaign.bonusBeatIds
+            : [];
+
+
+        for (
+          const bonusBeatId
+          of bonusBeatIds
+        ) {
+
+          const bonusBeatSnap =
+            await getFirestoreDocument(
+              "beats",
+              String(
+                bonusBeatId
+              ),
+              firestoreAdminToken
+            );
+
+
+          if (
+            !bonusBeatSnap.exists
+          ) {
+            continue;
+          }
+
+
+          const bonusBeat =
+            bonusBeatSnap.data ||
+            {};
+
+
+          const bonusUnlockId =
+            `${unlockId}_bonus_${bonusBeatId}`;
+
+
+          await setFirestoreDocument(
+            "unlocks",
+            bonusUnlockId,
+            {
+
+              unlockId:
+                bonusUnlockId,
+
+              orderId,
+
+              cartId,
+
+              provider:
+                "paypal",
+
+              paid:
+                true,
+
+              status:
+                "unlocked",
+
+              buyerId:
+                buyerId ||
+                null,
+
+              buyerName,
+
+              buyerEmail,
+
+              producerId:
+                bonusBeat.producerId ||
+                null,
+
+              producerName:
+                bonusBeat.producerName ||
+                null,
+
+              beatId:
+                String(
+                  bonusBeatId
+                ),
+
+              beatTitle:
+                bonusBeat.title ||
+                "Bonus Beat",
+
+              licenseKey:
+                licenseKey ||
+                "basic",
+
+              downloadPath:
+                bonusBeat.downloadPath ||
+                bonusBeat.filePath ||
+                null,
+
+              audioUrl:
+                bonusBeat.audio ||
+                bonusBeat.fullAudio ||
+                null,
+
+              receipt:
+                providerCaptureId,
+
+              createdAt:
+                Date.now(),
+
+              updatedAt:
+                Date.now()
+
+            },
+            firestoreAdminToken
+          );
+
+        }
+
+      }
+
+    }
+
+
+    // ====================================================
+    // PRODUCER WALLET
+    // ====================================================
+
+    if (
+      producerId
+    ) {
+
+      const creditMarkerId =
+        unlockId;
+
+
+      const markerSnap =
+        await getFirestoreDocument(
+          "walletCredits",
+          creditMarkerId,
+          firestoreAdminToken
+        );
+
+
+      if (
+        !markerSnap.exists
+      ) {
+
+        const gross =
+          Number(
+            lineTotal || 0
+          );
+
+        const fee =
+          Math.round(
+            gross *
+            0.10 *
+            100
+          ) / 100;
+
+        const net =
+          Math.round(
+            (
+              gross -
+              fee
+            ) *
+            100
+          ) / 100;
+
+
+        // ------------------------------------------------
+        // GET CURRENT WALLET
+        // ------------------------------------------------
+
+        const walletSnap =
+          await getFirestoreDocument(
+            "wallets",
+            producerId,
+            firestoreAdminToken
+          );
+
+
+        const wallet =
+          walletSnap.exists
+            ? (
+                walletSnap.data ||
+                {}
+              )
+            : {};
+
+
+        const lifetimeUsd =
+          Number(
+            wallet.lifetimeUsd ||
+            0
+          );
+
+        const availableUsd =
+          Number(
+            wallet.availableUsd ||
+            0
+          );
+
+        const pendingPayoutUsd =
+          Number(
+            wallet.pendingPayoutUsd ||
+            0
+          );
+
+        const paidOutUsd =
+          Number(
+            wallet.paidOutUsd ||
+            0
+          );
+
+
+        // ------------------------------------------------
+        // UPDATE WALLET
+        // ------------------------------------------------
+
+        await setFirestoreDocument(
+          "wallets",
+          producerId,
+          {
+
+            lifetimeUsd:
+              Number(
+                (
+                  lifetimeUsd +
+                  net
+                ).toFixed(2)
+              ),
+
+            availableUsd:
+              Number(
+                (
+                  availableUsd +
+                  net
+                ).toFixed(2)
+              ),
+
+            pendingPayoutUsd:
+              Number(
+                pendingPayoutUsd.toFixed(2)
+              ),
+
+            paidOutUsd:
+              Number(
+                paidOutUsd.toFixed(2)
+              ),
+
+            updatedAt:
+              Date.now()
+
+          },
+          firestoreAdminToken
+        );
+
+
+        // ------------------------------------------------
+        // PLATFORM REVENUE
+        // ------------------------------------------------
+
+        await setFirestoreDocument(
+          "platformRevenue",
+          creditMarkerId,
+          {
+
+            revenueId:
+              creditMarkerId,
+
+            orderId,
+
+            producerId,
+
+            gross,
+
+            fee,
+
+            net,
+
+            currency:
+              currency ||
+              "USD",
+
+            source:
+              "paypal",
+
+            createdAt:
+              Date.now()
+
+          },
+          firestoreAdminToken
+        );
+
+
+        // ------------------------------------------------
+        // WALLET CREDIT IDEMPOTENCY MARKER
+        // ------------------------------------------------
+
+        await setFirestoreDocument(
+          "walletCredits",
+          creditMarkerId,
+          {
+
+            unlockId,
+
+            orderId,
+
+            cartId,
+
+            producerId,
+
+            grossAmount:
+              gross,
+
+            createdAt:
+              Date.now()
+
+          },
+          firestoreAdminToken
+        );
+
+      }
+
+    }
+
+  }
+
+
+  // ======================================================
+  // MARK CART PAID
+  // ======================================================
+
+  await updateFirestoreDocument(
+    "paypalOrders",
+    cartId,
+    {
+
+      status:
+        "paid",
+
+      paidAt:
+        Date.now(),
+
+      orderId,
+
+      payerEmail,
+
+      updatedAt:
+        Date.now()
+
+    },
+    firestoreAdminToken
+  );
+
+
+  // ======================================================
+  // DONE
+  // ======================================================
+
+  return {
+    ok: true
+  };
 }
 
 // ========================================================
