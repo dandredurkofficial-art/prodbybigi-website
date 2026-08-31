@@ -2608,7 +2608,6 @@ window.logBeatPlay = logBeatPlay;
     const token =
       await user.getIdToken(true);
 
-
     // ------------------------------------------------------
     // CREATE PAYPAL ORDER
     // ------------------------------------------------------
@@ -2624,7 +2623,6 @@ window.logBeatPlay = logBeatPlay;
       "PayPal createOrder body:",
       body
     );
-
 
     const r = await fetch(
       window.PB_PAYPAL_CREATE_ORDER_URL,
@@ -2642,18 +2640,15 @@ window.logBeatPlay = logBeatPlay;
       }
     );
 
-
     const data =
       await r.json().catch(
         () => ({})
       );
 
-
     console.log(
       "PayPal createOrder response:",
       data
     );
-
 
     if (!r.ok) {
 
@@ -2668,9 +2663,8 @@ window.logBeatPlay = logBeatPlay;
       );
     }
 
-
     // ------------------------------------------------------
-    // GET ORDER + CART IDs FROM CLOUDFLARE WORKER
+    // GET PAYPAL ORDER ID
     // ------------------------------------------------------
 
     const orderId =
@@ -2678,11 +2672,14 @@ window.logBeatPlay = logBeatPlay;
         data?.orderId || ""
       ).trim();
 
+    // ------------------------------------------------------
+    // GET AUDIOry CART ID
+    // ------------------------------------------------------
+
     const cartId =
       String(
         data?.cartId || ""
       ).trim();
-
 
     // ------------------------------------------------------
     // GET PAYPAL APPROVAL URL
@@ -2690,51 +2687,39 @@ window.logBeatPlay = logBeatPlay;
 
     const approveUrl =
       data?.approveUrl ||
-      (data?.approveLinks || [])
-        .find(
-          x =>
-            x?.rel === "approve" ||
-            x?.rel === "payer-action"
-        )?.href ||
+      (Array.isArray(data?.approveLinks)
+        ? data.approveLinks.find(
+            x =>
+              x?.rel === "approve" ||
+              x?.rel === "payer-action"
+          )?.href
+        : "") ||
       "";
 
-
     // ------------------------------------------------------
-    // VALIDATE WORKER RESPONSE
+    // VALIDATE RESPONSE
     // ------------------------------------------------------
 
     if (!orderId) {
-
       throw new Error(
         "PayPal order ID was not returned."
       );
-
     }
 
-
     if (!cartId) {
-
       throw new Error(
         "PayPal cart ID was not returned."
       );
-
     }
 
-
     if (!approveUrl) {
-
       throw new Error(
         "PayPal approval link was not returned."
       );
-
     }
 
-
     // ------------------------------------------------------
-    // SAVE PENDING PAYPAL CHECKOUT
-    //
-    // The success page needs cartId after PayPal
-    // redirects the buyer back to Audiory.
+    // BUILD COMPLETE PENDING PAYMENT
     // ------------------------------------------------------
 
     const pendingPayment = {
@@ -2754,13 +2739,18 @@ window.logBeatPlay = logBeatPlay;
       amount:
         Number(sel.amount || 0),
 
+      buyerId:
+        String(user.uid),
+
       createdAt:
         Date.now()
 
     };
 
+    // ------------------------------------------------------
+    // SAVE PRIMARY PAYPAL CHECKOUT
+    // ------------------------------------------------------
 
-    // Primary pending-payment record
     localStorage.setItem(
       "audiory_pending_paypal",
       JSON.stringify(
@@ -2768,9 +2758,11 @@ window.logBeatPlay = logBeatPlay;
       )
     );
 
-
     // ------------------------------------------------------
-    // ALSO SAVE THE SIMPLE IDs USED BY success.html
+    // SAVE SIMPLE CHECKOUT IDs
+    //
+    // success.html uses these values after PayPal
+    // redirects the buyer back to Audiory.
     // ------------------------------------------------------
 
     localStorage.setItem(
@@ -2783,12 +2775,33 @@ window.logBeatPlay = logBeatPlay;
       orderId
     );
 
+    // ------------------------------------------------------
+    // ALSO SAVE IN SESSION STORAGE
+    //
+    // This gives the return page a second copy in the
+    // same browser session.
+    // ------------------------------------------------------
 
-    console.log(
-      "✅ Pending PayPal payment saved:",
-      pendingPayment
+    sessionStorage.setItem(
+      "pb_last_cart_id",
+      cartId
     );
 
+    sessionStorage.setItem(
+      "pb_last_order_id",
+      orderId
+    );
+
+    sessionStorage.setItem(
+      "audiory_pending_paypal",
+      JSON.stringify(
+        pendingPayment
+      )
+    );
+
+    // ------------------------------------------------------
+    // DEBUG LOGGING
+    // ------------------------------------------------------
 
     console.log(
       "✅ PayPal orderId:",
@@ -2800,14 +2813,30 @@ window.logBeatPlay = logBeatPlay;
       cartId
     );
 
+    console.log(
+      "✅ PayPal beatId:",
+      pendingPayment.beatId
+    );
+
+    console.log(
+      "✅ PayPal license:",
+      pendingPayment.licenseKey
+    );
+
+    console.log(
+      "✅ Pending PayPal checkout saved:",
+      pendingPayment
+    );
 
     // ------------------------------------------------------
-    // SEND CUSTOMER TO PAYPAL
+    // SEND BUYER TO PAYPAL
     // ------------------------------------------------------
+
+    payStatus.textContent =
+      "Redirecting to PayPal…";
 
     location.href =
       approveUrl;
-
 
   } catch (err) {
 
@@ -2822,7 +2851,6 @@ window.logBeatPlay = logBeatPlay;
     );
 
     payStatus.textContent = "";
-
 
   } finally {
 
