@@ -1577,6 +1577,7 @@
     const token =
       await user.getIdToken(true);
 
+
     // ------------------------------------------------------
     // CREATE PAYPAL ORDER
     // ------------------------------------------------------
@@ -1592,6 +1593,7 @@
       "PayPal createOrder body:",
       body
     );
+
 
     const r = await fetch(
       window.PB_PAYPAL_CREATE_ORDER_URL,
@@ -1609,15 +1611,18 @@
       }
     );
 
+
     const data =
       await r.json().catch(
         () => ({})
       );
 
+
     console.log(
       "PayPal createOrder response:",
       data
     );
+
 
     if (!r.ok) {
 
@@ -1632,6 +1637,11 @@
       );
     }
 
+
+    // ------------------------------------------------------
+    // GET ORDER + CART IDs FROM CLOUDFLARE WORKER
+    // ------------------------------------------------------
+
     const orderId =
       String(
         data?.orderId || ""
@@ -1641,6 +1651,11 @@
       String(
         data?.cartId || ""
       ).trim();
+
+
+    // ------------------------------------------------------
+    // GET PAYPAL APPROVAL URL
+    // ------------------------------------------------------
 
     const approveUrl =
       data?.approveUrl ||
@@ -1652,37 +1667,49 @@
         )?.href ||
       "";
 
+
     // ------------------------------------------------------
     // VALIDATE WORKER RESPONSE
     // ------------------------------------------------------
 
     if (!orderId) {
+
       throw new Error(
         "PayPal order ID was not returned."
       );
+
     }
 
+
     if (!cartId) {
+
       throw new Error(
         "PayPal cart ID was not returned."
       );
+
     }
 
+
     if (!approveUrl) {
+
       throw new Error(
         "PayPal approval link was not returned."
       );
+
     }
+
 
     // ------------------------------------------------------
     // SAVE PENDING PAYPAL CHECKOUT
     //
-    // The Worker requires BOTH orderId and cartId
-    // when /api/captureOrder is called.
+    // The success page needs cartId after PayPal
+    // redirects the buyer back to Audiory.
     // ------------------------------------------------------
 
     const pendingPayment = {
+
       orderId,
+
       cartId,
 
       beatId:
@@ -1698,8 +1725,11 @@
 
       createdAt:
         Date.now()
+
     };
 
+
+    // Primary pending-payment record
     localStorage.setItem(
       "audiory_pending_paypal",
       JSON.stringify(
@@ -1707,10 +1737,38 @@
       )
     );
 
+
+    // ------------------------------------------------------
+    // ALSO SAVE THE SIMPLE IDs USED BY success.html
+    // ------------------------------------------------------
+
+    localStorage.setItem(
+      "pb_last_cart_id",
+      cartId
+    );
+
+    localStorage.setItem(
+      "pb_last_order_id",
+      orderId
+    );
+
+
     console.log(
       "✅ Pending PayPal payment saved:",
       pendingPayment
     );
+
+
+    console.log(
+      "✅ PayPal orderId:",
+      orderId
+    );
+
+    console.log(
+      "✅ PayPal cartId:",
+      cartId
+    );
+
 
     // ------------------------------------------------------
     // SEND CUSTOMER TO PAYPAL
@@ -1718,6 +1776,7 @@
 
     location.href =
       approveUrl;
+
 
   } catch (err) {
 
@@ -1732,6 +1791,7 @@
     );
 
     payStatus.textContent = "";
+
 
   } finally {
 
