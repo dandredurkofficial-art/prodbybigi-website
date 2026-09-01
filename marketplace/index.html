@@ -2141,17 +2141,13 @@
 
   try {
 
-    // ------------------------------------------------------
     // FIREBASE AUTH TOKEN
-    // ------------------------------------------------------
 
     const token =
       await user.getIdToken(true);
 
 
-    // ------------------------------------------------------
     // CREATE PAYPAL ORDER
-    // ------------------------------------------------------
 
     const body = {
       beatId: String(sel.beatId),
@@ -2209,9 +2205,7 @@
     }
 
 
-    // ------------------------------------------------------
-    // GET ORDER + CART IDs FROM CLOUDFLARE WORKER
-    // ------------------------------------------------------
+    // GET ORDER + CART IDs
 
     const orderId =
       String(
@@ -2224,9 +2218,7 @@
       ).trim();
 
 
-    // ------------------------------------------------------
     // GET PAYPAL APPROVAL URL
-    // ------------------------------------------------------
 
     const approveUrl =
       data?.approveUrl ||
@@ -2239,9 +2231,7 @@
       "";
 
 
-    // ------------------------------------------------------
-    // VALIDATE WORKER RESPONSE
-    // ------------------------------------------------------
+    // VALIDATE RESPONSE
 
     if (!orderId) {
 
@@ -2270,9 +2260,7 @@
     }
 
 
-    // ------------------------------------------------------
     // SAVE PENDING PAYPAL CHECKOUT
-    // ------------------------------------------------------
 
     const pendingPayment = {
 
@@ -2305,9 +2293,7 @@
     );
 
 
-    // ------------------------------------------------------
-    // ALSO SAVE THE SIMPLE IDs USED BY success.html
-    // ------------------------------------------------------
+    // SAVE IDs USED BY success.html
 
     localStorage.setItem(
       "pb_last_cart_id",
@@ -2325,7 +2311,6 @@
       pendingPayment
     );
 
-
     console.log(
       "✅ PayPal orderId:",
       orderId
@@ -2337,9 +2322,7 @@
     );
 
 
-    // ------------------------------------------------------
     // SEND CUSTOMER TO PAYPAL
-    // ------------------------------------------------------
 
     location.href =
       approveUrl;
@@ -2367,6 +2350,83 @@
 
   }
 }
+
+payBackdrop?.addEventListener("click", closePayModal);
+payClose?.addEventListener("click", closePayModal);
+btnPaypal?.addEventListener("click", payWithPaypal);
+btnMpesa?.addEventListener("click", showMpesaBox);
+pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
+
+document.addEventListener("click", (e)=>{
+  const card = e.target.closest("[data-beat-id]");
+  if (!card) return;
+  if (!e.target.closest(".price-pill")) return;
+
+  const beatId = String(card.getAttribute("data-beat-id") || "");
+  if (!beatId) return;
+
+  const title = (
+    card.querySelector("h3")?.textContent || ""
+  ).trim();
+
+  const beat = getBeatById(beatId);
+  const fallback = getDefaultLicenseForBeat(beat);
+
+  window.\_\_PB\_SELECTED\_\_ = {
+    beatId,
+    title: title || "",
+    licenseKey: fallback.licenseKey,
+    amount: fallback.amount
+  };
+
+  console.log("✅ marketplace default selection", window.\_\_PB\_SELECTED\_\_);
+}, true);
+
+document.addEventListener("click", (e)=>{
+  const clickedCard = e.target.closest("#pbLicensesGrid > \*");
+  if (!clickedCard) return;
+
+  setTimeout(syncSelectionFromModal, 0);
+}, true);
+
+const buyNowBtn = document.getElementById("pbBuyNow");
+if (buyNowBtn) {
+  buyNowBtn.addEventListener("click", (e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+
+    let sel = window.\_\_PB\_SELECTED\_\_;
+    if (!sel?.beatId) {
+      alert("Select a beat and license first.");
+      return;
+    }
+
+    syncSelectionFromModal();
+    sel = window.\_\_PB\_SELECTED\_\_;
+
+    if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
+      const beat = getBeatById(sel.beatId);
+      const fallback = getDefaultLicenseForBeat(beat);
+
+      window.\_\_PB\_SELECTED\_\_ = {
+        ...sel,
+        licenseKey: fallback.licenseKey,
+        amount: fallback.amount
+      };
+
+      sel = window.\_\_PB\_SELECTED\_\_;
+    }
+
+    if (!sel?.amount || sel.amount <= 0) {
+      alert("Select a license first.");
+      return;
+    }
+
+    openPayModal();
+  }, true);
+}
+
+})();
 
   async function trackMarketplacePlay({ producerId, beatId }){
     try{
