@@ -1420,9 +1420,10 @@
 
 <script>
   window.PB_PAYPAL_CREATE_ORDER_URL =
-    "https://createorder-f65rhsquva-uc.a.run.app";
+    "https://storage.audiory.site/api/createOrder";
+
   window.PB_PAYPAL_CAPTURE_ORDER_URL =
-    "https://captureorder-f65rhsquva-uc.a.run.app";
+    "https://storage.audiory.site/api/captureOrder";
   window.PB_MPESA_STKPUSH_URL =
     "https://stkpush-f65rhsquva-uc.a.run.app";
 </script>
@@ -2113,127 +2114,259 @@
     }
 
     async function payWithPaypal(){
-      const sel = window.__PB_SELECTED__;
-      if (!sel?.beatId) return alert("Select a beat first.");
 
-      const body = {
-        beatId: sel.beatId,
-        licenseKey: sel.licenseKey || "basic"
-      };
+  const sel = window.__PB_SELECTED__;
 
-      btnPaypal.disabled = true;
-      btnMpesa.disabled = true;
-      payStatus.textContent = "Opening PayPal…";
+  if (!sel?.beatId) {
+    alert("Select a beat first.");
+    return;
+  }
 
-      try{
-        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-          method: "POST",
-          headers: { "Content-Type":"application/json" },
-          body: JSON.stringify(body)
-        });
+  const user =
+    window.FB?.auth?.currentUser ||
+    window.FB?.user ||
+    null;
 
-        const data = await r.json().catch(()=> ({}));
-        if (!r.ok) {
-          console.error("PayPal createOrder failed:", data);
-          alert(data?.error || "PayPal create order failed");
-          payStatus.textContent = "";
-          return;
-        }
+  if (!user?.uid) {
+    alert("Please sign in before paying with PayPal.");
+    location.href = "/login/";
+    return;
+  }
 
-        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
-        if (!url) {
-          console.error("No approveUrl:", data);
-          alert("PayPal approval link missing.");
-          payStatus.textContent = "";
-          return;
-        }
+  btnPaypal.disabled = true;
+  btnMpesa.disabled = true;
 
-        location.href = url;
-      } catch (err){
-        console.error(err);
-        alert("PayPal error: " + (err?.message || err));
-        payStatus.textContent = "";
-      } finally {
-        btnPaypal.disabled = false;
-        btnMpesa.disabled = false;
+  payStatus.textContent =
+    "Preparing PayPal checkout…";
+
+  try {
+
+    // ------------------------------------------------------
+    // FIREBASE AUTH TOKEN
+    // ------------------------------------------------------
+
+    const token =
+      await user.getIdToken(true);
+
+
+    // ------------------------------------------------------
+    // CREATE PAYPAL ORDER
+    // ------------------------------------------------------
+
+    const body = {
+      beatId: String(sel.beatId),
+      licenseKey: String(
+        sel.licenseKey || "basic"
+      )
+    };
+
+    console.log(
+      "PayPal createOrder body:",
+      body
+    );
+
+
+    const r = await fetch(
+      window.PB_PAYPAL_CREATE_ORDER_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization":
+            "Bearer " + token
+        },
+
+        body:
+          JSON.stringify(body)
       }
+    );
+
+
+    const data =
+      await r.json().catch(
+        () => ({})
+      );
+
+
+    console.log(
+      "PayPal createOrder response:",
+      data
+    );
+
+
+    if (!r.ok) {
+
+      console.error(
+        "PayPal createOrder failed:",
+        data
+      );
+
+      throw new Error(
+        data?.error ||
+        `PayPal create order failed (${r.status})`
+      );
     }
 
-    payBackdrop?.addEventListener("click", closePayModal);
-    payClose?.addEventListener("click", closePayModal);
-    btnPaypal?.addEventListener("click", payWithPaypal);
-    btnMpesa?.addEventListener("click", showMpesaBox);
-    pbSendStkPush?.addEventListener("click", sendMpesaStkPush);
 
-    document.addEventListener("click", (e)=>{
-      const card = e.target.closest("[data-beat-id]");
-      if (!card) return;
-      if (!e.target.closest(".price-pill")) return;
+    // ------------------------------------------------------
+    // GET ORDER + CART IDs FROM CLOUDFLARE WORKER
+    // ------------------------------------------------------
 
-      const beatId = String(card.getAttribute("data-beat-id") || "");
-      if (!beatId) return;
-
-      const title = (
-        card.querySelector("h3")?.textContent || ""
+    const orderId =
+      String(
+        data?.orderId || ""
       ).trim();
 
-      const beat = getBeatById(beatId);
-      const fallback = getDefaultLicenseForBeat(beat);
+    const cartId =
+      String(
+        data?.cartId || ""
+      ).trim();
 
-      window.__PB_SELECTED__ = {
-        beatId,
-        title: title || "",
-        licenseKey: fallback.licenseKey,
-        amount: fallback.amount
-      };
 
-      console.log("✅ marketplace default selection", window.__PB_SELECTED__);
-    }, true);
+    // ------------------------------------------------------
+    // GET PAYPAL APPROVAL URL
+    // ------------------------------------------------------
 
-    document.addEventListener("click", (e)=>{
-      const clickedCard = e.target.closest("#pbLicensesGrid > *");
-      if (!clickedCard) return;
+    const approveUrl =
+      data?.approveUrl ||
+      (data?.approveLinks || [])
+        .find(
+          x =>
+            x?.rel === "approve" ||
+            x?.rel === "payer-action"
+        )?.href ||
+      "";
 
-      setTimeout(syncSelectionFromModal, 0);
-    }, true);
 
-    const buyNowBtn = document.getElementById("pbBuyNow");
-    if (buyNowBtn) {
-      buyNowBtn.addEventListener("click", (e)=>{
-        e.preventDefault();
-        e.stopPropagation();
+    // ------------------------------------------------------
+    // VALIDATE WORKER RESPONSE
+    // ------------------------------------------------------
 
-        let sel = window.__PB_SELECTED__;
-        if (!sel?.beatId) {
-          alert("Select a beat and license first.");
-          return;
-        }
+    if (!orderId) {
 
-        syncSelectionFromModal();
-        sel = window.__PB_SELECTED__;
+      throw new Error(
+        "PayPal order ID was not returned."
+      );
 
-        if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
-          const beat = getBeatById(sel.beatId);
-          const fallback = getDefaultLicenseForBeat(beat);
-
-          window.__PB_SELECTED__ = {
-            ...sel,
-            licenseKey: fallback.licenseKey,
-            amount: fallback.amount
-          };
-
-          sel = window.__PB_SELECTED__;
-        }
-
-        if (!sel?.amount || sel.amount <= 0) {
-          alert("Select a license first.");
-          return;
-        }
-
-        openPayModal();
-      }, true);
     }
-  })();
+
+
+    if (!cartId) {
+
+      throw new Error(
+        "PayPal cart ID was not returned."
+      );
+
+    }
+
+
+    if (!approveUrl) {
+
+      throw new Error(
+        "PayPal approval link was not returned."
+      );
+
+    }
+
+
+    // ------------------------------------------------------
+    // SAVE PENDING PAYPAL CHECKOUT
+    // ------------------------------------------------------
+
+    const pendingPayment = {
+
+      orderId,
+
+      cartId,
+
+      beatId:
+        String(sel.beatId),
+
+      licenseKey:
+        String(
+          sel.licenseKey || "basic"
+        ),
+
+      amount:
+        Number(sel.amount || 0),
+
+      createdAt:
+        Date.now()
+
+    };
+
+
+    localStorage.setItem(
+      "audiory_pending_paypal",
+      JSON.stringify(
+        pendingPayment
+      )
+    );
+
+
+    // ------------------------------------------------------
+    // ALSO SAVE THE SIMPLE IDs USED BY success.html
+    // ------------------------------------------------------
+
+    localStorage.setItem(
+      "pb_last_cart_id",
+      cartId
+    );
+
+    localStorage.setItem(
+      "pb_last_order_id",
+      orderId
+    );
+
+
+    console.log(
+      "✅ Pending PayPal payment saved:",
+      pendingPayment
+    );
+
+
+    console.log(
+      "✅ PayPal orderId:",
+      orderId
+    );
+
+    console.log(
+      "✅ PayPal cartId:",
+      cartId
+    );
+
+
+    // ------------------------------------------------------
+    // SEND CUSTOMER TO PAYPAL
+    // ------------------------------------------------------
+
+    location.href =
+      approveUrl;
+
+
+  } catch (err) {
+
+    console.error(
+      "PayPal checkout error:",
+      err
+    );
+
+    alert(
+      err?.message ||
+      "Unable to start PayPal checkout."
+    );
+
+    payStatus.textContent = "";
+
+
+  } finally {
+
+    btnPaypal.disabled = false;
+    btnMpesa.disabled = false;
+
+  }
+}
 
   async function trackMarketplacePlay({ producerId, beatId }){
     try{
