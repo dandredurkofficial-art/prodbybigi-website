@@ -1255,8 +1255,11 @@
 
 <script>
   window.API_BASE = "https://prodbybigi-api.onrender.com";
-  window.PB_PAYPAL_CREATE_ORDER_URL = "https://createorder-f65rhsquva-uc.a.run.app";
-  window.PB_PAYPAL_CAPTURE_ORDER_URL = "https://captureorder-f65rhsquva-uc.a.run.app";
+  window.PB_PAYPAL_CREATE_ORDER_URL =
+    "https://storage.audiory.site/api/createOrder";
+
+  window.PB_PAYPAL_CAPTURE_ORDER_URL =
+    "https://storage.audiory.site/api/captureOrder";
   window.PB_MPESA_STKPUSH_URL = "https://stkpush-f65rhsquva-uc.a.run.app";
   window.__PB_SELECTED__ = window.__PB_SELECTED__ || null;
 </script>
@@ -1915,47 +1918,188 @@
     }
 
     async function payWithPaypal(){
-      const sel = window.__PB_SELECTED__;
-      if (!sel?.beatId) return alert("Select a beat first.");
 
-      btnPaypal.disabled = true;
-      btnMpesa.disabled = true;
-      payStatus.textContent = "Opening PayPal…";
+  const sel = window.__PB_SELECTED__;
 
-      try{
-        const r = await fetch(window.PB_PAYPAL_CREATE_ORDER_URL, {
-          method:"POST",
-          headers:{ "Content-Type":"application/json" },
-          body:JSON.stringify({
-            beatId: sel.beatId,
-            licenseKey: sel.licenseKey || "basic"
-          })
-        });
+  if (!sel?.beatId) {
+    alert("Select a beat first.");
+    return;
+  }
 
-        const data = await r.json().catch(()=>({}));
-        if (!r.ok) {
-          alert(data?.error || "PayPal create order failed");
-          payStatus.textContent = "";
-          return;
-        }
+  const user =
+    window.FB?.auth?.currentUser ||
+    window.FB?.user ||
+    null;
 
-        const url = data.approveUrl || (data.approveLinks || []).find(x=>x.rel==="approve")?.href;
-        if (!url) {
-          alert("PayPal approval link missing.");
-          payStatus.textContent = "";
-          return;
-        }
+  if (!user?.uid) {
+    alert("Please sign in before paying with PayPal.");
+    location.href = "/login/";
+    return;
+  }
 
-        location.href = url;
-      }catch(err){
-        alert("PayPal error: " + (err?.message || err));
-        payStatus.textContent = "";
-      }finally{
-        btnPaypal.disabled = false;
-        btnMpesa.disabled = false;
+  btnPaypal.disabled = true;
+  btnMpesa.disabled = true;
+
+  payStatus.textContent =
+    "Preparing PayPal checkout…";
+
+  try {
+
+    const token =
+      await user.getIdToken(true);
+
+    const body = {
+      beatId: String(sel.beatId),
+      licenseKey: String(
+        sel.licenseKey || "basic"
+      )
+    };
+
+    console.log(
+      "PayPal createOrder body:",
+      body
+    );
+
+    const r = await fetch(
+      window.PB_PAYPAL_CREATE_ORDER_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + token
+        },
+
+        body: JSON.stringify(body)
       }
+    );
+
+    const data =
+      await r.json().catch(() => ({}));
+
+    console.log(
+      "PayPal createOrder response:",
+      data
+    );
+
+    if (!r.ok) {
+      console.error(
+        "PayPal createOrder failed:",
+        data
+      );
+
+      throw new Error(
+        data?.error ||
+        `PayPal create order failed (${r.status})`
+      );
     }
 
+    const orderId =
+      String(data?.orderId || "").trim();
+
+    const cartId =
+      String(data?.cartId || "").trim();
+
+    const approveUrl =
+      data?.approveUrl ||
+      (data?.approveLinks || [])
+        .find(
+          x =>
+            x?.rel === "approve" ||
+            x?.rel === "payer-action"
+        )?.href ||
+      "";
+
+    if (!orderId) {
+      throw new Error(
+        "PayPal order ID was not returned."
+      );
+    }
+
+    if (!cartId) {
+      throw new Error(
+        "PayPal cart ID was not returned."
+      );
+    }
+
+    if (!approveUrl) {
+      throw new Error(
+        "PayPal approval link was not returned."
+      );
+    }
+
+    const pendingPayment = {
+      orderId,
+      cartId,
+
+      beatId:
+        String(sel.beatId),
+
+      licenseKey:
+        String(
+          sel.licenseKey || "basic"
+        ),
+
+      amount:
+        Number(sel.amount || 0),
+
+      createdAt:
+        Date.now()
+    };
+
+    localStorage.setItem(
+      "audiory_pending_paypal",
+      JSON.stringify(pendingPayment)
+    );
+
+    localStorage.setItem(
+      "pb_last_cart_id",
+      cartId
+    );
+
+    localStorage.setItem(
+      "pb_last_order_id",
+      orderId
+    );
+
+    console.log(
+      "✅ Pending PayPal payment saved:",
+      pendingPayment
+    );
+
+    console.log(
+      "✅ PayPal orderId:",
+      orderId
+    );
+
+    console.log(
+      "✅ PayPal cartId:",
+      cartId
+    );
+
+    location.href = approveUrl;
+
+  } catch (err) {
+
+    console.error(
+      "PayPal checkout error:",
+      err
+    );
+
+    alert(
+      err?.message ||
+      "Unable to start PayPal checkout."
+    );
+
+    payStatus.textContent = "";
+
+  } finally {
+
+    btnPaypal.disabled = false;
+    btnMpesa.disabled = false;
+
+  }
+}
     function showMpesaBox(){
       mpesaBox.style.display = "block";
       payStatus.textContent = "";
