@@ -2372,14 +2372,14 @@ document.addEventListener("click", (e)=>{
   const beat = getBeatById(beatId);
   const fallback = getDefaultLicenseForBeat(beat);
 
-  window.\_\_PB\_SELECTED\_\_ = {
+  window.__PB_SELECTED__ = {
     beatId,
     title: title || "",
     licenseKey: fallback.licenseKey,
     amount: fallback.amount
   };
 
-  console.log("✅ marketplace default selection", window.\_\_PB\_SELECTED\_\_);
+  console.log("✅ marketplace default selection", window.__PB_SELECTED__);
 }, true);
 
 document.addEventListener("click", (e)=>{
@@ -2395,26 +2395,26 @@ if (buyNowBtn) {
     e.preventDefault();
     e.stopPropagation();
 
-    let sel = window.\_\_PB\_SELECTED\_\_;
+    let sel = window.__PB_SELECTED__;
     if (!sel?.beatId) {
       alert("Select a beat and license first.");
       return;
     }
 
     syncSelectionFromModal();
-    sel = window.\_\_PB\_SELECTED\_\_;
+    sel = window.__PB_SELECTED__;
 
     if (!sel?.licenseKey || !sel?.amount || sel.amount <= 0) {
       const beat = getBeatById(sel.beatId);
       const fallback = getDefaultLicenseForBeat(beat);
 
-      window.\_\_PB\_SELECTED\_\_ = {
+      window.__PB_SELECTED__ = {
         ...sel,
         licenseKey: fallback.licenseKey,
         amount: fallback.amount
       };
 
-      sel = window.\_\_PB\_SELECTED\_\_;
+      sel = window.__PB_SELECTED__;
     }
 
     if (!sel?.amount || sel.amount <= 0) {
